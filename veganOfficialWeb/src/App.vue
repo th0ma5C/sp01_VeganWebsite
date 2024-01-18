@@ -1,11 +1,16 @@
 <template>
     <div>
-        <h1>test</h1>
+        <VeganHeader></VeganHeader>
+        <p>我是內容</p>
+        <VeganFooter></VeganFooter>
+        <SvgIcon name="Logo" color="orange"></SvgIcon>
     </div>
 </template>
 
 <script setup lang="ts">
+import VeganHeader from './components/Header/VeganHeader.vue'
+import VeganFooter from './components/Footer/VeganFooter.vue'
 
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped></style>
