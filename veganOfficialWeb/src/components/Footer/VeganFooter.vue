@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>Footer test</h1>
+        <h1>我是footer</h1>
     </div>
 </template>
 

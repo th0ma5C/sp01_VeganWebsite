@@ -3,7 +3,6 @@
         <VeganHeader></VeganHeader>
         <p>我是內容</p>
         <VeganFooter></VeganFooter>
-        <SvgIcon name="Logo" color="orange"></SvgIcon>
     </div>
 </template>
 

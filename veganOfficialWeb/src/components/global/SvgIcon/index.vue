@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-const { prefix, name, color } = defineProps({
+const { prefix, name } = defineProps({
     prefix: {
         type: String,
         default: 'icon',

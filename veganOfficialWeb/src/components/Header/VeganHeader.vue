@@ -1,7 +1,6 @@
 <template>
     <div>
-        <div>
-        </div>
+        <h1>我是header</h1>
     </div>
 </template>
 
