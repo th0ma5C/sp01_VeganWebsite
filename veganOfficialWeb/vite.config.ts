@@ -20,5 +20,15 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
-  }
+  },
+  server: {
+    open: process.env.BROWSER = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: '@import "./src/style/variables.scss";'
+      },
+    },
+  },
 })

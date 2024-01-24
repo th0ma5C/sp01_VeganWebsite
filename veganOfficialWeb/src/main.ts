@@ -6,5 +6,7 @@ const app = createApp(App)
 import 'virtual:svg-icons-register'
 import globalComponents from "./components/global"
 app.use(globalComponents)
+// 導入字體
+import './style/fonts.scss'
 
 app.mount('#app')
