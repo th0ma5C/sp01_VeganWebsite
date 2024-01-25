@@ -1,48 +1,85 @@
 <template>
     <div class="container">
-        <a href="">
-            <SvgIcon name="Logo"></SvgIcon>
-        </a>
-        <div>
-            <ul>
-                <li v-for="{ link } in  navLink " :key="link">
-                    <a href=""><span>{{ link }}</span></a>
-                </li>
-            </ul>
-            <ul>
-                <li v-for="{ icon } in  navIcon " :key="icon">
-                    <a href="">
-                        <SvgIcon :name="icon"></SvgIcon>
-                    </a>
-                </li>
-            </ul>
-        </div>
+        <header class="header">
+            <a href="">
+                <SvgIcon name="Logo" height="65px">
+                </SvgIcon>
+            </a>
+            <div>
+                <ul class="navLink">
+                    <li v-for="{ link } in  navLink "
+                        :key="link">
+                        <a href=""><span>{{ link
+                        }}</span></a>
+                    </li>
+                </ul>
+                <ul class="navIcon">
+                    <li v-for="{ icon } in  navIcon "
+                        :key="icon">
+                        <a href="">
+                            <SvgIcon :name="icon" width="40px"
+                                height="40px">
+                            </SvgIcon>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </header>
     </div>
 </template>
 
 <script setup lang="ts">
 let navLink = [
-    { link: '首頁' }, { link: '診斷開始' }, { link: '美味菜單' }, { link: '關於果漾' }
+    { link: '首頁' }, { link: '專屬分析' }, { link: '美味菜單' }, { link: '關於果漾' }
 ];
 let navIcon = [
     { icon: 'Search' }, { icon: 'Cart' }, { icon: 'Person' }
-]
+];
+
 
 </script>
 
 <style scoped lang="scss">
 .container {
-    @include flex-center-center;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+    transition: height 0.5s ease;
 
-    div {
+    .header {
         @include flex-center-center;
-        justify-content: space-between;
-        width: 100%;
+        padding: 1rem;
+        margin: 0 auto;
+        max-width: 92rem;
+        position: sticky;
+        top: 0;
 
-        li {
-            display: inline-flex;
+
+        div {
+            @include flex-center-center;
+            justify-content: space-between;
+            width: 100%;
+
+            ul {
+                padding: 0;
+
+                li {
+                    display: inline-flex;
+                }
+            }
+
+            .navLink {
+                li {
+                    margin-left: 1rem;
+                }
+            }
+
+            .navIcon {
+                li {
+                    margin-right: 1rem;
+                }
+            }
+
         }
-
     }
+
 }
 </style>

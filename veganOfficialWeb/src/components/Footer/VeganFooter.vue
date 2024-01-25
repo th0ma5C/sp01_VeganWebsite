@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="container">
         <h1>我是footer</h1>
     </div>
 </template>
@@ -8,4 +8,6 @@
 
 </script>
 
-<style scoped></style>
+<style scoped>
+.container {}
+</style>
