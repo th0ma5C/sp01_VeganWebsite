@@ -1,10 +1,14 @@
 <template>
     <div class="container">
-        <h1>我是footer</h1>
+        <InfoFooter></InfoFooter>
+        <MainFooter></MainFooter>
+        <div>footer LOGO</div>
     </div>
 </template>
 
 <script setup lang="ts">
+import InfoFooter from './InfoFooter.vue';
+import MainFooter from './MainFooter.vue';
 
 </script>
 
