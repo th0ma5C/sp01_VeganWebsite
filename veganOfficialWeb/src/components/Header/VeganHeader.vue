@@ -46,7 +46,7 @@ let navIcon = [
 
     .header {
         @include flex-center-center;
-        @include main-parts;
+        @include main-part;
         // padding: 1rem;
         // margin: 0 auto;
         // max-width: 92rem;

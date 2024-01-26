@@ -12,6 +12,8 @@ import MainFooter from './MainFooter.vue';
 
 </script>
 
-<style scoped>
-.container {}
+<style lang="scss" scoped>
+.container {
+    @include main-part;
+}
 </style>

@@ -1,22 +1,35 @@
 <template>
-    <div class="container">
-        <div class="mainFooter">
-            <nav>
-                <ul>
+    <div class="mainFooter">
+        <nav>
+            <ul>
+                <li>
                     <ul>
-                        <li>1</li>
+                        <li>123</li>
+                        <li>123</li>
+                        <li>123</li>
                     </ul>
+                </li>
+                <li>
                     <ul>
-                        <li>2</li>
+                        <li>123</li>
+                        <li>123</li>
+                        <li>123</li>
                     </ul>
-                </ul>
-                <div>社群連結</div>
-            </nav>
-            <div>
-                底部連結
-            </div>
-
+                </li>
+                <li>
+                    <ul>
+                        <li>123</li>
+                        <li>123</li>
+                        <li>123</li>
+                    </ul>
+                </li>
+            </ul>
+            <div>社群連結</div>
+        </nav>
+        <div>
+            底部連結
         </div>
+
     </div>
 </template>
 
@@ -25,9 +38,7 @@
 </script>
 
 <style scoped lang="scss">
-.container {
-    .mainFooter {
-        @include main-parts;
-    }
+.mainFooter {
+    @include main-part;
 }
 </style>
