@@ -3,21 +3,21 @@
         <section class="info-email">
             <h2>訂閱第一手消息！</h2>
             <p>成為我們的VIP！訂閱我們的電子報，即刻獲得獨家優惠、新菜品消息和特別活動邀請。
-                每週精選的美味直送到您的郵箱，讓您永遠不錯過任何精彩時刻。填寫您的郵箱，開啟美食之旅的新一頁！
+                每週精選的美味直送到您的信箱！
             </p>
-            <form action="">
+            <form action="" class="submit">
                 <input type="text">
                 <button type="submit">訂閱</button>
             </form>
         </section>
         <section class="info-app">
             <h2>立即下載App！</h2>
-            <p>掌握美味的滋味，即刻下載我們的
-                APP！獨享訂單優惠、獨家菜單推薦，輕鬆預訂、方便外帶。APP
-                下載，尊享美食新體驗！</p>
+            <p>即刻下載，掌握美味的滋味！獨享訂單優惠、獨家菜單推薦，輕鬆預訂、方便外帶。下載APP
+                ，尊享美食新體驗！</p>
             <button>下載App</button>
         </section>
-        <div class="info-phone">手機示意圖</div>
+        <img src="../../assets/Img/MainBanner/phone.jpg" alt=""
+            style="width: 150px;margin-top: 35px;">
     </div>
 </template>
 
@@ -27,7 +27,6 @@
 
 <style scoped lang="scss">
 .infoFooter {
-    @include main-part;
     @include flex-center-center;
     align-items: stretch;
     gap: 1rem;
@@ -37,10 +36,36 @@
         text-align: left;
         position: relative;
 
-        &>button {
-            position: absolute;
-            bottom: 0;
+        .submit {
+            max-width: 100%;
+            position: relative;
+
+            input {
+                border: 1px solid black;
+                border-radius: 3rem;
+                padding-left: 2rem;
+                width: 100%;
+                height: 3rem;
+            }
+
+            button {
+                height: 3rem;
+                width: 5rem;
+                border-radius: 3rem;
+                position: absolute;
+                right: 0;
+
+            }
         }
+    }
+
+    .info-app>button {
+        height: 3rem;
+        width: 5rem;
+        border-radius: 3rem;
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%, 0);
     }
 
     .info-app>*:not(button),
