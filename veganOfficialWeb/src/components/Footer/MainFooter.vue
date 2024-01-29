@@ -1,30 +1,27 @@
 <template>
     <div class="mainFooter">
         <nav>
-            <ul>
-                <li>
-                    <ul>
-                        <li>123</li>
-                        <li>123</li>
-                        <li>123</li>
-                    </ul>
-                </li>
-                <li>
-                    <ul>
-                        <li>123</li>
-                        <li>123</li>
-                        <li>123</li>
-                    </ul>
-                </li>
-                <li>
-                    <ul>
-                        <li>123</li>
-                        <li>123</li>
-                        <li>123</li>
-                    </ul>
-                </li>
-            </ul>
-            <div>社群連結</div>
+            <div>
+                <h2>快速連結</h2>
+                <ul>
+                    <li>1</li>
+                    <li>link</li>
+                </ul>
+            </div>
+            <div>
+                <h2>顧客服務</h2>
+                <ul>
+                    <li>2</li>
+                    <li>link</li>
+                </ul>
+            </div>
+            <div>
+                <h2>果漾蔬食</h2>
+                <ul>
+                    <li>3</li>
+                    <li>link</li>
+                </ul>
+            </div>
         </nav>
         <div>
             底部連結
@@ -40,5 +37,10 @@
 <style scoped lang="scss">
 .mainFooter {
     @include main-part;
+
+    nav {
+        display: flex;
+        flex-direction: row;
+    }
 }
 </style>

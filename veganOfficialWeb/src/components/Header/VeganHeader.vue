@@ -66,7 +66,7 @@ let navIcon = [
 
             .navLink {
                 li {
-                    margin-left: 1rem;
+                    margin-left: 2rem;
                 }
             }
 

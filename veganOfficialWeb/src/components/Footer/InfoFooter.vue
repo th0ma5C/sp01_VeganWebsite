@@ -28,6 +28,7 @@
 <style scoped lang="scss">
 .infoFooter {
     @include flex-center-center;
+    @include main-part;
     align-items: stretch;
     gap: 1rem;
 
