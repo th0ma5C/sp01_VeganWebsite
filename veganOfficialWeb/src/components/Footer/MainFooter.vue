@@ -38,18 +38,18 @@
                 </ul>
             </div>
         </nav>
-        <div>
+        <div class="social-link">
             <a href="">
-                <SvgIcon name="FB"></SvgIcon>
+                <SvgIcon name="FB" width="30px"></SvgIcon>
             </a>
             <a href="">
-                <SvgIcon name="IG"></SvgIcon>
+                <SvgIcon name="IG" width="30px"></SvgIcon>
             </a>
             <a href="">
-                <SvgIcon name="LINE"></SvgIcon>
+                <SvgIcon name="LINE" width="30px"></SvgIcon>
             </a>
             <a href="">
-                <SvgIcon name="Twitter"></SvgIcon>
+                <SvgIcon name="Twitter" width="30px"></SvgIcon>
             </a>
         </div>
     </div>
@@ -67,6 +67,16 @@
         display: flex;
         flex-direction: row;
         justify-content: space-evenly;
+
+        ul {
+            padding: 0;
+        }
+    }
+
+    .social-link {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
     }
 }
 </style>

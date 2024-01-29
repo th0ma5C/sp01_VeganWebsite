@@ -42,14 +42,12 @@ let navIcon = [
 <style scoped lang="scss">
 .container {
     border-bottom: 1px solid rgba(128, 128, 128, 0.5);
-    transition: height 0.5s ease;
+    position: sticky;
+    top: 0;
 
     .header {
         @include flex-center-center;
         @include main-part;
-        position: sticky;
-        top: 0;
-
 
         div {
             @include flex-center-center;
