@@ -1,3 +1,6 @@
+$primeFontSize: 1rem;
+$primeWidth: 90rem;
+
 @mixin flex-center-center {
     display: flex;
     text-align: center;
@@ -7,5 +10,5 @@
 @mixin main-part {
     padding: 1rem 6rem;
     margin: 0 auto;
-    max-width: 90rem;
+    max-width: $primeWidth;
 }

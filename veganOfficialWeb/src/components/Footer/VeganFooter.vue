@@ -23,13 +23,13 @@ import MainFooter from './MainFooter.vue';
     position: relative;
 
     .hr {
-        margin: 1rem;
+        margin: 1rem 2rem;
         border: 1px solid rgba(120, 120, 120, 0.5);
     }
 
     .footer-logo {
         font-family: 'Mr Dafoe', sans-serif;
-        font-size: 20rem;
+        font-size: calc($primeFontSize * 20);
         text-align: center;
         margin: 0;
     }

@@ -8,5 +8,7 @@ import globalComponents from "./components/global"
 app.use(globalComponents)
 // 導入字體
 import './style/fonts.scss'
+// 設定全局window
+app.config.globalProperties.window = window
 
 app.mount('#app')
