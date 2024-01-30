@@ -30,6 +30,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
+import throttle from 'lodash/throttle';
+
 let navLink = [
     { link: '首頁' }, { link: '專屬分析' }, { link: '美味菜單' }, { link: '關於果漾' }
 ];
@@ -40,20 +42,16 @@ let navIcon = [
 let position = 0;
 let hideNav = ref(false);
 function onScroll() {
-    // console.log(window.scrollY, position);
-    if (window.scrollY > position) {
-        hideNav.value = true;
-    } else {
-        hideNav.value = false;
-    }
+    hideNav.value = window.scrollY > position;
     position = window.scrollY;
 }
+const throttledOnScroll = throttle(onScroll, 200);
 
 onMounted(() => {
-    window.addEventListener('scroll', onScroll)
+    window.addEventListener('scroll', throttledOnScroll)
 })
 onBeforeUnmount(() => {
-    window.removeEventListener('scroll', onScroll)
+    window.removeEventListener('scroll', throttledOnScroll)
 })
 </script>
 
@@ -63,7 +61,7 @@ onBeforeUnmount(() => {
     width: 100%;
     position: fixed;
     top: 0;
-    transition: all 0.3s ease-in-out;
+    transition: all 0.2s linear;
 
     .header {
         @include flex-center-center;
@@ -103,7 +101,7 @@ onBeforeUnmount(() => {
 
 .hideNav {
     border-bottom: none;
-    transition: all 0.3s ease-in-out;
+    transition: all 0.2s linear;
     transform: translate(0, -100%);
 }
 </style>

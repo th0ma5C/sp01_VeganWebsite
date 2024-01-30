@@ -2,13 +2,16 @@ import { createApp } from "vue"
 import App from "@/App.vue"
 
 const app = createApp(App)
-// svg插件配置
+// 路由
+import router from './router'
+
+// svg插件
 import 'virtual:svg-icons-register'
 import globalComponents from "./components/global"
-app.use(globalComponents)
-// 導入字體
-import './style/fonts.scss'
-// 設定全局window
+
+app.use(router).use(globalComponents)
+
+// 設定全局變數window
 app.config.globalProperties.window = window
 
 app.mount('#app')

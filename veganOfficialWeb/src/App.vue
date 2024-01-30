@@ -14,5 +14,7 @@ import VeganFooter from './components/Footer/VeganFooter.vue'
 </script>
 
 <style>
+/* 引入全局樣式和字體 */
 @import "./style/index.scss";
+@import './style/fonts.scss';
 </style>
