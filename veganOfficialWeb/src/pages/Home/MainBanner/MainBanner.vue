@@ -2,7 +2,7 @@
     <div>
         <Marquee></Marquee>
         <div>
-            <img src="../../assets/Img/MainBanner/tomatoes.jpg"
+            <img src="@assets/Img/MainBanner/tomatoes.jpg"
                 alt="">
         </div>
         <SubBanner></SubBanner>
