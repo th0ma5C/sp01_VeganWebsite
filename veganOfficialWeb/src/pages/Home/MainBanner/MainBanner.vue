@@ -1,8 +1,8 @@
 <template>
     <div>
         <div>
-            <img src="@assets/Img/MainBanner/tomatoes.jpg"
-                alt="">
+            <!-- <img src="@assets/Img/MainBanner/tomatoes.jpg"
+                alt=""> -->
         </div>
         <SubBanner></SubBanner>
     </div>

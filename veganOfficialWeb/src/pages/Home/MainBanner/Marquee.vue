@@ -2,10 +2,10 @@
     <div class="container">
         <div class="marquee">
             <button class="btn-prev">&lt;</button>
-            <button class="btn-next">&gt;</button>
-            <div class="swiper">
-                <p v-for="(item, index) in swiper" :key="index"
-                    style="width: 1181px;">
+            <button class="btn-next" @click="next">&gt;</button>
+            <div class="swiper" :style="{ left: left }"
+                ref="slide">
+                <p v-for="(item, index) in swiper" :key="index">
                     {{ item.title }} </p>
             </div>
         </div>
@@ -13,6 +13,8 @@
 </template>
 
 <script lang="ts" setup>
+import { ref } from 'vue'
+
 const swiper = [
     { title: '最新美味上架！立即探索我們最新的素食餐盒和果昔，品嚐獨特的素食美味。' },
     { title: '最新消息、特別優惠、限量商品和精彩活動都在這裡！。' },
@@ -20,6 +22,13 @@ const swiper = [
     { title: 'APP限定好康：下載我們的APP，即刻獲得專屬優惠及最新活動資訊。' },
     { title: '加入會員，享專屬優待！加入我們的會員計畫，即刻享有限定優惠和會員專屬好康。' },
 ]
+
+let left = ref(0)
+let slide = ref()
+function next() {
+    console.log(slide.value.offsetWidth);
+}
+
 
 </script>
 
@@ -39,26 +48,29 @@ const swiper = [
 
         position: relative;
         justify-content: space-between;
-
-        button {
-            position: absolute;
-        }
-
-        p {
-            margin: 0;
-        }
+        overflow: hidden;
 
         .btn-prev {
+            position: absolute;
             left: 6rem;
+            z-index: 2;
         }
 
         .btn-next {
+            position: absolute;
             right: 6rem;
+            z-index: 2;
         }
 
         .swiper {
             display: flex;
-            text-align: center;
+            position: relative;
+
+            p {
+                text-align: center;
+                margin: 0;
+                min-width: 100%;
+            }
         }
     }
 }
