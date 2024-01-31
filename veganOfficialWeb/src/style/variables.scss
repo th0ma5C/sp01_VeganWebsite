@@ -3,8 +3,8 @@ $primeWidth: 90rem;
 
 @mixin flex-center-center {
     display: flex;
-    text-align: center;
     align-items: center;
+    justify-content: center;
 }
 
 @mixin main-part {
