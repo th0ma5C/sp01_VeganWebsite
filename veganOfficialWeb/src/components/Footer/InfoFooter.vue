@@ -16,8 +16,8 @@
                 ，尊享美食新體驗！</p>
             <button>下載App</button>
         </section>
-        <img src="../../assets/Img/MainBanner/phone.jpg" alt=""
-            style="width: 150px;margin-top: 35px;">
+        <img src="@assets/img/InfoFooter/phone.jpg" alt=""
+            class="info-phone">
     </div>
 </template>
 
@@ -76,6 +76,8 @@
 
     .info-phone {
         flex: 1;
+        min-width: 150px;
+        margin-top: 35px;
     }
 }
 </style>

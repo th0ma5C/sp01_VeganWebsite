@@ -1,7 +1,6 @@
 <template>
     <div class="container">
         <InfoFooter></InfoFooter>
-        <!-- <div class="hr"></div> -->
         <hr class="hr">
         <MainFooter></MainFooter>
         <div class="footer-logo">

@@ -103,5 +103,6 @@ onBeforeUnmount(() => {
     border-bottom: none;
     transition: all 0.2s linear;
     transform: translate(0, -100%);
+    visibility: hidden;
 }
 </style>
