@@ -24,3 +24,7 @@ a {
 button:hover {
     cursor: pointer;
 }
+
+[draggable='true'] {
+    user-select: none;
+}

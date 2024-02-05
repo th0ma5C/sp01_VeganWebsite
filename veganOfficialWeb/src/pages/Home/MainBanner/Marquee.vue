@@ -2,13 +2,14 @@
     <div class="container">
         <div class="marquee">
             <button class="btn-prev"
-                @click="changeSwiper(0)">&lt;</button>
+                @click="throttleChangeSwiper(0)">&lt;</button>
             <button class="btn-next"
-                @click="changeSwiper(1)">&gt;</button>
+                @click="throttleChangeSwiper(1)">&gt;</button>
             <transition-group name="swiper" tag="div"
                 class="swiper"
                 :style="{ transform: `translateX(-${left}%)` }">
-                <p v-for="(item) in swiper" :key="item.title">
+                <p v-for="(item) in swiper" :key="item.title"
+                    draggable="true">
                     {{ item.title }} </p>
             </transition-group>
         </div>
@@ -16,7 +17,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import throttle from 'lodash/throttle';
 import type { Ref } from 'vue'
 
 interface SwiperItem {
@@ -31,15 +33,35 @@ const swiper: Ref<SwiperItem[]> = ref([
     { title: '加入會員，享專屬優待！加入我們的會員計畫，即刻享有限定優惠和會員專屬好康。' },
 ])
 
-let left = computed(() => (Math.floor((swiper.value.length) / 2)) * 100)
+let left = computed(() => (Math.floor((swiper.value.length) / 2)) * 100);
+let clicking = true;
 
 function changeSwiper(n: number) {
-    if (n) {
-        swiper.value.push(swiper.value.shift()!);
-    } else {
-        swiper.value.unshift(swiper.value.pop()!);
+    if (clicking) {
+        clicking = false
+        if (n) {
+            swiper.value.push(swiper.value.shift()!);
+        } else {
+            swiper.value.unshift(swiper.value.pop()!);
+        }
+        setTimeout(() => {
+            clicking = true;
+        }, 1000)
     }
 }
+const throttleChangeSwiper = throttle(changeSwiper, 1000);
+
+
+let interval = setInterval(() => {
+    throttleChangeSwiper(1);
+}, 5000)
+
+onMounted(() => {
+    interval
+})
+onUnmounted(() => {
+    clearInterval(interval)
+})
 
 </script>
 
@@ -89,7 +111,7 @@ function changeSwiper(n: number) {
             }
 
             .swiper-move {
-                transition: transform 0.5s ease;
+                transition: transform 1s ease;
             }
 
         }
