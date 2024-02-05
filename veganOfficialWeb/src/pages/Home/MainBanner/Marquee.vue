@@ -33,6 +33,7 @@ const swiper: Ref<SwiperItem[]> = ref([
     { title: '加入會員，享專屬優待！加入我們的會員計畫，即刻享有限定優惠和會員專屬好康。' },
 ])
 
+// 點擊
 let left = computed(() => (Math.floor((swiper.value.length) / 2)) * 100);
 let clicking = true;
 
@@ -51,16 +52,35 @@ function changeSwiper(n: number) {
 }
 const throttleChangeSwiper = throttle(changeSwiper, 1000);
 
+// 拖曳
+let dragging = false;
+let currentX = 0;
 
-let interval = setInterval(() => {
+function dragStart(e) {
+    stopPlay();
+    dragging = true;
+    draggedImg = false;
+    currentX = e.clientX;
+}
+
+function dragover(e) {
+    if (dragging) {
+        moveX = e.clientX - currentX;
+
+    }
+}
+
+// 自動輪播
+let autoPlay = setInterval(() => {
     throttleChangeSwiper(1);
 }, 5000)
 
-onMounted(() => {
-    interval
-})
+function stopPlay() {
+    clearInterval(autoPlay)
+}
+
 onUnmounted(() => {
-    clearInterval(interval)
+    stopPlay()
 })
 
 </script>
