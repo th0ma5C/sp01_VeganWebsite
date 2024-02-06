@@ -6,10 +6,10 @@
             <button class="btn-next"
                 @click="throttleChangeSwiper(1)">&gt;</button>
             <transition-group name="swiper" tag="div"
-                class="swiper"
+                class="swiper" @mousedown="down"
+                @mousemove="move" @mouseup="up"
                 :style="{ transform: `translateX(-${left}%)` }">
-                <p v-for="(item) in swiper" :key="item.title"
-                    draggable="true">
+                <p v-for="(item) in swiper" :key="item.title">
                     {{ item.title }} </p>
             </transition-group>
         </div>
@@ -52,33 +52,39 @@ function changeSwiper(n: number) {
 }
 const throttleChangeSwiper = throttle(changeSwiper, 1000);
 
-// 拖曳
-let dragging = false;
-let currentX = 0;
-
-function dragStart(e) {
-    stopPlay();
-    dragging = true;
-    draggedImg = false;
-    currentX = e.clientX;
+// 自動輪播
+function autoPlay() {
+    return setInterval(() => {
+        throttleChangeSwiper(1);
+    }, 5000)
 }
 
-function dragover(e) {
-    if (dragging) {
-        moveX = e.clientX - currentX;
+let interval = autoPlay();
 
+function stopPlay() {
+    clearInterval(interval)
+}
+
+// 拖曳
+let isDown = false
+
+function down(e) {
+    stopPlay();
+    isDown = true;
+    console.log(e.clientX);
+
+}
+
+function move(e) {
+    if (isDown) {
     }
 }
 
-// 自動輪播
-let autoPlay = setInterval(() => {
-    throttleChangeSwiper(1);
-}, 5000)
-
-function stopPlay() {
-    clearInterval(autoPlay)
+function up() {
+    autoPlay()
 }
 
+// 生命鉤子
 onUnmounted(() => {
     stopPlay()
 })
