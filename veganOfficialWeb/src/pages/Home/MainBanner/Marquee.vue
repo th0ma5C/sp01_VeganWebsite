@@ -2,15 +2,22 @@
     <div class="container">
         <div class="marquee">
             <button class="btn-prev"
-                @click="throttleChangeSwiper(0)">&lt;</button>
+                @click="throttleChangeSwiper(0)">&lt;
+            </button>
             <button class="btn-next"
-                @click="throttleChangeSwiper(1)">&gt;</button>
-            <transition-group name="swiper" tag="div"
-                class="swiper" @mousedown="down"
-                @mousemove="move" @mouseup="up"
-                :style="{ transform: `translateX(-${left}%)` }">
-                <p v-for="(item) in swiper" :key="item.title">
-                    {{ item.title }} </p>
+                @click="throttleChangeSwiper(1)">&gt;
+            </button>
+            <transition-group name="swiper" tag="div" ref="div"
+                class="swiper" @mousedown.prevent="down" :style="{
+                    left: `-${left}%`,
+                    transform: `translateX(${translateX}px)`
+                }" style="width: 1440px;">
+                <p v-for="(item) in swiper" :key="item.title"
+                    :class="{
+                        'dragging': isDown
+                    }">
+                    {{ item.title }}
+                </p>
             </transition-group>
         </div>
     </div>
@@ -66,22 +73,29 @@ function stopPlay() {
 }
 
 // 拖曳
-let isDown = false
+let isDown = ref(false);
+let translateX = ref(0);
+const div = ref()
 
 function down(e) {
     stopPlay();
-    isDown = true;
-    console.log(e.clientX);
-
+    isDown.value = true;
+    window.addEventListener('mouseup', up);
+    window.addEventListener('mousemove', move)
+    console.log(e.target.clientWidth);
 }
 
 function move(e) {
-    if (isDown) {
+    if (isDown.value) {
+        translateX.value += e.movementX;
     }
 }
 
-function up() {
-    autoPlay()
+function up(e) {
+    isDown.value = false;
+    interval = autoPlay();
+    window.removeEventListener('mouseup', up)
+    window.removeEventListener('mousemove', move)
 }
 
 // 生命鉤子
@@ -124,6 +138,7 @@ onUnmounted(() => {
         .swiper {
             will-change: transform;
             display: flex;
+            position: relative;
 
             p {
                 text-align: center;
@@ -138,6 +153,10 @@ onUnmounted(() => {
 
             .swiper-move {
                 transition: transform 1s ease;
+            }
+
+            .dragging {
+                transition: none !important;
             }
 
         }
