@@ -8,12 +8,12 @@
                 @click="throttleChangeSwiper(1)">&gt;
             </button>
             <transition-group name="swiper" tag="div" ref="div"
-                class="swiper" @mousedown.prevent="down" :style="{
+                class="swiper" :style="{
                     left: `-${left}%`,
                     transform: `translateX(${translateX}px)`
-                }" style="width: 1440px;">
+                }">
                 <p v-for="(item) in swiper" :key="item.title"
-                    :class="{
+                    @mousedown.prevent="down" :class="{
                         'dragging': isDown
                     }">
                     {{ item.title }}
@@ -118,6 +118,7 @@ onUnmounted(() => {
     .marquee {
         @include flex-center-center;
         @include main-part;
+        padding: 0 6rem;
 
         position: relative;
         justify-content: space-between;
@@ -144,6 +145,7 @@ onUnmounted(() => {
                 text-align: center;
                 margin: 0;
                 min-width: 100%;
+                line-height: 3rem;
             }
 
             p:first-child,
