@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import throttle from 'lodash/throttle';
 import type { Ref } from 'vue'
 
@@ -75,32 +75,57 @@ function stopPlay() {
 // 拖曳
 let isDown = ref(false);
 let translateX = ref(0);
-const div = ref()
+// let downLOC, t0, upLOC, t1;
+let div = ref();
+let divWidth: number;
+let breakPoint = 0;
 
-function down(e) {
-    stopPlay();
-    isDown.value = true;
-    window.addEventListener('mouseup', up);
-    window.addEventListener('mousemove', move)
-    console.log(e.target.clientWidth);
+function resize() {
+    divWidth = div.value.$el.clientWidth;
 }
 
-function move(e) {
+
+function down() {
+    stopPlay();
+    isDown.value = true;
+    breakPoint = 0;
+    window.addEventListener('mouseup', up);
+    window.addEventListener('mousemove', move);
+}
+
+function move(e: MouseEvent) {
     if (isDown.value) {
         translateX.value += e.movementX;
+        breakPoint += e.movementX;
     }
 }
 
-function up(e) {
+function up() {
+    window.removeEventListener('mouseup', up);
+    window.removeEventListener('mousemove', move);
+    console.log(translateX.value);
+    if (breakPoint < -(divWidth / 4)) {
+        throttleChangeSwiper(1);
+        translateX.value = 0;
+    } else if (breakPoint > (divWidth / 4)) {
+        throttleChangeSwiper(0);
+        translateX.value = 0;
+    } else {
+        translateX.value = 0;
+    }
     isDown.value = false;
     interval = autoPlay();
-    window.removeEventListener('mouseup', up)
-    window.removeEventListener('mousemove', move)
 }
 
 // 生命鉤子
+onMounted(() => {
+    resize();
+    window.addEventListener('resize', resize);
+})
+
 onUnmounted(() => {
-    stopPlay()
+    stopPlay();
+    window.removeEventListener('resize', resize);
 })
 
 </script>
