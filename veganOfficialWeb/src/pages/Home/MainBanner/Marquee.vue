@@ -8,14 +8,11 @@
                 @click="throttleChangeSwiper(1)">&gt;
             </button>
             <transition-group name="swiper" tag="div" ref="div"
-                class="swiper" :style="{
-                    left: `-${left}%`,
-                    transform: `translateX(${translateX}px)`
-                }">
+                class="swiper" :style="swiperStyle">
                 <p v-for="(item) in swiper" :key="item.title"
-                    @mousedown.prevent="down" :class="{
-                        'dragging': isDown
-                    }">
+                    @mousedown.prevent="down" :class="[
+                        { 'dragging': isDown },
+                    ]">
                     {{ item.title }}
                 </p>
             </transition-group>
@@ -24,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import throttle from 'lodash/throttle';
 import type { Ref } from 'vue'
 
@@ -103,7 +100,6 @@ function move(e: MouseEvent) {
 function up() {
     window.removeEventListener('mouseup', up);
     window.removeEventListener('mousemove', move);
-    console.log(translateX.value);
     if (breakPoint < -(divWidth / 4)) {
         throttleChangeSwiper(1);
         translateX.value = 0;
@@ -116,6 +112,13 @@ function up() {
     isDown.value = false;
     interval = autoPlay();
 }
+
+// 樣式
+const swiperStyle = {
+    left: `-${left}%`,
+    transform: `translateX(${translateX}px)`
+}
+
 
 // 生命鉤子
 onMounted(() => {
@@ -142,22 +145,21 @@ onUnmounted(() => {
 
     .marquee {
         @include flex-center-center;
-        @include main-part;
-        padding: 0 6rem;
-
+        max-width: 76rem;
+        margin: 0 auto;
         position: relative;
         justify-content: space-between;
         overflow: hidden;
 
         .btn-prev {
             position: absolute;
-            left: 6rem;
+            left: 0;
             z-index: 2;
         }
 
         .btn-next {
             position: absolute;
-            right: 6rem;
+            right: 0;
             z-index: 2;
         }
 
@@ -185,7 +187,6 @@ onUnmounted(() => {
             .dragging {
                 transition: none !important;
             }
-
         }
     }
 }
