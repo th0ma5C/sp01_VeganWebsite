@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import throttle from 'lodash/throttle';
 import type { Ref } from 'vue'
 
@@ -114,10 +114,10 @@ function up() {
 }
 
 // 樣式
-const swiperStyle = {
-    left: `-${left}%`,
-    transform: `translateX(${translateX}px)`
-}
+const swiperStyle = reactive({
+    left: `-${left.value}%`,
+    transform: `translateX(${translateX.value}px)`
+})
 
 
 // 生命鉤子
