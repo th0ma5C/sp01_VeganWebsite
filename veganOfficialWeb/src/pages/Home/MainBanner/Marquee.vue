@@ -43,7 +43,8 @@ let clicking = true;
 
 function changeSwiper(n: number) {
     if (clicking) {
-        clicking = false
+        clicking = false;
+        stopPlay();
         if (n) {
             swiper.value.push(swiper.value.shift()!);
         } else {
@@ -51,7 +52,8 @@ function changeSwiper(n: number) {
         }
         setTimeout(() => {
             clicking = true;
-        }, 1000)
+        }, 1000);
+        interval = autoPlay();
     }
 }
 const throttleChangeSwiper = throttle(changeSwiper, 1000);
@@ -114,10 +116,15 @@ function up() {
 }
 
 // 樣式
-const swiperStyle = reactive({
+// const swiperStyle = reactive({
+//     left: `-${left.value}%`,
+//     transform: `translateX(${translateX.value}px)`
+// })
+
+const swiperStyle = computed(() => ({
     left: `-${left.value}%`,
-    transform: `translateX(${translateX.value}px)`
-})
+    transform: `translateX(${translateX.value}px)`,
+}));
 
 
 // 生命鉤子
