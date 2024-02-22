@@ -62,6 +62,7 @@ onBeforeUnmount(() => {
     position: fixed;
     top: 0;
     transition: all 0.2s linear;
+    z-index: 3;
 
     .header {
         @include flex-center-center;

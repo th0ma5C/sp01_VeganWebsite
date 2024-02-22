@@ -83,7 +83,6 @@ function resize() {
     divWidth = div.value.$el.clientWidth;
 }
 
-
 function down() {
     stopPlay();
     isDown.value = true;
@@ -116,16 +115,10 @@ function up() {
 }
 
 // 樣式
-// const swiperStyle = reactive({
-//     left: `-${left.value}%`,
-//     transform: `translateX(${translateX.value}px)`
-// })
-
 const swiperStyle = computed(() => ({
     left: `-${left.value}%`,
     transform: `translateX(${translateX.value}px)`,
 }));
-
 
 // 生命鉤子
 onMounted(() => {
@@ -137,7 +130,6 @@ onUnmounted(() => {
     stopPlay();
     window.removeEventListener('resize', resize);
 })
-
 </script>
 
 <style lang="scss" scoped>

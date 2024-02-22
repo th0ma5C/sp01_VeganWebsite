@@ -12,3 +12,8 @@ $primeWidth: 90rem;
     margin: 0 auto;
     max-width: $primeWidth;
 }
+
+@mixin WnH($width, $height: $width) {
+    width: $width;
+    height: $height;
+}
