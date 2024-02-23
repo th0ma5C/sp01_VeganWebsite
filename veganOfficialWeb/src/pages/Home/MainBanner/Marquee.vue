@@ -22,8 +22,10 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
-import throttle from 'lodash/throttle';
 import type { Ref } from 'vue'
+import { useAutoPlay } from '@/hooks/useAutoPlay';
+import throttle from 'lodash/throttle';
+
 
 interface SwiperItem {
     title: string;
@@ -36,6 +38,21 @@ const swiper: Ref<SwiperItem[]> = ref([
     { title: 'APP限定好康：下載我們的APP，即刻獲得專屬優惠及最新活動資訊。' },
     { title: '加入會員，享專屬優待！加入我們的會員計畫，即刻享有限定優惠和會員專屬好康。' },
 ])
+
+// 自動輪播
+// function autoPlay() {
+//     return setInterval(() => {
+//         throttleChangeSwiper(1);
+//     }, 5000)
+// }
+
+// let interval = autoPlay();
+
+// function stopPlay() {
+//     clearInterval(interval)
+// }
+
+const { startPlay, stopPlay } = useAutoPlay(changeSwiper, 5000)
 
 // 點擊
 let left = computed(() => (Math.floor((swiper.value.length) / 2)) * 100);
@@ -53,29 +70,15 @@ function changeSwiper(n: number) {
         setTimeout(() => {
             clicking = true;
         }, 1000);
-        interval = autoPlay();
+        startPlay();
     }
 }
 const throttleChangeSwiper = throttle(changeSwiper, 1000);
 
-// 自動輪播
-function autoPlay() {
-    return setInterval(() => {
-        throttleChangeSwiper(1);
-    }, 5000)
-}
-
-let interval = autoPlay();
-
-function stopPlay() {
-    clearInterval(interval)
-}
-
 // 拖曳
 let isDown = ref(false);
 let translateX = ref(0);
-// let downLOC, t0, upLOC, t1;
-let div = ref();
+let div = ref(); //拖曳物件之容器
 let divWidth: number;
 let breakPoint = 0;
 
