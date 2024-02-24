@@ -1,17 +1,24 @@
 // hooks/useDrag.ts
 import { ref, onMounted, onUnmounted } from 'vue';
-import type { Ref } from 'vue'
+import type { Ref, ComponentPublicInstance } from 'vue'
 
-
-export function useDrag(elementRef: Ref<HTMLElement | null>, onDragEnd: (direction: 'left' | 'right') => void) {
+export function useDrag(elementRef: Ref<ComponentPublicInstance | null>, startPlay: () => void, stopPlay: () => void, throttleChangeSwiper: (direction: number) => void) {
     let isDown = ref(false);
-    let startX = 0;
-    let moveX = 0;
+    let translateX = ref(0);
+    let divWidth: number;
+    let breakPoint = 0;
+
+    function resize() {
+        // if (elementRef.value) {
+        divWidth = elementRef.value?.$el.clientWidth;
+        // }
+    }
 
     function down(e: MouseEvent) {
+        e.preventDefault();
+        stopPlay();
         isDown.value = true;
-        startX = e.pageX;
-        moveX = 0;
+        breakPoint = 0;
 
         window.addEventListener('mousemove', move);
         window.addEventListener('mouseup', up);
@@ -19,7 +26,8 @@ export function useDrag(elementRef: Ref<HTMLElement | null>, onDragEnd: (directi
 
     function move(e: MouseEvent) {
         if (!isDown.value) return;
-        moveX = e.pageX - startX;
+        translateX.value += e.movementX;
+        breakPoint += e.movementX;
     }
 
     function up() {
@@ -29,26 +37,28 @@ export function useDrag(elementRef: Ref<HTMLElement | null>, onDragEnd: (directi
         window.removeEventListener('mousemove', move);
         window.removeEventListener('mouseup', up);
 
-        if (moveX < -50) { // 閾值判斷
-            onDragEnd('right');
-        } else if (moveX > 50) {
-            onDragEnd('left');
+        if (breakPoint < -(divWidth / 5)) {
+            throttleChangeSwiper(1);
+            translateX.value = 0;
+        } else if (breakPoint > (divWidth / 5)) {
+            throttleChangeSwiper(0);
+            translateX.value = 0;
+        } else {
+            translateX.value = 0;
         }
+        startPlay();
     }
 
     onMounted(() => {
-        const el = elementRef.value;
-        if (el) {
-            el.addEventListener('mousedown', down);
-        }
-    });
+        resize();
+        elementRef.value?.$el.addEventListener('mousedown', down);
+        window.addEventListener('resize', resize);
+    })
 
     onUnmounted(() => {
-        const el = elementRef.value;
-        if (el) {
-            el.removeEventListener('mousedown', down);
-        }
-    });
+        elementRef.value?.$el.removeEventListener('mousedown', down);
+        window.removeEventListener('resize', resize);
+    })
 
-    return { isDown };
+    return { isDown, down, translateX };
 }

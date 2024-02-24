@@ -10,7 +10,7 @@
             <transition-group name="swiper" tag="div" ref="div"
                 class="swiper" :style="swiperStyle">
                 <p v-for="(item) in swiper" :key="item.title"
-                    @mousedown.prevent="down" :class="[
+                    :class="[
                         { 'dragging': isDown },
                     ]">
                     {{ item.title }}
@@ -21,9 +21,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, computed, onMounted, onUnmounted, onUpdated, reactive } from 'vue'
 import type { Ref } from 'vue'
 import { useAutoPlay } from '@/hooks/useAutoPlay';
+import { useDrag } from '@/hooks/useDrag';
 import throttle from 'lodash/throttle';
 
 
@@ -40,19 +41,19 @@ const swiper: Ref<SwiperItem[]> = ref([
 ])
 
 // 自動輪播
-// function autoPlay() {
-//     return setInterval(() => {
-//         throttleChangeSwiper(1);
-//     }, 5000)
-// }
+/* function autoPlay() {
+    return setInterval(() => {
+        throttleChangeSwiper(1);
+    }, 5000)
+}
 
-// let interval = autoPlay();
+let interval = autoPlay();
 
-// function stopPlay() {
-//     clearInterval(interval)
-// }
+function stopPlay() {
+    clearInterval(interval)
+} */
 
-const { startPlay, stopPlay } = useAutoPlay(changeSwiper, 5000)
+const { startPlay, stopPlay } = useAutoPlay(() => throttleChangeSwiper(1), 5000)
 
 // 點擊
 let left = computed(() => (Math.floor((swiper.value.length) / 2)) * 100);
@@ -76,9 +77,8 @@ function changeSwiper(n: number) {
 const throttleChangeSwiper = throttle(changeSwiper, 1000);
 
 // 拖曳
-let isDown = ref(false);
+/* let isDown = ref(false);
 let translateX = ref(0);
-let div = ref(); //拖曳物件之容器
 let divWidth: number;
 let breakPoint = 0;
 
@@ -114,8 +114,10 @@ function up() {
         translateX.value = 0;
     }
     isDown.value = false;
-    interval = autoPlay();
-}
+    startPlay();
+} */
+const div = ref(); //拖曳物件之容器
+const { isDown, translateX } = useDrag(div, startPlay, stopPlay, throttleChangeSwiper)
 
 // 樣式
 const swiperStyle = computed(() => ({
@@ -125,13 +127,11 @@ const swiperStyle = computed(() => ({
 
 // 生命鉤子
 onMounted(() => {
-    resize();
-    window.addEventListener('resize', resize);
+    startPlay();
 })
 
 onUnmounted(() => {
     stopPlay();
-    window.removeEventListener('resize', resize);
 })
 </script>
 
