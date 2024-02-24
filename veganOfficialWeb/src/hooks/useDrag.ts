@@ -60,5 +60,5 @@ export function useDrag(elementRef: Ref<ComponentPublicInstance | null>, startPl
         window.removeEventListener('resize', resize);
     })
 
-    return { isDown, down, translateX };
+    return { isDown, translateX };
 }
