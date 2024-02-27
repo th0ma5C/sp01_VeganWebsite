@@ -21,12 +21,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted, onUpdated, reactive } from 'vue'
-import type { Ref } from 'vue'
-import { useAutoPlay } from '@/hooks/useAutoPlay';
+import { ref, onMounted, onUnmounted } from 'vue'
+import type { Ref } from 'vue';
+import { useSwiper } from '@/hooks/useSwiper';
 import { useDrag } from '@/hooks/useDrag';
-import throttle from 'lodash/throttle';
-
 
 interface SwiperItem {
     title: string;
@@ -40,99 +38,16 @@ const swiper: Ref<SwiperItem[]> = ref([
     { title: '加入會員，享專屬優待！加入我們的會員計畫，即刻享有限定優惠和會員專屬好康。' },
 ])
 
-// 自動輪播
-/* function autoPlay() {
-    return setInterval(() => {
-        throttleChangeSwiper(1);
-    }, 5000)
-}
-
-let interval = autoPlay();
-
-function stopPlay() {
-    clearInterval(interval)
-} */
-
-const { startPlay, stopPlay } = useAutoPlay(() => throttleChangeSwiper(1), 5000)
-
-// 點擊
-let left = computed(() => (Math.floor((swiper.value.length) / 2)) * 100);
-let clicking = true;
-
-function changeSwiper(n: number) {
-    if (clicking) {
-        clicking = false;
-        stopPlay();
-        if (n) {
-            swiper.value.push(swiper.value.shift()!);
-        } else {
-            swiper.value.unshift(swiper.value.pop()!);
-        }
-        setTimeout(() => {
-            clicking = true;
-        }, 1000);
-        startPlay();
-    }
-}
-const throttleChangeSwiper = throttle(changeSwiper, 1000);
+// 輪播
+const { throttleChangeSwiper, startPlay, stopPlay } = useSwiper(swiper, 5000)
 
 // 拖曳
-/* let isDown = ref(false);
-let translateX = ref(0);
-let divWidth: number;
-let breakPoint = 0;
-
-function resize() {
-    divWidth = div.value.$el.clientWidth;
-}
-
-function down() {
-    stopPlay();
-    isDown.value = true;
-    breakPoint = 0;
-    window.addEventListener('mouseup', up);
-    window.addEventListener('mousemove', move);
-}
-
-function move(e: MouseEvent) {
-    if (isDown.value) {
-        translateX.value += e.movementX;
-        breakPoint += e.movementX;
-    }
-}
-
-function up() {
-    window.removeEventListener('mouseup', up);
-    window.removeEventListener('mousemove', move);
-    if (breakPoint < -(divWidth / 4)) {
-        throttleChangeSwiper(1);
-        translateX.value = 0;
-    } else if (breakPoint > (divWidth / 4)) {
-        throttleChangeSwiper(0);
-        translateX.value = 0;
-    } else {
-        translateX.value = 0;
-    }
-    isDown.value = false;
-    startPlay();
-} */
 const div = ref(); //拖曳物件之容器
-const { isDown, translateX } = useDrag(div, startPlay, stopPlay, throttleChangeSwiper)
-
-// 樣式
-const swiperStyle = computed(() => ({
-    left: `-${left.value}%`,
-    transform: `translateX(${translateX.value}px)`,
-}));
+let swiperCount = ref(swiper.value.length) //數據個數
+const { isDown, swiperStyle } = useDrag(div, swiperCount, startPlay, stopPlay, throttleChangeSwiper)
 
 // 生命鉤子
-onMounted(() => {
-    startPlay();
-})
 
-onUnmounted(() => {
-    stopPlay();
-})
 </script>
 
 <style lang="scss" scoped>

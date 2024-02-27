@@ -1,12 +1,19 @@
 // hooks/useDrag.ts
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { Ref, ComponentPublicInstance } from 'vue'
 
-export function useDrag(elementRef: Ref<ComponentPublicInstance | null>, startPlay: () => void, stopPlay: () => void, throttleChangeSwiper: (direction: number) => void) {
+// 參數: transition-group之ref、swiper個數、開始及停止播放、換頁功能
+export function useDrag(elementRef: Ref<ComponentPublicInstance | null>, swiperCount: Ref<number>, startPlay: () => void, stopPlay: () => void, throttleChangeSwiper: (direction: 0 | 1) => void) {
     let isDown = ref(false);
-    let translateX = ref(0);
     let divWidth: number;
     let breakPoint = 0;
+    let translateX = ref(0);
+    let left = computed(() => (Math.floor((swiperCount.value) / 2)) * 100)
+
+    const swiperStyle = computed(() => ({
+        left: `-${left.value}%`,
+        transform: `translateX(${translateX.value}px)`,
+    }))
 
     function resize() {
         // if (elementRef.value) {
@@ -60,5 +67,5 @@ export function useDrag(elementRef: Ref<ComponentPublicInstance | null>, startPl
         window.removeEventListener('resize', resize);
     })
 
-    return { isDown, translateX };
+    return { isDown, swiperStyle };
 }

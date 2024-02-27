@@ -21,8 +21,9 @@
 <script lang="ts" setup>
 import SubBanner from './SubBanner.vue';
 import { ref } from 'vue';
+import { useDrag } from '@/hooks/useDrag';
 
-let imgs = ref([
+const imgs = ref([
     'berry-smoothie',
     'fruit',
     'loaf',
