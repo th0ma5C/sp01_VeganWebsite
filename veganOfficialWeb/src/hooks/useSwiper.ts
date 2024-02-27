@@ -1,9 +1,12 @@
-import { onMounted, onUnmounted } from "vue";
-import type { Ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
+import type { Ref, ComponentPublicInstance } from 'vue';
+import { useDrag } from "./useDrag";
 import throttle from 'lodash/throttle';
 
-export function useSwiper(swiper: Ref, intervalTime: number) {
+export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swiper: Ref, intervalTime: number) {
     let clicking = true;
+    let interval: (number | null) = null;
+    let swiperCount = ref(swiper.value.length);
 
     function changeSwiper(direction: 0 | 1) {
         if (clicking) {
@@ -20,9 +23,6 @@ export function useSwiper(swiper: Ref, intervalTime: number) {
             startPlay();
         }
     }
-    const throttleChangeSwiper = throttle(changeSwiper, 1000);
-
-    let interval: (number | null) = null;
 
     function startPlay() {
         stopPlay();
@@ -36,6 +36,9 @@ export function useSwiper(swiper: Ref, intervalTime: number) {
         }
     }
 
+    const throttleChangeSwiper = throttle(changeSwiper, 1000);
+    const { isDown, swiperStyle } = useDrag(elementRef, swiperCount, startPlay, stopPlay, throttleChangeSwiper)
+
     onMounted(() => {
         startPlay();
     })
@@ -44,5 +47,5 @@ export function useSwiper(swiper: Ref, intervalTime: number) {
         stopPlay();
     })
 
-    return { throttleChangeSwiper, startPlay, stopPlay };
+    return { throttleChangeSwiper, isDown, swiperStyle };
 }

@@ -21,10 +21,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import type { Ref } from 'vue';
 import { useSwiper } from '@/hooks/useSwiper';
-import { useDrag } from '@/hooks/useDrag';
 
 interface SwiperItem {
     title: string;
@@ -38,13 +37,9 @@ const swiper: Ref<SwiperItem[]> = ref([
     { title: '加入會員，享專屬優待！加入我們的會員計畫，即刻享有限定優惠和會員專屬好康。' },
 ])
 
-// 輪播
-const { throttleChangeSwiper, startPlay, stopPlay } = useSwiper(swiper, 5000)
-
-// 拖曳
+// 切換、自動輪播、拖曳
 const div = ref(); //拖曳物件之容器
-let swiperCount = ref(swiper.value.length) //數據個數
-const { isDown, swiperStyle } = useDrag(div, swiperCount, startPlay, stopPlay, throttleChangeSwiper)
+const { throttleChangeSwiper, isDown, swiperStyle } = useSwiper(div, swiper, 5000)
 
 // 生命鉤子
 

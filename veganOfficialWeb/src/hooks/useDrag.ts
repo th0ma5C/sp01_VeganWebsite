@@ -1,6 +1,6 @@
 // hooks/useDrag.ts
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import type { Ref, ComponentPublicInstance } from 'vue'
+import type { Ref, ComponentPublicInstance } from 'vue';
 
 // 參數: transition-group之ref、swiper個數、開始及停止播放、換頁功能
 export function useDrag(elementRef: Ref<ComponentPublicInstance | null>, swiperCount: Ref<number>, startPlay: () => void, stopPlay: () => void, throttleChangeSwiper: (direction: 0 | 1) => void) {
