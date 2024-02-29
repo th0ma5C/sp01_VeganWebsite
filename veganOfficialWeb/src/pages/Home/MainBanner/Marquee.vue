@@ -80,6 +80,8 @@ const { throttleChangeSwiper, isDown, swiperStyle } = useSwiper(div, swiper, 500
             display: flex;
             position: relative;
 
+            .no {}
+
             p {
                 text-align: center;
                 margin: 0;

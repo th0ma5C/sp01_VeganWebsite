@@ -6,7 +6,8 @@ import throttle from 'lodash/throttle';
 export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swiper: Ref, intervalTime: number) {
     let clicking = true;
     let interval: (number | null) = null;
-    let swiperCount = ref(swiper.value.length);
+    let swiperCount = swiper.value.length;
+    let currentItem = (Math.floor((swiperCount) / 2));
 
     function changeSwiper(direction: 0 | 1) {
         if (clicking) {
@@ -14,8 +15,19 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
             stopPlay();
             if (direction) {
                 swiper.value.push(swiper.value.shift()!);
+                // if (currentItem < swiperCount) {
+                //     currentItem++;
+                // } else {
+                //     currentItem = 0;
+                // }
             } else {
                 swiper.value.unshift(swiper.value.pop()!);
+                // if (currentItem > 0) {
+                //     currentItem--
+                // } else {
+                //     currentItem = swiperCount - 1;
+                // }
+
             }
             setTimeout(() => {
                 clicking = true;
@@ -36,8 +48,8 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
         }
     }
 
-    const throttleChangeSwiper = throttle(changeSwiper, 1000);
-    const { isDown, swiperStyle } = useDrag(elementRef, swiperCount, startPlay, stopPlay, throttleChangeSwiper)
+    const throttleChangeSwiper = throttle(changeSwiper, 50);
+    const { isDown, swiperStyle } = useDrag(elementRef, currentItem, startPlay, stopPlay, throttleChangeSwiper)
 
     onMounted(() => {
         startPlay();
@@ -47,5 +59,5 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
         stopPlay();
     })
 
-    return { throttleChangeSwiper, isDown, swiperStyle };
+    return { changeSwiper, throttleChangeSwiper, currentItem, isDown, swiperStyle };
 }
