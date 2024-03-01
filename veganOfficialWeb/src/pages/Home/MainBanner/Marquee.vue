@@ -9,9 +9,10 @@
             </button>
             <transition-group name="swiper" tag="div" ref="div"
                 class="swiper" :style="swiperStyle">
-                <p v-for="(item) in swiper" :key="item.title"
-                    :class="[
+                <p v-for="(item, index) in swiper"
+                    :key="item.title" :class="[
                         { 'dragging': isDown },
+                        {}
                     ]">
                     {{ item.title }}
                 </p>
@@ -39,7 +40,7 @@ const swiper: Ref<SwiperItem[]> = ref([
 
 // 切換、自動輪播、拖曳
 const div = ref(); //拖曳物件之容器
-const { throttleChangeSwiper, isDown, swiperStyle } = useSwiper(div, swiper, 5000)
+const { throttleChangeSwiper, currentItem, isDown, swiperStyle } = useSwiper(div, swiper, 5000)
 
 // 生命鉤子
 

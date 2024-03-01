@@ -36,7 +36,7 @@ const imgs = ref([
 ]);
 
 const div = ref();
-// let { changeSwiper, isDown, swiperStyle } = useSwiper(div, imgs, 5050);
+let { changeSwiper, isDown, swiperStyle } = useSwiper(div, imgs, 5050);
 
 let amount = imgs.value.length;
 let currentItem = 0;
