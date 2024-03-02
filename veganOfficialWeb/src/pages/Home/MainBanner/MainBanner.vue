@@ -2,7 +2,8 @@
     <div class="container">
         <div class="mainBanner">
             <transition-group name="banner" tag="div"
-                class="banner" :style="swiperStyle" ref="div">
+                class="banner" :style="swiperStyle"
+                ref="div">
                 <div v-for="(img) in imgs" :key="img"
                     :class="[{ 'dragging': isDown }]">
                     <a href="" @click.prevent>
@@ -12,7 +13,8 @@
                 </div>
             </transition-group>
             <div class="pagination">
-                <span v-for="(img, index) in imgs" :key="img"
+                <span v-for="(img, index) in imgs"
+                    :key="img"
                     @click="change(index)"></span>
             </div>
         </div>
@@ -36,7 +38,7 @@ const imgs = ref([
 ]);
 
 const div = ref();
-let { changeSwiper, isDown, swiperStyle } = useSwiper(div, imgs, 5050);
+// let { changeSwiper, isDown, swiperStyle } = useSwiper(div, imgs, 5050);
 
 let amount = imgs.value.length;
 let currentItem = 0;

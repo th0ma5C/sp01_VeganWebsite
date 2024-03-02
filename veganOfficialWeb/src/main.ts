@@ -9,9 +9,13 @@ import router from './router'
 import 'virtual:svg-icons-register'
 import globalComponents from "./components/global"
 
+// nanoid
+import { nanoid } from "nanoid"
+
 app.use(router).use(globalComponents)
 
-// 設定全局變數window
+// 設定全局變數window, nanoid
 app.config.globalProperties.window = window
+app.config.globalProperties.window = nanoid
 
 app.mount('#app')

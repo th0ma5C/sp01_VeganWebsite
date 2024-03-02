@@ -7,7 +7,7 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     let clicking = true;
     let interval: (number | null) = null;
     let swiperCount = swiper.value.length;
-    let currentItem = (Math.floor((swiperCount) / 2));
+    let currentItem = 2;
 
     function changeSwiper(direction: 0 | 1) {
         if (clicking) {
@@ -15,19 +15,8 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
             stopPlay();
             if (direction) {
                 swiper.value.push(swiper.value.shift()!);
-                // if (currentItem < swiperCount) {
-                //     currentItem++;
-                // } else {
-                //     currentItem = 0;
-                // }
             } else {
                 swiper.value.unshift(swiper.value.pop()!);
-                // if (currentItem > 0) {
-                //     currentItem--
-                // } else {
-                //     currentItem = swiperCount - 1;
-                // }
-
             }
             setTimeout(() => {
                 clicking = true;
