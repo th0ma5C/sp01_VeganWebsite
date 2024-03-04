@@ -4,18 +4,18 @@
             <transition-group name="banner" tag="div"
                 class="banner" :style="swiperStyle"
                 ref="div">
-                <div v-for="(img) in imgs" :key="img"
+                <div v-for="(img) in showSwiper"
+                    :key="img.id"
                     :class="[{ 'dragging': isDown }]">
                     <a href="" @click.prevent>
-                        <img :src="`/imgs/MainBanner/${img}.jpg`"
+                        <img :src="`/imgs/MainBanner/${img.title}.jpg`"
                             alt="">
                     </a>
                 </div>
             </transition-group>
             <div class="pagination">
                 <span v-for="(img, index) in imgs"
-                    :key="img"
-                    @click="change(index)"></span>
+                    :key="img.title" @click=""></span>
             </div>
         </div>
         <SubBanner></SubBanner>
@@ -27,36 +27,18 @@ import SubBanner from './SubBanner.vue';
 import { onMounted, ref, onUpdated } from 'vue';
 import { useSwiper } from '@/hooks/useSwiper';
 
-const imgs = ref([
-    'berry-smoothie',
-    'fruit',
-    'loaf',
-    'tomatoes',
-    'strawberry-smoothie',
-    'vegetable',
-    'water'
-]);
+const imgs = [
+    { title: 'berry-smoothie' },
+    { title: 'fruit' },
+    { title: 'loaf' },
+    { title: 'tomatoes' },
+    { title: 'strawberry-smoothie' },
+    { title: 'vegetable' },
+    { title: 'water' },
+];
 
 const div = ref();
-// let { changeSwiper, isDown, swiperStyle } = useSwiper(div, imgs, 5050);
-
-let amount = imgs.value.length;
-let currentItem = 0;
-function change(index) {
-    // if (index == currentItem) {
-    //     return
-    // } else if (index < currentItem) {
-    //     for (index; index < currentItem; index++) {
-    //         changeSwiper(1);
-    //     }
-    //     currentItem = index;
-    // } else {
-    //     for (index; index > currentItem; index--) {
-    //         changeSwiper(0);
-    //     }
-    //     currentItem = index;
-    // }
-}
+let { showSwiper, isDown, swiperStyle } = useSwiper(div, imgs, 5050);
 
 onMounted(() => {
 })

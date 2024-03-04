@@ -2,18 +2,32 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { Ref, ComponentPublicInstance } from 'vue';
 
-// 參數: transition-group之ref、swiper個數、開始及停止播放、換頁功能
-export function useDrag(elementRef: Ref<ComponentPublicInstance | null>, currentItem: number, startPlay: () => void, stopPlay: () => void, throttleChangeSwiper: (direction: 0 | 1) => void) {
+export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, currentItem: number, startPlay: () => void, stopPlay: () => void, throttleChangeSwiper: (direction: 0 | 1) => void) {
     let isDown = ref(false);
     let divWidth: number;
     let breakPoint = 0;
     let translateX = ref(0);
-    let left = computed(() => currentItem * 100)
+
+
+    /**
+     * TODO: 滑鼠移入停止動畫、播放的圖片圓點高亮
+     * ? currentItem如何隨自動輪播+1
+     * ? 移入時拿到currentItem
+     */
+
+    let left = computed(() => currentItem * 100);
 
     const swiperStyle = computed(() => ({
         left: `-${left.value}%`,
         transform: `translateX(${translateX.value}px)`,
     }))
+
+    function changeItem(index: number) {
+        if (currentItem) {
+
+        }
+        else if (index == currentItem) return
+    }
 
     function resize() {
         // if (elementRef.value) {

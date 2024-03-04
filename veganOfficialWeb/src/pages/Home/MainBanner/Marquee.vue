@@ -23,19 +23,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
-import type { Ref } from 'vue';
+import { ref } from 'vue'
 import { useSwiper } from '@/hooks/useSwiper';
-import { nanoid } from 'nanoid';
 
-interface SwiperItem {
-    id: string,
-    title: string,
-}
-
-/**
- * TODO: 封裝showSwiper邏輯到useSwiper
- */
 const swiper = [
     { title: '最新美味上架！立即探索我們最新的素食餐盒和果昔，品嚐獨特的素食美味。' },
     { title: '最新消息、特別優惠、限量商品和精彩活動都在這裡！。' },
@@ -44,22 +34,11 @@ const swiper = [
     { title: '加入會員，享專屬優待！加入我們的會員計畫，即刻享有限定優惠和會員專屬好康。' },
 ]
 
-let body = swiper.length >= 2 ? swiper : [...swiper, ...swiper]
-let head = body.slice(0, 2);
-let tail = body.slice(-2);
-
-let showSwiper: Ref<SwiperItem[]> = ref([...tail, ...body, ...head].map(item => ({
-    id: nanoid(3),
-    ...item
-})))
-
 // 切換、自動輪播、拖曳
 const div = ref(); //拖曳物件之容器
-const { throttleChangeSwiper, currentItem, isDown, swiperStyle } = useSwiper(div, showSwiper, 5000)
+const { throttleChangeSwiper, showSwiper, isDown, swiperStyle } = useSwiper(div, swiper, 5000)
 
 // 生命鉤子
-onMounted(() => {
-})
 </script>
 
 <style lang="scss" scoped>
@@ -96,8 +75,6 @@ onMounted(() => {
             will-change: transform;
             display: flex;
             position: relative;
-
-            .no {}
 
             p {
                 text-align: center;

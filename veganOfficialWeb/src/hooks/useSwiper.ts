@@ -1,22 +1,36 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import type { Ref, ComponentPublicInstance } from 'vue';
-import { useDrag } from "./useDrag";
+import { useSwiperItem } from "./useSwiperItem";
 import throttle from 'lodash/throttle';
+import { nanoid } from 'nanoid';
 
-export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swiper: Ref, intervalTime: number) {
+interface SwiperItem {
+    title: string,
+}
+// 參數: transition-group的ref、swiper數據、間隔時間
+export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swiper: SwiperItem[], intervalTime: number) {
     let clicking = true;
     let interval: (number | null) = null;
-    let swiperCount = swiper.value.length;
     let currentItem = 2;
+
+    let body = swiper.length >= 2 ? swiper : [...swiper, ...swiper]
+    let head = body.slice(0, 2);
+    let tail = body.slice(-2);
+
+    let showSwiper = ref([...tail, ...body, ...head].map(item => ({
+        id: nanoid(3),
+        ...item
+    })))
 
     function changeSwiper(direction: 0 | 1) {
         if (clicking) {
             clicking = false;
+            currentItem++;
             stopPlay();
             if (direction) {
-                swiper.value.push(swiper.value.shift()!);
+                showSwiper.value.push(showSwiper.value.shift()!);
             } else {
-                swiper.value.unshift(swiper.value.pop()!);
+                showSwiper.value.unshift(showSwiper.value.pop()!);
             }
             setTimeout(() => {
                 clicking = true;
@@ -38,7 +52,7 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     }
 
     const throttleChangeSwiper = throttle(changeSwiper, 50);
-    const { isDown, swiperStyle } = useDrag(elementRef, currentItem, startPlay, stopPlay, throttleChangeSwiper)
+    const { isDown, swiperStyle } = useSwiperItem(elementRef, currentItem, startPlay, stopPlay, throttleChangeSwiper)
 
     onMounted(() => {
         startPlay();
@@ -48,5 +62,5 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
         stopPlay();
     })
 
-    return { changeSwiper, throttleChangeSwiper, currentItem, isDown, swiperStyle };
+    return { throttleChangeSwiper, showSwiper, isDown, swiperStyle };
 }
