@@ -17,7 +17,9 @@ export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, c
      * 
      *  ? 分頁器原點不會停止動畫
      * 
-     * 0305完成:移入時停止動畫、集中事件監聽器
+     * 0305
+     *  完成:移入時停止動畫、集中事件監聽器
+     *  待讀:接口、泛型
     */
 
     let left = computed(() => (currentItem.value + 2) * 100);
