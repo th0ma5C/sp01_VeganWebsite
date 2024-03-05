@@ -14,11 +14,9 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     let currentItem = ref(0);
     let swiperCount = swiper.length
 
-    let body = swiper.length >= 2 ? swiper : [...swiper, ...swiper]
-    let head = body.slice(0, 2);
-    let tail = body.slice(-2);
+    let i = swiper.length >= 2 ? swiper : [...swiper, ...swiper]
 
-    let showSwiper = ref([...tail, ...body, ...head].map(item => ({
+    let showSwiper = ref([...i, ...i, ...i].map(item => ({
         id: nanoid(3),
         ...item
     })))
@@ -26,7 +24,7 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     function changeSwiper(direction: 0 | 1) {
         if (clicking) {
             clicking = false;
-            // currentItem.value == swiperCount ? currentItem.value = 0 : currentItem.value++;
+            currentItem.value == swiperCount ? currentItem.value = 0 : currentItem.value++;
             // console.log(currentItem.value);
             stopPlay();
             if (direction) {
@@ -54,7 +52,7 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     }
 
     const throttleChangeSwiper = throttle(changeSwiper, 50);
-    const { isDown, swiperStyle } = useSwiperItem(elementRef, currentItem, startPlay, stopPlay, throttleChangeSwiper)
+    const { isDown, swiperStyle, changeItem } = useSwiperItem(elementRef, currentItem, swiperCount, startPlay, stopPlay, throttleChangeSwiper)
 
     onMounted(() => {
         startPlay();
@@ -64,5 +62,5 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
         stopPlay();
     })
 
-    return { throttleChangeSwiper, showSwiper, isDown, swiperStyle };
+    return { throttleChangeSwiper, showSwiper, isDown, swiperStyle, changeItem };
 }

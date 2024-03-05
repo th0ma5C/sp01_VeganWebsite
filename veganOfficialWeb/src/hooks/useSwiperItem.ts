@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { Ref, ComponentPublicInstance } from 'vue';
 
-export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, currentItem: Ref<number>, startPlay: () => void, stopPlay: () => void, throttleChangeSwiper: (direction: 0 | 1) => void) {
+export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, currentItem: Ref<number>, swiperCount: number, startPlay: () => void, stopPlay: () => void, throttleChangeSwiper: (direction: 0 | 1) => void) {
     let isDown = ref(false);
     let divWidth: number;
     let breakPoint = 0;
@@ -10,26 +10,28 @@ export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, c
 
 
     /**
-     * TODO: 正在播放的圖片圓點高亮、集中事件監聽器
-     * ? currentItem如何隨自動輪播+1
+     * TODO: 正在播放的圖片圓點高亮
+     *  ? currentItem如何隨自動輪播+1
      *      因使用computed style，導致換頁衝突
-     * ? 移入時拿到currentItem
+     *  ? 移入時拿到currentItem
      * 
-     * ? 移入時停止動畫
-     */
+     *  ? 分頁器原點不會停止動畫
+     * 
+     * 0305完成:移入時停止動畫、集中事件監聽器
+    */
 
     let left = computed(() => (currentItem.value + 2) * 100);
 
-    const swiperStyle = {
-        left: '-200%',
+    const swiperStyle = computed(() => ({
+        left: `${-(swiperCount * 100)}%`,
         transform: `translateX(${translateX.value}px)`,
-    }
+    }))
 
     function changeItem(index: number) {
-        if (currentItem) {
-
-        }
-        else if (index == currentItem) return
+        console.log(index, currentItem.value);
+        // if (index == currentItem.value) return;
+        // let dis = index - currentItem.value;
+        // swiperStyle.value.left = `${-(swiperCount + (dis * 100))}%`
     }
 
     function resize() {
@@ -55,7 +57,7 @@ export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, c
         breakPoint += e.movementX;
     }
 
-    function up(e: MouseEvent) {
+    function up() {
         if (!isDown.value) return;
         isDown.value = false;
 
@@ -75,25 +77,48 @@ export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, c
     }
 
     /**
-     * ! events的類型待解決
-     */
-    function eventListener(element: Window | Document | HTMLElement, action: string, events) {
+     * *events的類型解決
+     *  1. 透過將事件處理函數的類型參數化，並在 EventInfo 介面中使用泛型 <T extends Event> 來限定 handler 函數接收特定類型的事件對象
+     *  2. 將事件處理函數的類型定義為 Function 並在調用時使用類型斷言 handler as (e: Event) => void，可以解決類型不匹配的問題，因為你通過將 handler 定義為一個泛型的 Function
+    */
+
+    interface EventInfo<T extends Event> {
+        event: string;
+        handler: (e: T) => void;
+    }
+
+    function eventListener<T extends Event>(element: Window | Document | HTMLElement, action: 'add' | 'remove', events: EventInfo<T>[]) {
         if (action == 'add') {
             events.forEach(({ event, handler }) => {
-                element.addEventListener(event, handler);
+                element.addEventListener(event, handler as (e: Event) => void);
             });
         } else {
             events.forEach(({ event, handler }) => {
-                element.removeEventListener(event, handler);
+                element.removeEventListener(event, handler as (e: Event) => void);
             });
         }
     }
+    /*     interface EventInfo {
+            event: string;
+            handler: Function;
+        }
+    
+        function eventListener(element: Window | Document | HTMLElement, action: 'add' | 'remove', events: EventInfo[]) {
+            if (action == 'add') {
+                events.forEach(({ event, handler }) => {
+                    element.addEventListener(event, handler as (e: Event) => void);
+                });
+            } else {
+                events.forEach(({ event, handler }) => {
+                    element.removeEventListener(event, handler as (e: Event) => void);
+                });
+            }
+        } */
 
     const domEvents = [
         { event: 'mousedown', handler: down },
-        { event: 'mouseenter', handler: stopPlay },
+        { event: 'mouseover', handler: stopPlay },
         { event: 'mouseleave', handler: startPlay },
-        { event: 'resize', handler: resize },
     ]
     const windowEvents = [
         { event: 'resize', handler: resize },
@@ -113,5 +138,5 @@ export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, c
         eventListener(window, 'remove', windowEvents);
     })
 
-    return { isDown, swiperStyle };
+    return { isDown, swiperStyle, changeItem };
 }

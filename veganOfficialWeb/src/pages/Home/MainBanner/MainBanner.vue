@@ -15,7 +15,8 @@
             </transition-group>
             <div class="pagination">
                 <span v-for="(img, index) in imgs"
-                    :key="img.title" @click=""></span>
+                    :key="img.title"
+                    @click="changeItem(index)"></span>
             </div>
         </div>
         <SubBanner></SubBanner>
@@ -38,7 +39,7 @@ const imgs = [
 ];
 
 const div = ref();
-let { showSwiper, isDown, swiperStyle } = useSwiper(div, imgs, 5050);
+let { showSwiper, isDown, swiperStyle, changeItem } = useSwiper(div, imgs, 5050);
 
 
 onMounted(() => {
