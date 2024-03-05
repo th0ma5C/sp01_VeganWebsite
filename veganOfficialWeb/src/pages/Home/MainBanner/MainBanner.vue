@@ -40,6 +40,7 @@ const imgs = [
 const div = ref();
 let { showSwiper, isDown, swiperStyle } = useSwiper(div, imgs, 5050);
 
+
 onMounted(() => {
 })
 onUpdated(() => {

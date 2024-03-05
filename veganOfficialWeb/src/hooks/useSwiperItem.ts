@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { Ref, ComponentPublicInstance } from 'vue';
 
-export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, currentItem: number, startPlay: () => void, stopPlay: () => void, throttleChangeSwiper: (direction: 0 | 1) => void) {
+export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, currentItem: Ref<number>, startPlay: () => void, stopPlay: () => void, throttleChangeSwiper: (direction: 0 | 1) => void) {
     let isDown = ref(false);
     let divWidth: number;
     let breakPoint = 0;
@@ -10,17 +10,20 @@ export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, c
 
 
     /**
-     * TODO: 滑鼠移入停止動畫、播放的圖片圓點高亮
+     * TODO: 正在播放的圖片圓點高亮、集中事件監聽器
      * ? currentItem如何隨自動輪播+1
+     *      因使用computed style，導致換頁衝突
      * ? 移入時拿到currentItem
+     * 
+     * ? 移入時停止動畫
      */
 
-    let left = computed(() => currentItem * 100);
+    let left = computed(() => (currentItem.value + 2) * 100);
 
-    const swiperStyle = computed(() => ({
-        left: `-${left.value}%`,
+    const swiperStyle = {
+        left: '-200%',
         transform: `translateX(${translateX.value}px)`,
-    }))
+    }
 
     function changeItem(index: number) {
         if (currentItem) {
@@ -33,6 +36,7 @@ export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, c
         // if (elementRef.value) {
         divWidth = elementRef.value?.$el.clientWidth;
         // }
+        console.log(divWidth);
     }
 
     function down(e: MouseEvent) {
@@ -70,15 +74,43 @@ export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, c
         startPlay();
     }
 
+    /**
+     * ! events的類型待解決
+     */
+    function eventListener(element: Window | Document | HTMLElement, action: string, events) {
+        if (action == 'add') {
+            events.forEach(({ event, handler }) => {
+                element.addEventListener(event, handler);
+            });
+        } else {
+            events.forEach(({ event, handler }) => {
+                element.removeEventListener(event, handler);
+            });
+        }
+    }
+
+    const domEvents = [
+        { event: 'mousedown', handler: down },
+        { event: 'mouseenter', handler: stopPlay },
+        { event: 'mouseleave', handler: startPlay },
+        { event: 'resize', handler: resize },
+    ]
+    const windowEvents = [
+        { event: 'resize', handler: resize },
+    ]
+
     onMounted(() => {
-        resize();
-        elementRef.value?.$el.addEventListener('mousedown', down);
-        window.addEventListener('resize', resize);
+        const el = elementRef.value?.$el;
+
+        eventListener(el, 'add', domEvents);
+        eventListener(window, 'add', windowEvents);
     })
 
     onUnmounted(() => {
-        elementRef.value?.$el.removeEventListener('mousedown', down);
-        window.removeEventListener('resize', resize);
+        const el = elementRef.value?.$el;
+
+        eventListener(el, 'remove', domEvents);
+        eventListener(window, 'remove', windowEvents);
     })
 
     return { isDown, swiperStyle };

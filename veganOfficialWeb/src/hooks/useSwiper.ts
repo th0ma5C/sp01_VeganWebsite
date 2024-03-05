@@ -11,7 +11,8 @@ interface SwiperItem {
 export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swiper: SwiperItem[], intervalTime: number) {
     let clicking = true;
     let interval: (number | null) = null;
-    let currentItem = 2;
+    let currentItem = ref(0);
+    let swiperCount = swiper.length
 
     let body = swiper.length >= 2 ? swiper : [...swiper, ...swiper]
     let head = body.slice(0, 2);
@@ -25,7 +26,8 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     function changeSwiper(direction: 0 | 1) {
         if (clicking) {
             clicking = false;
-            currentItem++;
+            // currentItem.value == swiperCount ? currentItem.value = 0 : currentItem.value++;
+            // console.log(currentItem.value);
             stopPlay();
             if (direction) {
                 showSwiper.value.push(showSwiper.value.shift()!);
