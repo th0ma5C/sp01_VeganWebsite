@@ -13,6 +13,7 @@ export function useSwiperItem(elementRef: Ref<ComponentPublicInstance | null>, c
      * TODO: 正在播放的圖片圓點高亮
      *  ? currentItem如何隨自動輪播+1
      *      因使用computed style，導致換頁衝突
+     * !換頁邏輯修改
      *  ? 移入時拿到currentItem
      * 
      *  ? 分頁器原點不會停止動畫
