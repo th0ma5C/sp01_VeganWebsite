@@ -10,11 +10,11 @@ interface SwiperItem {
 export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swiper: SwiperItem[], intervalTime: number) {
     let clicking = true,
         interval: (number | null) = null,
-        currentItem = 0,
-        swiperSite = ref(swiper.length),
-        i = swiper.length >= 2 ? swiper : [...swiper, ...swiper];
+        i = swiper.length >= 2 ? swiper : [...swiper, ...swiper],
+        headItem = swiper.slice(0, 2),
+        footItem = swiper.slice(-2);
 
-    let showSwiper = ref([...i, ...i, ...i].map(item => ({
+    let showSwiper = ref([...footItem, ...i, ...headItem].map(item => ({
         id: nanoid(3),
         ...item
     })))
@@ -22,9 +22,6 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     function changeSwiper(direction: 0 | 1) {
         if (clicking) {
             clicking = false;
-            currentItem == swiper.length ? currentItem = 0 : currentItem++;
-            swiperSite.value > (swiper.length) * 2 ? swiperSite.value = swiper.length : swiperSite.value++;
-            console.log(currentItem);
             stopPlay();
             if (direction) {
                 showSwiper.value.push(showSwiper.value.shift()!);
@@ -73,23 +70,12 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     let isDown = ref(false),
         divWidth: number,
         breakPoint = 0,
-        translateX = ref(0),
-        step = 0,
-        left = computed(() => (-(swiperSite.value) * 100))
+        translateX = ref(0);
 
     const swiperStyle = computed(() => ({
-        left: `${left.value}%`,
+        left: '-200%',
         transform: `translateX(${translateX.value}px)`,
     }))
-
-    function changeItem(index: number) {
-        if (index - currentItem == 0) return;
-        step = index - currentItem;
-        swiperSite.value += step;
-        currentItem = index;
-        step = 0;
-        console.log(left.value);
-    }
 
     function resize() {
         // if (elementRef.value) {
@@ -206,5 +192,5 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
         stopPlay();
     })
 
-    return { throttleChangeSwiper, showSwiper, isDown, swiperStyle, changeItem };
+    return { throttleChangeSwiper, showSwiper, isDown, swiperStyle };
 }
