@@ -65,6 +65,8 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
      * 0306
      *  完成:拖曳邏輯放回useSwiper，因多個變數需共用
      *  換頁邏輯需重構，swiperSite+1和swiper陣列操作重複，造成一次換兩頁，且頭尾無法相接，無限輪播失效
+     * 0307
+     *  原useSwiperItem邏輯合併，改用swiper.JS
     */
 
     let isDown = ref(false),
