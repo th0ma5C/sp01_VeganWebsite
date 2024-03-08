@@ -1,5 +1,11 @@
 <template>
-    <swiper>
+    <swiper :modules="modules" navigation
+        :slides-per-view="1" loop
+        :pagination="{ clickable: true }" :autoplay="{
+        delay: 5500,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true
+    }" :speed="1000" class="banner">
         <swiper-slide v-for="(img, index) in imgs"
             :key="index">
             <a href="" @click.prevent>
@@ -13,6 +19,9 @@
 import { onMounted } from 'vue';
 
 import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+
+const modules = [Navigation, Pagination, Autoplay]
 
 const imgs = [
     { title: 'berry-smoothie' },
@@ -30,6 +39,35 @@ onMounted(() => {
 })
 
 </script>
-<style scoped>
-@import 'swiper/css';
+<style lang="scss">
+@import 'swiper/scss';
+@import 'swiper/scss/navigation';
+@import 'swiper/scss/pagination';
+
+.swiper {
+    width: 100%;
+    height: 100%;
+    margin-left: auto;
+    margin-right: auto;
+
+    .swiper-wrapper {
+        display: flex;
+    }
+}
+
+.swiper-slide {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    & img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.banner {}
 </style>

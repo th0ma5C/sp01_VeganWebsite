@@ -7,8 +7,8 @@
             <button class="btn-next"
                 @click="throttleChangeSwiper(1)">&gt;
             </button>
-            <transition-group name="swiper" tag="div"
-                ref="div" class="swiper"
+            <transition-group name="carousel" tag="div"
+                ref="div" class="carousel"
                 :style="swiperStyle">
                 <p v-for="(  item  ) in showSwiper"
                     :key="item.id" :class="[
@@ -26,7 +26,7 @@
 import { ref } from 'vue'
 import { useSwiper } from '@/hooks/useSwiper';
 
-const swiper = [
+const carousel = [
     { title: '最新美味上架！立即探索我們最新的素食餐盒和果昔，品嚐獨特的素食美味。' },
     { title: '最新消息、特別優惠、限量商品和精彩活動都在這裡！' },
     { title: '過敏原報告，查看我們食物過敏警報，確保您點的安心。' },
@@ -36,7 +36,7 @@ const swiper = [
 
 // 切換、自動輪播、拖曳
 const div = ref(); //拖曳物件之容器
-const { throttleChangeSwiper, showSwiper, isDown, swiperStyle } = useSwiper(div, swiper, 5000)
+const { throttleChangeSwiper, showSwiper, isDown, swiperStyle } = useSwiper(div, carousel, 5000)
 
 // 生命鉤子
 </script>
@@ -71,7 +71,7 @@ const { throttleChangeSwiper, showSwiper, isDown, swiperStyle } = useSwiper(div,
             z-index: 2;
         }
 
-        .swiper {
+        .carousel {
             will-change: transform;
             display: flex;
             position: relative;
@@ -89,7 +89,7 @@ const { throttleChangeSwiper, showSwiper, isDown, swiperStyle } = useSwiper(div,
                 opacity: 0;
             }
 
-            .swiper-move {
+            .carousel-move {
                 transition: transform 1s ease;
             }
 
