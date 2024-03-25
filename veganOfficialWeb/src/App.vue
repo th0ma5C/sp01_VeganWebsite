@@ -12,8 +12,12 @@ import VeganFooter from './components/Footer/VeganFooter.vue'
 
 </script>
 
-<style>
+<style lang="scss">
 /* 引入全局樣式和字體 */
 @import "./style/index.scss";
 @import './style/fonts.scss';
+
+#app {
+    background-color: $primeBacColor;
+}
 </style>

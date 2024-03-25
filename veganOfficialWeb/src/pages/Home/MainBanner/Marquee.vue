@@ -2,10 +2,16 @@
     <div class="container">
         <div class="marquee">
             <button class="btn-prev"
-                @click="throttleChangeSwiper(0)">&lt;
+                @click="throttleChangeSwiper(0)">
+                <SvgIcon name="ButtonLeft" height="24"
+                    width="24">
+                </SvgIcon>
             </button>
             <button class="btn-next"
-                @click="throttleChangeSwiper(1)">&gt;
+                @click="throttleChangeSwiper(1)">
+                <SvgIcon name="ButtonRight" height="24"
+                    width="24">
+                </SvgIcon>
             </button>
             <transition-group name="carousel" tag="div"
                 ref="div" class="carousel"
@@ -58,6 +64,11 @@ const { throttleChangeSwiper, showSwiper, isDown, swiperStyle } = useSwiper(div,
         position: relative;
         justify-content: space-between;
         overflow: hidden;
+
+        button {
+            border: none;
+            background-color: $primeBacColor;
+        }
 
         .btn-prev {
             position: absolute;

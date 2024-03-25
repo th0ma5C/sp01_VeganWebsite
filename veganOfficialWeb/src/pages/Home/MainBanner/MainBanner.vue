@@ -1,6 +1,5 @@
 <template>
-    <swiper :modules="modules" navigation
-        :slides-per-view="1" loop
+    <swiper :modules="modules" :slides-per-view="1" loop
         :pagination="{ clickable: true }" :autoplay="{
         delay: 5500,
         disableOnInteraction: false,
@@ -19,9 +18,9 @@
 import { onMounted } from 'vue';
 
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { Pagination, Autoplay } from 'swiper/modules';
 
-const modules = [Navigation, Pagination, Autoplay]
+const modules = [Pagination, Autoplay]
 
 const imgs = [
     { title: 'berry-smoothie' },
@@ -69,5 +68,12 @@ onMounted(() => {
     }
 }
 
-.banner {}
+.swiper-pagination-bullet {
+    width: 10px;
+    height: 10px;
+}
+
+.swiper-pagination-bullet-active {
+    background-color: $primeBacColor;
+}
 </style>

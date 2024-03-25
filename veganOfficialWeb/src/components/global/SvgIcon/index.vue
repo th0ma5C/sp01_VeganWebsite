@@ -32,4 +32,8 @@ const { prefix, name } = defineProps({
 const symbolID = computed(() => `#${prefix}-${name}`)
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+div {
+    @include flex-center-center
+}
+</style>

@@ -51,24 +51,6 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     const throttleChangeSwiper = throttle(changeSwiper, 50);
 
     /**------拖曳------ */
-    /**
-     * TODO: 正在播放的圖片圓點高亮 
-     *  ? currentItem如何隨自動輪播+1
-     *      因使用computed style，導致換頁衝突
-     *  ? 移入時拿到currentItem
-     * 
-     *  ? 分頁器原點不會停止動畫
-     * 
-     * 0305
-     *  完成:移入時停止動畫、集中事件監聽器
-     *  待讀:接口、泛型
-     * 0306
-     *  完成:拖曳邏輯放回useSwiper，因多個變數需共用
-     *  換頁邏輯需重構，swiperSite+1和swiper陣列操作重複，造成一次換兩頁，且頭尾無法相接，無限輪播失效
-     * 0307
-     *  原useSwiperItem邏輯合併，改用swiper.JS
-    */
-
     let isDown = ref(false),
         divWidth: number,
         breakPoint = 0,
