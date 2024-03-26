@@ -32,9 +32,7 @@ const imgs = [
     { title: 'water' },
 ];
 
-
 onMounted(() => {
-
 })
 
 </script>

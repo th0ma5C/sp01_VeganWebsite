@@ -1,14 +1,14 @@
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, inject, onMounted, onUnmounted } from "vue";
 import type { Ref, ComponentPublicInstance } from 'vue';
 import throttle from 'lodash/throttle';
-import { nanoid } from 'nanoid';
 
 interface SwiperItem {
     title: string,
 }
 // 參數: transition-group的ref、swiper數據、間隔時間
 export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swiper: SwiperItem[], intervalTime: number) {
-    let clicking = true,
+    let nanoid = inject('nanoid') as (n: number) => string,
+        clicking = true,
         interval: (number | null) = null,
         i = swiper.length >= 2 ? swiper : [...swiper, ...swiper],
         headItem = swiper.slice(0, 2),

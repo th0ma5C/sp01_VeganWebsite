@@ -1,21 +1,19 @@
-import { createApp } from "vue"
+import { createApp, provide } from "vue"
 import App from "@/App.vue"
 
 const app = createApp(App)
 // 路由
 import router from './router'
 
-// svg插件
+// svg插件依賴
 import 'virtual:svg-icons-register'
-import globalComponents from "./components/global"
+
+// 引入插件
+import plugins from "./components/global"
 
 // nanoid
-import { nanoid } from "nanoid"
 
-app.use(router).use(globalComponents)
 
-// 設定全局變數window, nanoid
-app.config.globalProperties.window = window
-app.config.globalProperties.window = nanoid
+app.use(router).use(plugins)
 
 app.mount('#app')
