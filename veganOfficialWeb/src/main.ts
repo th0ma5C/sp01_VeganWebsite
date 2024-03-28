@@ -11,7 +11,9 @@ import 'virtual:svg-icons-register'
 // 引入插件
 import plugins from "./components/global"
 
-// nanoid
+// swiper依賴
+import { register } from "swiper/element/bundle"
+register()
 
 
 app.use(router).use(plugins)
