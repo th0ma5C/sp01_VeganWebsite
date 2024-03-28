@@ -16,6 +16,11 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * todo: 1.解決類型問題 2.參數如何傳入 3.數據如何傳入
+ * 要用pinia?
+ */
+
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Pagination, Autoplay } from 'swiper/modules'
 

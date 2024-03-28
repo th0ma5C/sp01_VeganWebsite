@@ -3,7 +3,6 @@
         :pagination="{ clickable: true }" :autoplay="{
         delay: 5500,
         disableOnInteraction: false,
-        pauseOnMouseEnter: true
     }" :speed="1000" class="banner">
         <swiper-slide v-for="(img, index) in imgs"
             :key="index">
