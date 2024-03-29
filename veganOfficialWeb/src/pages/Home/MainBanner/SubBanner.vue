@@ -15,7 +15,7 @@
 
 <script lang="ts" setup>
 /**
- * todo:換輪播樣式
+ * todo:換輪播樣式，swiper-Parallax
  */
 let imgs = [
     { title: 'dishes' },

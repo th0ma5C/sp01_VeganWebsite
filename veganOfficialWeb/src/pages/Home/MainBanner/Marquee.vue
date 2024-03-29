@@ -59,8 +59,8 @@ const { throttleChangeSwiper, showSwiper, isDown, swiperStyle } = useSwiper(div,
 
     .marquee {
         @include flex-center-center;
-        max-width: 76rem;
-        margin: 0 auto;
+        max-width: 120rem;
+        margin: 0 1rem;
         position: relative;
         justify-content: space-between;
         overflow: hidden;
