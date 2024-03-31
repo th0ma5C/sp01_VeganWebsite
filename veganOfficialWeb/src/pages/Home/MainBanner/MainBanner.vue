@@ -46,7 +46,7 @@
 </template>
 <script lang="ts" setup>
 /**
- * todo:模糊CSS，圖片置中顯示，是否要放字
+ * todo:模糊CSS，是否要放字
  */
 import { onMounted } from 'vue';
 
@@ -107,8 +107,9 @@ onMounted(() => {
 
 .text {
     & img {
+        width: 100%;
         object-fit: cover;
-        object-position: center center;
+        object-position: center;
     }
 }
 </style>
