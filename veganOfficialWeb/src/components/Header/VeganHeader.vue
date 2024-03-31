@@ -43,6 +43,7 @@ let header = ref();
 let position = 0;
 let hideNav = ref(false);
 function onScroll() {
+    console.log('@@', new Date().getTime());
     if (window.scrollY < 100) {
         hideNav.value = false;
         position = window.scrollY;
@@ -51,7 +52,7 @@ function onScroll() {
     hideNav.value = window.scrollY > position;
     position = window.scrollY;
 }
-const throttledOnScroll = throttle(onScroll, 200);
+const throttledOnScroll = throttle(onScroll, 100);
 onMounted(() => {
     window.addEventListener('scroll', throttledOnScroll)
 })
