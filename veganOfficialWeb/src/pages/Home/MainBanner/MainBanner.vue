@@ -1,22 +1,25 @@
 <template>
     <swiper-container :parallax="true" :loop="true"
         :slides-per-view="1"
-        :pagination="{ clickable: true }" :autoplay="{
+        :pagination="{ clickable: true }" :speed="1000"
+        :centeredSlides="true" class="banner">
+        <!-- :autoplay="{
         delay: 5500,
         disableOnInteraction: false,
-    }" :speed="1000" :centeredSlides="true" class="banner">
+    }" :speed="1000" -->
         <swiper-slide v-for="(img, index) in imgs"
             :key="index">
             <div class="swiper-wrapper">
                 <div class="swiper-slide">
                     <div class="title"
-                        data-swiper-parallax="-200">
-                        slideslideslideslideslideslide
+                        data-swiper-parallax="-500">
+                        <h1>{{ img.title }}</h1>
+                        <p>{{ img.text }}</p>
                     </div>
                 </div>
                 <div class="text" data-swiper-parallax="0">
                     <a href="" @click.prevent>
-                        <img :src="`/imgs/MainBanner/${img.title}.png`"
+                        <img :src="`/imgs/MainBanner/${img.url}.png`"
                             alt="">
                     </a>
                 </div>
@@ -43,17 +46,37 @@
 </template>
 <script lang="ts" setup>
 /**
- * todo:加入文字，模糊CSS
+ * todo:模糊CSS，圖片置中顯示，是否要放字
  */
 import { onMounted } from 'vue';
 
 
 const imgs = [
-    { title: '1' },
-    { title: '2' },
-    { title: '3' },
-    { title: '4' },
-    { title: '5' },
+    {
+        url: '1',
+        title: '新餐盒上市',
+        text: '查看夏季新上市的餐盒與果昔'
+    },
+    {
+        url: '2',
+        title: '專屬分析',
+        text: '快來看看屬於你的餐盒與果席的搭配'
+    },
+    {
+        url: '3',
+        title: '好友分享拿優惠',
+        text: '輸入好友推薦碼拿300元優惠券'
+    },
+    {
+        url: '4',
+        title: '專屬APP',
+        text: '下載我們的APP，一鍵下單更方便'
+    },
+    {
+        url: '5',
+        title: '最新鮮的本地蔬食',
+        text: '完整的食材履歷，讓您安心享用'
+    },
 ];
 onMounted(() => {
     console.log(innerWidth, innerHeight);
@@ -74,11 +97,18 @@ onMounted(() => {
 
 .title {
     z-index: 2;
+    font-size: 1.5rem;
     color: white;
-    font-size: 3rem;
     position: absolute;
-    top: 15%;
-    left: 10%;
-    backdrop-filter: blur(5px);
+    top: 5%;
+    right: 3%;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.text {
+    & img {
+        object-fit: cover;
+        object-position: center center;
+    }
 }
 </style>

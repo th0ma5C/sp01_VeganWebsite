@@ -1,9 +1,9 @@
 <template>
     <swiper-container :slides-per-view="4" loop="true"
-        :speed="1000" :autoplay="{
+        :speed="1000" :space-between="16" :autoplay="{
         delay: 5500,
         disableOnInteraction: false,
-    }">
+    }" class="container">
         <swiper-slide v-for="(item, index) in getUrl"
             :key="index">
             <a href="" @click.prevent>
@@ -14,9 +14,6 @@
 </template>
 
 <script lang="ts" setup>
-/**
- * todo:換輪播樣式，swiper-Parallax
- */
 let imgs = [
     { title: 'dishes' },
     { title: 'smoothie' },
@@ -31,13 +28,18 @@ const getUrl = imgs.map(item => ({
 
 </script>
 
-<style lang="scss">
-a {
-    & img {
-        display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+<style lang="scss" scoped>
+.container {
+    margin: 1rem;
+
+    & a {
+        & img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center center;
+        }
     }
 }
 </style>
