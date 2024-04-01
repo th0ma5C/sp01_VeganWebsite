@@ -43,7 +43,6 @@ let header = ref();
 let position = 0;
 let hideNav = ref(false);
 function onScroll() {
-    console.log('@@', new Date().getTime());
     if (window.scrollY < 100) {
         hideNav.value = false;
         position = window.scrollY;

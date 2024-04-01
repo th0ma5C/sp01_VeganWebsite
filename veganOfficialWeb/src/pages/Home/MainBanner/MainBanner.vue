@@ -46,7 +46,7 @@
 </template>
 <script lang="ts" setup>
 /**
- * todo:模糊CSS，是否要放字
+ * todo:加入跳轉按鈕
  */
 import { onMounted } from 'vue';
 
@@ -54,28 +54,28 @@ import { onMounted } from 'vue';
 const imgs = [
     {
         url: '1',
-        title: '新餐盒上市',
-        text: '查看夏季新上市的餐盒與果昔'
-    },
-    {
-        url: '2',
         title: '專屬分析',
         text: '快來看看屬於你的餐盒與果席的搭配'
     },
     {
+        url: '2',
+        title: '新餐盒上市',
+        text: '查看夏季新上市的餐盒與果昔'
+    },
+    {
         url: '3',
+        title: '最新鮮的本地蔬食',
+        text: '完整的食材履歷，讓您安心享用'
+    },
+    {
+        url: '4',
         title: '好友分享拿優惠',
         text: '輸入好友推薦碼拿300元優惠券'
     },
     {
-        url: '4',
+        url: '5',
         title: '專屬APP',
         text: '下載我們的APP，一鍵下單更方便'
-    },
-    {
-        url: '5',
-        title: '最新鮮的本地蔬食',
-        text: '完整的食材履歷，讓您安心享用'
     },
 ];
 onMounted(() => {
@@ -100,9 +100,11 @@ onMounted(() => {
     font-size: 1.5rem;
     color: white;
     position: absolute;
-    top: 5%;
-    right: 3%;
+    top: 10%;
+    left: 5%;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    // backdrop-filter: blur(10px);
+    border-radius: 1rem;
 }
 
 .text {
