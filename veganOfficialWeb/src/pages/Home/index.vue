@@ -8,9 +8,9 @@
 
 <script setup lang="ts">
 
-import Marquee from './MainBanner/Marquee.vue';
-import MainBanner from './MainBanner/MainBanner.vue';
-import SubBanner from './MainBanner/SubBanner.vue';
+import Marquee from './Banner/Marquee.vue';
+import MainBanner from './Banner/MainBanner.vue';
+import SubBanner from './Banner/SubBanner.vue';
 
 </script>
 

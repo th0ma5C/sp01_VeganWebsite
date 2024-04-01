@@ -5,6 +5,10 @@ const app = createApp(App)
 // 路由
 import router from './router'
 
+// Pinia
+import { createPinia } from "pinia"
+const pinia = createPinia()
+
 // svg插件依賴
 import 'virtual:svg-icons-register'
 
@@ -16,6 +20,6 @@ import { register } from "swiper/element/bundle"
 register()
 
 
-app.use(router).use(plugins)
+app.use(router).use(pinia).use(plugins)
 
 app.mount('#app')
