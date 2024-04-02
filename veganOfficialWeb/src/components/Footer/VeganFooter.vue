@@ -28,9 +28,11 @@ import MainFooter from './MainFooter.vue';
 
     .footer-logo {
         font-family: 'Mr Dafoe', sans-serif;
-        font-size: calc($primeFontSize * 20);
         text-align: center;
         margin: 0;
+        font-size: 16vw;
+        white-space: nowrap;
+        overflow: hidden;
     }
 }
 </style>

@@ -1,12 +1,16 @@
 <template>
     <swiper-container :parallax="true" :loop="true"
         :slides-per-view="1"
-        :pagination="{ clickable: true }" :speed="1000"
-        :centeredSlides="true" class="banner">
+        :pagination="{ clickable: true }"
+        pagination-dynamic-bullets="true" :speed="1000"
+        :centeredSlides="true" :autoplay="{
+        delay: 5500,
+        disableOnInteraction: false,
+    }" class="mainBanner">
         <!-- :autoplay="{
         delay: 5500,
         disableOnInteraction: false,
-    }" :speed="1000" -->
+    }" -->
         <swiper-slide v-for="(img, index) in imgs"
             :key="index">
             <div class="swiper-wrapper">
@@ -89,7 +93,7 @@ onMounted(() => {
     --swiper-pagination-color: #FCFAF2;
 }
 
-.banner {
+.mainBanner {
     padding: 0 1rem;
     margin: 0 auto;
     max-width: $primeWidth;

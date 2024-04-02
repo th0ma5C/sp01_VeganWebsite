@@ -16,7 +16,7 @@
                 ，尊享美食新體驗！</p>
             <button>下載App</button>
         </section>
-        <img src="@assets/img/InfoFooter/phone.jpg" alt=""
+        <img src="@assets/img/InfoFooter/phone.png" alt=""
             class="info-phone">
     </div>
 </template>
