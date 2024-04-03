@@ -1,36 +1,24 @@
 <template>
     <div class="tabContainer">
         <div class="btnContainer">
-            <button @click="changeTab(1)">
-                <SvgIcon name="CatalogNew" width="24"
+            <button @click="changeTab(index)"
+                v-for="(item, index) in menu" :key="index">
+                <SvgIcon :name="item.icon" width="24"
                     height="24"></SvgIcon>
                 <transition>
-                    <span v-show="show == 1">當季新品</span>
-                </transition>
-            </button>
-            <button @click="changeTab(2)">
-                <SvgIcon name="CatalogTrendingUp" width="24"
-                    height="24"></SvgIcon>
-                <transition>
-                    <span v-show="show == 2">熱銷排行</span>
-                </transition>
-            </button>
-            <button @click="changeTab(3)">
-                <SvgIcon name="CatalogVip" width="24"
-                    height="24"></SvgIcon>
-                <transition>
-                    <span v-show="show == 3">專屬分析</span>
+                    <span v-show="show == index">{{
+                    item.title }}</span>
                 </transition>
             </button>
         </div>
         <div class="tabs">
-            <div class="tab" v-show="show == 1">
+            <div class="tab" v-show="show == 0">
                 111
             </div>
-            <div class="tab" v-show="show == 2">
+            <div class="tab" v-show="show == 1">
                 222
             </div>
-            <div class="tab" v-show="show == 3">
+            <div class="tab" v-show="show == 2">
                 333
             </div>
         </div>
@@ -39,11 +27,32 @@
 
 <script setup lang="ts">
 /**
- * todo: 分頁動畫完成、swiper導入、v-for數據?
+ * todo: 分頁動畫完成、數據導入(v-for)、swiper導入、整體樣式、服務端?
  */
 import { ref } from 'vue';
 
-let show = ref(1)
+let menu = ref([
+    {
+        icon: 'CatalogNew',
+        title: '當季新品',
+        page: 1,
+
+    },
+    {
+        icon: 'CatalogTrendingUp',
+        title: '熱銷排行',
+        page: 2,
+
+    },
+    {
+        icon: 'CatalogVip',
+        title: '專屬分析',
+        page: 3,
+
+    },
+])
+
+let show = ref(0)
 function changeTab(n: number) {
     show.value = n;
 }
@@ -66,19 +75,19 @@ function changeTab(n: number) {
             border-bottom: none;
             display: inline-flex;
             align-items: center;
-            transition: all 0.5s ease;
-            overflow: hidden;
+
+            &>div {
+                margin-right: 3px;
+            }
 
             span {
                 white-space: nowrap;
-                margin-left: 3px;
                 overflow: hidden;
-                // width: 0;
             }
 
             .v-enter-active,
             .v-leave-active {
-                transition: all 0.5s ease;
+                transition: width 0.5s ease;
             }
 
             .v-enter-from,
@@ -88,7 +97,7 @@ function changeTab(n: number) {
 
             .v-enter-to,
             .v-leave-from {
-                width: 100%;
+                width: 64px;
             }
         }
     }
