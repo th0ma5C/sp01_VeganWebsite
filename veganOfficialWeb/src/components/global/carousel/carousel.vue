@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 /**
- * todo: 1.解決類型問題 2.參數如何傳入 3.數據如何傳入
+ * todo: 二次封裝 1.解決類型問題 2.參數如何傳入 3.數據如何傳入
  * 要用pinia?
  */
 
@@ -32,16 +32,16 @@ import 'swiper/scss/autoplay'
 const modules = [Pagination, Autoplay]
 
 interface SwiperItem {
-  url: string;
+    url: string;
 }
 
 const props = defineProps<{
-  showNum: number,
-  pagination: Object,
-  autoplay: Object,
-  speed: number,
-  swiperList: SwiperItem[],
-  swiperClass: string
+    showNum: number,
+    pagination: Object,
+    autoplay: Object,
+    speed: number,
+    swiperList: SwiperItem[],
+    swiperClass: string
 }>();
 
 const { showNum, pagination, autoplay, speed, swiperList, swiperClass } = props

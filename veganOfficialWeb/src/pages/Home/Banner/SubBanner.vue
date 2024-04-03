@@ -32,8 +32,8 @@ const getUrl = imgs.map(item => ({
 .container {
     margin: 1rem;
 
-    & a {
-        & img {
+    a {
+        img {
             display: block;
             width: 100%;
             height: 100%;
