@@ -7,19 +7,37 @@
                     height="24"></SvgIcon>
                 <transition>
                     <span v-show="show == index">{{
-                    item.title }}</span>
+                        item.title }}</span>
                 </transition>
             </button>
         </div>
-        <div class="tabs">
-            <div class="tab" v-show="show == 0">
-                111
-            </div>
-            <div class="tab" v-show="show == 1">
-                222
-            </div>
-            <div class="tab" v-show="show == 2">
-                333
+        <div class="tabs" v-for="(item, index) in menu"
+            :key="index" v-show="show == index">
+            <div class="tab" v-for="(item, index) in menu"
+                :key="index" v-show="show == index">
+                <swiper-container class="menuSwiper"
+                    thumbs-swiper=".menuSubSwiper"
+                    space-between="10" navigation="true">
+                    <swiper-slide
+                        v-for="(img, index) in imgs"
+                        :key="index">
+                        <a href="" @click.prevent>
+                            <img :src="img.url" alt="">
+                        </a>
+                    </swiper-slide>
+                </swiper-container>
+                <swiper-container class="menuSubSwiper"
+                    space-between="10" slides-per-view="2"
+                    free-mode="true"
+                    watch-slides-progress="true">
+                    <swiper-slide
+                        v-for="(img, index) in imgs"
+                        :key="index">
+                        <a href="" @click.prevent>
+                            <img :src="img.url" alt="">
+                        </a>
+                    </swiper-slide>
+                </swiper-container>
             </div>
         </div>
     </div>
@@ -29,7 +47,8 @@
 /**
  * todo: 分頁動畫完成、數據導入(v-for)、swiper導入、整體樣式、服務端?
  */
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { reqGetMenu } from '@/api/menu'
 
 let menu = ref([
     {
@@ -51,12 +70,38 @@ let menu = ref([
 
     },
 ])
+let imgs = [
+    {
+        id: 1,
+        url: "/imgs/HomeCatalog/1.png"
+    },
+    {
+        id: 2,
+        url: "/imgs/HomeCatalog/2.png"
+    },
+    {
+        id: 3,
+        url: "/imgs/HomeCatalog/3.png"
+    },
+    {
+        id: 4,
+        url: "/imgs/HomeCatalog/4.png"
+    },
+    {
+        id: 5,
+        url: "/imgs/HomeCatalog/5.png"
+    }
+]
 
 let show = ref(0)
 function changeTab(n: number) {
     show.value = n;
 }
 
+onMounted(() => {
+    let data = reqGetMenu()
+    console.log(data);
+})
 </script>
 
 <style scoped lang="scss">
@@ -104,6 +149,10 @@ function changeTab(n: number) {
 
     .tabs {
         border: 1px solid black;
+
+        .swiper-slide-active {
+            width: 100%;
+        }
     }
 }
 </style>
