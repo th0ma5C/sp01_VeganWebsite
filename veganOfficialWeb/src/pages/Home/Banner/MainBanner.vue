@@ -4,9 +4,9 @@
         :pagination="{ clickable: true }"
         pagination-dynamic-bullets="true" :speed="1000"
         :centeredSlides="true" :autoplay="{
-        delay: 5500,
-        disableOnInteraction: false,
-    }" class="mainBanner">
+            delay: 5500,
+            disableOnInteraction: false,
+        }" class="mainBanner">
         <!-- :autoplay="{
         delay: 5500,
         disableOnInteraction: false,
@@ -83,7 +83,7 @@ const imgs = [
     },
 ];
 onMounted(() => {
-    console.log(innerWidth, innerHeight);
+    // console.log(innerWidth, innerHeight);
 })
 </script>
 <style lang="scss">

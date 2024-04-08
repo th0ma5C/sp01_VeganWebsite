@@ -96,7 +96,7 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
             translateX.value = 0;
         }
 
-        console.log(divWidth);
+        // console.log(divWidth);
         startPlay();
         eventListener(window, 'remove', dragEvents);
     }

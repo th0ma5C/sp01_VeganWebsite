@@ -17,7 +17,8 @@
                 :key="index" v-show="show == index">
                 <swiper-container class="menuSwiper"
                     thumbs-swiper=".menuSubSwiper"
-                    space-between="10" navigation="true">
+                    space-between="10" navigation="true"
+                    rewind="true">
                     <swiper-slide
                         v-for="(img, index) in imgs"
                         :key="index">
@@ -45,11 +46,14 @@
 
 <script setup lang="ts">
 /**
- * todo: 分頁動畫完成、數據導入(v-for)、swiper導入、整體樣式、服務端?
+ * todo: 新、熱門請求統一? 服務端數據整理(v-for)、btn、Swiper樣式完善、沙拉去背統一背景顏色
+ * *swiper圖片大小?按鈕樣式?說明字樣?
+ * todo: 類型問題
  */
-import { onMounted, ref } from 'vue';
-import { reqGetMenu } from '@/api/menu'
+import { nextTick, onMounted, ref, type Ref } from 'vue';
+import { reqGetMenu } from '@/api'
 
+let imgUrls = ref<string[]>([]);
 let menu = ref([
     {
         icon: 'CatalogNew',
@@ -98,9 +102,13 @@ function changeTab(n: number) {
     show.value = n;
 }
 
-onMounted(() => {
-    let data = reqGetMenu()
-    console.log(data);
+onMounted(async () => {
+    try {
+        let data = await reqGetMenu();
+        imgUrls.value = data
+    } catch (error) {
+        console.log('請求失敗');
+    }
 })
 </script>
 
@@ -150,8 +158,10 @@ onMounted(() => {
     .tabs {
         border: 1px solid black;
 
-        .swiper-slide-active {
-            width: 100%;
+        .tab {
+            img {
+                width: 100%;
+            }
         }
     }
 }

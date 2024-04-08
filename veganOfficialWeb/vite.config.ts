@@ -34,7 +34,14 @@ export default defineConfig({
     }
   },
   server: {
-    open: process.env.BROWSER = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+    open: process.env.BROWSER = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      }
+    }
   },
   css: {
     preprocessorOptions: {
