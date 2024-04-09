@@ -13,8 +13,7 @@
         </div>
         <div class="tabs" v-for="(item, index) in menu"
             :key="index" v-show="show == index">
-            <div class="tab" v-for="(item, index) in menu"
-                :key="index" v-show="show == index">
+            <div class="tab">
                 <swiper-container class="menuSwiper"
                     thumbs-swiper=".menuSubSwiper"
                     space-between="10" navigation="true"
@@ -28,7 +27,8 @@
                     </swiper-slide>
                 </swiper-container>
                 <swiper-container class="menuSubSwiper"
-                    space-between="10" slides-per-view="2"
+                    space-between="10"
+                    :slides-per-view="newList.length"
                     free-mode="true"
                     watch-slides-progress="true">
                     <swiper-slide
@@ -46,14 +46,13 @@
 
 <script setup lang="ts">
 /**
- * todo: 新、熱門請求統一? 服務端數據整理(v-for)、btn、Swiper樣式完善、沙拉去背統一背景顏色
+ * todo: 服務端數據整理(v-for)、btn、Swiper樣式完善、字體、切換動畫、沙拉去背統一背景顏色
  * *swiper圖片大小?按鈕樣式?說明字樣?
- * todo: 類型問題
  */
-import { nextTick, onMounted, ref, type Ref } from 'vue';
-import { reqGetMenu } from '@/api'
+import { onMounted, onBeforeMount, ref } from 'vue';
+import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
 
-let imgUrls = ref<string[]>([]);
+let newList = ref<string[]>([]), hotList = ref<string[]>([]);
 let menu = ref([
     {
         icon: 'CatalogNew',
@@ -104,15 +103,15 @@ function changeTab(n: number) {
 
 onMounted(async () => {
     try {
-        let data = await reqGetMenu();
-        imgUrls.value = data
+        newList.value = await reqGetNewMenu();
+        hotList.value = await reqGetHotMenu();
     } catch (error) {
         console.log('請求失敗');
     }
 })
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .tabContainer {
     @include flex-center-center;
     @include main-part;
@@ -159,10 +158,31 @@ onMounted(async () => {
         border: 1px solid black;
 
         .tab {
-            img {
-                width: 100%;
+
+            .menuSwiper {
+
+                swiper-slide {
+                    @include flex-center-center;
+
+                    img {
+                        @include WnH(215px)
+                    }
+                }
+            }
+
+            .menuSubSwiper {
+                width: fit-content;
+
+                swiper-slide {
+                    width: fit-content !important;
+                }
+
+                img {
+                    @include WnH(107px)
+                }
             }
         }
+
     }
 }
 </style>
