@@ -3,12 +3,17 @@
         <div class="btnContainer">
             <button @click="changeTab(index)"
                 v-for="(item, index) in menu" :key="index">
-                <SvgIcon :name="item.icon" width="24"
-                    height="24"></SvgIcon>
+                <SvgIcon :name="item.icon" width="36"
+                    height="36" color=""></SvgIcon>
                 <transition>
                     <span v-show="show == index">{{
                         item.title }}</span>
                 </transition>
+                <SvgIcon :name="'CatalogSlash'" width="36"
+                    height="36"
+                    v-if="index == 0 || index == 1"
+                    style="margin:0 3px;">
+                </SvgIcon>
             </button>
         </div>
         <div class="tabs" v-for="(item, index) in menu"
@@ -49,7 +54,7 @@
  * todo: 服務端數據整理(v-for)、btn、Swiper樣式完善、字體、切換動畫、沙拉去背統一背景顏色
  * *swiper圖片大小?按鈕樣式?說明字樣?
  */
-import { onMounted, onBeforeMount, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
 
 let newList = ref<string[]>([]), hotList = ref<string[]>([]);
@@ -121,12 +126,15 @@ onMounted(async () => {
 
     .btnContainer {
         display: flex;
+        margin: 0.5rem 1rem;
 
         button {
+            // background-color: $secondBacColor;
             background-color: transparent;
-            border-bottom: none;
+            border: none;
             display: inline-flex;
             align-items: center;
+            padding: 0;
 
             &>div {
                 margin-right: 3px;
@@ -135,6 +143,7 @@ onMounted(async () => {
             span {
                 white-space: nowrap;
                 overflow: hidden;
+                // color: white;
             }
 
             .v-enter-active,
@@ -155,9 +164,10 @@ onMounted(async () => {
     }
 
     .tabs {
-        border: 1px solid black;
+        // border-top: 1px solid black;
 
         .tab {
+            margin-top: 1rem;
 
             .menuSwiper {
 

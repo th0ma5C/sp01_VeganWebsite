@@ -1,7 +1,7 @@
 <template>
     <div>
-        <svg :style="{ width, height }">
-            <use :href="symbolID" :fill="color"></use>
+        <svg :style="{ width, height, color }">
+            <use :href="symbolID"></use>
         </svg>
     </div>
 </template>
