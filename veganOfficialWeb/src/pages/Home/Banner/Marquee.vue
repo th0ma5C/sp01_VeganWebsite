@@ -4,13 +4,13 @@
             <button class="btn-prev"
                 @click="throttleChangeSwiper(0)">
                 <SvgIcon name="ButtonLeft" height="24"
-                    width="24">
+                    width="24" color="#036313">
                 </SvgIcon>
             </button>
             <button class="btn-next"
                 @click="throttleChangeSwiper(1)">
                 <SvgIcon name="ButtonRight" height="24"
-                    width="24">
+                    width="24" color="#036313">
                 </SvgIcon>
             </button>
             <transition-group name="carousel" tag="div"
@@ -18,9 +18,9 @@
                 :style="swiperStyle">
                 <p v-for="(  item  ) in showSwiper"
                     :key="item.id" :class="[
-                    { 'dragging': isDown },
-                ]
-                    ">
+                        { 'dragging': isDown },
+                    ]
+                        ">
                     {{ item.title }}
                 </p>
             </transition-group>

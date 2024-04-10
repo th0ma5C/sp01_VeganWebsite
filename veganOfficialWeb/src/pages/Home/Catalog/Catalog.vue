@@ -3,49 +3,57 @@
         <div class="btnContainer">
             <button @click="changeTab(index)"
                 v-for="(item, index) in menu" :key="index">
-                <SvgIcon :name="item.icon" width="36"
-                    height="36" color=""></SvgIcon>
-                <transition>
-                    <span v-show="show == index">{{
-                        item.title }}</span>
-                </transition>
+
+                <div class="clickZone"
+                    :class="index == show ? 'active' : 'hovered'">
+                    <SvgIcon :name="item.icon" width="36"
+                        height="36" color="#036313">
+                    </SvgIcon>
+                    <transition tag="div" name="title">
+                        <span v-show="show == index">{{
+                            item.title }}</span>
+                    </transition>
+                </div>
                 <SvgIcon :name="'CatalogSlash'" width="36"
-                    height="36"
+                    height="36" color="#036313"
                     v-if="index == 0 || index == 1"
-                    style="margin:0 3px;">
+                    style="cursor: default;">
                 </SvgIcon>
             </button>
         </div>
-        <div class="tabs" v-for="(item, index) in menu"
-            :key="index" v-show="show == index">
-            <div class="tab">
-                <swiper-container class="menuSwiper"
-                    thumbs-swiper=".menuSubSwiper"
-                    space-between="10" navigation="true"
-                    rewind="true">
-                    <swiper-slide
-                        v-for="(img, index) in imgs"
-                        :key="index">
-                        <a href="" @click.prevent>
-                            <img :src="img.url" alt="">
-                        </a>
-                    </swiper-slide>
-                </swiper-container>
-                <swiper-container class="menuSubSwiper"
-                    space-between="10"
-                    :slides-per-view="newList.length"
-                    free-mode="true"
-                    watch-slides-progress="true">
-                    <swiper-slide
-                        v-for="(img, index) in imgs"
-                        :key="index">
-                        <a href="" @click.prevent>
-                            <img :src="img.url" alt="">
-                        </a>
-                    </swiper-slide>
-                </swiper-container>
+        <transition-group tag="div" name="catalog"
+            class="catalog">
+            <div class="tabs" v-for="(item, index) in menu"
+                :key="index" v-show="show == index">
+                <div class="tab">
+                    <swiper-container class="menuSwiper"
+                        thumbs-swiper=".menuSubSwiper"
+                        space-between="10" navigation="true"
+                        rewind="true">
+                        <swiper-slide
+                            v-for="(img, index) in imgs"
+                            :key="index">
+                            <a href="" @click.prevent>
+                                <img :src="img.url" alt="">
+                            </a>
+                        </swiper-slide>
+                    </swiper-container>
+                    <swiper-container class="menuSubSwiper"
+                        space-between="10"
+                        :slides-per-view="newList.length"
+                        free-mode="true"
+                        watch-slides-progress="true">
+                        <swiper-slide
+                            v-for="(img, index) in imgs"
+                            :key="index">
+                            <a href="" @click.prevent>
+                                <img :src="img.url" alt="">
+                            </a>
+                        </swiper-slide>
+                    </swiper-container>
+                </div>
             </div>
-        </div>
+        </transition-group>
     </div>
 </template>
 
@@ -53,8 +61,9 @@
 /**
  * todo: 服務端數據整理(v-for)、btn、Swiper樣式完善、字體、切換動畫、沙拉去背統一背景顏色
  * *swiper圖片大小?按鈕樣式?說明字樣?
+ * *0410切換動畫進出問題
  */
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
 
 let newList = ref<string[]>([]), hotList = ref<string[]>([]);
@@ -105,7 +114,6 @@ let show = ref(0)
 function changeTab(n: number) {
     show.value = n;
 }
-
 onMounted(async () => {
     try {
         newList.value = await reqGetNewMenu();
@@ -136,28 +144,52 @@ onMounted(async () => {
             align-items: center;
             padding: 0;
 
-            &>div {
-                margin-right: 3px;
+            .clickZone {
+                display: inline-flex;
+                align-items: center;
+
+                &>div {
+                    margin: 3px;
+                    border-radius: 10%;
+                }
+
+                span {
+                    // color: $secondBacColor;
+                }
+            }
+
+            .active {
+                cursor: default;
+            }
+
+            .hovered {
+                border-radius: 0.5rem;
+                opacity: 30%;
+
+                &:hover {
+                    opacity: 1;
+                    transform: scale(1.1);
+                    transition: all 0.2s linear
+                }
             }
 
             span {
                 white-space: nowrap;
                 overflow: hidden;
-                // color: white;
             }
 
-            .v-enter-active,
-            .v-leave-active {
-                transition: width 0.5s ease;
+            .title-enter-active,
+            .title-leave-active {
+                transition: width 0.5s ease-out;
             }
 
-            .v-enter-from,
-            .v-leave-to {
+            .title-enter-from,
+            .title-leave-to {
                 width: 0;
             }
 
-            .v-enter-to,
-            .v-leave-from {
+            .title-enter-to,
+            .title-leave-from {
                 width: 64px;
             }
         }
@@ -165,6 +197,10 @@ onMounted(async () => {
 
     .tabs {
         // border-top: 1px solid black;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
 
         .tab {
             margin-top: 1rem;
@@ -192,7 +228,32 @@ onMounted(async () => {
                 }
             }
         }
+    }
 
+    .catalog {
+        position: relative;
+        min-height: 350px;
+    }
+
+    .catalog-enter-active,
+    .catalog-leave-active {
+        transition: all 0.5s ease;
+    }
+
+    .catalog-enter-from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    .catalog-leave-to {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+
+    .catalog-enter-to,
+    .catalog-leave-from {
+        transform: translateX(0);
+        opacity: 1;
     }
 }
 </style>
