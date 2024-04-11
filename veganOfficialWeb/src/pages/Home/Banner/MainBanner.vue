@@ -6,7 +6,7 @@
         :centeredSlides="true" :autoplay="{
             delay: 5500,
             disableOnInteraction: false,
-        }" class="mainBanner">
+        }" :injectStyles="injectStyles" class="mainBanner">
         <!-- :autoplay="{
         delay: 5500,
         disableOnInteraction: false,
@@ -82,6 +82,17 @@ const imgs = [
         text: '下載我們的APP，一鍵下單更方便'
     },
 ];
+let injectStyles = [
+    `
+    :host{
+        --swiper-pagination-bullet-width: 10px;
+        --swiper-pagination-bullet-height: 10px;
+        --swiper-pagination-color: #FCFAF2;    
+    }
+    `
+]
+
+
 onMounted(() => {
     // console.log(innerWidth, innerHeight);
 })

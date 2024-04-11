@@ -3,7 +3,6 @@
         <div class="btnContainer">
             <button @click="changeTab(index)"
                 v-for="(item, index) in menu" :key="index">
-
                 <div class="clickZone"
                     :class="index == show ? 'active' : 'hovered'">
                     <SvgIcon :name="item.icon" width="36"
@@ -29,12 +28,13 @@
                     <swiper-container class="menuSwiper"
                         thumbs-swiper=".menuSubSwiper"
                         space-between="10" navigation="true"
-                        rewind="true">
+                        rewind="true"
+                        :injectStyles="injectStyles">
                         <swiper-slide
-                            v-for="(img, index) in imgs"
+                            v-for="(url, index) in currentList"
                             :key="index">
                             <a href="" @click.prevent>
-                                <img :src="img.url" alt="">
+                                <img :src="url" alt="">
                             </a>
                         </swiper-slide>
                     </swiper-container>
@@ -59,9 +59,10 @@
 
 <script setup lang="ts">
 /**
- * todo: 服務端數據整理(v-for)、btn、Swiper樣式完善、字體、切換動畫、沙拉去背統一背景顏色
- * *swiper圖片大小?按鈕樣式?說明字樣?
- * *0411解決切換動畫進出問題
+ * todo: 服務端數據整理(v-for)計算屬性(三合一?)、字體、切換動畫、沙拉去背統一背景顏色、未選中淡化、hover效果
+ * *swiper按鈕樣式?說明字樣?
+ * 
+ * *0411解決切換動畫進出問題、swiper樣式問題
  */
 import { computed, watch, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
@@ -109,6 +110,25 @@ let imgs = [
         url: "/imgs/HomeCatalog/5.png"
     }
 ]
+let currentList = computed(() => {
+    if (show.value == 0) {
+        return newList.value
+    } else if (show.value == 1) {
+        return hotList.value
+    } else {
+        // return imgs
+    }
+})
+let injectStyles = [
+    `
+    :host{
+        --swiper-navigation-size: 33px;
+        --swiper-navigation-color: #036313;
+    }
+    .swiper-button-next{
+    }
+    `
+]
 
 let show = ref(0);
 let transitionName = ref('rightIn')
@@ -118,13 +138,23 @@ function changeTab(n: number) {
 watch(show, (newVal, oldVal) => {
     newVal > oldVal ? transitionName.value = 'rightIn' : transitionName.value = 'leftIn';
 })
-onMounted(async () => {
-    try {
-        newList.value = await reqGetNewMenu();
-        hotList.value = await reqGetHotMenu();
-    } catch (error) {
-        console.log('請求失敗');
+onMounted(() => {
+    type ReqFunction = () => Promise<string[]>;
+    async function getUrl(req: ReqFunction) {
+        try {
+            let data: string[] = await req();
+            return data.map(item => '/api' + item)
+        } catch (error) {
+            console.log('請求失敗');
+        }
     }
+    getUrl(reqGetNewMenu).then(data => {
+        if (data) newList.value = data;
+    });
+
+    getUrl(reqGetHotMenu).then(data => {
+        if (data) hotList.value = data;
+    });
 })
 </script>
 

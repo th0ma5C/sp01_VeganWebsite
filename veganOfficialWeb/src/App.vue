@@ -17,14 +17,6 @@ import VeganFooter from './components/Footer/VeganFooter.vue'
 @import "./style/index.scss";
 @import './style/fonts.scss';
 
-:root {
-    --swiper-pagination-bullet-width: 10px;
-    --swiper-pagination-bullet-height: 10px;
-    --swiper-pagination-color: #FCFAF2;
-    --swiper-navigation-size: 22px;
-    --swiper-navigation-color: #036313;
-}
-
 #app {
     background-color: $primeBacColor;
 }
