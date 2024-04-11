@@ -86,13 +86,7 @@ onMounted(() => {
     // console.log(innerWidth, innerHeight);
 })
 </script>
-<style lang="scss">
-:root {
-    --swiper-pagination-bullet-width: 10px;
-    --swiper-pagination-bullet-height: 10px;
-    --swiper-pagination-color: #FCFAF2;
-}
-
+<style lang="scss" scoped>
 .mainBanner {
     padding: 0 1rem;
     margin: 0 auto;

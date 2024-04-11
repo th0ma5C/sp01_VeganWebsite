@@ -21,8 +21,8 @@
                 </SvgIcon>
             </button>
         </div>
-        <transition-group tag="div" name="catalog"
-            class="catalog">
+        <transition-group tag="div" :name="transitionName"
+            class="tabsContainer">
             <div class="tabs" v-for="(item, index) in menu"
                 :key="index" v-show="show == index">
                 <div class="tab">
@@ -61,9 +61,9 @@
 /**
  * todo: 服務端數據整理(v-for)、btn、Swiper樣式完善、字體、切換動畫、沙拉去背統一背景顏色
  * *swiper圖片大小?按鈕樣式?說明字樣?
- * *0410切換動畫進出問題
+ * *0411解決切換動畫進出問題
  */
-import { computed, onMounted, ref } from 'vue';
+import { computed, watch, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
 
 let newList = ref<string[]>([]), hotList = ref<string[]>([]);
@@ -110,10 +110,14 @@ let imgs = [
     }
 ]
 
-let show = ref(0)
+let show = ref(0);
+let transitionName = ref('rightIn')
 function changeTab(n: number) {
     show.value = n;
 }
+watch(show, (newVal, oldVal) => {
+    newVal > oldVal ? transitionName.value = 'rightIn' : transitionName.value = 'leftIn';
+})
 onMounted(async () => {
     try {
         newList.value = await reqGetNewMenu();
@@ -154,7 +158,7 @@ onMounted(async () => {
                 }
 
                 span {
-                    // color: $secondBacColor;
+                    color: $secondBacColor;
                 }
             }
 
@@ -195,65 +199,77 @@ onMounted(async () => {
         }
     }
 
-    .tabs {
-        // border-top: 1px solid black;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
+    .tabsContainer {
+        @include flex-center-center;
+        position: relative;
+        min-height: 350px;
 
-        .tab {
-            margin-top: 1rem;
+        .tabs {
+            // border-top: 1px solid black;
+            position: absolute;
+            width: 80%;
 
-            .menuSwiper {
+            .tab {
+                margin-top: 1rem;
 
-                swiper-slide {
-                    @include flex-center-center;
+                .menuSwiper {
 
-                    img {
-                        @include WnH(215px)
+                    swiper-slide {
+                        @include flex-center-center;
+
+                        img {
+                            @include WnH(215px)
+                        }
                     }
                 }
-            }
 
-            .menuSubSwiper {
-                width: fit-content;
+                .menuSubSwiper {
+                    width: fit-content;
 
-                swiper-slide {
-                    width: fit-content !important;
-                }
+                    swiper-slide {
+                        width: fit-content !important;
+                    }
 
-                img {
-                    @include WnH(107px)
+                    img {
+                        @include WnH(107px)
+                    }
                 }
             }
         }
     }
 
-    .catalog {
-        position: relative;
-        min-height: 350px;
-    }
-
-    .catalog-enter-active,
-    .catalog-leave-active {
+    .rightIn-enter-active,
+    .rightIn-leave-active {
         transition: all 0.5s ease;
     }
 
-    .catalog-enter-from {
+    .rightIn-enter-from,
+    .leftIn-leave-to {
         transform: translateX(100%);
         opacity: 0;
     }
 
-    .catalog-leave-to {
-        transform: translateX(-100%);
-        opacity: 0;
-    }
-
-    .catalog-enter-to,
-    .catalog-leave-from {
+    .rightIn-enter-to,
+    .leftIn-leave-from {
         transform: translateX(0);
         opacity: 1;
+    }
+
+    .leftIn-enter-active,
+    .leftIn-leave-active {
+        transition: all 0.5s ease;
+    }
+
+    .leftIn-enter-to,
+    .rightIn-leave-from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .leftIn-enter-from,
+    .rightIn-leave-to {
+        transform: translateX(-100%);
+        opacity: 0;
     }
 }
 </style>
