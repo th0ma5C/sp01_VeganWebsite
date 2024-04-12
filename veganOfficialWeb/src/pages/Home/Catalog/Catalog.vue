@@ -31,7 +31,7 @@
                         rewind="true"
                         :injectStyles="injectStyles">
                         <swiper-slide
-                            v-for="(url, index) in currentList"
+                            v-for="(url, index) in item.list"
                             :key="index">
                             <a href="" @click.prevent>
                                 <img :src="url" alt="">
@@ -40,14 +40,14 @@
                     </swiper-container>
                     <swiper-container class="menuSubSwiper"
                         space-between="10"
-                        :slides-per-view="newList.length"
+                        :slides-per-view="item.list?.length"
                         free-mode="true"
                         watch-slides-progress="true">
                         <swiper-slide
-                            v-for="(img, index) in imgs"
+                            v-for="(url, index) in item.list"
                             :key="index">
                             <a href="" @click.prevent>
-                                <img :src="img.url" alt="">
+                                <img :src="url" alt="">
                             </a>
                         </swiper-slide>
                     </swiper-container>
@@ -59,66 +59,35 @@
 
 <script setup lang="ts">
 /**
- * todo: 服務端數據整理(v-for)計算屬性(三合一?)、字體、切換動畫、沙拉去背統一背景顏色、未選中淡化、hover效果
+ * todo: vip數據、字體、切換動畫、沙拉去背統一背景顏色、未選中淡化、hover效果
  * *swiper按鈕樣式?說明字樣?
  * 
  * *0411解決切換動畫進出問題、swiper樣式問題
+ * *0412解決服務端返回數據，vip數據待完成
  */
-import { computed, watch, onMounted, ref } from 'vue';
+import { watch, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
 
-let newList = ref<string[]>([]), hotList = ref<string[]>([]);
+let newList = ref<string[]>(), hotList = ref<string[]>();
 let menu = ref([
     {
+        name: 'new',
         icon: 'CatalogNew',
         title: '當季新品',
-        page: 1,
-
+        list: newList.value
     },
     {
+        name: 'hot',
         icon: 'CatalogTrendingUp',
         title: '熱銷排行',
-        page: 2,
-
+        list: hotList.value
     },
     {
+        name: 'vip',
         icon: 'CatalogVip',
         title: '專屬分析',
-        page: 3,
-
     },
 ])
-let imgs = [
-    {
-        id: 1,
-        url: "/imgs/HomeCatalog/1.png"
-    },
-    {
-        id: 2,
-        url: "/imgs/HomeCatalog/2.png"
-    },
-    {
-        id: 3,
-        url: "/imgs/HomeCatalog/3.png"
-    },
-    {
-        id: 4,
-        url: "/imgs/HomeCatalog/4.png"
-    },
-    {
-        id: 5,
-        url: "/imgs/HomeCatalog/5.png"
-    }
-]
-let currentList = computed(() => {
-    if (show.value == 0) {
-        return newList.value
-    } else if (show.value == 1) {
-        return hotList.value
-    } else {
-        // return imgs
-    }
-})
 let injectStyles = [
     `
     :host{
@@ -135,25 +104,27 @@ let transitionName = ref('rightIn')
 function changeTab(n: number) {
     show.value = n;
 }
+
 watch(show, (newVal, oldVal) => {
     newVal > oldVal ? transitionName.value = 'rightIn' : transitionName.value = 'leftIn';
 })
+
 onMounted(() => {
     type ReqFunction = () => Promise<string[]>;
     async function getUrl(req: ReqFunction) {
         try {
             let data: string[] = await req();
-            return data.map(item => '/api' + item)
+            return data.map((item) => '/api' + item)
         } catch (error) {
-            console.log('請求失敗');
+            console.log(`${req.name}請求失敗`);
         }
     }
     getUrl(reqGetNewMenu).then(data => {
-        if (data) newList.value = data;
+        if (data) menu.value[0].list = data;
     });
 
     getUrl(reqGetHotMenu).then(data => {
-        if (data) hotList.value = data;
+        if (data) menu.value[1].list = data;
     });
 })
 </script>
