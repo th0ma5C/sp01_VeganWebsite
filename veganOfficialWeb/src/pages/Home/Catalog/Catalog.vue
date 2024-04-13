@@ -59,11 +59,12 @@
 
 <script setup lang="ts">
 /**
- * todo: vip數據、字體、切換動畫、沙拉去背統一背景顏色、未選中淡化、hover效果
- * *swiper按鈕樣式?說明字樣?
+ * todo: 標題右側菜單連結、vip數據、字體、切換動畫(vip Skeleton)、沙拉去背統一背景顏色、未選中淡化、hover效果
+ * *swiper說明字樣? vip數據待完成
  * 
  * *0411解決切換動畫進出問題、swiper樣式問題
- * *0412解決服務端返回數據，vip數據待完成
+ * *0412解決服務端返回數據
+ * todo:0413 loading頁 vip測試連結 地圖區塊
  */
 import { watch, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
