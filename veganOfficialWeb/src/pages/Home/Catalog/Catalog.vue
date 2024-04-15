@@ -64,7 +64,7 @@
  * 
  * *0411解決切換動畫進出問題、swiper樣式問題
  * *0412解決服務端返回數據
- * todo:0413 loading頁 vip測試連結 地圖區塊
+ * todo: loader頁 同步loader和axios vip測試連結 地圖區塊 字型放在本地
  */
 import { watch, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'

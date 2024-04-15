@@ -4,7 +4,7 @@
         <hr class="hr">
         <MainFooter></MainFooter>
         <div class="footer-logo">
-            Relation-Ship
+            Relation-ship
         </div>
     </div>
 </template>
