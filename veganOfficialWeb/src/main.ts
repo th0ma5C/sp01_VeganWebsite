@@ -18,6 +18,7 @@ import { register } from "swiper/element/bundle"
 register()
 // mockServer依賴
 // import '@/mock/mockServer.js'
+// 
 
 app.use(router).use(pinia).use(plugins)
 

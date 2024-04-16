@@ -1,4 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
+// import NProgress from 'nprogress'
+// import 'nprogress/nprogress.css'
+// NProgress.configure({ showSpinner: false })
+
 
 import Home from '@pages/Home/index.vue'
 import Questionnaire from '@pages/Questionnaire/index.vue'
@@ -43,5 +47,12 @@ const router = createRouter({
 
     ]
 })
+
+// router.beforeEach(() => {
+//     NProgress.start()
+// })
+// router.afterEach(() => {
+//     NProgress.done()
+// })
 
 export default router

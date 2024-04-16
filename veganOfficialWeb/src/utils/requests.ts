@@ -5,6 +5,8 @@ const requests = axios.create({
     baseURL: '/api',
     // 超時時間
     timeout: 5000,
+    onDownloadProgress: (progressEvent) => {
+    }
 });
 
 // 請求攔截器
