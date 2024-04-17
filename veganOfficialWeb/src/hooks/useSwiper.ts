@@ -1,4 +1,4 @@
-import { ref, computed, inject, onMounted, onUnmounted } from "vue";
+import { ref, computed, inject, nextTick, onMounted, onUnmounted, onUpdated } from "vue";
 import type { Ref, ComponentPublicInstance } from 'vue';
 import throttle from 'lodash/throttle';
 
@@ -9,7 +9,7 @@ interface SwiperItem {
 export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swiper: SwiperItem[], intervalTime: number) {
     let nanoid = inject('nanoid') as (n: number) => string,
         clicking = true,
-        interval: (number | null) = null,
+        interval: (number | null | NodeJS.Timeout) = null,
         i = swiper.length >= 2 ? swiper : [...swiper, ...swiper],
         headItem = swiper.slice(0, 2),
         footItem = swiper.slice(-2);
@@ -163,8 +163,11 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
         eventListener(el, 'add', domEvents);
         eventListener(window, 'add', windowEvents);
 
-        resize();
         startPlay();
+    })
+
+    onUpdated(() => {
+        resize();
     })
 
     onUnmounted(() => {

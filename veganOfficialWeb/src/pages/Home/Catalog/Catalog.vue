@@ -1,24 +1,30 @@
 <template>
     <div class="tabContainer">
-        <div class="btnContainer">
-            <button @click="changeTab(index)"
-                v-for="(item, index) in menu" :key="index">
-                <div class="clickZone"
-                    :class="index == show ? 'active' : 'hovered'">
-                    <SvgIcon :name="item.icon" width="36"
-                        height="36" color="#036313">
+        <div class="titleContainer">
+            <div class="btnContainer">
+                <button @click="changeTab(index)"
+                    v-for="(item, index) in menu"
+                    :key="index">
+                    <div class="clickZone"
+                        :class="index == show ? 'active' : 'hovered'">
+                        <SvgIcon :name="item.icon"
+                            width="36" height="36"
+                            color="#036313">
+                        </SvgIcon>
+                        <transition tag="div" name="title">
+                            <span v-show="show == index">{{
+                                item.title }}</span>
+                        </transition>
+                    </div>
+                    <SvgIcon :name="'CatalogSlash'"
+                        width="36" height="36"
+                        color="#036313"
+                        v-if="index == 0 || index == 1"
+                        style="cursor: default;">
                     </SvgIcon>
-                    <transition tag="div" name="title">
-                        <span v-show="show == index">{{
-                            item.title }}</span>
-                    </transition>
-                </div>
-                <SvgIcon :name="'CatalogSlash'" width="36"
-                    height="36" color="#036313"
-                    v-if="index == 0 || index == 1"
-                    style="cursor: default;">
-                </SvgIcon>
-            </button>
+                </button>
+            </div>
+            <a href=""><span>完整菜單</span></a>
         </div>
         <transition-group tag="div" :name="transitionName"
             class="tabsContainer">
@@ -35,7 +41,7 @@
                             :key="index">
                             <a href="" @click.prevent>
                                 <img :src="url" alt=""
-                                    @load="pro(url)">
+                                    @load="imgCounter">
                             </a>
                         </swiper-slide>
                     </swiper-container>
@@ -67,8 +73,10 @@
  * *0412解決服務端返回數據
  * todo: 同步loader和axios vip測試連結 地圖區塊 字型放在本地 catalog右側菜單連結
  */
-import { watch, onMounted, ref } from 'vue';
+import { watch, nextTick, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
+import { useLoader } from '@/store/loader';
+import { storeToRefs } from 'pinia';
 
 let newList = ref<string[]>(), hotList = ref<string[]>();
 let menu = ref([
@@ -106,10 +114,17 @@ let transitionName = ref('rightIn')
 function changeTab(n: number) {
     show.value = n;
 }
-
-function pro(n: string) {
-    console.log(n, 'done');
+let imgCount = ref(0);
+function imgCounter() {
+    imgCount.value++;
 }
+let { loaderActivated } = storeToRefs(useLoader())
+watch([imgCount, menu], ([newCount,]) => {
+    let done = (menu.value[0].list!.length) + (menu.value[1].list!.length);
+    if (newCount == done) {
+        loaderActivated.value = false;
+    }
+})
 
 watch(show, (newVal, oldVal) => {
     newVal > oldVal ? transitionName.value = 'rightIn' : transitionName.value = 'leftIn';
@@ -142,67 +157,88 @@ onMounted(() => {
 
     align-items: normal;
     flex-direction: column;
+    overflow: hidden;
 
-    .btnContainer {
-        display: flex;
-        margin: 0.5rem 1rem;
+    .titleContainer {
+        @include flex-center-center;
+        position: relative;
+        margin: 0.5rem 0rem;
 
-        button {
-            // background-color: $secondBacColor;
-            background-color: transparent;
-            border: none;
-            display: inline-flex;
+        .btnContainer {
+            display: flex;
             align-items: center;
-            padding: 0;
+            width: 80%;
 
-            .clickZone {
+            &:after {
+                content: '';
+                width: 100%;
+                height: 1px;
+                background-color: $secondBacColor;
+                margin: 1rem 2rem;
+                margin-right: calc(2rem + 64px)
+            }
+
+            button {
+                background-color: transparent;
+                border: none;
                 display: inline-flex;
                 align-items: center;
+                padding: 0;
 
-                &>div {
-                    margin: 3px;
-                    border-radius: 10%;
+                .clickZone {
+                    display: inline-flex;
+                    align-items: center;
+
+                    &>div {
+                        margin: 3px;
+                        border-radius: 10%;
+                    }
+
+                    span {
+                        color: $secondBacColor;
+                        white-space: nowrap;
+                        overflow: hidden;
+                    }
                 }
 
-                span {
-                    color: $secondBacColor;
+                .active {
+                    cursor: default;
                 }
-            }
 
-            .active {
-                cursor: default;
-            }
+                .hovered {
+                    border-radius: 0.5rem;
+                    opacity: 30%;
 
-            .hovered {
-                border-radius: 0.5rem;
-                opacity: 30%;
-
-                &:hover {
-                    opacity: 1;
-                    transform: scale(1.1);
-                    transition: all 0.2s linear
+                    &:hover {
+                        opacity: 1;
+                        transform: scale(1.1);
+                        transition: all 0.2s linear
+                    }
                 }
-            }
 
-            span {
-                white-space: nowrap;
-                overflow: hidden;
-            }
+                .title-enter-active,
+                .title-leave-active {
+                    transition: width 0.5s ease-out;
+                }
 
-            .title-enter-active,
-            .title-leave-active {
-                transition: width 0.5s ease-out;
-            }
+                .title-enter-from,
+                .title-leave-to {
+                    width: 0;
+                }
 
-            .title-enter-from,
-            .title-leave-to {
-                width: 0;
-            }
+                .title-enter-to,
+                .title-leave-from {
+                    width: 64px;
+                }
 
-            .title-enter-to,
-            .title-leave-from {
-                width: 64px;
+
             }
+        }
+
+        a {
+            position: absolute;
+            right: 10%;
+            height: 21px;
         }
     }
 

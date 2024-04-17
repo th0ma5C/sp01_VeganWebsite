@@ -1,6 +1,5 @@
 <template>
-    <div class="container" :class="{ b: !loaderActivated }">
-        <button @click="test">切換</button>
+    <div class="container" :class="{ b: loaded }">
         <div class="svgContainer">
             <svg id="a" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 315.65 73.62">
@@ -38,14 +37,25 @@
 </template>
 
 <script setup lang="ts">
-import { toRefs } from 'vue';
+import { ref, toRefs, watch } from 'vue';
 import { useLoader } from '@/store/loader';
 
 let { loaderActivated } = toRefs(useLoader())
+let loaded = ref(false)
 
-function test() {
-    loaderActivated.value = !loaderActivated.value
-}
+watch(loaderActivated, (newVal) => {
+    const delay = setInterval(() => {
+        loaded.value = true
+    }, 5000)
+
+    if (newVal == false) {
+        clearInterval(delay)
+        setInterval(() => {
+            loaded.value = true
+        }, 2500)
+    }
+})
+
 </script>
 
 <style scoped lang="scss">
@@ -128,9 +138,5 @@ path {
     isolation: isolate;
     animation: 1s ease-in-out forwards draw-path;
     transform-origin: center;
-
-    svg {
-        filter: none;
-    }
 }
 </style>
