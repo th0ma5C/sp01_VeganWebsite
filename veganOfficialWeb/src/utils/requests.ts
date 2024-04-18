@@ -16,6 +16,7 @@ requests.interceptors.request.use((config) => {
 
 // 響應攔截器
 requests.interceptors.response.use((res) => {
+    console.log(res.config);
     return res.data;
 }, (err) => {
     return Promise.reject(new Error('failed!'));

@@ -58,6 +58,9 @@
                             </a>
                         </swiper-slide>
                     </swiper-container>
+                    <div v-if="index == 2">
+                        馬上測驗
+                    </div>
                 </div>
             </div>
         </transition-group>
@@ -66,12 +69,13 @@
 
 <script setup lang="ts">
 /**
- * todo: vip數據、字體、切換動畫(vip Skeleton)、沙拉去背統一背景顏色、未選中淡化、hover效果
- * *swiper說明字樣? vip數據待完成
+ * todo: 讀取 Skeleton、沙拉去背統一背景顏色、未選中淡化
+ * todo: 請求超時進不了首頁 vip測試連結 地圖區塊 菜單連結+hover、icon
+ * todo: swiper說明字樣 vip數據待完成
  * 
  * *0411解決切換動畫進出問題、swiper樣式問題
  * *0412解決服務端返回數據
- * todo: 同步loader和axios vip測試連結 地圖區塊 字型放在本地 catalog右側菜單連結
+ * *0418完成字體放本地、中英字體分離
  */
 import { watch, nextTick, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
