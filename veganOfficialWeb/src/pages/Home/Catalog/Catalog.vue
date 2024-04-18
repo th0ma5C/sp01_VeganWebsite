@@ -236,9 +236,12 @@ onMounted(() => {
         }
 
         a {
-            position: absolute;
-            right: 10%;
-            height: 21px;
+            span {
+                position: absolute;
+                right: 10%;
+                transform: translateY(-50%);
+                height: 52%;
+            }
         }
     }
 

@@ -16,7 +16,11 @@ import MainFooter from './MainFooter.vue';
 </script>
 
 <style lang="scss" scoped>
-@import url('https://fonts.googleapis.com/css2?family=Mr+Dafoe&display=swap');
+// @import url('https://fonts.googleapis.com/css2?family=Mr+Dafoe&display=swap');\
+@font-face {
+    font-family: 'MrDafoe';
+    src: url('@assets/fonts/Mr_Dafoe/MrDafoe-Regular.ttf') format('truetype');
+}
 
 .container {
     position: relative;
@@ -27,7 +31,7 @@ import MainFooter from './MainFooter.vue';
     }
 
     .footer-logo {
-        font-family: 'Mr Dafoe', sans-serif;
+        font-family: 'MrDafoe', sans-serif;
         text-align: center;
         margin: 0;
         font-size: 16vw;
