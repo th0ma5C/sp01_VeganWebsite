@@ -40,8 +40,9 @@
                             v-for="(url, index) in item.list"
                             :key="index">
                             <a href="" @click.prevent>
-                                <img :src="url" alt=""
-                                    @load="imgCounter">
+                                <img alt=""
+                                    @load="imgCounter"
+                                    class="tabsSkeleton">
                             </a>
                         </swiper-slide>
                     </swiper-container>
@@ -63,6 +64,41 @@
                     </div>
                 </div>
             </div>
+            <!-- <div class="tabs" :class="'tabsSkeleton'"
+                v-for="(item, index) in menu" :key="index"
+                v-show="show == index && isLoaded == false">
+                <div class="tab">
+                    <swiper-container class="menuSwiper"
+                        thumbs-swiper=".menuSubSwiper"
+                        space-between="10" navigation="true"
+                        rewind="true"
+                        :injectStyles="injectStyles">
+                        <swiper-slide
+                            v-for="(url, index) in item.list"
+                            :key="index">
+                            <a href="" @click.prevent>
+                                <img alt="">
+                            </a>
+                        </swiper-slide>
+                    </swiper-container>
+                    <swiper-container class="menuSubSwiper"
+                        space-between="10"
+                        :slides-per-view="item.list?.length"
+                        free-mode="true"
+                        watch-slides-progress="true">
+                        <swiper-slide
+                            v-for="(url, index) in item.list"
+                            :key="index">
+                            <a href="" @click.prevent>
+                                <img src="" alt="">
+                            </a>
+                        </swiper-slide>
+                    </swiper-container>
+                    <div v-if="index == 2">
+
+                    </div>
+                </div>
+            </div> -->
         </transition-group>
     </div>
 </template>
@@ -114,19 +150,23 @@ let injectStyles = [
 ]
 
 let show = ref(0);
-let transitionName = ref('rightIn')
+let transitionName = ref('init')
 function changeTab(n: number) {
     show.value = n;
 }
+
 let imgCount = ref(0);
 function imgCounter() {
     imgCount.value++;
 }
-let { loaderActivated } = storeToRefs(useLoader())
+
+let { loaderActivated } = storeToRefs(useLoader());
+let isLoaded = ref(false);
 watch([imgCount, menu], ([newCount,]) => {
     let done = (menu.value[0].list!.length) + (menu.value[1].list!.length);
     if (newCount == done) {
         loaderActivated.value = false;
+        isLoaded.value = true;
     }
 })
 
@@ -141,7 +181,7 @@ onMounted(() => {
             let data: string[] = await req();
             return data.map((item) => '/api' + item)
         } catch (error) {
-            console.log(`${req.name}請求失敗`);
+            console.log(`${req.name}請求失敗`, error);
         }
     }
     getUrl(reqGetNewMenu).then(data => {
@@ -285,8 +325,43 @@ onMounted(() => {
                     }
                 }
             }
+
+            @keyframes skeleton-loading {
+                0% {
+                    background-color: #c2cfd6;
+                }
+
+                100% {
+                    background-color: #f0f3f5;
+                }
+            }
+
+            .tabsSkeleton {
+                // animation: skeleton-loading 1s linear infinite alternate;
+                // background-color: lightgray;
+            }
         }
     }
+
+    .init-enter-active {
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .init-enter-from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    .init-enter-to {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    .init-leave-active {}
+
+    .init-leave-from {}
+
+    .init-leave-to {}
 
     .rightIn-enter-active,
     .rightIn-leave-active {

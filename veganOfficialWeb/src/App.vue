@@ -2,7 +2,8 @@
     <div>
         <!-- <Loader></Loader> -->
         <transition name="app">
-            <div v-show="!loaderActivated">
+            <!-- <div v-show="!loaderActivated"> -->
+            <div>
                 <VeganHeader></VeganHeader>
                 <router-view></router-view>
                 <VeganFooter></VeganFooter>
@@ -38,7 +39,7 @@ onMounted(() => {
 @import './style/fonts.scss';
 
 body {
-    overflow: hidden;
+    // overflow: hidden;
 }
 
 #app {
