@@ -33,21 +33,23 @@
                 <div class="tab">
                     <swiper-container class="menuSwiper"
                         thumbs-swiper=".menuSubSwiper"
-                        space-between="10" navigation="true"
-                        rewind="true"
+                        navigation="true" rewind="true"
                         :injectStyles="injectStyles">
                         <swiper-slide
                             v-for="(url, index) in item.list"
                             :key="index">
                             <a href="" @click.prevent>
-                                <img alt=""
+                                <img :src="url" alt=""
                                     @load="imgCounter"
-                                    class="tabsSkeleton">
+                                    v-show="isLoaded == true">
+                                <div class="tabsSkeleton"
+                                    v-show="isLoaded == false">
+                                </div>
                             </a>
                         </swiper-slide>
                     </swiper-container>
                     <swiper-container class="menuSubSwiper"
-                        space-between="10"
+                        space-between="2"
                         :slides-per-view="item.list?.length"
                         free-mode="true"
                         watch-slides-progress="true">
@@ -55,7 +57,11 @@
                             v-for="(url, index) in item.list"
                             :key="index">
                             <a href="" @click.prevent>
-                                <img :src="url" alt="">
+                                <img :src="url" alt=""
+                                    v-show="isLoaded == true">
+                                <div class="tabsSkeleton"
+                                    v-show="isLoaded == false">
+                                </div>
                             </a>
                         </swiper-slide>
                     </swiper-container>
@@ -64,41 +70,6 @@
                     </div>
                 </div>
             </div>
-            <!-- <div class="tabs" :class="'tabsSkeleton'"
-                v-for="(item, index) in menu" :key="index"
-                v-show="show == index && isLoaded == false">
-                <div class="tab">
-                    <swiper-container class="menuSwiper"
-                        thumbs-swiper=".menuSubSwiper"
-                        space-between="10" navigation="true"
-                        rewind="true"
-                        :injectStyles="injectStyles">
-                        <swiper-slide
-                            v-for="(url, index) in item.list"
-                            :key="index">
-                            <a href="" @click.prevent>
-                                <img alt="">
-                            </a>
-                        </swiper-slide>
-                    </swiper-container>
-                    <swiper-container class="menuSubSwiper"
-                        space-between="10"
-                        :slides-per-view="item.list?.length"
-                        free-mode="true"
-                        watch-slides-progress="true">
-                        <swiper-slide
-                            v-for="(url, index) in item.list"
-                            :key="index">
-                            <a href="" @click.prevent>
-                                <img src="" alt="">
-                            </a>
-                        </swiper-slide>
-                    </swiper-container>
-                    <div v-if="index == 2">
-
-                    </div>
-                </div>
-            </div> -->
         </transition-group>
     </div>
 </template>
@@ -143,8 +114,6 @@ let injectStyles = [
     :host{
         --swiper-navigation-size: 33px;
         --swiper-navigation-color: #036313;
-    }
-    .swiper-button-next{
     }
     `
 ]
@@ -198,7 +167,6 @@ onMounted(() => {
 .tabContainer {
     @include flex-center-center;
     @include main-part;
-
     align-items: normal;
     flex-direction: column;
     overflow: hidden;
@@ -289,26 +257,52 @@ onMounted(() => {
         }
     }
 
+    @keyframes loading {
+        from {
+            background-position: 100%;
+        }
+
+        to {
+            background-position: 0%;
+        }
+    }
+
+    @mixin skeleton {
+        border: 1px solid $secondBacColor;
+        border-radius: 1rem;
+        background: linear-gradient(115deg,
+                $primeBacColor 45%,
+                white 50%,
+                $primeBacColor 52%) $primeBacColor;
+        background-size: 300%;
+        animation: 2s infinite ease-in loading;
+    }
+
     .tabsContainer {
         @include flex-center-center;
         position: relative;
         min-height: 350px;
 
         .tabs {
-            // border-top: 1px solid black;
             position: absolute;
             width: 80%;
 
             .tab {
-                margin-top: 1rem;
+                margin: 0.5rem 0 1rem 0;
 
                 .menuSwiper {
+                    margin-bottom: 1rem;
 
                     swiper-slide {
                         @include flex-center-center;
 
                         img {
                             @include WnH(215px)
+                        }
+
+                        .tabsSkeleton {
+                            @include WnH(215px);
+                            @include skeleton;
                         }
                     }
                 }
@@ -317,51 +311,24 @@ onMounted(() => {
                     width: fit-content;
 
                     swiper-slide {
+                        @include flex-center-center;
                         width: fit-content !important;
+
+                        img,
+                        a {
+                            @include WnH(107px)
+                        }
+
+                        .tabsSkeleton {
+                            @include WnH(107px);
+                            @include skeleton;
+                        }
                     }
 
-                    img {
-                        @include WnH(107px)
-                    }
                 }
-            }
-
-            @keyframes skeleton-loading {
-                0% {
-                    background-color: #c2cfd6;
-                }
-
-                100% {
-                    background-color: #f0f3f5;
-                }
-            }
-
-            .tabsSkeleton {
-                // animation: skeleton-loading 1s linear infinite alternate;
-                // background-color: lightgray;
             }
         }
     }
-
-    .init-enter-active {
-        transition: opacity 0.5s ease, transform 0.5s ease;
-    }
-
-    .init-enter-from {
-        transform: scale(0.95);
-        opacity: 0;
-    }
-
-    .init-enter-to {
-        transform: scale(1);
-        opacity: 1;
-    }
-
-    .init-leave-active {}
-
-    .init-leave-from {}
-
-    .init-leave-to {}
 
     .rightIn-enter-active,
     .rightIn-leave-active {
