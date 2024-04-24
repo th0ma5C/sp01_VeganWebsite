@@ -4,12 +4,10 @@ import type { AxiosRequestConfig, AxiosResponse, AxiosAdapter } from 'axios';
 const customAdapter: AxiosAdapter = async (config: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
     const reqRetry = async (retryCount = 0): Promise<AxiosResponse<any>> => {
         try {
-            console.log('開始請求');
             return await axios({ ...config, adapter: axios.defaults.adapter });
         } catch (error) {
             const maxRetries = 3;
             if (retryCount < maxRetries) {
-                console.log('重試', retryCount);
                 const retryDelay = Math.pow(2, retryCount) * 1000;
                 return new Promise((resolve, reject) => {
                     setTimeout(() => {
@@ -17,7 +15,6 @@ const customAdapter: AxiosAdapter = async (config: AxiosRequestConfig): Promise<
                     }, retryDelay);
                 });
             }
-            console.log('超過次數');
             throw error;
         }
     };

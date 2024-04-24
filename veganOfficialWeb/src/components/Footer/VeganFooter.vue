@@ -12,7 +12,6 @@
 <script setup lang="ts">
 import InfoFooter from './InfoFooter.vue';
 import MainFooter from './MainFooter.vue';
-
 </script>
 
 <style lang="scss" scoped>

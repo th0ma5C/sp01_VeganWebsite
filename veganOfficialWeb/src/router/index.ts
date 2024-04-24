@@ -51,8 +51,9 @@ const router = createRouter({
 // router.beforeEach(() => {
 //     NProgress.start()
 // })
-// router.afterEach(() => {
-//     NProgress.done()
-// })
+router.afterEach(() => {
+    // NProgress.done()
+    console.log('router');
+})
 
 export default router

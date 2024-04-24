@@ -31,12 +31,13 @@
             <div class="tabs" v-for="(item, index) in menu"
                 :key="index" v-show="show == index">
                 <div class="tab">
-                    <swiper-container class="menuSwiper"
-                        thumbs-swiper=".menuSubSwiper"
+                    <swiper-container
+                        :class="{ 'menuSwiper0': index == 0, 'menuSwiper1': index == 1 }"
+                        :thumbs-swiper="`.menuSubSwiper${index}`"
                         navigation="true" rewind="true"
                         :injectStyles="injectStyles">
                         <swiper-slide
-                            v-for="(url, index) in item.list"
+                            v-for="(url, index) in item.url"
                             :key="index">
                             <a href="" @click.prevent>
                                 <img :src="url" alt=""
@@ -48,14 +49,16 @@
                             </a>
                         </swiper-slide>
                     </swiper-container>
-                    <swiper-container class="menuSubSwiper"
+                    <swiper-container
+                        :class="{ 'menuSubSwiper0': index == 0, 'menuSubSwiper1': index == 1 }"
                         space-between="2"
-                        :slides-per-view="item.list?.length"
+                        :slides-per-view="item.url?.length"
                         free-mode="true"
                         watch-slides-progress="true">
                         <swiper-slide
-                            v-for="(url, index) in item.list"
-                            :key="index">
+                            v-for="(url, index) in item.url"
+                            :key="index"
+                            :class="{ 'swiper-slide-thumb-active': index == 0 }">
                             <a href="" @click.prevent>
                                 <img :src="url" alt=""
                                     v-show="isLoaded == true">
@@ -76,12 +79,12 @@
 
 <script setup lang="ts">
 /**
- * todo: Skeleton沙拉示意圖、未選中淡化
- * todo: 請求超時進不了首頁 vip測試連結 地圖區塊 菜單連結+hover、icon
- * todo: swiper說明字樣 vip數據待完成
+ * todo: 沙拉讀取加Skeleton swiper說明字樣
+ * todo: 請求超時進不了首頁(基本架構完成就進頁面) vip測試連結按鈕 地圖區塊 菜單連結+hover、icon
+ * todo: vip數據待完成
  * 
  * *0411解決切換動畫進出問題、swiper樣式問題 *0412解決服務端返回數據 *0418完成字體放本地、中英字體分離
- * *0423初步完成catalog skeleton、去背 *0424壓縮
+ * *0423初步完成catalog skeleton、去背 *0424壓縮圖片、解決兩個swiper實例問題、選中效果
  */
 import { watch, nextTick, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
@@ -94,13 +97,13 @@ let menu = ref([
         name: 'new',
         icon: 'CatalogNew',
         title: '當季新品',
-        list: newList.value
+        url: newList.value
     },
     {
         name: 'hot',
         icon: 'CatalogTrendingUp',
         title: '熱銷排行',
-        list: hotList.value
+        url: hotList.value
     },
     {
         name: 'vip',
@@ -131,7 +134,7 @@ function imgCounter() {
 let { loaderActivated } = storeToRefs(useLoader());
 let isLoaded = ref(false);
 watch([imgCount, menu], ([newCount,]) => {
-    let done = (menu.value[0].list!.length) + (menu.value[1].list!.length);
+    let done = (menu.value[0].url!.length) + (menu.value[1].url!.length);
     if (newCount == done) {
         loaderActivated.value = false;
         isLoaded.value = true;
@@ -143,6 +146,7 @@ watch(show, (newVal, oldVal) => {
 })
 
 onMounted(() => {
+    console.log('catalog');
     type ReqFunction = () => Promise<string[]>;
     async function getUrl(req: ReqFunction) {
         try {
@@ -153,11 +157,11 @@ onMounted(() => {
         }
     }
     getUrl(reqGetNewMenu).then(data => {
-        if (data) menu.value[0].list = data;
+        if (data) menu.value[0].url = data;
     });
 
     getUrl(reqGetHotMenu).then(data => {
-        if (data) menu.value[1].list = data;
+        if (data) menu.value[1].url = data;
     });
 })
 </script>
@@ -277,10 +281,65 @@ onMounted(() => {
         animation: 2s infinite ease-in loading;
     }
 
+    @mixin catalogTab {
+        margin-bottom: 2rem;
+
+        swiper-slide {
+            @include flex-center-center;
+
+            img {
+                @include WnH(300px);
+                filter: drop-shadow(2px 2px 2px gray);
+            }
+
+            .tabsSkeleton {
+                @include WnH(300px);
+                @include skeleton;
+            }
+        }
+    }
+
+    @mixin subCatalogTab {
+        width: fit-content;
+
+
+        .swiper-slide-thumb-active {
+            opacity: 1;
+            transform: none
+        }
+
+        swiper-slide {
+            @include flex-center-center;
+            width: fit-content !important;
+            opacity: 0.5;
+            transition: transform 0.5s ease;
+            transform: scale(0.9);
+
+            &:hover {
+                transform: scale(1);
+            }
+
+            img {
+                filter: drop-shadow(2px 2px 2px gray);
+            }
+
+            img,
+            a {
+                @include WnH(150px);
+            }
+
+
+            .tabsSkeleton {
+                @include WnH(150px);
+                @include skeleton;
+            }
+        }
+    }
+
     .tabsContainer {
         @include flex-center-center;
         position: relative;
-        min-height: 350px;
+        min-height: 600px;
 
         .tabs {
             position: absolute;
@@ -289,41 +348,14 @@ onMounted(() => {
             .tab {
                 margin: 0.5rem 0 1rem 0;
 
-                .menuSwiper {
-                    margin-bottom: 1rem;
-
-                    swiper-slide {
-                        @include flex-center-center;
-
-                        img {
-                            @include WnH(215px)
-                        }
-
-                        .tabsSkeleton {
-                            @include WnH(215px);
-                            @include skeleton;
-                        }
-                    }
+                .menuSwiper0,
+                .menuSwiper1 {
+                    @include catalogTab;
                 }
 
-                .menuSubSwiper {
-                    width: fit-content;
-
-                    swiper-slide {
-                        @include flex-center-center;
-                        width: fit-content !important;
-
-                        img,
-                        a {
-                            @include WnH(107px)
-                        }
-
-                        .tabsSkeleton {
-                            @include WnH(107px);
-                            @include skeleton;
-                        }
-                    }
-
+                .menuSubSwiper0,
+                .menuSubSwiper1 {
+                    @include subCatalogTab;
                 }
             }
         }
