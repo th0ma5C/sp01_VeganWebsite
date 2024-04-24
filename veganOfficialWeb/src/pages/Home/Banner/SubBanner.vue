@@ -1,9 +1,9 @@
 <template>
     <swiper-container :slides-per-view="4" loop="true"
         :speed="1000" :space-between="16" :autoplay="{
-        delay: 5500,
-        disableOnInteraction: false,
-    }" class="container">
+            delay: 5500,
+            disableOnInteraction: false,
+        }" class="container">
         <swiper-slide v-for="(item, index) in getUrl"
             :key="index">
             <a href="" @click.prevent>
@@ -15,15 +15,15 @@
 
 <script lang="ts" setup>
 let imgs = [
-    { title: 'dishes' },
-    { title: 'smoothie' },
-    { title: 'friend' },
-    { title: 'app' },
-    { title: 'hiring' }
+    { title: 'a' },
+    { title: 'b' },
+    { title: 'c' },
+    { title: 'd' },
+    { title: 'e' }
 ]
 
 const getUrl = imgs.map(item => ({
-    url: new URL(`/src/assets/img/SubBanner/${item.title}.png`, import.meta.url).href
+    url: new URL(`/src/assets/img/SubBanner/${item.title}.jpg`, import.meta.url).href
 }))
 
 </script>

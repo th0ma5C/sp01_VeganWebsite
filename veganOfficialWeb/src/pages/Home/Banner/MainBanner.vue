@@ -23,7 +23,7 @@
                 </div>
                 <div class="text" data-swiper-parallax="0">
                     <a href="" @click.prevent>
-                        <img :src="`/imgs/MainBanner/${img.url}.png`"
+                        <img :src="`/imgs/MainBanner/${img.url}.jpg`"
                             alt="">
                     </a>
                 </div>
