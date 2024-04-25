@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+// 導入db函數
+const db = require('../db/db');
+
+// db(() => {
 /**
  * Module dependencies.
  */
@@ -88,3 +92,4 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+// })

@@ -119,6 +119,7 @@ onMounted(() => {
 .text {
     img {
         width: 100%;
+        height: 776px;
         object-fit: cover;
         object-position: center;
     }

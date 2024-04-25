@@ -47,6 +47,11 @@
                                     v-show="isLoaded == false">
                                 </div>
                             </a>
+                            <div>
+                                <h2>Lorem, ipsum.</h2>
+                                <p>Lorem ipsum dolor sit
+                                    amet.</p>
+                            </div>
                         </swiper-slide>
                     </swiper-container>
                     <swiper-container
@@ -69,7 +74,7 @@
                         </swiper-slide>
                     </swiper-container>
                     <div v-if="index == 2">
-                        馬上測驗
+                        <a href=""><span>馬上測驗</span></a>
                     </div>
                 </div>
             </div>
@@ -85,6 +90,7 @@
  * 
  * *0411解決切換動畫進出問題、swiper樣式問題 *0412解決服務端返回數據 *0418完成字體放本地、中英字體分離
  * *0423初步完成catalog skeleton、去背 *0424壓縮圖片、解決兩個swiper實例問題、選中效果
+ * *0425
  */
 import { watch, nextTick, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
@@ -158,6 +164,7 @@ onMounted(() => {
     }
     getUrl(reqGetNewMenu).then(data => {
         if (data) menu.value[0].url = data;
+        console.log(data);
     });
 
     getUrl(reqGetHotMenu).then(data => {
@@ -339,7 +346,7 @@ onMounted(() => {
     .tabsContainer {
         @include flex-center-center;
         position: relative;
-        min-height: 600px;
+        min-height: 550px;
 
         .tabs {
             position: absolute;
