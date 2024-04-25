@@ -18,7 +18,7 @@ import MainFooter from './MainFooter.vue';
 // @import url('https://fonts.googleapis.com/css2?family=Mr+Dafoe&display=swap');\
 @font-face {
     font-family: 'MrDafoe';
-    src: url('@assets/fonts/Mr_Dafoe/MrDafoe-Regular.ttf') format('truetype');
+    src: url('@assets/fonts/Mr_Dafoe/MrDafoe-Regular.woff2') format('woff2');
 }
 
 .container {

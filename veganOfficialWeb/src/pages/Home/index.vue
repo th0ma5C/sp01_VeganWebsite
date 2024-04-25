@@ -7,14 +7,17 @@
     <div>
         <Catalog></Catalog>
     </div>
+    <div>
+        <Location></Location>
+    </div>
 </template>
 
 <script setup lang="ts">
-
 import Marquee from './Banner/Marquee.vue';
 import MainBanner from './Banner/MainBanner.vue';
 import SubBanner from './Banner/SubBanner.vue';
 import Catalog from './Catalog/Catalog.vue';
+import Location from './Location/Location.vue';
 
 </script>
 

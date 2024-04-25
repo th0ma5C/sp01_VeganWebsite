@@ -73,8 +73,9 @@
                             </a>
                         </swiper-slide>
                     </swiper-container>
-                    <div v-if="index == 2">
-                        <a href=""><span>馬上測驗</span></a>
+                    <div v-if="index == 2"
+                        class="analyzeLink">
+                        <a href=""><span>開始免費專屬分析</span></a>
                     </div>
                 </div>
             </div>
@@ -85,12 +86,11 @@
 <script setup lang="ts">
 /**
  * todo: 沙拉讀取加Skeleton swiper說明字樣
- * todo: 請求超時進不了首頁(基本架構完成就進頁面) vip測試連結按鈕 地圖區塊 菜單連結+hover、icon
- * todo: vip數據待完成
+ * todo: 請求超時進不了首頁(基本架構完成就進頁面) 地圖區塊 菜單連結+hover、icon
  * 
  * *0411解決切換動畫進出問題、swiper樣式問題 *0412解決服務端返回數據 *0418完成字體放本地、中英字體分離
  * *0423初步完成catalog skeleton、去背 *0424壓縮圖片、解決兩個swiper實例問題、選中效果
- * *0425
+ * *0425vip測試連結按鈕 字體轉檔woff2
  */
 import { watch, nextTick, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
@@ -259,6 +259,7 @@ onMounted(() => {
 
         a {
             span {
+                color: $secondBacColor;
                 position: absolute;
                 right: 10%;
                 transform: translateY(-50%);
@@ -363,6 +364,31 @@ onMounted(() => {
                 .menuSubSwiper0,
                 .menuSubSwiper1 {
                     @include subCatalogTab;
+                }
+
+                .analyzeLink {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 140px;
+                    height: 80px;
+                    border-radius: 1rem;
+                    background-color: $secondBacColor;
+                    filter: drop-shadow(2px 2px 1px black);
+                    transition: transform 0.5s ease;
+
+                    &:hover {
+                        transform: translate(-50%, -50%) scale(1.05);
+                        transform-origin: center;
+                    }
+
+                    span {
+                        @include flex-center-center;
+                        @include WnH(100%);
+                        color: $primeBacColor;
+                        font-size: 1rem;
+                    }
                 }
             }
         }
