@@ -45,7 +45,7 @@
                                     v-show="isLoaded == true">
                                 <div class="imgSkeleton"
                                     v-show="isLoaded == false">
-                                    <img alt="">
+                                    <div></div>
                                 </div>
                             </a>
                             <div>
@@ -79,6 +79,7 @@
                                     v-show="isLoaded == true">
                                 <div class="imgSkeleton"
                                     v-show="isLoaded == false">
+                                    <div></div>
                                 </div>
                             </a>
                         </swiper-slide>
@@ -95,12 +96,12 @@
 
 <script setup lang="ts">
 /**
- * todo: 沙拉讀取加Skeleton swiper說明字樣
- * todo: 請求超時進不了首頁(基本架構完成就進頁面) 地圖區塊 菜單連結+hover、icon
+ * todo: swiper說明字樣
+ * todo: 請求超時進不了首頁(基本架構完成就進頁面) 菜單連結+hover、icon
  * 
  * *0411解決切換動畫進出問題、swiper樣式問題 *0412解決服務端返回數據 *0418完成字體放本地、中英字體分離
  * *0423初步完成catalog skeleton、去背 *0424壓縮圖片、解決兩個swiper實例問題、選中效果
- * *0425vip測試連結按鈕 字體轉檔woff2
+ * *0425vip測試連結按鈕 字體轉檔woff2 *0426讀取Skeleton
  */
 import { watch, nextTick, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
@@ -153,7 +154,7 @@ watch([imgCount, menu], ([newCount,]) => {
     let done = (menu.value[0].url!.length) + (menu.value[1].url!.length);
     if (newCount == done) {
         loaderActivated.value = false;
-        // isLoaded.value = true;
+        isLoaded.value = true;
     }
 })
 
@@ -289,14 +290,21 @@ onMounted(() => {
     }
 
     @mixin skeleton {
-        border: 1px solid $secondBacColor;
-        border-radius: 1rem;
-        background: linear-gradient(115deg,
-                $primeBacColor 45%,
-                white 50%,
-                $primeBacColor 52%) $primeBacColor;
-        background-size: 300%;
-        animation: 2s infinite ease-in loading;
+        @include WnH(300px);
+        mask-image: url('@assets/img/Home/Catalog/salad.png');
+        mask-repeat: no-repeat;
+        mask-position: center center;
+        mask-size: 75%;
+
+        div {
+            @include WnH(100%);
+            background: linear-gradient(115deg,
+                    #036313 40%,
+                    transparent 50%,
+                    #036313 52%);
+            background-size: 300%;
+            animation: 2s infinite ease-in loading;
+        }
     }
 
     @mixin catalogTab {
@@ -312,15 +320,7 @@ onMounted(() => {
             }
 
             .imgSkeleton {
-                @include WnH(300px);
                 @include skeleton;
-
-                img {
-                    background: #036313;
-                    mask-image: url('@assets/img/salad.png');
-                    mask-size: contain;
-                    mask-position: center;
-                }
             }
 
             .textSkeleton {
@@ -329,9 +329,9 @@ onMounted(() => {
                 &>* {
                     border-radius: 0.25rem;
                     background: linear-gradient(115deg,
-                            transparent 40%,
-                            #036313 50%,
-                            transparent 52%);
+                            #036313 40%,
+                            transparent 50%,
+                            #036313 52%);
                     background-size: 300%;
                     animation: 2s infinite ease-in loading;
                 }
@@ -370,8 +370,8 @@ onMounted(() => {
 
 
             .imgSkeleton {
-                @include WnH(150px);
                 @include skeleton;
+                @include WnH(150px);
             }
         }
     }

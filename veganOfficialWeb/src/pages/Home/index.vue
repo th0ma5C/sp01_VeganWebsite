@@ -24,5 +24,6 @@ import Location from './Location/Location.vue';
 <style scoped lang="scss">
 .banner {
     margin-bottom: 2rem;
+    min-height: 1290PX
 }
 </style>
