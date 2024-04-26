@@ -43,14 +43,24 @@
                                 <img :src="url" alt=""
                                     @load="imgCounter"
                                     v-show="isLoaded == true">
-                                <div class="tabsSkeleton"
+                                <div class="imgSkeleton"
                                     v-show="isLoaded == false">
+                                    <img alt="">
                                 </div>
                             </a>
                             <div>
-                                <h2>Lorem, ipsum.</h2>
-                                <p>Lorem ipsum dolor sit
-                                    amet.</p>
+                                <div
+                                    v-show="isLoaded == true">
+                                    <h2>Lorem, ipsum.</h2>
+                                    <p>Lorem ipsum dolor sit
+                                        amet.</p>
+                                </div>
+                                <div class="textSkeleton"
+                                    v-show="isLoaded == false">
+                                    <h2>Lorem, ipsum.</h2>
+                                    <p>Lorem ipsum dolor sit
+                                        amet.</p>
+                                </div>
                             </div>
                         </swiper-slide>
                     </swiper-container>
@@ -67,7 +77,7 @@
                             <a href="" @click.prevent>
                                 <img :src="url" alt=""
                                     v-show="isLoaded == true">
-                                <div class="tabsSkeleton"
+                                <div class="imgSkeleton"
                                     v-show="isLoaded == false">
                                 </div>
                             </a>
@@ -143,7 +153,7 @@ watch([imgCount, menu], ([newCount,]) => {
     let done = (menu.value[0].url!.length) + (menu.value[1].url!.length);
     if (newCount == done) {
         loaderActivated.value = false;
-        isLoaded.value = true;
+        // isLoaded.value = true;
     }
 })
 
@@ -294,15 +304,37 @@ onMounted(() => {
 
         swiper-slide {
             @include flex-center-center;
+            gap: 1rem;
 
             img {
                 @include WnH(300px);
                 filter: drop-shadow(2px 2px 2px gray);
             }
 
-            .tabsSkeleton {
+            .imgSkeleton {
                 @include WnH(300px);
                 @include skeleton;
+
+                img {
+                    background: #036313;
+                    mask-image: url('@assets/img/salad.png');
+                    mask-size: contain;
+                    mask-position: center;
+                }
+            }
+
+            .textSkeleton {
+                color: transparent;
+
+                &>* {
+                    border-radius: 0.25rem;
+                    background: linear-gradient(115deg,
+                            transparent 40%,
+                            #036313 50%,
+                            transparent 52%);
+                    background-size: 300%;
+                    animation: 2s infinite ease-in loading;
+                }
             }
         }
     }
@@ -337,7 +369,7 @@ onMounted(() => {
             }
 
 
-            .tabsSkeleton {
+            .imgSkeleton {
                 @include WnH(150px);
                 @include skeleton;
             }
