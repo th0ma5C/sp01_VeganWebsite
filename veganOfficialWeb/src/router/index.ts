@@ -53,7 +53,6 @@ const router = createRouter({
 // })
 router.afterEach(() => {
     // NProgress.done()
-    console.log('router');
 })
 
 export default router

@@ -6,7 +6,7 @@
                     v-for="(item, index) in menu"
                     :key="index">
                     <div class="clickZone"
-                        :class="index == show ? 'active' : 'hovered'">
+                        :class="getTabClass(index)">
                         <SvgIcon :name="item.icon"
                             width="36" height="36"
                             color="#036313">
@@ -24,7 +24,7 @@
                     </SvgIcon>
                 </button>
             </div>
-            <a href=""><span>完整菜單</span></a>
+            <a href=""><span>More</span></a>
         </div>
         <transition-group tag="div" :name="transitionName"
             class="tabsContainer">
@@ -45,7 +45,8 @@
                                     v-show="isLoaded == true">
                                 <div class="imgSkeleton"
                                     v-show="isLoaded == false">
-                                    <div></div>
+                                    <img src="@assets/img/Home/Catalog/salad.png"
+                                        alt="">
                                 </div>
                             </a>
                             <div>
@@ -79,7 +80,8 @@
                                     v-show="isLoaded == true">
                                 <div class="imgSkeleton"
                                     v-show="isLoaded == false">
-                                    <div></div>
+                                    <img src="@assets/img/Home/Catalog/salad.png"
+                                        alt="">
                                 </div>
                             </a>
                         </swiper-slide>
@@ -97,13 +99,14 @@
 <script setup lang="ts">
 /**
  * todo: swiper說明字樣
- * todo: 請求超時進不了首頁(基本架構完成就進頁面) 菜單連結+hover、icon
+ * todo: 請求超時進不了首頁(基本架構完成就進頁面) 菜單連結+hover、icon catalog出現動畫
  * 
  * *0411解決切換動畫進出問題、swiper樣式問題 *0412解決服務端返回數據 *0418完成字體放本地、中英字體分離
  * *0423初步完成catalog skeleton、去背 *0424壓縮圖片、解決兩個swiper實例問題、選中效果
  * *0425vip測試連結按鈕 字體轉檔woff2 *0426讀取Skeleton
+ * *0429改Skeleton邏輯、CSS Skeleton圖片預加載
  */
-import { watch, nextTick, onMounted, ref } from 'vue';
+import { watch, nextTick, onMounted, ref, onBeforeMount, getCurrentInstance } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
 import { useLoader } from '@/store/loader';
 import { storeToRefs } from 'pinia';
@@ -143,6 +146,8 @@ function changeTab(n: number) {
     show.value = n;
 }
 
+let getTabClass = (index: number) => index === show.value ? 'active' : '';
+
 let imgCount = ref(0);
 function imgCounter() {
     imgCount.value++;
@@ -162,22 +167,20 @@ watch(show, (newVal, oldVal) => {
     newVal > oldVal ? transitionName.value = 'rightIn' : transitionName.value = 'leftIn';
 })
 
-onMounted(() => {
-    console.log('catalog');
-    type ReqFunction = () => Promise<string[]>;
-    async function getUrl(req: ReqFunction) {
-        try {
-            let data: string[] = await req();
-            return data.map((item) => '/api' + item)
-        } catch (error) {
-            console.log(`${req.name}請求失敗`, error);
-        }
+type ReqFunction = () => Promise<string[]>;
+async function getUrl(req: ReqFunction) {
+    try {
+        let data: string[] = await req();
+        return data.map((item) => '/api' + item)
+    } catch (error) {
+        console.log(`${req.name}請求失敗`, error);
     }
+}
+
+onMounted(() => {
     getUrl(reqGetNewMenu).then(data => {
         if (data) menu.value[0].url = data;
-        console.log(data);
     });
-
     getUrl(reqGetHotMenu).then(data => {
         if (data) menu.value[1].url = data;
     });
@@ -221,10 +224,18 @@ onMounted(() => {
                 .clickZone {
                     display: inline-flex;
                     align-items: center;
+                    border-radius: 0.5rem;
+                    opacity: 30%;
 
                     &>div {
                         margin: 3px;
                         border-radius: 10%;
+                    }
+
+                    &:hover {
+                        opacity: 1;
+                        transform: scale(1.1);
+                        transition: all 0.2s linear
                     }
 
                     span {
@@ -236,17 +247,8 @@ onMounted(() => {
 
                 .active {
                     cursor: default;
-                }
-
-                .hovered {
-                    border-radius: 0.5rem;
-                    opacity: 30%;
-
-                    &:hover {
-                        opacity: 1;
-                        transform: scale(1.1);
-                        transition: all 0.2s linear
-                    }
+                    opacity: 1;
+                    transform: scale(1.1);
                 }
 
                 .title-enter-active,
@@ -279,7 +281,7 @@ onMounted(() => {
         }
     }
 
-    @keyframes loading {
+    @keyframes loadText {
         from {
             background-position: 100%;
         }
@@ -289,21 +291,36 @@ onMounted(() => {
         }
     }
 
+    @keyframes loadImg {
+        0% {
+            left: -250%;
+        }
+
+        100% {
+            left: -50%;
+        }
+    }
+
     @mixin skeleton {
         @include WnH(300px);
-        mask-image: url('@assets/img/Home/Catalog/salad.png');
-        mask-repeat: no-repeat;
-        mask-position: center center;
-        mask-size: 75%;
+        @include flex-center-center;
+        position: relative;
+        overflow: hidden;
 
-        div {
-            @include WnH(100%);
-            background: linear-gradient(115deg,
-                    #036313 40%,
-                    transparent 50%,
-                    #036313 52%);
-            background-size: 300%;
-            animation: 2s infinite ease-in loading;
+        img {
+            @include WnH(230px);
+            filter: none;
+            display: block;
+        }
+
+        &::after {
+            @include WnH(300%);
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: linear-gradient(115deg, transparent 40%, #FCFAF2 50%, transparent 52%);
+            animation: loadImg 2s infinite ease-in;
         }
     }
 
@@ -319,9 +336,14 @@ onMounted(() => {
                 filter: drop-shadow(2px 2px 2px gray);
             }
 
-            .imgSkeleton {
-                @include skeleton;
+            a {
+                position: relative;
+
+                .imgSkeleton {
+                    @include skeleton;
+                }
             }
+
 
             .textSkeleton {
                 color: transparent;
@@ -333,7 +355,7 @@ onMounted(() => {
                             transparent 50%,
                             #036313 52%);
                     background-size: 300%;
-                    animation: 2s infinite ease-in loading;
+                    animation: 2s infinite ease-in loadText;
                 }
             }
         }
@@ -371,7 +393,11 @@ onMounted(() => {
 
             .imgSkeleton {
                 @include skeleton;
-                @include WnH(150px);
+                @include WnH(135px);
+
+                img {
+                    @include WnH(110px);
+                }
             }
         }
     }

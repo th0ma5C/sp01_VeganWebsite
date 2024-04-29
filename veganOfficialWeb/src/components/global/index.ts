@@ -8,8 +8,8 @@ export default {
     install(app: App) {
         (Object.keys(globalComponents) as (keyof typeof globalComponents)[]).forEach(key => {
             app.component(key, globalComponents[key])
-        })
+        });
 
-        app.provide('nanoid', nanoid)
+        app.provide('nanoid', nanoid);
     }
 }

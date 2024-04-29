@@ -18,6 +18,7 @@ import VeganFooter from './components/Footer/VeganFooter.vue'
 import Loader from './components/Loader/Loader.vue';
 import { onMounted, watch, toRefs } from 'vue';
 import { useLoader } from '@/store/loader';
+import preloadImgList from './utils/preloadImgList';
 
 let { loaderActivated } = toRefs(useLoader());
 
@@ -29,6 +30,11 @@ onMounted(() => {
             }, 2500)
         }
     });
+
+    preloadImgList.forEach(el => {
+        const img = new Image();
+        img.src = el;
+    })
 })
 
 </script>

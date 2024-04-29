@@ -25,7 +25,6 @@ let imgs = [
 const getUrl = imgs.map(item => ({
     url: new URL(`/src/assets/img/SubBanner/${item.title}.jpg`, import.meta.url).href
 }))
-
 </script>
 
 <style lang="scss" scoped>
