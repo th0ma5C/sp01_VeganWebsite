@@ -1,16 +1,18 @@
 <template>
-    <swiper-container :parallax="true" :loop="true"
+    <!-- <swiper-container :parallax="true" :loop="true"
         :slides-per-view="1"
         :pagination="{ clickable: true }"
         pagination-dynamic-bullets="true" :speed="1000"
         :centeredSlides="true" :autoplay="{
             delay: 5500,
             disableOnInteraction: false,
-        }" :injectStyles="injectStyles" class="mainBanner">
-        <!-- :autoplay="{
-        delay: 5500,
-        disableOnInteraction: false,
-    }" -->
+        }" :injectStyles="injectStyles" class="mainBanner"> -->
+    <swiper-container :parallax="true" :loop="true"
+        :slides-per-view="1"
+        :pagination="{ clickable: true }"
+        pagination-dynamic-bullets="true" :speed="1000"
+        :centeredSlides="true" :injectStyles="injectStyles"
+        class="mainBanner">
         <swiper-slide v-for="(img, index) in imgs"
             :key="index">
             <div class="swiper-wrapper">
@@ -30,23 +32,6 @@
             </div>
         </swiper-slide>
     </swiper-container>
-    <!-- <swiper-container :slides-per-view="1" loop="true"
-        :pagination="{ clickable: true }" :speed="1000"
-        :centeredSlides="true" class="banner">
-        <swiper-slide v-for="(img, index) in imgs"
-            :key="index">
-            <a href="" @click.prevent>
-                <div class="imgTitle">
-                    <h1>title</h1>
-                </div>
-                <div class="imgText">
-                    <p>Lorem ipsum do</p>
-                </div>
-                <img :src="`/imgs/MainBanner/${img.title}.png`"
-                    alt="">
-            </a>
-        </swiper-slide>
-    </swiper-container> -->
 </template>
 <script lang="ts" setup>
 /**
@@ -117,9 +102,22 @@ onMounted(() => {
 }
 
 .text {
+    a {
+        // display: block;
+        // height: 0;
+    }
+
+    @media screen and (max-width: 1440px) {
+
+        a,
+        img {
+            height: 776px;
+        }
+    }
+
+    a,
     img {
         width: 100%;
-        height: 776px;
         object-fit: cover;
         object-position: center;
     }

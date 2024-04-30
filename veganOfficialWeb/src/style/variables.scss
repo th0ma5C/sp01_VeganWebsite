@@ -10,8 +10,9 @@ $secondBacColor: #036313;
 }
 
 @mixin main-part {
-    padding: 1rem 6rem;
-    margin: 0 auto;
+    // padding: 1rem 6rem;
+    // margin: 0 auto;
+    margin: 1rem 6rem;
     max-width: $primeWidth;
 }
 
