@@ -10,6 +10,12 @@
     <div>
         <Location></Location>
     </div>
+    <div>
+        <Concept></Concept>
+    </div>
+    <div>
+        <Hiring></Hiring>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -18,6 +24,8 @@ import MainBanner from './Banner/MainBanner.vue';
 import SubBanner from './Banner/SubBanner.vue';
 import Catalog from './Catalog/Catalog.vue';
 import Location from './Location/Location.vue';
+import Concept from './Concept/Concept.vue'
+import Hiring from './Hiring/Hiring.vue'
 
 </script>
 

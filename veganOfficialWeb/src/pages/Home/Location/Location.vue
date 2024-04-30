@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 /**
- * todo:mainBanner圖片位置
+ * todo:mainBanner圖片在大解析度時width不自然
  * 
  * *0430: 基本結構、css
  */

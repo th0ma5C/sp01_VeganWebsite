@@ -24,7 +24,18 @@
                     </SvgIcon>
                 </button>
             </div>
-            <a href=""><span>More</span></a>
+            <a href="">
+                <transition name="linkText">
+                    <span v-if="linkText == 'More'"
+                        @mouseover="linkText = '完整菜單'">
+                        {{ linkText }}
+                    </span>
+                    <span v-else
+                        @mouseout="linkText = 'More'">
+                        {{ linkText }}
+                    </span>
+                </transition>
+            </a>
         </div>
         <transition-group tag="div" :name="transitionName"
             class="tabsContainer">
@@ -100,13 +111,14 @@
 /**
  * todo: swiper說明字樣
  * todo: 請求超時進不了首頁(基本架構完成就進頁面) 菜單連結+hover、icon catalog出現動畫
+ * todo: 菜單連結hover改線條margin(css變數var(...)解決)
  * 
  * *0411解決切換動畫進出問題、swiper樣式問題 *0412解決服務端返回數據 *0418完成字體放本地、中英字體分離
  * *0423初步完成catalog skeleton、去背 *0424壓縮圖片、解決兩個swiper實例問題、選中效果
  * *0425vip測試連結按鈕 字體轉檔woff2 *0426讀取Skeleton
  * *0429改Skeleton邏輯、CSS Skeleton圖片預加載
  */
-import { watch, nextTick, onMounted, ref, onBeforeMount, getCurrentInstance } from 'vue';
+import { watch, nextTick, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
 import { useLoader } from '@/store/loader';
 import { storeToRefs } from 'pinia';
@@ -139,6 +151,8 @@ let injectStyles = [
     }
     `
 ]
+
+let linkText = ref('More');
 
 let show = ref(0);
 let transitionName = ref('init')
@@ -211,7 +225,7 @@ onMounted(() => {
                 height: 1px;
                 background-color: $secondBacColor;
                 margin: 1rem 2rem;
-                margin-right: calc(2rem + 64px)
+                margin-right: calc(2rem + 39px)
             }
 
             button {
@@ -276,9 +290,28 @@ onMounted(() => {
                 position: absolute;
                 right: 10%;
                 transform: translateY(-50%);
-                height: 52%;
+
             }
         }
+
+    }
+
+    .linkText-enter-active {
+        transition: opacity 0.5s ease;
+    }
+
+    .linkText-leave-active {
+        transition: opacity 0s ease;
+    }
+
+    .linkText-enter-from,
+    .linkText-leave-to {
+        opacity: 0;
+    }
+
+    .linkText-enter-to,
+    .linkText-leave-to {
+        opacity: 1;
     }
 
     @keyframes loadText {
