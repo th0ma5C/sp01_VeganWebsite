@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="svgWrapper">
         <svg :style="{ width, height, color }">
             <use :href="symbolID"></use>
         </svg>

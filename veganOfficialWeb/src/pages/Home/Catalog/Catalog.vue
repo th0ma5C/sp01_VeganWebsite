@@ -1,7 +1,8 @@
 <template>
     <div class="tabContainer">
         <div class="titleContainer">
-            <div class="btnContainer">
+            <div class="btnContainer"
+                :style="{ '--lineMargin': lineMargin + 'px' }">
                 <button @click="changeTab(index)"
                     v-for="(item, index) in menu"
                     :key="index">
@@ -27,11 +28,11 @@
             <a href="">
                 <transition name="linkText">
                     <span v-if="linkText == 'More'"
-                        @mouseover="linkText = '完整菜單'">
+                        @mouseover="switchText($event)">
                         {{ linkText }}
                     </span>
                     <span v-else
-                        @mouseout="linkText = 'More'">
+                        @mouseout="switchText($event)">
                         {{ linkText }}
                     </span>
                 </transition>
@@ -110,15 +111,14 @@
 <script setup lang="ts">
 /**
  * todo: swiper說明字樣
- * todo: 請求超時進不了首頁(基本架構完成就進頁面) 菜單連結+hover、icon catalog出現動畫
- * todo: 菜單連結hover改線條margin(css變數var(...)解決)
+ * todo: 請求超時進不了首頁(基本架構完成就進頁面) catalog出現動畫
  * 
  * *0411解決切換動畫進出問題、swiper樣式問題 *0412解決服務端返回數據 *0418完成字體放本地、中英字體分離
  * *0423初步完成catalog skeleton、去背 *0424壓縮圖片、解決兩個swiper實例問題、選中效果
  * *0425vip測試連結按鈕 字體轉檔woff2 *0426讀取Skeleton
- * *0429改Skeleton邏輯、CSS Skeleton圖片預加載
+ * *0429改Skeleton邏輯、CSS Skeleton圖片預加載 *0501完整菜單連結hover、線條動畫
  */
-import { watch, nextTick, onMounted, ref } from 'vue';
+import { watch, onMounted, ref } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
 import { useLoader } from '@/store/loader';
 import { storeToRefs } from 'pinia';
@@ -149,10 +149,35 @@ let injectStyles = [
         --swiper-navigation-size: 33px;
         --swiper-navigation-color: #036313;
     }
+    .swiper-button-next{
+        right:0;
+    }
     `
 ]
 
 let linkText = ref('More');
+let lineMargin = ref(39);
+let isDone = ref(false);
+
+function switchText(e: MouseEvent) {
+    if (isDone.value) return;
+    switch (e.type) {
+        case 'mouseover':
+            linkText.value = '完整菜單';
+            lineMargin.value = 64;
+            break;
+        case 'mouseout':
+            linkText.value = 'More';
+            lineMargin.value = 39;
+            break;
+        default:
+            break;
+    }
+    isDone.value = true;
+    setTimeout(() => {
+        isDone.value = false;
+    }, 500);
+}
 
 let show = ref(0);
 let transitionName = ref('init')
@@ -225,7 +250,8 @@ onMounted(() => {
                 height: 1px;
                 background-color: $secondBacColor;
                 margin: 1rem 2rem;
-                margin-right: calc(2rem + 39px)
+                margin-right: calc(2rem + var(--lineMargin, 39px));
+                transition: margin 0.5s ease;
             }
 
             button {
@@ -286,33 +312,34 @@ onMounted(() => {
 
         a {
             span {
-                color: $secondBacColor;
+                color: #036313;
                 position: absolute;
                 right: 10%;
-                transform: translateY(-50%);
-
+                transform: translate(0, -50%);
             }
         }
 
     }
 
-    .linkText-enter-active {
-        transition: opacity 0.5s ease;
-    }
-
+    .linkText-enter-active,
     .linkText-leave-active {
-        transition: opacity 0s ease;
+        transition: top 0.5s ease-out;
     }
 
-    .linkText-enter-from,
-    .linkText-leave-to {
-        opacity: 0;
+    .linkText-enter-from {
+        top: 25%;
     }
 
     .linkText-enter-to,
-    .linkText-leave-to {
-        opacity: 1;
+    .linkText-leave-from {
+        top: 50%;
     }
+
+    .linkText-leave-to {
+        opacity: 0;
+        top: 75%;
+    }
+
 
     @keyframes loadText {
         from {

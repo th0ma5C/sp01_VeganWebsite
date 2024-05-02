@@ -1,21 +1,22 @@
 <template>
     <div class="container">
-        <img src="@assets/img/Home/Location/shop.jpg"
-            alt="">
         <div class="content">
+            <button>查看地圖</button>
+            <h2>找到我們</h2>
             <SvgIcon :name="'Location'" width="48"
                 height="48" color="#FCFAF2"></SvgIcon>
-            <h2>找到我們</h2>
-            <button>查看地圖</button>
         </div>
+        <img src="@assets/img/Home/Location/shop.jpg" alt=""
+            class="test">
     </div>
 </template>
 
 <script setup lang="ts">
 /**
  * todo:mainBanner圖片在大解析度時width不自然
+ * todo:限制動畫播放
  * 
- * *0430: 基本結構、css
+ * *0430: 基本結構、css *0502: icon動畫 背景動畫
  */
 </script>
 
@@ -26,19 +27,76 @@
     overflow: hidden;
     position: relative;
 
-    img {
-        @include WnH(100%);
-        filter: brightness(0.5);
-        transform: scale(1.1);
-    }
-
     .content {
         @include flex-center-center;
-        flex-direction: column;
+        flex-direction: column-reverse;
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%)
+        transform: translate(-50%, -50%);
+        margin-top: 1.5rem;
+        z-index: 1;
+
+        &:hover~img {
+            transform: scale(1);
+        }
+
+        @keyframes flyOut {
+            to {
+                opacity: 0;
+                transform: translate(100%, -100%);
+            }
+        }
+
+        @keyframes flyIn {
+            from {
+                opacity: 0;
+                transform: translate(-100%, 100%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(0, 0);
+            }
+        }
+
+        & .svgWrapper {
+            transition: transform 0.5s ease;
+            transform-origin: bottom left;
+            animation: flyIn 0.5s ease-out forwards;
+        }
+
+        h2 {
+            color: $primeBacColor;
+            font-size: 48px;
+        }
+
+        button {
+            border: 1px solid $primeBacColor;
+            border-radius: 8px;
+            font-size: 24px;
+            color: $primeBacColor;
+            background-color: transparent;
+            transition: background-color 0.25s ease-out, color 0.25s ease-out;
+
+            &:hover {
+                color: $secondBacColor;
+                background-color: $primeBacColor;
+
+                &~.svgWrapper {
+                    animation: flyOut 0.5s ease-in forwards;
+                }
+            }
+        }
+
+    }
+
+    img {
+        @include WnH(100%);
+        filter: brightness(0.5);
+        transform: scale(1.05);
+        transition: transform 0.5s ease-out;
+        z-index: 0;
     }
 }
 </style>
