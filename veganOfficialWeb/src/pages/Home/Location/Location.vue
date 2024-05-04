@@ -1,10 +1,13 @@
 <template>
     <div class="container">
         <div class="content">
-            <button>查看地圖</button>
+            <button @mouseover="throttle('out')"
+                @mouseout="throttle('in')">查看地圖</button>
             <h2>找到我們</h2>
             <SvgIcon :name="'Location'" width="48"
-                height="48" color="#FCFAF2"></SvgIcon>
+                height="48" color="#FCFAF2"
+                :class="iconClass">
+            </SvgIcon>
         </div>
         <img src="@assets/img/Home/Location/shop.jpg" alt=""
             class="test">
@@ -12,12 +15,30 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+
 /**
  * todo:mainBanner圖片在大解析度時width不自然
  * todo:限制動畫播放
  * 
  * *0430: 基本結構、css *0502: icon動畫 背景動畫
  */
+let isDone = ref(true);
+let iconClass = ref('in')
+function throttle(n: string) {
+    if (isDone.value == false) {
+        if (iconClass.value == n) return
+        setTimeout(() => {
+            iconClass.value = n;
+        }, 500)
+        return
+    };
+    iconClass.value = n;
+    isDone.value = false;
+    setTimeout(() => {
+        isDone.value = true;
+    }, 500)
+}
 </script>
 
 <style scoped lang="scss">
@@ -63,7 +84,15 @@
         & .svgWrapper {
             transition: transform 0.5s ease;
             transform-origin: bottom left;
+            // animation: flyIn 0.5s ease-out forwards;
+        }
+
+        .in {
             animation: flyIn 0.5s ease-out forwards;
+        }
+
+        .out {
+            animation: flyOut 0.5s ease-in forwards;
         }
 
         h2 {
@@ -84,7 +113,7 @@
                 background-color: $primeBacColor;
 
                 &~.svgWrapper {
-                    animation: flyOut 0.5s ease-in forwards;
+                    // animation: flyOut 0.5s ease-in forwards;
                 }
             }
         }
