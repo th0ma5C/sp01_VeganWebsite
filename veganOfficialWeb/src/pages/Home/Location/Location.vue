@@ -1,8 +1,9 @@
 <template>
     <div class="container">
-        <div class="content">
-            <button @mouseover="throttle('out')"
-                @mouseout="throttle('in')">查看地圖</button>
+        <div class="content"
+            @mouseenter="debounce(imgClass, 'zoomOut')"
+            @mouseleave="">
+            <button @mouseover="" @mouseout="">查看地圖</button>
             <h2>找到我們</h2>
             <SvgIcon :name="'Location'" width="48"
                 height="48" color="#FCFAF2"
@@ -10,12 +11,13 @@
             </SvgIcon>
         </div>
         <img src="@assets/img/Home/Location/shop.jpg" alt=""
-            class="test">
+            :class="imgClass">
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onUnmounted, ref } from 'vue';
+import type { Ref } from 'vue';
 
 /**
  * todo:mainBanner圖片在大解析度時width不自然
@@ -23,22 +25,74 @@ import { ref } from 'vue';
  * 
  * *0430: 基本結構、css *0502: icon動畫 背景動畫
  */
-let isDone = ref(true);
-let iconClass = ref('in')
-function throttle(n: string) {
-    if (isDone.value == false) {
-        if (iconClass.value == n) return
-        setTimeout(() => {
-            iconClass.value = n;
-        }, 500)
-        return
-    };
-    iconClass.value = n;
-    isDone.value = false;
-    setTimeout(() => {
-        isDone.value = true;
-    }, 500)
+// let iconClass = ref('in');
+// let timer: ReturnType<typeof setTimeout> | null;
+// function debounce(n: string) {
+//     if (!timer) {
+//         iconClass.value = n;
+//         timer = setTimeout(() => {
+//             timer = null;
+//         }, 500)
+//         return
+//     }
+//     clearTimeout(timer);
+//     timer = setTimeout(() => {
+//         iconClass.value = n;
+//         timer = null;
+//     }, 500)
+// }
+// let imgClass = ref('');
+// let lastRan: number;
+// let lastFunc: ReturnType<typeof setTimeout> | null;
+// function throttle(n: string = '') {
+//     if (!lastFunc) {
+//         imgClass.value = n;
+//         lastRan = Date.now();
+//         lastFunc = setTimeout(() => {
+//             lastFunc = null;
+//         }, 500)
+//         return
+//     }
+//     clearTimeout(lastFunc);
+//     lastFunc = setTimeout(() => {
+//         if ((Date.now() - lastRan) >= 500) {
+//             imgClass.value = n;
+//             lastRan = Date.now();
+//             lastFunc = null;
+//         }
+//     }, 500 - (Date.now() - lastRan))
+// }
+let iconClass = ref('out'), imgClass = ref('');
+function debounce(target: Ref<string>, value: string) {
+    let timer: ReturnType<typeof setTimeout> | null;
+    return function () {
+        if (!timer) {
+            target.value = value
+            timer = setTimeout(() => {
+                timer = null;
+            }, 500);
+            return
+        }
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            target.value = value
+            timer = null;
+        }, 500);
+    }
 }
+
+function clearTimers(...timers: (ReturnType<typeof setTimeout> | null)[]) {
+    timers.forEach(item => {
+        if (item) {
+            clearTimeout(item);
+            console.log(item);
+        }
+    })
+}
+
+onUnmounted(() => {
+    // clearTimers(timer, lastFunc)
+})
 </script>
 
 <style scoped lang="scss">
@@ -59,7 +113,7 @@ function throttle(n: string) {
         z-index: 1;
 
         &:hover~img {
-            transform: scale(1);
+            // transform: scale(1);
         }
 
         @keyframes flyOut {
@@ -126,6 +180,10 @@ function throttle(n: string) {
         transform: scale(1.05);
         transition: transform 0.5s ease-out;
         z-index: 0;
+    }
+
+    .zoomOut {
+        transform: scale(1);
     }
 }
 </style>
