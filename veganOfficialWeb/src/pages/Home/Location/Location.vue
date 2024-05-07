@@ -1,9 +1,12 @@
 <template>
     <div class="container">
         <div class="content"
-            @mouseenter="debounce(imgClass, 'zoomOut')"
-            @mouseleave="">
-            <button @mouseover="" @mouseout="">查看地圖</button>
+            @mouseenter="setImgClass($event)"
+            @mouseleave="setImgClass($event)">
+            <button @mouseenter="setIconClass($event)"
+                @mouseleave="setIconClass($event)">
+                查看地圖
+            </button>
             <h2>找到我們</h2>
             <SvgIcon :name="'Location'" width="48"
                 height="48" color="#FCFAF2"
@@ -21,77 +24,57 @@ import type { Ref } from 'vue';
 
 /**
  * todo:mainBanner圖片在大解析度時width不自然
- * todo:限制動畫播放
  * 
  * *0430: 基本結構、css *0502: icon動畫 背景動畫
+ * *0507: 動畫防抖
  */
-// let iconClass = ref('in');
-// let timer: ReturnType<typeof setTimeout> | null;
-// function debounce(n: string) {
-//     if (!timer) {
-//         iconClass.value = n;
-//         timer = setTimeout(() => {
-//             timer = null;
-//         }, 500)
-//         return
-//     }
-//     clearTimeout(timer);
-//     timer = setTimeout(() => {
-//         iconClass.value = n;
-//         timer = null;
-//     }, 500)
-// }
-// let imgClass = ref('');
-// let lastRan: number;
-// let lastFunc: ReturnType<typeof setTimeout> | null;
-// function throttle(n: string = '') {
-//     if (!lastFunc) {
-//         imgClass.value = n;
-//         lastRan = Date.now();
-//         lastFunc = setTimeout(() => {
-//             lastFunc = null;
-//         }, 500)
-//         return
-//     }
-//     clearTimeout(lastFunc);
-//     lastFunc = setTimeout(() => {
-//         if ((Date.now() - lastRan) >= 500) {
-//             imgClass.value = n;
-//             lastRan = Date.now();
-//             lastFunc = null;
-//         }
-//     }, 500 - (Date.now() - lastRan))
-// }
-let iconClass = ref('out'), imgClass = ref('');
-function debounce(target: Ref<string>, value: string) {
-    let timer: ReturnType<typeof setTimeout> | null;
-    return function () {
-        if (!timer) {
-            target.value = value
+let iconClass = ref('in'), imgClass = ref('');
+let timers: (ReturnType<typeof setTimeout> | null)[] = [];
+function debounce(target: Ref<string>) {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let timeStamp: number | null = null;
+    return function (e: MouseEvent) {
+        if (!timeStamp) {
+            timeStamp = Date.now();
+            determineClass(target, e.type);
             timer = setTimeout(() => {
-                timer = null;
-            }, 500);
+                timeStamp = null;
+            }, 500 - (Date.now() - timeStamp))
+            console.log(1);
             return
         }
-        clearTimeout(timer);
+        if (timer) {
+            clearTimeout(timer);
+            const index = timers.indexOf(timer);
+            if (index !== -1) {
+                timers.splice(index, 1);
+            }
+        }
+        timeStamp = Date.now();
         timer = setTimeout(() => {
-            target.value = value
-            timer = null;
-        }, 500);
+            determineClass(target, e.type);
+            timeStamp = null;
+            console.log(2);
+        }, 500 - (Date.now() - timeStamp));
+        timers.push(timer);
+        console.log(timers);
     }
 }
 
-function clearTimers(...timers: (ReturnType<typeof setTimeout> | null)[]) {
-    timers.forEach(item => {
-        if (item) {
-            clearTimeout(item);
-            console.log(item);
-        }
-    })
+function determineClass(target: Ref<string>, type: string) {
+    if (target === iconClass) {
+        type === 'mouseenter' ? target.value = 'out' : target.value = 'in';
+    } else {
+        type === 'mouseenter' ? target.value = 'zoomOut' : target.value = '';
+    }
 }
+const setIconClass = debounce(iconClass);
+const setImgClass = debounce(imgClass);
 
 onUnmounted(() => {
-    // clearTimers(timer, lastFunc)
+    timers.forEach(timer => {
+        if (timer) clearTimeout(timer);
+    })
 })
 </script>
 
@@ -109,7 +92,7 @@ onUnmounted(() => {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        margin-top: 1.5rem;
+        margin-top: 1rem;
         z-index: 1;
 
         &:hover~img {

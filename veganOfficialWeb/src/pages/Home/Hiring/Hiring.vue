@@ -1,6 +1,7 @@
 <template>
     <div>
-
+        <h1>招募</h1>
+        <button>111</button>
     </div>
 </template>
 
@@ -8,4 +9,4 @@
 
 </script>
 
-<style scoped></style>
+<style scoped lang="scss"></style>
