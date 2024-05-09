@@ -26,16 +26,15 @@
                 </button>
             </div>
             <a href="">
-                <transition name="linkText">
-                    <span v-if="linkText == 'More'"
-                        @mouseover="switchText($event)">
-                        {{ linkText }}
-                    </span>
-                    <span v-else
+                <!-- <transition name="linkText"> -->
+                <span class="test">
+                    More
+                </span>
+                <!-- <span v-else
                         @mouseout="switchText($event)">
                         {{ linkText }}
-                    </span>
-                </transition>
+                    </span> -->
+                <!-- </transition> -->
             </a>
         </div>
         <transition-group tag="div" :name="transitionName"
@@ -157,11 +156,36 @@ let injectStyles = [
 
 let linkText = ref('More');
 let lineMargin = ref(39);
-let isDone = ref(false);
+let timers: (ReturnType<typeof setTimeout> | null)[] = [];
+let timer: ReturnType<typeof setTimeout> | null = null;
+let timeStamp: number | null = null;
 
 function switchText(e: MouseEvent) {
-    if (isDone.value) return;
-    switch (e.type) {
+    if (!timeStamp) {
+        timeStamp = Date.now();
+        determineClass(e.type);
+        timer = setTimeout(() => {
+            timeStamp = null;
+        }, 200 - (Date.now() - timeStamp));
+        return
+    }
+    if (timer) {
+        clearTimeout(timer);
+        const index = timers.indexOf(timer);
+        if (index !== -1) {
+            timers.splice(index, 1);
+        }
+    }
+    timeStamp = Date.now();
+    timer = setTimeout(() => {
+        determineClass(e.type);
+        timeStamp = null;
+    }, 200 - (Date.now() - timeStamp));
+    timers.push(timer);
+}
+
+function determineClass(type: string) {
+    switch (type) {
         case 'mouseover':
             linkText.value = '完整菜單';
             lineMargin.value = 64;
@@ -173,11 +197,27 @@ function switchText(e: MouseEvent) {
         default:
             break;
     }
-    isDone.value = true;
-    setTimeout(() => {
-        isDone.value = false;
-    }, 500);
 }
+
+// function switchText(e: MouseEvent) {
+//     if (isDone.value) return;
+//     switch (e.type) {
+//         case 'mouseover':
+//             linkText.value = '完整菜單';
+//             lineMargin.value = 64;
+//             break;
+//         case 'mouseout':
+//             linkText.value = 'More';
+//             lineMargin.value = 39;
+//             break;
+//         default:
+//             break;
+//     }
+//     isDone.value = true;
+//     setTimeout(() => {
+//         isDone.value = false;
+//     }, 500);
+// }
 
 let show = ref(0);
 let transitionName = ref('init')
@@ -316,6 +356,10 @@ onMounted(() => {
                 position: absolute;
                 right: 10%;
                 transform: translate(0, -50%);
+
+                &:hover {
+                    content: '完整菜單';
+                }
             }
         }
 
@@ -504,7 +548,7 @@ onMounted(() => {
                     span {
                         @include flex-center-center;
                         @include WnH(100%);
-                        color: $primeBacColor;
+                        color: $primaryBacColor;
                         font-size: 1rem;
                     }
                 }

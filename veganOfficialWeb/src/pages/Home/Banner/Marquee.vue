@@ -67,7 +67,7 @@ const { throttleChangeSwiper, showSwiper, isDown, swiperStyle } = useSwiper(div,
 
         button {
             border: none;
-            background-color: $primeBacColor;
+            background-color: $primaryBacColor;
         }
 
         .btn-prev {

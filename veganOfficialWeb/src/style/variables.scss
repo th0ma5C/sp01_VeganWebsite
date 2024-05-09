@@ -1,6 +1,6 @@
-$primeFontSize: 1rem;
-$primeWidth: 120rem;
-$primeBacColor: #FCFAF2;
+$primaryFontSize: 1rem;
+$primaryWidth: 120rem;
+$primaryBacColor: #FCFAF2;
 $secondBacColor: #036313;
 
 @mixin flex-center-center {
@@ -13,7 +13,7 @@ $secondBacColor: #036313;
     // padding: 1rem 6rem;
     // margin: 0 auto;
     margin: 1rem 6rem;
-    max-width: $primeWidth;
+    max-width: $primaryWidth;
 }
 
 @mixin WnH($width, $height: $width) {

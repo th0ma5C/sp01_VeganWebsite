@@ -7,14 +7,14 @@
             </a>
             <div>
                 <ul class="navLink">
-                    <li v-for="{ link } in  navLink "
+                    <li v-for="{ link } in navLink "
                         :key="link">
                         <a href=""><span>{{ link
                                 }}</span></a>
                     </li>
                 </ul>
                 <ul class="navIcon">
-                    <li v-for="{ icon } in  navIcon "
+                    <li v-for="{ icon } in navIcon "
                         :key="icon">
                         <a href="">
                             <SvgIcon :name="icon"
@@ -63,7 +63,7 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 .container {
-    background-color: $primeBacColor;
+    background-color: $primaryBacColor;
     border-bottom: 1px solid rgba(128, 128, 128, 0.5);
     width: 100%;
     position: fixed;

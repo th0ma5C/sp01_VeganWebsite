@@ -1,8 +1,7 @@
 <template>
-    <div class="container">
-        <div class="content"
-            @mouseenter="setImgClass($event)"
-            @mouseleave="setImgClass($event)">
+    <div class="container" @mouseenter="setImgClass($event)"
+        @mouseleave="setImgClass($event)">
+        <div class="content">
             <button @mouseenter="setIconClass($event)"
                 @mouseleave="setIconClass($event)">
                 查看地圖
@@ -40,7 +39,6 @@ function debounce(target: Ref<string>) {
             timer = setTimeout(() => {
                 timeStamp = null;
             }, 500 - (Date.now() - timeStamp))
-            console.log(1);
             return
         }
         if (timer) {
@@ -54,10 +52,8 @@ function debounce(target: Ref<string>) {
         timer = setTimeout(() => {
             determineClass(target, e.type);
             timeStamp = null;
-            console.log(2);
         }, 500 - (Date.now() - timeStamp));
         timers.push(timer);
-        console.log(timers);
     }
 }
 
@@ -84,6 +80,7 @@ onUnmounted(() => {
     @include main-part;
     overflow: hidden;
     position: relative;
+    border-radius: 0.5rem;
 
     .content {
         @include flex-center-center;
@@ -133,21 +130,21 @@ onUnmounted(() => {
         }
 
         h2 {
-            color: $primeBacColor;
+            color: $primaryBacColor;
             font-size: 48px;
         }
 
         button {
-            border: 1px solid $primeBacColor;
+            border: 1px solid $primaryBacColor;
             border-radius: 8px;
             font-size: 24px;
-            color: $primeBacColor;
+            color: $primaryBacColor;
             background-color: transparent;
             transition: background-color 0.25s ease-out, color 0.25s ease-out;
 
             &:hover {
                 color: $secondBacColor;
-                background-color: $primeBacColor;
+                background-color: $primaryBacColor;
 
                 &~.svgWrapper {
                     // animation: flyOut 0.5s ease-in forwards;

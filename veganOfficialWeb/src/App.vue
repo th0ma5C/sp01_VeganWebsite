@@ -49,7 +49,7 @@ body {
 }
 
 #app {
-    background-color: $primeBacColor;
+    background-color: $primaryBacColor;
 }
 
 

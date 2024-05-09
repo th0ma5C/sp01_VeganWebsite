@@ -86,7 +86,7 @@ onMounted(() => {
 .mainBanner {
     padding: 0 1rem;
     margin: 0 auto;
-    max-width: $primeWidth;
+    max-width: $primaryWidth;
 }
 
 .title {
