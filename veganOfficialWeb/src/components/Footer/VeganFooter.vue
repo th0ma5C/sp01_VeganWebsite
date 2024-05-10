@@ -22,6 +22,8 @@ import MainFooter from './MainFooter.vue';
 }
 
 .container {
+    background-color: #00480c;
+    color: $primaryBacColor;
     position: relative;
 
     .hr {

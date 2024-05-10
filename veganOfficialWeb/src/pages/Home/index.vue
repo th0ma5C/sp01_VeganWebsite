@@ -13,7 +13,7 @@
     <div>
         <Concept></Concept>
     </div>
-    <div>
+    <div class="hiring">
         <Hiring></Hiring>
     </div>
 </template>
@@ -37,5 +37,9 @@ import Hiring from './Hiring/Hiring.vue'
     &~div {
         margin-bottom: 2rem;
     }
+}
+
+.hiring {
+    @include flex-center-center;
 }
 </style>

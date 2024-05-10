@@ -1,7 +1,8 @@
 <template>
     <div class="container">
         <div>
-            <h2>招募</h2>
+            <h2>Build our RelationShip！</h2>
+            <h2>我們需要你的熱情和才華！</h2>
             <button>連結</button>
         </div>
         <div>
@@ -20,6 +21,7 @@
 .container {
     @include main-part;
     @include flex-center-center;
+    @include WnH(605px, 408px);
     justify-content: space-evenly;
 }
 </style>

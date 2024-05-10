@@ -75,8 +75,9 @@
     }
 
     .info-phone {
-        flex: 1;
-        min-width: 150px;
+        @include WnH(142px, 284px);
+        // width: 56px;
+        // flex: 1;
         margin-top: 35px;
     }
 }
