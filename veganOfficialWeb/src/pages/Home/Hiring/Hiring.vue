@@ -1,7 +1,14 @@
 <template>
-    <div>
-        <h1>招募</h1>
-        <button>111</button>
+    <div class="container">
+        <div>
+            <h2>招募</h2>
+            <button>連結</button>
+        </div>
+        <div>
+            <img src="@assets/img/Home/Hiring/hiring.jpg"
+                alt=""
+                style="width: 200px;height: 200px;display: block;">
+        </div>
     </div>
 </template>
 
@@ -9,4 +16,10 @@
 
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.container {
+    @include main-part;
+    @include flex-center-center;
+    justify-content: space-evenly;
+}
+</style>
