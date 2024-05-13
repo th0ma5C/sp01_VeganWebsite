@@ -29,14 +29,12 @@
                 <!-- <transition name="linkText"> -->
                 <div class="flipper"
                     @mouseenter="switchText($event)"
-                    @mouseleave="switchText($event)">
-                    <span class="front">More</span>
-                    <span class="back">完整菜單</span>
-                </div>
-                <!-- <span v-else
-                        @mouseout="switchText($event)">
+                    @mouseleave="switchText($event)"
+                    :class="{ flip: hover }">
+                    <span class="linkText">
                         {{ linkText }}
-                    </span> -->
+                    </span>
+                </div>
                 <!-- </transition> -->
             </a>
         </div>
@@ -158,61 +156,66 @@ let injectStyles = [
 ]
 
 let lineMargin = ref(25);
-// let timers: (ReturnType<typeof setTimeout> | null)[] = [];
-// let timer: ReturnType<typeof setTimeout> | null = null;
-// let timeStamp: number | null = null;
-
-// function switchText(e: MouseEvent) {
-//     if (!timeStamp) {
-//         timeStamp = Date.now();
-//         determineClass(e.type);
-//         timer = setTimeout(() => {
-//             timeStamp = null;
-//         }, 200 - (Date.now() - timeStamp));
-//         return
-//     }
-//     if (timer) {
-//         clearTimeout(timer);
-//         const index = timers.indexOf(timer);
-//         if (index !== -1) {
-//             timers.splice(index, 1);
-//         }
-//     }
-//     timeStamp = Date.now();
-//     timer = setTimeout(() => {
-//         determineClass(e.type);
-//         timeStamp = null;
-//     }, 200 - (Date.now() - timeStamp));
-//     timers.push(timer);
-// }
-
-// function determineClass(type: string) {
-//     switch (type) {
-//         case 'mouseover':
-//             linkText.value = '完整菜單';
-//             lineMargin.value = 64;
-//             break;
-//         case 'mouseout':
-//             linkText.value = 'More';
-//             lineMargin.value = 39;
-//             break;
-//         default:
-//             break;
-//     }
-// }
+let linkText = ref('More');
+let hover = ref(false)
+let timers: (ReturnType<typeof setTimeout> | null)[] = [];
+let timer: ReturnType<typeof setTimeout> | null = null;
+let timeStamp: number | null = null;
 
 function switchText(e: MouseEvent) {
-    switch (e.type) {
+    if (!timeStamp) {
+        timeStamp = Date.now();
+        determineClass(e.type);
+        timer = setTimeout(() => {
+            timeStamp = null;
+        }, 200 - (Date.now() - timeStamp));
+        return
+    }
+    if (timer) {
+        clearTimeout(timer);
+        const index = timers.indexOf(timer);
+        if (index !== -1) {
+            timers.splice(index, 1);
+        }
+    }
+    timeStamp = Date.now();
+    timer = setTimeout(() => {
+        determineClass(e.type);
+        timeStamp = null;
+    }, 200 - (Date.now() - timeStamp));
+    timers.push(timer);
+}
+
+function determineClass(type: string) {
+    switch (type) {
         case 'mouseenter':
+            console.log('object');
+            hover.value = true;
+            linkText.value = '完整菜單';
             lineMargin.value = 0;
             break;
         case 'mouseleave':
+            hover.value = false;
+            linkText.value = 'More';
             lineMargin.value = 25;
             break;
         default:
             break;
     }
 }
+
+// function switchText(e: MouseEvent) {
+//     switch (e.type) {
+//         case 'mouseenter':
+//             lineMargin.value = 0;
+//             break;
+//         case 'mouseleave':
+//             lineMargin.value = 25;
+//             break;
+//         default:
+//             break;
+//     }
+// }
 
 let show = ref(0);
 let transitionName = ref('init')
@@ -348,39 +351,28 @@ onMounted(() => {
         a {
             @include WnH(64px, 19px);
 
-            span {
-                // position: absolute;
-                // transform: translate(0, -50%);
-            }
+            // &:hover>div {
+            //     transform: rotateX(180deg);
+            // }
 
             .flipper {
                 @include WnH(100%);
                 position: relative;
-                transition: transform 0.2s 0.2s ease;
+                transition: transform 0.5s ease;
                 transform-style: preserve-3d;
                 text-align: center;
 
-                .front,
-                .back {
+                .lineText {
                     @include flex-center-center;
                     color: $secondBacColor;
                     position: absolute;
                     right: 0;
-                    backface-visibility: hidden;
-                }
-
-                .front {
                     background-color: #FCFAF2;
                 }
+            }
 
-                .back {
-                    background-color: #FCFAF2;
-                    transform: rotateX(180deg);
-                }
-
-                &:hover {
-                    transform: rotateX(180deg);
-                }
+            .flip {
+                transform: rotateX(180deg);
             }
 
         }
