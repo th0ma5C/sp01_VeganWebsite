@@ -4,7 +4,9 @@
         <hr class="hr">
         <MainFooter></MainFooter>
         <div class="footer-logo">
-            Relation-ship
+            <span>
+                Relation-ship
+            </span>
         </div>
     </div>
 </template>
@@ -25,6 +27,8 @@ import MainFooter from './MainFooter.vue';
     background-color: #00480c;
     color: $primaryBacColor;
     position: relative;
+    max-height: 920px;
+    overflow: hidden;
 
     .hr {
         margin: 1rem 2rem;
@@ -35,9 +39,11 @@ import MainFooter from './MainFooter.vue';
         font-family: 'MrDafoe', sans-serif;
         text-align: center;
         margin: 0;
-        font-size: 16vw;
+        font-size: 33vh;
         white-space: nowrap;
         overflow: hidden;
+
+        span {}
     }
 }
 </style>

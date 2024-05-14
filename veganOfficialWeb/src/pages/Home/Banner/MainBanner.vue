@@ -87,6 +87,7 @@ onMounted(() => {
     padding: 0 1rem;
     margin: 0 auto;
     max-width: $primaryWidth;
+    height: 872px;
 }
 
 .title {

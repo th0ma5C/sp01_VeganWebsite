@@ -26,16 +26,19 @@
                 </button>
             </div>
             <a href="">
-                <!-- <transition name="linkText"> -->
                 <div class="flipper"
                     @mouseenter="switchText($event)"
-                    @mouseleave="switchText($event)"
-                    :class="{ flip: hover }">
-                    <span class="linkText">
-                        {{ linkText }}
-                    </span>
+                    @mouseleave="switchText($event)">
+                    <transition name="linkText">
+                        <span class="linkText"
+                            v-if="side == 'front'">
+                            More
+                        </span>
+                        <span class="linkText" v-else>
+                            完整菜單
+                        </span>
+                    </transition>
                 </div>
-                <!-- </transition> -->
             </a>
         </div>
         <transition-group tag="div" :name="transitionName"
@@ -156,8 +159,7 @@ let injectStyles = [
 ]
 
 let lineMargin = ref(25);
-let linkText = ref('More');
-let hover = ref(false)
+let side = ref('front');
 let timers: (ReturnType<typeof setTimeout> | null)[] = [];
 let timer: ReturnType<typeof setTimeout> | null = null;
 let timeStamp: number | null = null;
@@ -168,7 +170,7 @@ function switchText(e: MouseEvent) {
         determineClass(e.type);
         timer = setTimeout(() => {
             timeStamp = null;
-        }, 200 - (Date.now() - timeStamp));
+        }, 250 - (Date.now() - timeStamp));
         return
     }
     if (timer) {
@@ -182,21 +184,18 @@ function switchText(e: MouseEvent) {
     timer = setTimeout(() => {
         determineClass(e.type);
         timeStamp = null;
-    }, 200 - (Date.now() - timeStamp));
+    }, 250 - (Date.now() - timeStamp));
     timers.push(timer);
 }
 
 function determineClass(type: string) {
     switch (type) {
         case 'mouseenter':
-            console.log('object');
-            hover.value = true;
-            linkText.value = '完整菜單';
+            side.value = 'back';
             lineMargin.value = 0;
             break;
         case 'mouseleave':
-            hover.value = false;
-            linkText.value = 'More';
+            side.value = 'front';
             lineMargin.value = 25;
             break;
         default:
@@ -266,9 +265,12 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .tabContainer {
-    @include flex-center-center;
     @include main-part;
+    display: flex;
     align-items: normal;
+    justify-content: flex-start;
+    gap: 9rem;
+    height: 868px;
     flex-direction: column;
     overflow: hidden;
 
@@ -289,7 +291,7 @@ onMounted(() => {
                 background-color: $secondBacColor;
                 margin: 1rem 2rem;
                 margin-right: calc(2rem - var(--lineMargin, 25px));
-                transition: margin 0.2s 0.2s ease;
+                transition: margin 0.25s ease;
             }
 
             button {
@@ -358,21 +360,18 @@ onMounted(() => {
             .flipper {
                 @include WnH(100%);
                 position: relative;
-                transition: transform 0.5s ease;
                 transform-style: preserve-3d;
                 text-align: center;
 
-                .lineText {
+                .linkText {
                     @include flex-center-center;
                     color: $secondBacColor;
                     position: absolute;
                     right: 0;
+                    backface-visibility: hidden;
                     background-color: #FCFAF2;
                 }
-            }
 
-            .flip {
-                transform: rotateX(180deg);
             }
 
         }
@@ -381,23 +380,18 @@ onMounted(() => {
 
     .linkText-enter-active,
     .linkText-leave-active {
-        transition: top 0.5s ease-out;
+        transition: transform 0.25s;
     }
 
-    .linkText-enter-from {
-        top: 25%;
+    .linkText-enter-from,
+    .linkText-leave-to {
+        transform: rotateX(180deg);
     }
 
     .linkText-enter-to,
     .linkText-leave-from {
-        top: 50%;
+        transform: rotateX(0deg);
     }
-
-    .linkText-leave-to {
-        opacity: 0;
-        top: 75%;
-    }
-
 
     @keyframes loadText {
         from {

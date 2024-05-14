@@ -67,7 +67,7 @@ onBeforeUnmount(() => {
     border-bottom: 1px solid rgba(128, 128, 128, 0.5);
     width: 100%;
     position: fixed;
-    top: 0;
+    top: -0.1%;
     transition: all 0.2s linear;
     z-index: 3;
 

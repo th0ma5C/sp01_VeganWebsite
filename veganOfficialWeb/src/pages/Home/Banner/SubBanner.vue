@@ -30,6 +30,7 @@ const getUrl = imgs.map(item => ({
 <style lang="scss" scoped>
 .container {
     margin: 1rem;
+    margin-bottom: calc(1rem + 11.75px);
 
     a {
         img {

@@ -53,7 +53,7 @@ const { throttleChangeSwiper, showSwiper, isDown, swiperStyle } = useSwiper(div,
     &::before {
         content: '';
         display: block;
-        height: 107px;
+        height: 100px;
         width: 100%;
     }
 

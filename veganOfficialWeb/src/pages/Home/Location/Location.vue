@@ -78,9 +78,11 @@ onUnmounted(() => {
 .container {
     @include flex-center-center;
     @include main-part;
+    margin-top: 80px;
+    height: 920px;
     overflow: hidden;
     position: relative;
-    border-radius: 0.5rem;
+    border-radius: 1rem;
 
     .content {
         @include flex-center-center;
@@ -155,15 +157,15 @@ onUnmounted(() => {
     }
 
     img {
-        @include WnH(100%);
+        height: 100%;
         filter: brightness(0.5);
-        transform: scale(1.05);
+        transform: scale(1.1);
         transition: transform 0.5s ease-out;
         z-index: 0;
     }
 
     .zoomOut {
-        transform: scale(1);
+        transform: scale(1.2);
     }
 }
 </style>

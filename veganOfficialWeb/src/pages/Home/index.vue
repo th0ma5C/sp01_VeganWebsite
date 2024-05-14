@@ -7,7 +7,7 @@
     <div>
         <Catalog></Catalog>
     </div>
-    <div>
+    <div class="location">
         <Location></Location>
     </div>
     <div>
@@ -31,11 +31,12 @@ import Hiring from './Hiring/Hiring.vue'
 
 <style scoped lang="scss">
 .banner {
+    overflow: hidden;
     min-height: 1290PX;
 
     &,
     &~div {
-        margin-bottom: 2rem;
+        overflow: hidden;
     }
 }
 

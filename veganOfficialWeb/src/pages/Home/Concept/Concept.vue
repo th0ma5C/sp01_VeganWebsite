@@ -120,6 +120,8 @@ onUnmounted(() => {
 .container {
     @include main-part;
     @include flex-center-center;
+    height: 840px;
+    margin-top: 4rem;
     gap: 3%;
 
     section {
