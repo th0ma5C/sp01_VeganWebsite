@@ -1,16 +1,21 @@
 <template>
     <div class="container">
-        <div>
-            <h2>Build our
-                &nbsp;<span>Relation-Ship</span>
-            </h2>
-            <h2>因你的熱情和才華，使餐點更美味！</h2>
-            <button>連結</button>
+        <div class="content">
+            <p>Build our</p>
+            <span>Relation-Ship</span>
+            <p>有了你的熱情和才華，使餐點更美味！</p>
         </div>
-        <div>
+        <div class="imgWrapper">
             <img src="@assets/img/Home/Hiring/hiring.jpg"
-                alt=""
-                style="width: 200px;height: 200px;display: block;">
+                alt="">
+            <div class="marker">
+                <p>更多資訊</p>
+                <SvgIcon :name="'HiringArrow'" width="50"
+                    height="50" class="arrow"></SvgIcon>
+            </div>
+        </div>
+        <div class="btnWrapper">
+            <button>Join Us!</button>
         </div>
     </div>
 </template>
@@ -28,16 +33,84 @@
 .container {
     @include main-part;
     @include flex-center-center;
-    @include WnH(605px, 408px);
-    margin-top: 90px;
-    margin-bottom: 266px;
-    justify-content: space-evenly;
+    @include WnH(1000px, 500px);
+    margin-top: 100px;
+    margin-bottom: 356px;
+    // gap: 3rem;
+    // justify-content: space-evenly;
     border-top: 1px solid black;
     border-bottom: 1px solid black;
 
-    span {
-        font-size: 32px;
-        font-family: 'MrDafoe', 'NotoSans';
+    .content {
+        display: flex;
+        flex-direction: column;
+        margin-right: 3rem;
+
+        p {
+            margin: 0;
+        }
+
+        span {
+            font-size: 5rem;
+            font-family: 'MrDafoe', 'NotoSans';
+        }
+
     }
+
+    .imgWrapper {
+        position: relative;
+
+        img {
+            @include WnH(125px);
+            display: block;
+            // transform: rotateZ(8deg);
+            margin-right: 1rem;
+            filter: drop-shadow(2px 2px 2px black);
+        }
+
+        .marker {
+            position: absolute;
+            right: -40%;
+            top: -50%;
+            display: flex;
+            flex-direction: column;
+            transform: rotate(10deg);
+
+            p {
+                margin-bottom: 0;
+                transform: translateY(8px);
+            }
+
+            .arrow {
+                transform: rotate(60deg);
+            }
+        }
+    }
+
+    .btnWrapper {
+        position: relative;
+        z-index: 2;
+        transform: translate(35%, -25%);
+
+        button {
+            @include WnH(90px, 60px);
+
+            &:hover {
+                transform: translate(4px, 4px);
+            }
+
+        }
+
+        &::after {
+            @include WnH(90px, 60px);
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            z-index: -1;
+            background-color: black;
+        }
+    }
+
 }
 </style>

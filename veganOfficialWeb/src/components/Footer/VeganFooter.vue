@@ -24,7 +24,7 @@ import MainFooter from './MainFooter.vue';
 }
 
 .container {
-    background-color: #00480c;
+    background-color: #00430b;
     color: $primaryBacColor;
     position: relative;
     max-height: 920px;

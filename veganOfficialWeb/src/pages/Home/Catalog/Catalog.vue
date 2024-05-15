@@ -10,7 +10,7 @@
                         :class="getTabClass(index)">
                         <SvgIcon :name="item.icon"
                             width="36" height="36"
-                            color="#00480c">
+                            color="#00430b">
                         </SvgIcon>
                         <transition tag="div" name="title">
                             <span v-show="show == index">{{
@@ -19,7 +19,7 @@
                     </div>
                     <SvgIcon :name="'CatalogSlash'"
                         width="36" height="36"
-                        color="#00480c"
+                        color="#00430b"
                         v-if="index == 0 || index == 1"
                         style="cursor: default;">
                     </SvgIcon>
@@ -150,7 +150,7 @@ let injectStyles = [
     `
     :host{
         --swiper-navigation-size: 33px;
-        --swiper-navigation-color: #00480c;
+        --swiper-navigation-color: #00430b;
     }
     .swiper-button-next{
         right:0;
