@@ -33,13 +33,32 @@
 .container {
     @include main-part;
     @include flex-center-center;
-    @include WnH(1000px, 500px);
-    margin-top: 100px;
-    margin-bottom: 356px;
+    @include WnH(1201px, 500px);
+    margin-top: 45px;
+    margin-bottom: 221px;
+    position: relative;
+
     // gap: 3rem;
     // justify-content: space-evenly;
-    border-top: 1px solid black;
-    border-bottom: 1px solid black;
+    // border-top: 1px solid black;
+    // border-bottom: 1px solid black;
+    &::before {
+        content: '';
+        height: 1px;
+        width: 1201px;
+        position: absolute;
+        top: 0;
+        background-color: black;
+    }
+
+    &::after {
+        content: '';
+        height: 1px;
+        width: 1201px;
+        position: absolute;
+        bottom: 0;
+        background-color: black;
+    }
 
     .content {
         display: flex;
@@ -51,7 +70,7 @@
         }
 
         span {
-            font-size: 5rem;
+            font-size: 7rem;
             font-family: 'MrDafoe', 'NotoSans';
         }
 

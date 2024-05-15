@@ -120,8 +120,9 @@ onUnmounted(() => {
 .container {
     @include main-part;
     @include flex-center-center;
-    height: 840px;
-    margin-top: 4rem;
+    height: 920px;
+    margin-top: 100px;
+    margin-bottom: 0;
     gap: 3%;
 
     section {
@@ -129,6 +130,7 @@ onUnmounted(() => {
         flex-direction: column;
         position: relative;
         width: 48.5%;
+        transform: translateY(-148px);
 
         .textClip {
             @include WnH(100%, 80%);
@@ -138,7 +140,7 @@ onUnmounted(() => {
             background-clip: text;
             font-family: 'MrDafoe', 'NotoSans';
             color: transparent;
-            font-size: 170px;
+            font-size: 150px;
             text-align: center;
             line-height: 408px;
             transition: font-size 0.2s ease-out;
@@ -159,7 +161,7 @@ onUnmounted(() => {
 
         &:hover {
             .textClip {
-                font-size: 150px;
+                font-size: 170px;
             }
         }
 
