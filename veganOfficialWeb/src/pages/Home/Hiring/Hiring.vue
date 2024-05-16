@@ -15,7 +15,7 @@
             </div>
         </div>
         <div class="btnWrapper">
-            <button>Join Us!</button>
+            <button>Join Us</button>
         </div>
     </div>
 </template>
@@ -34,8 +34,8 @@
     @include main-part;
     @include flex-center-center;
     @include WnH(1201px, 500px);
-    margin-top: 45px;
-    margin-bottom: 221px;
+    margin-top: 35px;
+    margin-bottom: 309px;
     position: relative;
 
     // gap: 3rem;
@@ -80,7 +80,7 @@
         position: relative;
 
         img {
-            @include WnH(125px);
+            @include WnH(128px);
             display: block;
             // transform: rotateZ(8deg);
             margin-right: 1rem;
@@ -109,10 +109,17 @@
     .btnWrapper {
         position: relative;
         z-index: 2;
-        transform: translate(35%, -25%);
+        transform: translate(40%, -30%) rotateZ(12deg);
 
         button {
             @include WnH(90px, 60px);
+            border: 1px solid black;
+            border-radius: 1rem;
+            font-size: 1.25rem;
+            font-variation-settings: 'wght' 600;
+            color: $primaryBacColor;
+            background-color: $secondBacColor;
+            transition: transform 0.2s ease-out;
 
             &:hover {
                 transform: translate(4px, 4px);
@@ -127,7 +134,8 @@
             top: 4px;
             left: 4px;
             z-index: -1;
-            background-color: black;
+            background-color: $secondBacColor;
+            border-radius: 1rem;
         }
     }
 

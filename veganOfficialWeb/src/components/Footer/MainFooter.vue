@@ -40,16 +40,20 @@
         </nav>
         <div class="social-link">
             <a href="">
-                <SvgIcon name="Fb" width="30px"></SvgIcon>
+                <SvgIcon name="Fb" width="30px"
+                    color="#FCFAF2"></SvgIcon>
             </a>
             <a href="">
-                <SvgIcon name="Ig" width="30px"></SvgIcon>
+                <SvgIcon name="Ig" width="30px"
+                    color="#FCFAF2"></SvgIcon>
             </a>
             <a href="">
-                <SvgIcon name="LINE" width="30px"></SvgIcon>
+                <SvgIcon name="LINE" width="30px"
+                    color="#FCFAF2"></SvgIcon>
             </a>
             <a href="">
-                <SvgIcon name="Twitter" width="30px">
+                <SvgIcon name="Twitter" width="30px"
+                    color="#FCFAF2">
                 </SvgIcon>
             </a>
         </div>

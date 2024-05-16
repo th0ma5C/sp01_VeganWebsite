@@ -1,7 +1,7 @@
 <template>
     <div class="container">
-        <InfoFooter></InfoFooter>
-        <hr class="hr">
+        <InfoFooter class="InfoFooter"></InfoFooter>
+        <!-- <hr class="hr"> -->
         <MainFooter></MainFooter>
         <div class="footer-logo">
             <span>
@@ -30,9 +30,22 @@ import MainFooter from './MainFooter.vue';
     max-height: 920px;
     overflow: hidden;
 
-    .hr {
-        margin: 1rem 2rem;
-        border: 1px solid rgba(120, 120, 120, 0.5);
+    // .hr {
+    //     width: 1021px;
+    //     // margin: 1rem auto;
+    //     border: 1px solid $primaryBacColor;
+    // }
+    .InfoFooter {
+        position: relative;
+
+        &::after {
+            @include WnH(1201px, 1px);
+            position: absolute;
+            bottom: 0;
+            content: '';
+            background-color: $primaryBacColor;
+            margin: auto 6rem;
+        }
     }
 
     .footer-logo {

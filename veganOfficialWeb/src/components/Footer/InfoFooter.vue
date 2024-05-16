@@ -78,7 +78,7 @@
         @include WnH(142px, 284px);
         // width: 56px;
         // flex: 1;
-        margin-top: 35px;
+        margin-bottom: 35px;
     }
 }
 </style>
