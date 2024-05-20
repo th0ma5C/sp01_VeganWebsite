@@ -8,7 +8,7 @@
         <Catalog></Catalog>
     </div>
     <div class="location">
-        <Location></Location>
+        <nLocation></nLocation>
     </div>
     <div>
         <Concept></Concept>
@@ -23,7 +23,7 @@ import Marquee from './Banner/Marquee.vue';
 import MainBanner from './Banner/MainBanner.vue';
 import SubBanner from './Banner/SubBanner.vue';
 import Catalog from './Catalog/Catalog.vue';
-import Location from './Location/Location.vue';
+import nLocation from './Location/nLocation.vue';
 import Concept from './Concept/Concept.vue'
 import Hiring from './Hiring/Hiring.vue'
 
@@ -38,6 +38,10 @@ import Hiring from './Hiring/Hiring.vue'
     &~div {
         overflow: hidden;
     }
+}
+
+.location {
+    @include flex-center-center;
 }
 
 .hiring {

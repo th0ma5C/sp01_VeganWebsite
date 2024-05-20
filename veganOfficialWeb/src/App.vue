@@ -36,10 +36,10 @@ onMounted(() => {
         img.src = el;
     })
 
-    window.addEventListener('scroll', function (event) {
-        console.log('滾動距離:', window.scrollY);  // 垂直滾動距離
-        console.log('滾動距離:', window.scrollX);  // 水平滾動距離
-    });
+    // window.addEventListener('scroll', function (event) {
+    //     console.log('滾動距離:', window.scrollY);  // 垂直滾動距離
+    //     console.log('滾動距離:', window.scrollX);  // 水平滾動距離
+    // });
 })
 
 </script>

@@ -22,8 +22,6 @@ import { onUnmounted, ref } from 'vue';
 import type { Ref } from 'vue';
 
 /**
- * todo:mainBanner圖片在大解析度時width不自然
- * 
  * *0430: 基本結構、css *0502: icon動畫 背景動畫
  * *0507: 動畫防抖
  */
