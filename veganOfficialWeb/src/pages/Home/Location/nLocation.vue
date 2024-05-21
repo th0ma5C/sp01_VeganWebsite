@@ -37,13 +37,16 @@ onMounted(() => {
         if (bg.width == 1905 || ticking) return;
         scrollY.value = window.scrollY;
     })
+    window.addEventListener('scroll', () => {
+        // console.log(window.scrollY);
+    })
 })
 
 </script>
 
 <style scoped lang="scss">
 .container {
-    background: url('@assets/img/Home/Location/shop.jpg') no-repeat center/cover;
+    background: url('@assets/img/Home/Location/shop.jpg') fixed no-repeat center/cover;
     transition: width 0.2s ease, height 0.2s ease;
 }
 </style>

@@ -1,9 +1,11 @@
 <template>
-    <swiper-container :slides-per-view="4" loop="true"
+    <!-- <swiper-container :slides-per-view="4" loop="true"
         :speed="1000" :space-between="16" :autoplay="{
             delay: 5500,
             disableOnInteraction: false,
-        }" class="container">
+        }" class="container"> -->
+    <swiper-container :slides-per-view="4" loop="true"
+        :speed="1000" :space-between="16" class="container">
         <swiper-slide v-for="(item, index) in getUrl"
             :key="index">
             <a href="" @click.prevent>
@@ -29,14 +31,13 @@ const getUrl = imgs.map(item => ({
 
 <style lang="scss" scoped>
 .container {
-    margin: 1rem;
-    margin-bottom: calc(1rem + 11.75px);
+    padding: 1rem;
+    padding-bottom: calc(1rem + 11.75px);
 
     a {
         img {
+            @include WnH(100%);
             display: block;
-            width: 100%;
-            height: 100%;
             object-fit: cover;
             object-position: center center;
         }

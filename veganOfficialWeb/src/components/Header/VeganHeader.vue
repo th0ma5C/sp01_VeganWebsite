@@ -66,6 +66,7 @@ onBeforeUnmount(() => {
     background-color: $primaryBacColor;
     border-bottom: 1px solid rgba(128, 128, 128, 0.5);
     width: 100%;
+    height: 100px;
     position: fixed;
     top: -0.1%;
     transition: all 0.2s linear;

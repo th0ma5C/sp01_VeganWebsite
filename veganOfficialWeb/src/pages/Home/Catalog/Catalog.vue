@@ -260,6 +260,7 @@ onMounted(() => {
     getUrl(reqGetHotMenu).then(data => {
         if (data) menu.value[1].url = data;
     });
+
 })
 </script>
 
@@ -270,7 +271,7 @@ onMounted(() => {
     align-items: normal;
     justify-content: flex-start;
     gap: 9rem;
-    height: 868px;
+    height: 948px;
     flex-direction: column;
     overflow: hidden;
 
