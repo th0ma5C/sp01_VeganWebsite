@@ -1,6 +1,36 @@
 <template>
-    <div class="container" :style="bgSize">
-
+    <div class="container relative" :style="[bgSize]">
+        <transition name="bgFilter">
+            <div class="bgFilter absolute content-none"
+                v-show="bg.width == 1905">
+            </div>
+        </transition>
+        <div class="mainPart">
+            <SvgIcon name="LocationTW"
+                class="TW absolute top-1/2 left-1/2 -translate-x-1/2"
+                width="" height="450" color="white">
+            </SvgIcon>
+            <div class="content">
+                <div class="point"></div>
+                <div class="branchName">
+                    <p>北</p>
+                    <h1>台北車站店</h1>
+                    <div>
+                        <p>Find us</p>
+                        <button>箭頭</button>
+                    </div>
+                </div>
+                <div class="position">
+                    <SvgIcon name="Location" color="white"
+                        width="24" height="24">
+                    </SvgIcon>
+                    <p>Zhongzheng Dist., Taipei City</p>
+                </div>
+            </div>
+            <!-- <swiper-container>
+                <swiper-slide></swiper-slide>
+            </swiper-container> -->
+        </div>
     </div>
 </template>
 
@@ -48,5 +78,35 @@ onMounted(() => {
 .container {
     background: url('@assets/img/Home/Location/shop.jpg') fixed no-repeat center/cover;
     transition: width 0.2s ease, height 0.2s ease;
+
+    .bgFilter {
+        @include WnH(100%);
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .bgFilter-enter-active {
+        transition: opacity 1s ease;
+    }
+
+    .bgFilter-enter-from {
+        opacity: 0;
+    }
+
+    .bgFilter-enter-to {
+        opacity: 1;
+    }
+}
+
+.mainPart {
+    @include flex-center-center;
+    filter: brightness(2);
+    color: $primaryBacColor;
+
+    .TW {}
+
+    .content {
+        transform: translateY(538px);
+    }
+
 }
 </style>

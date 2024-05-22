@@ -267,11 +267,12 @@ onMounted(() => {
 <style lang="scss" scoped>
 .tabContainer {
     @include main-part;
+    margin-top: 66px;
     display: flex;
     align-items: normal;
     justify-content: flex-start;
     gap: 9rem;
-    height: 948px;
+    height: 898px;
     flex-direction: column;
     overflow: hidden;
 
