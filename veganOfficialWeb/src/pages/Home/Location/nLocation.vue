@@ -6,9 +6,8 @@
             </div>
         </transition>
         <div class="mainPart">
-            <SvgIcon name="LocationTW"
-                class="TW absolute top-1/2 left-1/2 -translate-x-1/2"
-                width="" height="450" color="white">
+            <SvgIcon name="LocationTW" class="TW" width=""
+                height="450" color="white">
             </SvgIcon>
             <div class="content">
                 <div class="point"></div>
@@ -99,14 +98,58 @@ onMounted(() => {
 
 .mainPart {
     @include flex-center-center;
-    filter: brightness(2);
+    @include WnH(1905px, 920px);
     color: $primaryBacColor;
+    filter: brightness(2);
+    flex-direction: column;
+    gap: 2rem;
+    justify-content: normal;
+    position: relative;
 
-    .TW {}
-
-    .content {
-        transform: translateY(538px);
+    .TW {
+        margin-top: 5rem
     }
 
+    .content {
+
+        .point {
+            @include WnH(8px);
+            border-radius: 50%;
+            background-color: white;
+            position: absolute;
+            top: calc(32px + 5rem);
+            left: calc(205px + 50rem);
+        }
+
+        .branchName {
+            @include flex-center-center;
+            flex-direction: column;
+            // gap: 1rem;
+
+            h1 {
+                font-size: 3rem;
+                font-variation-settings: 'wght' 500;
+            }
+
+            div {
+                @include flex-center-center;
+                margin-top: 1rem;
+            }
+        }
+
+        .position {
+            @include flex-center-center;
+            position: absolute;
+            bottom: 5%;
+            left: 15%;
+        }
+    }
+
+    // 中
+    // top: calc(154px + 5rem);
+    // left: calc(110px + 50rem);
+    // 南
+    // top: calc(353px + 5rem);
+    // left: calc(66px + 50rem);
 }
 </style>
