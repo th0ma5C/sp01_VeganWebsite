@@ -12,11 +12,16 @@
             <div class="content">
                 <div class="point"></div>
                 <div class="branchName">
-                    <p>北</p>
+                    <p>北部分店</p>
                     <h1>台北車站店</h1>
                     <div>
-                        <p>Find us</p>
-                        <button>箭頭</button>
+                        <a>
+                            查看地圖
+                        </a>
+                        <SvgIcon name="LocationArrow2"
+                            width="24" height="24"
+                            class="arrow">
+                        </SvgIcon>
                     </div>
                 </div>
                 <div class="position">
@@ -127,13 +132,51 @@ onMounted(() => {
             // gap: 1rem;
 
             h1 {
-                font-size: 3rem;
+                font-size: 4rem;
                 font-variation-settings: 'wght' 500;
+                letter-spacing: 0.5rem;
             }
 
-            div {
+            &>div {
                 @include flex-center-center;
-                margin-top: 1rem;
+                align-self: flex-end;
+                // margin-top: 0.5rem;
+                margin-right: 0.5rem;
+                font-size: 1.5rem;
+                gap: 0.5rem;
+                position: relative;
+                overflow: hidden;
+
+                &:hover::after {
+                    transform: translateX(128px);
+                }
+
+                &::after {
+                    @include WnH(6rem, 1px);
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    background-color: white;
+                    transform: translateX(-100%);
+                    transition: transform 1s ease;
+                }
+
+                @keyframes arrowPath {
+                    from {
+                        stroke-dashoffset: 100;
+                    }
+
+                    to {
+                        stroke-dashoffset: 0;
+                    }
+                }
+
+                .arrow {
+                    stroke-dashoffset: 100;
+                    stroke-dasharray: 100;
+                    animation: arrowPath 1s infinite;
+                }
             }
         }
 
