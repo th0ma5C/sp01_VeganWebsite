@@ -1,6 +1,7 @@
 import { ref, computed, inject, nextTick, onMounted, onUnmounted, onUpdated } from "vue";
 import type { Ref, ComponentPublicInstance } from 'vue';
 import throttle from 'lodash/throttle';
+import useListener from './useListener';
 
 interface SwiperItem {
     title: string,
@@ -73,7 +74,7 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
         isDown.value = true;
         breakPoint = 0;
 
-        eventListener(window, 'add', dragEvents);
+        useListener(window, 'add', dragEvents);
     }
 
     function move(e: MouseEvent) {
@@ -98,7 +99,7 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
 
         // console.log(divWidth);
         startPlay();
-        eventListener(window, 'remove', dragEvents);
+        useListener(window, 'remove', dragEvents);
     }
 
     /**------事件監聽------ */
@@ -111,7 +112,7 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
          handler: Function;
         }
  
-        function eventListener(element: Window | Document | HTMLElement, action: 'add' | 'remove', events: EventInfo[]) {
+        function useListener(element: Window | Document | HTMLElement, action: 'add' | 'remove', events: EventInfo[]) {
             if (action == 'add') {
                 events.forEach(({ event, handler }) => {
                     element.addEventListener(event, handler as (e: Event) => void);
@@ -124,22 +125,22 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
         }
     */
 
-    interface EventInfo<T extends Event> {
-        event: string;
-        handler: (e: T) => void;
-    }
+    // interface EventInfo<T extends Event> {
+    //     event: string;
+    //     handler: (e: T) => void;
+    // }
 
-    function eventListener<T extends Event>(element: Window | Document | HTMLElement, action: 'add' | 'remove', events: EventInfo<T>[]) {
-        if (action == 'add') {
-            events.forEach(({ event, handler }) => {
-                element.addEventListener(event, handler as (e: Event) => void);
-            });
-        } else {
-            events.forEach(({ event, handler }) => {
-                element.removeEventListener(event, handler as (e: Event) => void);
-            });
-        }
-    }
+    // function useListener<T extends Event>(element: Window | Document | HTMLElement, action: 'add' | 'remove', events: EventInfo<T>[]) {
+    //     if (action == 'add') {
+    //         events.forEach(({ event, handler }) => {
+    //             element.addEventListener(event, handler as (e: Event) => void);
+    //         });
+    //     } else {
+    //         events.forEach(({ event, handler }) => {
+    //             element.removeEventListener(event, handler as (e: Event) => void);
+    //         });
+    //     }
+    // }
 
     const dragEvents = [
         { event: 'mousemove', handler: move },
@@ -160,8 +161,8 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     onMounted(() => {
         const el = elementRef.value?.$el;
 
-        eventListener(el, 'add', domEvents);
-        eventListener(window, 'add', windowEvents);
+        useListener(el, 'add', domEvents);
+        useListener(window, 'add', windowEvents);
 
         startPlay();
     })
@@ -173,8 +174,8 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     onUnmounted(() => {
         const el = elementRef.value?.$el;
 
-        eventListener(el, 'remove', domEvents);
-        eventListener(window, 'remove', windowEvents);
+        useListener(el, 'remove', domEvents);
+        useListener(window, 'remove', windowEvents);
 
         stopPlay();
     })

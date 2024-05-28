@@ -5,15 +5,22 @@
                 v-show="bg.width == 1905">
             </div>
         </transition>
+        <SvgIcon name="LocationTW" class="TW" width=""
+            height="450" color="white">
+        </SvgIcon>
         <div class="mainPart">
-            <SvgIcon name="LocationTW" class="TW" width=""
-                height="450" color="white">
-            </SvgIcon>
-            <transition-group name="carousel" tag="div"
-                class="carousel">
-                <div v-for="(item, index) in branchList"
-                    :key="index" class="content">
-                    <div class="point"></div>
+            <!-- <transition-group name="carousel" tag="div"
+                class="carousel"> -->
+            <div class="carousel"
+                v-for="(item, index) in branchList"
+                :key="index">
+                <div class="content">
+                    <div class="point" :class="{
+                        north: index == 0,
+                        central: index == 1,
+                        south: index == 2,
+                    }">
+                    </div>
                     <div class="branchName">
                         <p>{{ item.position }}</p>
                         <h1>{{ item.branch }}</h1>
@@ -28,7 +35,8 @@
                             </SvgIcon>
                         </div>
                     </div>
-                    <div class="position">
+                    <div class="position"
+                        :style="{ left: (index * 100 + 15) + '%' }">
                         <SvgIcon name="Location"
                             color="white" width="24"
                             height="24">
@@ -36,7 +44,8 @@
                         <p>{{ item.addr }}</p>
                     </div>
                 </div>
-            </transition-group>
+            </div>
+            <!-- </transition-group> -->
             <!-- <div class="content">
                 <div class="point"></div>
                 <div class="branchName">
@@ -67,6 +76,7 @@
 <script setup lang="ts">
 import { reactive, watch, onMounted, onUnmounted, ref, computed } from 'vue';
 import type { Ref } from 'vue';
+import useListener from '@/hooks/useListener'
 
 
 //背景
@@ -93,6 +103,10 @@ let bgSize = computed(() => ({
     width: `${bg.width}px`,
     height: `${bg.height}px`
 }))
+function bgScroll() {
+    if (bg.width == 1905 || ticking) return;
+    scrollY.value = window.scrollY;
+}
 
 // location swiper
 let branchList = ref([
@@ -118,6 +132,10 @@ let branchList = ref([
         bacUrl: ''
     }
 ])
+
+function changeSwiper() {
+
+}
 
 //icon hover
 let iconClass = ref('in');
@@ -153,18 +171,21 @@ function debounce(target: Ref<string>) {
 
 const setIconClass = debounce(iconClass);
 
+const events = {
+    scroll: [
+        { event: 'scroll', handler: bgScroll }
+    ]
+}
 
 onMounted(() => {
     scrollY.value = window.scrollY;
-    window.addEventListener('scroll', () => {
-        if (bg.width == 1905 || ticking) return;
-        scrollY.value = window.scrollY;
-    })
+    useListener(window, 'add', events.scroll)
 })
 onUnmounted(() => {
     timers.forEach(timer => {
         if (timer) clearTimeout(timer);
     })
+    useListener(window, 'remove', events.scroll)
 })
 
 </script>
@@ -174,9 +195,18 @@ onUnmounted(() => {
     background: url('@assets/img/Home/Location/shop.jpg') fixed no-repeat center/cover;
     transition: width 0.2s ease, height 0.2s ease;
 
+    .TW {
+        // padding-top: 5rem;
+        position: absolute;
+        top: 5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0.8;
+    }
+
     .bgFilter {
         @include WnH(100%);
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.6);
     }
 
     .bgFilter-enter-active {
@@ -212,93 +242,95 @@ onUnmounted(() => {
 }
 
 .mainPart {
-    @include flex-center-center;
-    @include WnH(1905px, 920px);
+    @include WnH(100%);
+    display: inline-flex;
     color: $primaryBacColor;
     filter: brightness(2);
-    flex-direction: column;
-    gap: 2rem;
-    justify-content: normal;
     position: relative;
-
-    .TW {
-        padding-top: 5rem;
-    }
+    // transform: translateX(-200%);
 
     .carousel {
-        display: flex;
-    }
+        max-width: 1905px;
+        padding-top: calc(530px + 1rem);
 
-    .content {
-        @include WnH(1905px, 920px);
-
-        .point {
-            @include WnH(8px);
-            border-radius: 50%;
-            background-color: white;
-            position: absolute;
-            top: calc(32px + 5rem);
-            left: calc(205px + 50rem);
-        }
-
-        .branchName {
+        .content {
             @include flex-center-center;
-            flex-direction: column;
-            // gap: 1rem;
+            width: 1905px;
+            flex: none;
 
-            h1 {
-                font-size: 4rem;
-                font-variation-settings: 'wght' 500;
-                letter-spacing: 0.5rem;
+            .point {
+                @include WnH(8px);
+                border-radius: 50%;
+                background-color: white;
+                position: absolute;
             }
 
-            &>div {
+            .north {
+                top: calc(114px);
+                left: calc(1012px);
+            }
+
+            .central {
+                top: calc(236px);
+                left: calc(910px + 100%);
+            }
+
+            .south {
+                top: calc(435px);
+                left: calc(870px + 200%);
+            }
+
+            .branchName {
                 @include flex-center-center;
-                align-self: flex-end;
-                // margin-top: 0.5rem;
-                margin-right: 0.5rem;
-                font-size: 1.5rem;
-                gap: 0.5rem;
-                position: relative;
+                width: 360px;
+                flex-direction: column;
 
-                // &:hover::after {
-                //     transform: translateX(128px);
-                // }
-
-                // &::after {
-                //     @include WnH(6rem, 1px);
-                //     content: '';
-                //     position: absolute;
-                //     bottom: 0;
-                //     left: 0;
-                //     background-color: white;
-                //     transform: translateX(-100%);
-                //     transition: transform 1s ease;
-                // }
-
-                .in {
-                    animation: flyIn 0.5s ease-out forwards;
+                h1 {
+                    font-size: 4rem;
+                    font-variation-settings: 'wght' 500;
+                    letter-spacing: 0.5rem;
                 }
 
-                .out {
-                    animation: flyOut 0.5s ease-in forwards;
+                &>div {
+                    @include flex-center-center;
+                    align-self: flex-end;
+                    margin-right: 0.5rem;
+                    font-size: 1.5rem;
+                    gap: 0.5rem;
+                    position: relative;
+
+                    .in {
+                        animation: flyIn 0.5s ease-out forwards;
+                    }
+
+                    .out {
+                        animation: flyOut 0.5s ease-in forwards;
+                    }
                 }
             }
-        }
 
-        .position {
-            @include flex-center-center;
-            position: absolute;
-            bottom: 5%;
-            left: 15%;
+            .position {
+                @include flex-center-center;
+                position: absolute;
+                bottom: 5%;
+                // left: 15%;
+                text-wrap: nowrap
+            }
+
+
         }
     }
 
-    // 中
-    // top: calc(154px + 5rem);
-    // left: calc(110px + 50rem);
-    // 南
-    // top: calc(353px + 5rem);
-    // left: calc(66px + 50rem);
+
+    // 北
+    // 25.047893811483274,
+    // 121.51709051510576 top: calc(114px);
+    // left: calc(1012px);
+    // 中 24.137131307709268,
+    // 120.68668906182916 top: calc(236px);
+    // left: calc(910px);
+    // 南 22.639888449163326,
+    // 120.30226114031127 top: calc(435px);
+    // left: calc(863px);
 }
 </style>
