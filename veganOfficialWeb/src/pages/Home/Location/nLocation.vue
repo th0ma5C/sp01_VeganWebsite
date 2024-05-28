@@ -1,5 +1,7 @@
 <template>
-    <div class="container relative" :style="[bgSize]">
+    <div class="container relative" :style="[bgSize]"
+        @mousedown="down($event)">
+
         <transition name="bgFilter">
             <div class="bgFilter absolute content-none"
                 v-show="bg.width == 1905">
@@ -8,19 +10,20 @@
         <SvgIcon name="LocationTW" class="TW" width=""
             height="450" color="white">
         </SvgIcon>
-        <div class="mainPart">
+        <div class="mainPart" ref="wrapper"
+            :class="{ 'dragging': isDown }"
+            :style="branchStyle" @transitionend="cloneList">
             <!-- <transition-group name="carousel" tag="div"
                 class="carousel"> -->
             <div class="carousel"
-                v-for="(item, index) in branchList"
+                v-for="(item, index) in showList"
                 :key="index">
                 <div class="content">
-                    <div class="point" :class="{
-                        north: index == 0,
-                        central: index == 1,
-                        south: index == 2,
-                    }">
+                    <div class="point"
+                        :class="pointClass(index)">
                     </div>
+                    <!-- <button @click="changeSwiper(1)">test{{
+                        index }}</button> -->
                     <div class="branchName">
                         <p>{{ item.position }}</p>
                         <h1>{{ item.branch }}</h1>
@@ -74,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, onMounted, onUnmounted, ref, computed } from 'vue';
+import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpdated } from 'vue';
 import type { Ref } from 'vue';
 import useListener from '@/hooks/useListener'
 
@@ -109,7 +112,10 @@ function bgScroll() {
 }
 
 // location swiper
-let branchList = ref([
+/**
+ * todo: 最後一張閃爍、連點防斗
+ */
+let branchList = [
     {
         pointClass: '',
         position: '北部分店',
@@ -131,11 +137,86 @@ let branchList = ref([
         addr: 'Sanmin Dist., Kaohsiung City',
         bacUrl: ''
     }
-])
+]
 
-function changeSwiper() {
-
+let pointClass = (index: number) => {
+    return {
+        cloneSouth: index == 0,
+        north: index == 1,
+        central: index == 2,
+        south: index == 3,
+        cloneNorth: index == 4,
+    }
 }
+
+let count = ref(1), translateX = ref(0), transition = ref('transform 0s ease'),
+    isDown = ref(false), wrapper = ref<HTMLDivElement | null>(),
+    divWidth: number,
+    breakPoint: number,
+    branchStyle = computed(() => ({
+        transform: `translateX(calc(-${count.value * 100}% + ${translateX.value}px))`,
+        transition: `${transition.value}`
+    }));
+
+let frontTag = branchList.slice(0, 1), rearTag = branchList.slice(-1),
+    showList = ref([...rearTag, ...branchList, ...frontTag])
+
+function changeSwiper(direction: -1 | 1) {
+    // if(count == branchList.value.length)
+    count.value += direction;
+    // translateX.value -= (direction * 1905);
+    transition.value = 'transform 1s ease';
+}
+function cloneList() {
+    if (count.value == (showList.value.length - 1)) {
+        console.log(1);
+        transition.value = 'transform 0s';
+        count.value = 1;
+    } else if (count.value == 0) {
+        console.log(2);
+        transition.value = 'transform 0s';
+        count.value = showList.value.length - 2;
+    }
+    nextTick(() => {
+        transition.value = 'transform 0s ease';
+    })
+}
+
+function resize() {
+    if (wrapper.value) {
+        divWidth = wrapper.value.clientWidth;
+    }
+}
+function down(e: MouseEvent) {
+    e.preventDefault();
+    isDown.value = true;
+    breakPoint = 0;
+
+    useListener(window, 'add', events.drag);
+}
+
+function move(e: MouseEvent) {
+    if (!isDown.value) return;
+    translateX.value += e.movementX;
+    breakPoint += e.movementX;
+}
+
+function up() {
+    if (!isDown.value) return;
+    isDown.value = false;
+
+    if (breakPoint < -(divWidth / 5)) {
+        changeSwiper(1);
+        translateX.value = 0;
+    } else if (breakPoint > (divWidth / 5)) {
+        changeSwiper(-1);
+        translateX.value = 0;
+    } else {
+        translateX.value = 0;
+    }
+    useListener(window, 'remove', events.drag);
+}
+
 
 //icon hover
 let iconClass = ref('in');
@@ -172,20 +253,35 @@ function debounce(target: Ref<string>) {
 const setIconClass = debounce(iconClass);
 
 const events = {
+    window: [
+        { event: 'resize', handler: resize },
+    ],
+    dom: [
+        { event: 'mousedown', handler: down },
+    ],
+    drag: [
+        { event: 'mousemove', handler: move },
+        { event: 'mouseup', handler: up },
+    ],
     scroll: [
         { event: 'scroll', handler: bgScroll }
-    ]
+    ],
 }
 
 onMounted(() => {
     scrollY.value = window.scrollY;
-    useListener(window, 'add', events.scroll)
+    useListener(window, 'add', events.scroll);
+    useListener(window, 'add', events.window);
+})
+onUpdated(() => {
+    resize();
 })
 onUnmounted(() => {
     timers.forEach(timer => {
         if (timer) clearTimeout(timer);
     })
-    useListener(window, 'remove', events.scroll)
+    useListener(window, 'remove', events.scroll);
+    useListener(window, 'remove', events.window);
 })
 
 </script>
@@ -247,7 +343,6 @@ onUnmounted(() => {
     color: $primaryBacColor;
     filter: brightness(2);
     position: relative;
-    // transform: translateX(-200%);
 
     .carousel {
         max-width: 1905px;
@@ -267,17 +362,27 @@ onUnmounted(() => {
 
             .north {
                 top: calc(114px);
-                left: calc(1012px);
+                left: calc(1012px + 100%);
+            }
+
+            .cloneNorth {
+                top: calc(114px);
+                left: calc(1012px + 400%);
             }
 
             .central {
                 top: calc(236px);
-                left: calc(910px + 100%);
+                left: calc(910px + 200%);
             }
 
             .south {
                 top: calc(435px);
-                left: calc(870px + 200%);
+                left: calc(870px + 300%);
+            }
+
+            .cloneSouth {
+                top: calc(435px);
+                left: calc(870px);
             }
 
             .branchName {
@@ -311,6 +416,7 @@ onUnmounted(() => {
 
             .position {
                 @include flex-center-center;
+                gap: 0.25rem;
                 position: absolute;
                 bottom: 5%;
                 // left: 15%;
@@ -319,6 +425,10 @@ onUnmounted(() => {
 
 
         }
+    }
+
+    .dragging {
+        transition: none !important;
     }
 
 

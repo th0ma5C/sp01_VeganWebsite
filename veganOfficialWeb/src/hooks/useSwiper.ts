@@ -89,10 +89,10 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
 
         if (breakPoint < -(divWidth / 5)) {
             throttleChangeSwiper(1);
-            translateX.value = 0;
+            // translateX.value = 0;
         } else if (breakPoint > (divWidth / 5)) {
             throttleChangeSwiper(0);
-            translateX.value = 0;
+            // translateX.value = 0;
         } else {
             translateX.value = 0;
         }
