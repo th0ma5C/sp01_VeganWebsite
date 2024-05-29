@@ -1,7 +1,15 @@
 <template>
     <div class="container relative" :style="[bgSize]"
         @mousedown="down($event)">
-
+        <div class="cursor">
+            <SvgIcon name="LocationArrow_L" width="100px"
+                height="38px" color="white">
+            </SvgIcon>
+            <p>DRAG</p>
+            <SvgIcon name="LocationArrow_R" width="100px"
+                height="38px" color="white">
+            </SvgIcon>
+        </div>
         <transition name="bgFilter">
             <div class="bgFilter absolute content-none"
                 v-show="bg.width == 1905">
@@ -73,6 +81,7 @@
                 </div>
             </div> -->
         </div>
+
     </div>
 </template>
 
@@ -113,7 +122,8 @@ function bgScroll() {
 
 // location swiper
 /**
- * todo: 最後一張閃爍、連點防斗
+ * todo: 最後一張閃爍(取消無限or改swiper)、下一頁字體靠前、淡化
+ * *游標圖示
  */
 let branchList = [
     {
@@ -162,23 +172,19 @@ let frontTag = branchList.slice(0, 1), rearTag = branchList.slice(-1),
     showList = ref([...rearTag, ...branchList, ...frontTag])
 
 function changeSwiper(direction: -1 | 1) {
-    // if(count == branchList.value.length)
     count.value += direction;
-    // translateX.value -= (direction * 1905);
     transition.value = 'transform 1s ease';
 }
 function cloneList() {
+    transition.value = 'transform 0s';
     if (count.value == (showList.value.length - 1)) {
-        console.log(1);
-        transition.value = 'transform 0s';
         count.value = 1;
     } else if (count.value == 0) {
-        console.log(2);
-        transition.value = 'transform 0s';
         count.value = showList.value.length - 2;
     }
     nextTick(() => {
-        transition.value = 'transform 0s ease';
+        isDown.value = false;
+        // transition.value = 'transform 0s';
     })
 }
 
@@ -188,32 +194,29 @@ function resize() {
     }
 }
 function down(e: MouseEvent) {
+    if (isDown.value) return;
     e.preventDefault();
     isDown.value = true;
     breakPoint = 0;
-
     useListener(window, 'add', events.drag);
 }
 
 function move(e: MouseEvent) {
-    if (!isDown.value) return;
     translateX.value += e.movementX;
     breakPoint += e.movementX;
 }
 
 function up() {
-    if (!isDown.value) return;
-    isDown.value = false;
-
     if (breakPoint < -(divWidth / 5)) {
         changeSwiper(1);
-        translateX.value = 0;
     } else if (breakPoint > (divWidth / 5)) {
         changeSwiper(-1);
-        translateX.value = 0;
-    } else {
-        translateX.value = 0;
     }
+    translateX.value = 0;
+    transition.value = 'transform 1s ease';
+    setTimeout(() => {
+        isDown.value = false;
+    }, 1000);
     useListener(window, 'remove', events.drag);
 }
 
@@ -291,6 +294,14 @@ onUnmounted(() => {
     background: url('@assets/img/Home/Location/shop.jpg') fixed no-repeat center/cover;
     transition: width 0.2s ease, height 0.2s ease;
 
+    .cursor {
+        @include WnH(100px);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 99;
+    }
+
     .TW {
         // padding-top: 5rem;
         position: absolute;
@@ -343,6 +354,8 @@ onUnmounted(() => {
     color: $primaryBacColor;
     filter: brightness(2);
     position: relative;
+    will-change: transform;
+
 
     .carousel {
         max-width: 1905px;
@@ -430,6 +443,7 @@ onUnmounted(() => {
     .dragging {
         transition: none !important;
     }
+
 
 
     // 北
