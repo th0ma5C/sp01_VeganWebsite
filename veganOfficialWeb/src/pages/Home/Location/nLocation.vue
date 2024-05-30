@@ -1,15 +1,24 @@
 <template>
     <div class="container relative" :style="[bgSize]"
-        @mousedown="down($event)">
-        <div class="cursor">
+        @mousemove="cursorDebounce($event)"
+        @mousedown="down($event)"
+        @mouseenter="cursorShow = true;"
+        @mouseleave="cursorShow = false;">
+        <!-- <transition name="cursor"> -->
+        <div class="cursor" :style="cursorStyle"
+            @mousedown.prevent="dragClick = true"
+            @mouseup="dragClick = false"
+            :class="{ 'grabbing': dragClick }"
+            v-show="cursorShow">
             <SvgIcon name="LocationArrow_L" width="100px"
-                height="38px" color="white">
+                height="24px" color="white">
             </SvgIcon>
             <p>DRAG</p>
             <SvgIcon name="LocationArrow_R" width="100px"
-                height="38px" color="white">
+                height="24px" color="white">
             </SvgIcon>
         </div>
+        <!-- </transition> -->
         <transition name="bgFilter">
             <div class="bgFilter absolute content-none"
                 v-show="bg.width == 1905">
@@ -88,8 +97,8 @@
 <script setup lang="ts">
 import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpdated } from 'vue';
 import type { Ref } from 'vue';
-import useListener from '@/hooks/useListener'
-
+import debounce from 'lodash/debounce';
+import useListener from '@/hooks/useListener';
 
 //背景
 let bg = reactive({
@@ -163,6 +172,7 @@ let count = ref(1), translateX = ref(0), transition = ref('transform 0s ease'),
     isDown = ref(false), wrapper = ref<HTMLDivElement | null>(),
     divWidth: number,
     breakPoint: number,
+    dragClick = ref(false),
     branchStyle = computed(() => ({
         transform: `translateX(calc(-${count.value * 100}% + ${translateX.value}px))`,
         transition: `${transition.value}`
@@ -193,11 +203,15 @@ function resize() {
         divWidth = wrapper.value.clientWidth;
     }
 }
+let dragTimer: (number | null | NodeJS.Timeout);
 function down(e: MouseEvent) {
     if (isDown.value) return;
     e.preventDefault();
     isDown.value = true;
     breakPoint = 0;
+    if (dragTimer) {
+        clearTimeout(dragTimer);
+    }
     useListener(window, 'add', events.drag);
 }
 
@@ -214,7 +228,7 @@ function up() {
     }
     translateX.value = 0;
     transition.value = 'transform 1s ease';
-    setTimeout(() => {
+    dragTimer = setTimeout(() => {
         isDown.value = false;
     }, 1000);
     useListener(window, 'remove', events.drag);
@@ -225,7 +239,7 @@ function up() {
 let iconClass = ref('in');
 let timers: (ReturnType<typeof setTimeout> | null)[] = [];
 
-function debounce(target: Ref<string>) {
+function hoverDebounce(target: Ref<string>) {
     let timer: ReturnType<typeof setTimeout> | null = null;
     let timeStamp: number | null = null;
     return function (e: MouseEvent) {
@@ -253,7 +267,22 @@ function debounce(target: Ref<string>) {
     }
 }
 
-const setIconClass = debounce(iconClass);
+const setIconClass = hoverDebounce(iconClass);
+
+//游標跟隨
+let cursorX = ref<number | null>(null), cursorY = ref<number | null>(null);
+let cursorShow = ref(false);
+let cursorStyle = computed(() => ({
+    transform: `translate3d(calc(${cursorX.value}px - 50%),calc(${cursorY.value}px - 50px), 0)`
+}))
+
+function cursorPosition(e: MouseEvent) {
+    cursorY.value = e.clientY;
+    cursorX.value = e.clientX;
+    console.log(cursorY.value, cursorX.value);
+}
+
+const cursorDebounce = debounce(cursorPosition, 0)
 
 const events = {
     window: [
@@ -275,6 +304,7 @@ onMounted(() => {
     scrollY.value = window.scrollY;
     useListener(window, 'add', events.scroll);
     useListener(window, 'add', events.window);
+    // window.addEventListener('mousemove', cursorDebounce)
 })
 onUpdated(() => {
     resize();
@@ -293,13 +323,32 @@ onUnmounted(() => {
 .container {
     background: url('@assets/img/Home/Location/shop.jpg') fixed no-repeat center/cover;
     transition: width 0.2s ease, height 0.2s ease;
+    // overflow: hidden;
+    cursor: grab;
 
     .cursor {
         @include WnH(100px);
-        position: absolute;
-        top: 50%;
-        left: 50%;
+        position: fixed;
+        left: 0;
+        top: 0;
         z-index: 99;
+        background-color: white;
+
+        p {
+            color: $primaryBacColor;
+            text-align: center;
+            margin: 0.5rem auto;
+        }
+
+
+    }
+
+    // &:hover {
+    //     cursor: grab;
+    // }
+
+    .grabbing {
+        cursor: grabbing;
     }
 
     .TW {
