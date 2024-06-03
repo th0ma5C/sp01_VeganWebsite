@@ -1,11 +1,12 @@
 <template>
     <div class="container relative" :style="[bgSize]"
-        @mousemove="cursorDebounce($event)"
-        @mousedown="down($event)"
-        @mouseenter="cursorShow = true;"
+        ref="container" @mousedown="down($event)"
+        @mouseenter="cursorPosition($event)"
+        @mousemove="cursorPosition($event);"
         @mouseleave="cursorShow = false;">
         <!-- <transition name="cursor"> -->
-        <div class="cursor" :style="cursorStyle"
+        <div class="cursor" ref="cursor"
+            :style="cursorStyle"
             @mousedown.prevent="dragClick = true"
             @mouseup="dragClick = false"
             :class="{ 'grabbing': dragClick }"
@@ -95,8 +96,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpdated } from 'vue';
-import type { Ref } from 'vue';
+import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpdated, watchEffect } from 'vue';
+import type { Ref, ComponentPublicInstance } from 'vue';
 import debounce from 'lodash/debounce';
 import useListener from '@/hooks/useListener';
 
@@ -270,19 +271,64 @@ function hoverDebounce(target: Ref<string>) {
 const setIconClass = hoverDebounce(iconClass);
 
 //游標跟隨
+let container = ref(), cursor = ref();
 let cursorX = ref<number | null>(null), cursorY = ref<number | null>(null);
+let targetX = ref<number | null>(null), targetY = ref<number | null>(null);
 let cursorShow = ref(false);
 let cursorStyle = computed(() => ({
     transform: `translate3d(calc(${cursorX.value}px - 50%),calc(${cursorY.value}px - 50px), 0)`
 }))
 
-function cursorPosition(e: MouseEvent) {
-    cursorY.value = e.clientY;
-    cursorX.value = e.clientX;
-    console.log(cursorY.value, cursorX.value);
+let init = false
+let containerRect = null, cursorRect = null
+function positionCheck() {
+    if (init == true) {
+        containerRect = container.value.getBoundingClientRect()
+        cursorRect = cursor.value.getBoundingClientRect()
+        let border = cursorRect.top - containerRect.top
+        if (border < -51 || border > 880) {
+            cursorShow.value = false
+            init = false
+            window.removeEventListener('scroll', positionCheck)
+        }
+    }
 }
+function cursorPosition(e: MouseEvent) {
+    window.addEventListener('scroll', positionCheck)
+    if (init == true) {
+        containerRect = container.value.getBoundingClientRect()
+        cursorRect = cursor.value.getBoundingClientRect()
+        let border = cursorRect.top - containerRect.top
+        if (border < -51 || border > 880) {
+            cursorShow.value = false
+            init = false
+            return
+        } else if (cursorRect.left < -50 || cursorRect.left > 1360) {
+            cursorShow.value = false
+            init = false
+            return
+        }
+    }
+    cursorShow.value = true;
+    targetY.value = e.clientY;
+    targetX.value = e.clientX;
+    init = true;
+}
+function animateCursor() {
+    if (targetX.value !== null && targetY.value !== null) {
+        if (cursorX.value === null) cursorX.value = targetX.value;
+        if (cursorY.value === null) cursorY.value = targetY.value;
 
-const cursorDebounce = debounce(cursorPosition, 0)
+        const deltaX = targetX.value - cursorX.value;
+        const deltaY = targetY.value - cursorY.value;
+        cursorX.value += deltaX * 0.1;
+        cursorY.value += deltaY * 0.1;
+    }
+    requestAnimationFrame(animateCursor);
+}
+/**
+ * todo 研究動畫原理
+ */
 
 const events = {
     window: [
@@ -304,7 +350,8 @@ onMounted(() => {
     scrollY.value = window.scrollY;
     useListener(window, 'add', events.scroll);
     useListener(window, 'add', events.window);
-    // window.addEventListener('mousemove', cursorDebounce)
+
+    requestAnimationFrame(animateCursor);
 })
 onUpdated(() => {
     resize();
@@ -320,6 +367,12 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+// @keyframes cursor {
+//     form {}
+
+//     to {}
+// }
+
 .container {
     background: url('@assets/img/Home/Location/shop.jpg') fixed no-repeat center/cover;
     transition: width 0.2s ease, height 0.2s ease;
@@ -332,7 +385,8 @@ onUnmounted(() => {
         left: 0;
         top: 0;
         z-index: 99;
-        background-color: white;
+        transition: transform 10ms ease;
+        // background-color: white;
 
         p {
             color: $primaryBacColor;
