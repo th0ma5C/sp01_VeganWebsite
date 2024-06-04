@@ -274,6 +274,7 @@ const setIconClass = hoverDebounce(iconClass);
 let container = ref(), cursor = ref();
 let cursorX = ref<number | null>(null), cursorY = ref<number | null>(null);
 let targetX = ref<number | null>(null), targetY = ref<number | null>(null);
+let requestAnimationID: number | null = null;
 let cursorShow = ref(false);
 let cursorStyle = computed(() => ({
     transform: `translate3d(calc(${cursorX.value}px - 50%),calc(${cursorY.value}px - 50px), 0)`
@@ -282,28 +283,25 @@ let cursorStyle = computed(() => ({
 let init = false
 let containerRect = null, cursorRect = null
 function positionCheck() {
-    if (init == true) {
-        containerRect = container.value.getBoundingClientRect()
-        cursorRect = cursor.value.getBoundingClientRect()
-        let border = cursorRect.top - containerRect.top
-        if (border < -51 || border > 880) {
-            cursorShow.value = false
-            init = false
-            window.removeEventListener('scroll', positionCheck)
-        }
+    if (!init) return
+    containerRect = container.value.getBoundingClientRect()
+    cursorRect = cursor.value.getBoundingClientRect()
+    let border = cursorRect.top - containerRect.top
+    if (border < -51 || border > 880 || cursorRect.left < -50 || cursorRect.left > 1360) {
+        cursorShow.value = false
+        init = false
+        window.removeEventListener('scroll', positionCheck)
+        return
     }
+
 }
 function cursorPosition(e: MouseEvent) {
-    window.addEventListener('scroll', positionCheck)
-    if (init == true) {
+    window.addEventListener('scroll', positionCheck);
+    if (init) {
         containerRect = container.value.getBoundingClientRect()
         cursorRect = cursor.value.getBoundingClientRect()
         let border = cursorRect.top - containerRect.top
-        if (border < -51 || border > 880) {
-            cursorShow.value = false
-            init = false
-            return
-        } else if (cursorRect.left < -50 || cursorRect.left > 1360) {
+        if (border < -51 || border > 880 || cursorRect.left < -50 || cursorRect.left > 1360) {
             cursorShow.value = false
             init = false
             return
@@ -315,19 +313,29 @@ function cursorPosition(e: MouseEvent) {
     init = true;
 }
 function animateCursor() {
+    // console.log(cursorX.value - targetX.value);
     if (targetX.value !== null && targetY.value !== null) {
         if (cursorX.value === null) cursorX.value = targetX.value;
         if (cursorY.value === null) cursorY.value = targetY.value;
 
         const deltaX = targetX.value - cursorX.value;
         const deltaY = targetY.value - cursorY.value;
-        cursorX.value += deltaX * 0.1;
-        cursorY.value += deltaY * 0.1;
+
+        cursorX.value += Math.round(deltaX * 0.3 * 10) / 10;
+        cursorY.value += Math.round(deltaY * 0.3 * 10) / 10;
     }
-    requestAnimationFrame(animateCursor);
+    requestAnimationID = requestAnimationFrame(animateCursor);
+}
+function stopAnimation() {
+    if (requestAnimationID) {
+        cancelAnimationFrame(requestAnimationID);
+        requestAnimationID = null;
+    }
 }
 /**
- * todo 研究動畫原理
+ * todo 研究動畫原理 hover header會擋住 cursor出現、消失動畫
+ * *下一分店字靠前、是否一段時間取消動畫?
+ * 
  */
 
 const events = {
@@ -351,7 +359,7 @@ onMounted(() => {
     useListener(window, 'add', events.scroll);
     useListener(window, 'add', events.window);
 
-    requestAnimationFrame(animateCursor);
+    requestAnimationID = requestAnimationFrame(animateCursor);
 })
 onUpdated(() => {
     resize();
@@ -362,6 +370,7 @@ onUnmounted(() => {
     })
     useListener(window, 'remove', events.scroll);
     useListener(window, 'remove', events.window);
+    stopAnimation();
 })
 
 </script>
