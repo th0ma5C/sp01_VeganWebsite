@@ -4,13 +4,12 @@
 	xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	viewBox="0 0 65.2 23.6" style="enable-background:new 0 0 65.2 23.6;" xml:space="preserve">
 <style type="text/css">
-		.st0{opacity:0.4;}
-		.st1{stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+	.st0{opacity:0.4;}
+	.st1{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 </style>
 <g id="b">
 	<g class="st0">
-		<path class="st1" d="M3.1,20.5L20.5,3.1"/>
-		<path class="st1" d="M62.1,20.5h-59"/>
+		<path class="st1" d="M62.1,20.5h-59L20.5,3.1"/>
 	</g>
 </g>
 </svg>

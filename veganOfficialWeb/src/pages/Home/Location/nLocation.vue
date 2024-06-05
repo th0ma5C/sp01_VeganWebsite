@@ -1,25 +1,23 @@
 <template>
-    <div class="container relative" :style="[bgSize]"
-        ref="container" @mousedown="down($event)"
-        @mouseenter="cursorPosition($event)"
+    <div class="container relative" ref="container"
+        :style="[bgSize]" :class="{ 'grabbing': true }"
+        @mousedown.prevent="down($event); dragClick = true"
+        @mouseenter="cursorPosition($event);"
         @mousemove="cursorPosition($event);"
-        @mouseleave="cursorShow = false;">
-        <!-- <transition name="cursor"> -->
+        @mouseleave="cursorShow = false;"
+        @mouseup="dragClick = false">
         <div class="cursor" ref="cursor"
-            :style="cursorStyle"
-            @mousedown.prevent="dragClick = true"
-            @mouseup="dragClick = false"
-            :class="{ 'grabbing': dragClick }"
-            v-show="cursorShow">
+            :style="cursorStyle" v-show="cursorShow">
             <SvgIcon name="LocationArrow_L" width="100px"
-                height="24px" color="white">
+                height="24px" color="white"
+                class="cursorArrow">
             </SvgIcon>
             <p>DRAG</p>
             <SvgIcon name="LocationArrow_R" width="100px"
-                height="24px" color="white">
+                height="24px" color="white"
+                class="cursorArrow">
             </SvgIcon>
         </div>
-        <!-- </transition> -->
         <transition name="bgFilter">
             <div class="bgFilter absolute content-none"
                 v-show="bg.width == 1905">
@@ -96,10 +94,17 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * todo: 最後一張閃爍(取消無限or改swiper)、
+ * todo  cursor出現、消失動畫(淡化)
+ * todo 下一分店字靠前、淡化，是否一段時間取消動畫?
+ */
+
 import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpdated, watchEffect } from 'vue';
 import type { Ref, ComponentPublicInstance } from 'vue';
 import debounce from 'lodash/debounce';
 import useListener from '@/hooks/useListener';
+import type { RefSymbol } from '@vue/reactivity';
 
 //背景
 let bg = reactive({
@@ -123,7 +128,8 @@ watch(scrollY, (nVal, oVal = 0) => {
 })
 let bgSize = computed(() => ({
     width: `${bg.width}px`,
-    height: `${bg.height}px`
+    height: `${bg.height}px`,
+    cursor: dragClick.value ? 'grabbing' : 'grab'
 }))
 function bgScroll() {
     if (bg.width == 1905 || ticking) return;
@@ -131,10 +137,6 @@ function bgScroll() {
 }
 
 // location swiper
-/**
- * todo: 最後一張閃爍(取消無限or改swiper)、下一頁字體靠前、淡化
- * *游標圖示
- */
 let branchList = [
     {
         pointClass: '',
@@ -277,43 +279,63 @@ let targetX = ref<number | null>(null), targetY = ref<number | null>(null);
 let requestAnimationID: number | null = null;
 let cursorShow = ref(false);
 let cursorStyle = computed(() => ({
-    transform: `translate3d(calc(${cursorX.value}px - 50%),calc(${cursorY.value}px - 50px), 0)`
+    transform: `translate3d(calc(${cursorX.value}px - 50%),calc(${cursorY.value}px - 62px), 0)`,
+    // opacity: cursorHide.value ? '0' : '1'
 }))
 
-let init = false
 let containerRect = null, cursorRect = null
+let cursorTimer: (number | null | NodeJS.Timeout) = null, cursorHide = ref(false)
 function positionCheck() {
-    if (!init) return
     containerRect = container.value.getBoundingClientRect()
     cursorRect = cursor.value.getBoundingClientRect()
-    let border = cursorRect.top - containerRect.top
-    if (border < -51 || border > 880 || cursorRect.left < -50 || cursorRect.left > 1360) {
+    const mouseX = cursorRect.left + cursorRect.width / 2 - containerRect.left;
+    const mouseY = cursorRect.top + cursorRect.height / 2 - containerRect.top;
+    if (mouseX >= 0 && mouseX <= containerRect.width &&
+        mouseY >= 0 && mouseY <= containerRect.height) {
+        cursorShow.value = true
+    } else {
         cursorShow.value = false
-        init = false
-        window.removeEventListener('scroll', positionCheck)
-        return
+        window.removeEventListener('scroll', positionCheck);
     }
-
 }
+
 function cursorPosition(e: MouseEvent) {
     window.addEventListener('scroll', positionCheck);
-    if (init) {
-        containerRect = container.value.getBoundingClientRect()
-        cursorRect = cursor.value.getBoundingClientRect()
-        let border = cursorRect.top - containerRect.top
-        if (border < -51 || border > 880 || cursorRect.left < -50 || cursorRect.left > 1360) {
-            cursorShow.value = false
-            init = false
-            return
-        }
+
+    cursorRect = cursor.value.getBoundingClientRect()
+    containerRect = container.value.getBoundingClientRect()
+    const mouseX = e.clientX - containerRect.left
+    const mouseY = e.clientY - containerRect.top
+
+    if (mouseX >= 0 && mouseX <= containerRect.width &&
+        mouseY >= 0 && mouseY <= containerRect.height) {
+        cursorShow.value = true
+    } else {
+        cursorShow.value = false
     }
-    cursorShow.value = true;
+
     targetY.value = e.clientY;
     targetX.value = e.clientX;
-    init = true;
+}
+
+function cp(e: MouseEvent) {
+    cursorRect = cursor.value.getBoundingClientRect()
+    containerRect = container.value.getBoundingClientRect()
+    const mouseX = e.clientX - containerRect.left
+    const mouseY = e.clientY - containerRect.top
+
+    if (mouseX >= 0 && mouseX <= containerRect.width &&
+        mouseY >= 0 && mouseY <= containerRect.height) {
+        cursorShow.value = true
+    } else {
+        cursorShow.value = false
+    }
+
+    targetY.value = e.clientY;
+    targetX.value = e.clientX;
+
 }
 function animateCursor() {
-    // console.log(cursorX.value - targetX.value);
     if (targetX.value !== null && targetY.value !== null) {
         if (cursorX.value === null) cursorX.value = targetX.value;
         if (cursorY.value === null) cursorY.value = targetY.value;
@@ -332,11 +354,6 @@ function stopAnimation() {
         requestAnimationID = null;
     }
 }
-/**
- * todo 研究動畫原理 hover header會擋住 cursor出現、消失動畫
- * *下一分店字靠前、是否一段時間取消動畫?
- * 
- */
 
 const events = {
     window: [
@@ -376,16 +393,29 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-// @keyframes cursor {
-//     form {}
+@keyframes cursor {
+    0% {
+        stroke-dashoffset: 100;
+    }
 
-//     to {}
-// }
+    30% {
+        stroke-dashoffset: 0;
+    }
+
+    70% {
+        stroke-dashoffset: 0;
+    }
+
+    100% {
+        stroke-dashoffset: -100;
+    }
+
+
+}
 
 .container {
     background: url('@assets/img/Home/Location/shop.jpg') fixed no-repeat center/cover;
     transition: width 0.2s ease, height 0.2s ease;
-    // overflow: hidden;
     cursor: grab;
 
     .cursor {
@@ -393,9 +423,9 @@ onUnmounted(() => {
         position: fixed;
         left: 0;
         top: 0;
-        z-index: 99;
-        transition: transform 10ms ease;
-        // background-color: white;
+        z-index: 2;
+        // transition: opacity 0.5s ease;
+        background-color: black;
 
         p {
             color: $primaryBacColor;
@@ -403,16 +433,17 @@ onUnmounted(() => {
             margin: 0.5rem auto;
         }
 
+        .cursorArrow {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: cursor 1.5s 0.5s ease-out forwards;
+        }
 
     }
 
-    // &:hover {
-    //     cursor: grab;
+    // .grabbing {
+    //     cursor: grabbing ;
     // }
-
-    .grabbing {
-        cursor: grabbing;
-    }
 
     .TW {
         // padding-top: 5rem;
