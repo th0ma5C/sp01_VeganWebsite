@@ -2,8 +2,6 @@
     <div class="container relative" ref="container"
         :style="[bgSize]" :class="{ 'grabbing': true }"
         @mousedown.prevent="down($event); dragClick = true"
-        @mouseenter="cursorPosition($event);"
-        @mousemove="cursorPosition($event);"
         @mouseleave="cursorShow = false;"
         @mouseup="dragClick = false">
         <div class="cursor" ref="cursor"
@@ -38,8 +36,6 @@
                     <div class="point"
                         :class="pointClass(index)">
                     </div>
-                    <!-- <button @click="changeSwiper(1)">test{{
-                        index }}</button> -->
                     <div class="branchName">
                         <p>{{ item.position }}</p>
                         <h1>{{ item.branch }}</h1>
@@ -65,46 +61,21 @@
                 </div>
             </div>
             <!-- </transition-group> -->
-            <!-- <div class="content">
-                <div class="point"></div>
-                <div class="branchName">
-                    <p>北部分店</p>
-                    <h1>台北車站店</h1>
-                    <div>
-                        <a @mouseenter="setIconClass($event)"
-                            @mouseleave="setIconClass($event)">
-                            查看地圖
-                        </a>
-                        <SvgIcon name="LocationArrow"
-                            width="24" height="24"
-                            :class="iconClass">
-                        </SvgIcon>
-                    </div>
-                </div>
-                <div class="position">
-                    <SvgIcon name="Location" color="white"
-                        width="24" height="24">
-                    </SvgIcon>
-                    <p>Zhongzheng Dist., Taipei City</p>
-                </div>
-            </div> -->
         </div>
-
     </div>
 </template>
 
 <script setup lang="ts">
 /**
- * todo: 最後一張閃爍(取消無限or改swiper)、
- * todo  cursor出現、消失動畫(淡化)
- * todo 下一分店字靠前、淡化，是否一段時間取消動畫?
+ * todo cursor出現、消失動畫(淡化)
+ * todo 下一分店字靠前、淡化，是否一段時間取消動畫
+ * * 封裝游標跟隨
  */
 
 import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpdated, watchEffect } from 'vue';
-import type { Ref, ComponentPublicInstance } from 'vue';
+import type { Ref } from 'vue';
 import debounce from 'lodash/debounce';
 import useListener from '@/hooks/useListener';
-import type { RefSymbol } from '@vue/reactivity';
 
 //背景
 let bg = reactive({
@@ -197,7 +168,6 @@ function cloneList() {
     }
     nextTick(() => {
         isDown.value = false;
-        // transition.value = 'transform 0s';
     })
 }
 
@@ -277,64 +247,36 @@ let container = ref(), cursor = ref();
 let cursorX = ref<number | null>(null), cursorY = ref<number | null>(null);
 let targetX = ref<number | null>(null), targetY = ref<number | null>(null);
 let requestAnimationID: number | null = null;
-let cursorShow = ref(false);
+let cursorShow = ref(false), enable = ref(false);
 let cursorStyle = computed(() => ({
     transform: `translate3d(calc(${cursorX.value}px - 50%),calc(${cursorY.value}px - 62px), 0)`,
     // opacity: cursorHide.value ? '0' : '1'
 }))
 
-let containerRect = null, cursorRect = null
+let containerRect = null;
 let cursorTimer: (number | null | NodeJS.Timeout) = null, cursorHide = ref(false)
-function positionCheck() {
-    containerRect = container.value.getBoundingClientRect()
-    cursorRect = cursor.value.getBoundingClientRect()
-    const mouseX = cursorRect.left + cursorRect.width / 2 - containerRect.left;
-    const mouseY = cursorRect.top + cursorRect.height / 2 - containerRect.top;
-    if (mouseX >= 0 && mouseX <= containerRect.width &&
-        mouseY >= 0 && mouseY <= containerRect.height) {
-        cursorShow.value = true
-    } else {
-        cursorShow.value = false
-        window.removeEventListener('scroll', positionCheck);
+
+watchEffect(() => {
+    if (bg.width >= 1905) {
+        enable.value = true
     }
-}
+})
 
 function cursorPosition(e: MouseEvent) {
-    window.addEventListener('scroll', positionCheck);
-
-    cursorRect = cursor.value.getBoundingClientRect()
+    if (enable.value == false) return
     containerRect = container.value.getBoundingClientRect()
     const mouseX = e.clientX - containerRect.left
     const mouseY = e.clientY - containerRect.top
-
     if (mouseX >= 0 && mouseX <= containerRect.width &&
         mouseY >= 0 && mouseY <= containerRect.height) {
-        cursorShow.value = true
+        cursorShow.value = true;
     } else {
-        cursorShow.value = false
+        cursorShow.value = false;
     }
-
-    targetY.value = e.clientY;
-    targetX.value = e.clientX;
+    targetY.value = e.clientY - containerRect.top;
+    targetX.value = e.clientX - containerRect.left;
 }
 
-function cp(e: MouseEvent) {
-    cursorRect = cursor.value.getBoundingClientRect()
-    containerRect = container.value.getBoundingClientRect()
-    const mouseX = e.clientX - containerRect.left
-    const mouseY = e.clientY - containerRect.top
-
-    if (mouseX >= 0 && mouseX <= containerRect.width &&
-        mouseY >= 0 && mouseY <= containerRect.height) {
-        cursorShow.value = true
-    } else {
-        cursorShow.value = false
-    }
-
-    targetY.value = e.clientY;
-    targetX.value = e.clientX;
-
-}
 function animateCursor() {
     if (targetX.value !== null && targetY.value !== null) {
         if (cursorX.value === null) cursorX.value = targetX.value;
@@ -369,12 +311,21 @@ const events = {
     scroll: [
         { event: 'scroll', handler: bgScroll }
     ],
+    cursor: [
+        { event: 'mouseenter', handler: cursorPosition },
+        { event: 'mousemove', handler: cursorPosition },
+        { event: 'mouseover', handler: cursorPosition }
+    ]
 }
 
 onMounted(() => {
     scrollY.value = window.scrollY;
     useListener(window, 'add', events.scroll);
     useListener(window, 'add', events.window);
+    useListener(container.value, 'add', events.cursor)
+    nextTick(() => {
+
+    })
 
     requestAnimationID = requestAnimationFrame(animateCursor);
 })
@@ -420,7 +371,7 @@ onUnmounted(() => {
 
     .cursor {
         @include WnH(100px);
-        position: fixed;
+        position: absolute;
         left: 0;
         top: 0;
         z-index: 2;
@@ -440,10 +391,6 @@ onUnmounted(() => {
         }
 
     }
-
-    // .grabbing {
-    //     cursor: grabbing ;
-    // }
 
     .TW {
         // padding-top: 5rem;
