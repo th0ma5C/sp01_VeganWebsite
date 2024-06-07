@@ -41,7 +41,6 @@ onMounted(() => {
     //     console.log('滾動距離:', window.scrollX);  // 水平滾動距離
     // });
 })
-
 </script>
 
 <style lang="scss">

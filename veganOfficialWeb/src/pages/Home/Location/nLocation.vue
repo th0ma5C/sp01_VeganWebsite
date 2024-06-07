@@ -2,10 +2,12 @@
     <div class="container relative" ref="container"
         :style="[bgSize]" :class="{ 'grabbing': true }"
         @mousedown.prevent="down($event); dragClick = true"
-        @mouseleave="cursorShow = false;"
-        @mouseup="dragClick = false">
+        @mouseleave=" handleCursorStyle.show(); handleCursorStyle.opacity(1)"
+        @mouseup="dragClick = false"
+        @transitionend="cursorShow = false">
         <div class="cursor" ref="cursor"
-            :style="cursorStyle" v-show="cursorShow">
+            :style="cursorStyle" v-show="cursorShow"
+            @animationend="handleCursorStyle.opacity(0)">
             <SvgIcon name="LocationArrow_L" width="100px"
                 height="24px" color="white"
                 class="cursorArrow">
@@ -40,8 +42,8 @@
                         <p>{{ item.position }}</p>
                         <h1>{{ item.branch }}</h1>
                         <div>
-                            <a @mouseenter="setIconClass($event)"
-                                @mouseleave="setIconClass($event)">
+                            <a @mouseover="setIconClass($event)"
+                                @mouseout="setIconClass($event)">
                                 查看地圖
                             </a>
                             <SvgIcon name="LocationArrow"
@@ -66,16 +68,20 @@
 </template>
 
 <script setup lang="ts">
+// TODO: 下一分店名靠前、淡化，是否一段時間取消動畫
 /**
- * todo cursor出現、消失動畫(淡化)
- * todo 下一分店字靠前、淡化，是否一段時間取消動畫
+ * //cursor出現、消失動畫(淡化)
  * * 封裝游標跟隨
  */
+
+
+
 
 import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpdated, watchEffect } from 'vue';
 import type { Ref } from 'vue';
 import debounce from 'lodash/debounce';
 import useListener from '@/hooks/useListener';
+
 
 //背景
 let bg = reactive({
@@ -250,17 +256,28 @@ let requestAnimationID: number | null = null;
 let cursorShow = ref(false), enable = ref(false);
 let cursorStyle = computed(() => ({
     transform: `translate3d(calc(${cursorX.value}px - 50%),calc(${cursorY.value}px - 62px), 0)`,
-    // opacity: cursorHide.value ? '0' : '1'
+    opacity: cursorOpacity.value,
 }))
 
 let containerRect = null;
-let cursorTimer: (number | null | NodeJS.Timeout) = null, cursorHide = ref(false)
+let cursorTimer: (number | null | NodeJS.Timeout) = null, cursorOpacity = ref(1)
 
 watchEffect(() => {
     if (bg.width >= 1905) {
         enable.value = true
     }
 })
+
+let handleCursorStyle = (function () {
+
+    function opacity(n: number) {
+        cursorOpacity.value = n
+    }
+    function show() {
+        cursorShow.value = false
+    }
+    return { opacity, show }
+})();
 
 function cursorPosition(e: MouseEvent) {
     if (enable.value == false) return
@@ -271,6 +288,7 @@ function cursorPosition(e: MouseEvent) {
         mouseY >= 0 && mouseY <= containerRect.height) {
         cursorShow.value = true;
     } else {
+        cursorOpacity.value = 1
         cursorShow.value = false;
     }
     targetY.value = e.clientY - containerRect.top;
@@ -375,8 +393,8 @@ onUnmounted(() => {
         left: 0;
         top: 0;
         z-index: 2;
-        // transition: opacity 0.5s ease;
-        background-color: black;
+        transition: opacity 0.75s ease;
+        // background-color: black;
 
         p {
             color: $primaryBacColor;
