@@ -69,6 +69,7 @@
 
 <script setup lang="ts">
 // TODO: 下一分店名靠前、淡化，是否一段時間取消動畫
+// TODO: 無法點按鈕(pointer-event or z-index)
 /**
  * //cursor出現、消失動畫(淡化)
  * * 封裝游標跟隨
