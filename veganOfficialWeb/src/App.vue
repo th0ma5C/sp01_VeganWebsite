@@ -25,7 +25,7 @@ let { loaderActivated } = toRefs(useLoader());
 onMounted(() => {
     watch(loaderActivated, (newValue) => {
         if (newValue == false) {
-            setInterval(() => {
+            setTimeout(() => {
                 document.body.style.overflow = 'auto';
             }, 2500)
         }
@@ -47,6 +47,7 @@ onMounted(() => {
 /* 引入全局樣式和字體 */
 @import "./style/index.scss";
 @import './style/fonts.scss';
+
 
 body {
     // overflow: hidden;
