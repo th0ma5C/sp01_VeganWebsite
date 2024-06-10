@@ -1,9 +1,9 @@
 <template>
     <div class="container relative" ref="container"
-        :style="[bgSize]" :class="{ 'grabbing': true }"
-        @mousedown.prevent="down($event); dragClick = true"
+        :style="[bgSize]"
+        @mousedown.prevent="down($event); dragClick = 'grabbing'"
         @mouseleave=" handleCursorStyle.show(); handleCursorStyle.opacity(1)"
-        @mouseup="dragClick = false"
+        @mouseup="dragClick = 'grab'"
         @transitionend="cursorShow = false">
         <div class="cursor" ref="cursor"
             :style="cursorStyle" v-show="cursorShow"
@@ -42,8 +42,8 @@
                         <p>{{ item.position }}</p>
                         <h1>{{ item.branch }}</h1>
                         <div>
-                            <a @mouseover="setIconClass($event)"
-                                @mouseout="setIconClass($event)">
+                            <a @mouseenter="setIconClass($event); dragClick = 'pointer'"
+                                @mouseleave="setIconClass($event); dragClick = 'grab'">
                                 查看地圖
                             </a>
                             <SvgIcon name="LocationArrow"
@@ -69,8 +69,8 @@
 
 <script setup lang="ts">
 // TODO: 下一分店名靠前、淡化，是否一段時間取消動畫
-// TODO: 無法點按鈕(pointer-event or z-index)
 /**
+ * //無法點按鈕(pointer-event or z-index)
  * //cursor出現、消失動畫(淡化)
  * * 封裝游標跟隨
  */
@@ -107,7 +107,7 @@ watch(scrollY, (nVal, oVal = 0) => {
 let bgSize = computed(() => ({
     width: `${bg.width}px`,
     height: `${bg.height}px`,
-    cursor: dragClick.value ? 'grabbing' : 'grab'
+    cursor: dragClick.value
 }))
 function bgScroll() {
     if (bg.width == 1905 || ticking) return;
@@ -153,7 +153,7 @@ let count = ref(1), translateX = ref(0), transition = ref('transform 0s ease'),
     isDown = ref(false), wrapper = ref<HTMLDivElement | null>(),
     divWidth: number,
     breakPoint: number,
-    dragClick = ref(false),
+    dragClick = ref('grab'),
     branchStyle = computed(() => ({
         transform: `translateX(calc(-${count.value * 100}% + ${translateX.value}px))`,
         transition: `${transition.value}`
@@ -223,6 +223,7 @@ function hoverDebounce(target: Ref<string>) {
     let timer: ReturnType<typeof setTimeout> | null = null;
     let timeStamp: number | null = null;
     return function (e: MouseEvent) {
+        e.type === 'mouseenter' ? dragClick.value = 'pointer' : dragClick.value = 'grab';
         if (!timeStamp) {
             timeStamp = Date.now();
             e.type === 'mouseenter' ? target.value = 'out' : target.value = 'in';
@@ -281,7 +282,7 @@ let handleCursorStyle = (function () {
 })();
 
 function cursorPosition(e: MouseEvent) {
-    if (enable.value == false) return
+    if (!enable.value) return
     containerRect = container.value.getBoundingClientRect()
     const mouseX = e.clientX - containerRect.left
     const mouseY = e.clientY - containerRect.top
@@ -294,6 +295,8 @@ function cursorPosition(e: MouseEvent) {
     }
     targetY.value = e.clientY - containerRect.top;
     targetX.value = e.clientX - containerRect.left;
+
+    // dragClick.value = (e.target as Element).closest('a') ? 'pointer' : 'grab'
 }
 
 function animateCursor() {
@@ -395,6 +398,7 @@ onUnmounted(() => {
         top: 0;
         z-index: 2;
         transition: opacity 0.75s ease;
+        pointer-events: none;
         // background-color: black;
 
         p {
