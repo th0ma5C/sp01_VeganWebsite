@@ -42,8 +42,8 @@
                         <p>{{ item.position }}</p>
                         <h1>{{ item.branch }}</h1>
                         <div>
-                            <a @mouseenter="setIconClass($event); dragClick = 'pointer'"
-                                @mouseleave="setIconClass($event); dragClick = 'grab'">
+                            <a @mouseenter="setIconClass($event);"
+                                @mouseleave="setIconClass($event);">
                                 查看地圖
                             </a>
                             <SvgIcon name="LocationArrow"
@@ -73,6 +73,7 @@
  * //無法點按鈕(pointer-event or z-index)
  * //cursor出現、消失動畫(淡化)
  * * 封裝游標跟隨
+ * * 游標跟隨可以不用requestAnimationFrame?
  */
 
 
