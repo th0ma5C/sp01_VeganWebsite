@@ -2,12 +2,12 @@
     <div class="container relative" ref="container"
         :style="[bgSize]"
         @mousedown.prevent="down($event); dragClick = 'grabbing'"
-        @mouseleave=" handleCursorStyle.show(); handleCursorStyle.opacity(1)"
-        @mouseup="dragClick = 'grab'"
-        @transitionend="cursorShow = false">
+        @mouseleave=" handleCursorStyle.show(); handleCursorStyle.opacity(1);"
+        @mouseup="dragClick = 'grab'">
         <div class="cursor" ref="cursor"
             :style="cursorStyle" v-show="cursorShow"
-            @animationend="handleCursorStyle.opacity(0)">
+            @animationend="handleCursorStyle.opacity(0)"
+            @transitionend="cursorShow = false;">
             <SvgIcon name="LocationArrow_L" width="100px"
                 height="24px" color="white"
                 class="cursorArrow">
@@ -28,17 +28,27 @@
         </SvgIcon>
         <div class="mainPart" ref="wrapper"
             :class="{ 'dragging': isDown }"
-            :style="branchStyle" @transitionend="cloneList">
+            :style="branchStyle"
+            @transitionend="cloneList();"
+            @transitionrun="console.log('object');">
             <!-- <transition-group name="carousel" tag="div"
                 class="carousel"> -->
             <div class="carousel"
                 v-for="(item, index) in showList"
                 :key="index">
                 <div class="content">
-                    <div class="point"
-                        :class="pointClass(index)">
-                    </div>
-                    <div class="branchName">
+                    <transition name='point'>
+                        <div class="point"
+                            :style="pointStyle"
+                            :class="pointClass[index]"
+                            ref="point"
+                            v-show="count == index">
+                        </div>
+                    </transition>
+                    <div class="branchName"
+                        ref="branchNames"
+                        :style="branchNameStyle"
+                        :class="branchNameClass[index]">
                         <p>{{ item.position }}</p>
                         <h1>{{ item.branch }}</h1>
                         <div>
@@ -68,12 +78,17 @@
 </template>
 
 <script setup lang="ts">
+
 // TODO: 下一分店名靠前、淡化，是否一段時間取消動畫
 /**
  * //無法點按鈕(pointer-event or z-index)
  * //cursor出現、消失動畫(淡化)
- * * 封裝游標跟隨
- * * 游標跟隨可以不用requestAnimationFrame?
+ * doing: 前一張、下一張樣式
+ * //doing: 取消無限輪播?
+ * ? 封裝游標跟隨
+ * ? 游標跟隨可以不用requestAnimationFrame
+ * ? 整體代碼優化
+ * todo 左下字用切換顯示
  */
 
 
@@ -118,21 +133,18 @@ function bgScroll() {
 // location swiper
 let branchList = [
     {
-        pointClass: '',
         position: '北部分店',
         branch: '台北車站店',
         addr: 'Zhongzheng Dist., Taipei City',
         bacUrl: ''
     },
     {
-        pointClass: '',
         position: '中部分店',
         branch: '台中車站店',
         addr: 'Central Dist., Taichung City',
         bacUrl: ''
     },
     {
-        pointClass: '',
         position: '南部分店',
         branch: '高雄車站店',
         addr: 'Sanmin Dist., Kaohsiung City',
@@ -140,15 +152,38 @@ let branchList = [
     }
 ]
 
-let pointClass = (index: number) => {
-    return {
-        cloneSouth: index == 0,
-        north: index == 1,
-        central: index == 2,
-        south: index == 3,
-        cloneNorth: index == 4,
+let pointClass = computed(() => {
+    return showList.value.map((_, index) => {
+        switch (index) {
+            case 0:
+                return 'cloneSouth';
+            case 1:
+                return 'north';
+            case 2:
+                return 'central';
+            case 3:
+                return 'south';
+            case 4:
+                return 'cloneNorth';
+            default:
+                return '';
+        }
+    })
+})
+
+let pointTransition = computed(() => {
+    if (count.value == 1 || count.value == 2 || count.value == 3) {
+        return 'point'
     }
-}
+    return 'clonePoint'
+})
+
+let pointStyle = computed(() => {
+    return {
+        // opacity: pointOpacity.value
+        '--pointSpeed': `${pointSpeed.value}s`
+    }
+})
 
 let count = ref(1), translateX = ref(0), transition = ref('transform 0s ease'),
     isDown = ref(false), wrapper = ref<HTMLDivElement | null>(),
@@ -164,19 +199,23 @@ let frontTag = branchList.slice(0, 1), rearTag = branchList.slice(-1),
     showList = ref([...rearTag, ...branchList, ...frontTag])
 
 function changeSwiper(direction: -1 | 1) {
+    // if (count.value == 1 && direction == -1) return
+    // if (count.value == 3 && direction == 1) return
     count.value += direction;
     transition.value = 'transform 1s ease';
+    pointSpeed.value = 1;
 }
+let pointSpeed = ref(1)
 function cloneList() {
     transition.value = 'transform 0s';
     if (count.value == (showList.value.length - 1)) {
         count.value = 1;
+        pointSpeed.value = 0.15;
     } else if (count.value == 0) {
         count.value = showList.value.length - 2;
+        pointSpeed.value = 0.15;
     }
-    nextTick(() => {
-        isDown.value = false;
-    })
+    isDown.value = false;
 }
 
 function resize() {
@@ -184,21 +223,19 @@ function resize() {
         divWidth = wrapper.value.clientWidth;
     }
 }
-let dragTimer: (number | null | NodeJS.Timeout);
+// let dragTimer: (number | null | NodeJS.Timeout);
 function down(e: MouseEvent) {
     if (isDown.value) return;
     e.preventDefault();
     isDown.value = true;
     breakPoint = 0;
-    if (dragTimer) {
-        clearTimeout(dragTimer);
-    }
     useListener(window, 'add', events.drag);
 }
 
 function move(e: MouseEvent) {
     translateX.value += e.movementX;
     breakPoint += e.movementX;
+    branchX.value += e.movementX
 }
 
 function up() {
@@ -209,12 +246,32 @@ function up() {
     }
     translateX.value = 0;
     transition.value = 'transform 1s ease';
-    dragTimer = setTimeout(() => {
-        isDown.value = false;
-    }, 1000);
     useListener(window, 'remove', events.drag);
 }
 
+// 店名靠前
+let branchNames = ref()
+let branchX = ref(0)
+let branchNameStyle = computed(() => {
+    //   
+    return {
+        // transform: `translateX(calc(${translateX.value * 0.5}px))`
+    }
+})
+let branchNameClass = computed(() => {
+    return showList.value.map((_, index) => {
+        switch (index) {
+            case count.value - 1:
+                return 'prevBranch';
+            case count.value:
+                return 'currBranch';
+            case count.value + 1:
+                return 'nextBranch';
+            default:
+                return '';
+        }
+    })
+})
 
 //icon hover
 let iconClass = ref('in');
@@ -296,8 +353,6 @@ function cursorPosition(e: MouseEvent) {
     }
     targetY.value = e.clientY - containerRect.top;
     targetX.value = e.clientX - containerRect.left;
-
-    // dragClick.value = (e.target as Element).closest('a') ? 'pointer' : 'grab'
 }
 
 function animateCursor() {
@@ -487,14 +542,14 @@ onUnmounted(() => {
                 position: absolute;
             }
 
+            .cloneSouth {
+                top: calc(435px);
+                left: calc(870px);
+            }
+
             .north {
                 top: calc(114px);
                 left: calc(1012px + 100%);
-            }
-
-            .cloneNorth {
-                top: calc(114px);
-                left: calc(1012px + 400%);
             }
 
             .central {
@@ -507,15 +562,32 @@ onUnmounted(() => {
                 left: calc(870px + 300%);
             }
 
-            .cloneSouth {
-                top: calc(435px);
-                left: calc(870px);
+            .cloneNorth {
+                top: calc(114px);
+                left: calc(1012px + 400%);
+            }
+
+            .point-enter-active,
+            .point-leave-active {
+                transition: opacity 0.5s var(--pointSpeed);
+            }
+
+            .point-enter-to,
+            .point-leave-from {
+                opacity: 1;
+            }
+
+            .point-enter-from,
+            .point-leave-to {
+                opacity: 0;
             }
 
             .branchName {
                 @include flex-center-center;
                 width: 360px;
                 flex-direction: column;
+                // position: absolute;
+                // transition: transform 0.5s;
 
                 h1 {
                     font-size: 4rem;
@@ -540,6 +612,18 @@ onUnmounted(() => {
                     }
                 }
             }
+
+            // .prevBranch {
+            //     transform: translateX(50vw)
+            // }
+
+            // .currBranch {
+            //     transform: translateX(0)
+            // }
+
+            // .nextBranch {
+            //     transform: translateX(-50vw)
+            // }
 
             .position {
                 @include flex-center-center;
