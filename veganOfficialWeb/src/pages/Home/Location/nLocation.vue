@@ -29,17 +29,15 @@
         <div class="mainPart" ref="wrapper"
             :class="{ 'dragging': isDown }"
             :style="branchStyle"
-            @transitionend="cloneList();"
-            @transitionrun="console.log('object');">
+            @transitionend="cloneList();">
             <!-- <transition-group name="carousel" tag="div"
                 class="carousel"> -->
             <div class="carousel"
                 v-for="(item, index) in showList"
                 :key="index">
                 <div class="content">
-                    <transition name='point'>
-                        <div class="point"
-                            :style="pointStyle"
+                    <transition name='fadeIn'>
+                        <div class="point" :style="delayVar"
                             :class="pointClass[index]"
                             ref="point"
                             v-show="count == index">
@@ -62,14 +60,17 @@
                             </SvgIcon>
                         </div>
                     </div>
-                    <div class="position"
-                        :style="{ left: (index * 100 + 15) + '%' }">
-                        <SvgIcon name="Location"
-                            color="white" width="24"
-                            height="24">
-                        </SvgIcon>
-                        <p>{{ item.addr }}</p>
-                    </div>
+                    <transition name="fadeIn">
+                        <div class="position"
+                            :style="[{ left: `${index * 100 + 15}%` }, delayVar]"
+                            v-show="index == count">
+                            <SvgIcon name="Location"
+                                color="white" width="24"
+                                height="24">
+                            </SvgIcon>
+                            <p>{{ item.addr }}</p>
+                        </div>
+                    </transition>
                 </div>
             </div>
             <!-- </transition-group> -->
@@ -79,16 +80,16 @@
 
 <script setup lang="ts">
 
-// TODO: 下一分店名靠前、淡化，是否一段時間取消動畫
+// TODO: 下一分店名靠前、淡化
 /**
  * //無法點按鈕(pointer-event or z-index)
  * //cursor出現、消失動畫(淡化)
+ * //左下字用切換顯示
  * doing: 前一張、下一張樣式
- * //doing: 取消無限輪播?
- * ? 封裝游標跟隨
- * ? 游標跟隨可以不用requestAnimationFrame
+ * * 頭尾兩張clone時會閃爍，不時出現，原因未知
  * ? 整體代碼優化
- * todo 左下字用切換顯示
+ * ? 封裝游標跟隨
+ * ? 游標跟隨可以e不用requestAnimationFrame
  */
 
 
@@ -171,17 +172,10 @@ let pointClass = computed(() => {
     })
 })
 
-let pointTransition = computed(() => {
-    if (count.value == 1 || count.value == 2 || count.value == 3) {
-        return 'point'
-    }
-    return 'clonePoint'
-})
-
-let pointStyle = computed(() => {
+let delaySpeed = ref(1)
+let delayVar = computed(() => {
     return {
-        // opacity: pointOpacity.value
-        '--pointSpeed': `${pointSpeed.value}s`
+        '--delaySpeed': `${delaySpeed.value}s`
     }
 })
 
@@ -202,19 +196,18 @@ function changeSwiper(direction: -1 | 1) {
     // if (count.value == 1 && direction == -1) return
     // if (count.value == 3 && direction == 1) return
     count.value += direction;
-    transition.value = 'transform 1s ease';
-    pointSpeed.value = 1;
+    transition.value = 'transform 0.75s ease';
+    delaySpeed.value = 1;
 }
-let pointSpeed = ref(1)
+
 function cloneList() {
     transition.value = 'transform 0s';
     if (count.value == (showList.value.length - 1)) {
         count.value = 1;
-        pointSpeed.value = 0.15;
     } else if (count.value == 0) {
         count.value = showList.value.length - 2;
-        pointSpeed.value = 0.15;
     }
+    delaySpeed.value = 0.15;
     isDown.value = false;
 }
 
@@ -239,13 +232,18 @@ function move(e: MouseEvent) {
 }
 
 function up() {
+    if (translateX.value == 0) {
+        isDown.value = false;
+        useListener(window, 'remove', events.drag);
+        return
+    }
     if (breakPoint < -(divWidth / 5)) {
         changeSwiper(1);
     } else if (breakPoint > (divWidth / 5)) {
         changeSwiper(-1);
     }
+    transition.value = 'transform 0.75s ease';
     translateX.value = 0;
-    transition.value = 'transform 1s ease';
     useListener(window, 'remove', events.drag);
 }
 
@@ -255,7 +253,8 @@ let branchX = ref(0)
 let branchNameStyle = computed(() => {
     //   
     return {
-        // transform: `translateX(calc(${translateX.value * 0.5}px))`
+        // transform: `translateX(calc(${translateX.value * -0.5}px))`,
+        // transition: `${transition.value}`
     }
 })
 let branchNameClass = computed(() => {
@@ -533,7 +532,7 @@ onUnmounted(() => {
         .content {
             @include flex-center-center;
             width: 1905px;
-            flex: none;
+            // flex: none;
 
             .point {
                 @include WnH(8px);
@@ -567,18 +566,18 @@ onUnmounted(() => {
                 left: calc(1012px + 400%);
             }
 
-            .point-enter-active,
-            .point-leave-active {
-                transition: opacity 0.5s var(--pointSpeed);
+            .fadeIn-enter-active,
+            .fadeIn-leave-active {
+                transition: opacity 0.5s var(--delaySpeed);
             }
 
-            .point-enter-to,
-            .point-leave-from {
+            .fadeIn-enter-to,
+            .fadeIn-leave-from {
                 opacity: 1;
             }
 
-            .point-enter-from,
-            .point-leave-to {
+            .fadeIn-enter-from,
+            .fadeIn-leave-to {
                 opacity: 0;
             }
 
@@ -630,11 +629,9 @@ onUnmounted(() => {
                 gap: 0.25rem;
                 position: absolute;
                 bottom: 5%;
-                // left: 15%;
+                // left: 115%;
                 text-wrap: nowrap
             }
-
-
         }
     }
 
