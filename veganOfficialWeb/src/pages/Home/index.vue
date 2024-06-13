@@ -8,7 +8,7 @@
         <Catalog></Catalog>
     </div>
     <div class="location" ref="locationRef">
-        <nLocation></nLocation>
+        <Location></Location>
     </div>
     <div>
         <Concept></Concept>
@@ -24,7 +24,7 @@ import Marquee from './Banner/Marquee.vue';
 import MainBanner from './Banner/MainBanner.vue';
 import SubBanner from './Banner/SubBanner.vue';
 import Catalog from './Catalog/Catalog.vue';
-import nLocation from './Location/nLocation.vue';
+import Location from './Location/Location.vue';
 import Concept from './Concept/Concept.vue';
 import Hiring from './Hiring/Hiring.vue';
 
