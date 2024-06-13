@@ -44,11 +44,17 @@
                         </div>
                     </transition>
                     <div class="branchName"
-                        ref="branchNames"
-                        :style="branchNameStyle"
-                        :class="branchNameClass[index]">
+                        ref="branchNames">
                         <p>{{ item.position }}</p>
-                        <h1>{{ item.branch }}</h1>
+                        <h1>
+                            {{ item.branch }}
+                        </h1>
+                        <!-- <transition name="branch"> -->
+                        <h1 :style="branchNameClass[index]"
+                            v-show="index == count - 1 || index == count + 1">
+                            {{ item.branch }}
+                        </h1>
+                        <!-- </transition> -->
                         <div>
                             <a @mouseenter="setIconClass($event);"
                                 @mouseleave="setIconClass($event);">
@@ -85,7 +91,8 @@
  * //無法點按鈕(pointer-event or z-index)
  * //cursor出現、消失動畫(淡化)
  * //左下字用切換顯示
- * doing: 前一張、下一張樣式
+ * //下一分店名靠前、淡化
+ * doing: 
  * * 頭尾兩張clone時會閃爍，不時出現，原因未知
  * ? 整體代碼優化
  * ? 封裝游標跟隨
@@ -156,15 +163,15 @@ let branchList = [
 let pointClass = computed(() => {
     return showList.value.map((_, index) => {
         switch (index) {
-            case 0:
-                return 'cloneSouth';
             case 1:
-                return 'north';
+                return 'cloneSouth';
             case 2:
-                return 'central';
+                return 'north';
             case 3:
-                return 'south';
+                return 'central';
             case 4:
+                return 'south';
+            case 5:
                 return 'cloneNorth';
             default:
                 return '';
@@ -179,7 +186,7 @@ let delayVar = computed(() => {
     }
 })
 
-let count = ref(1), translateX = ref(0), transition = ref('transform 0s ease'),
+let count = ref(2), translateX = ref(0), transition = ref('transform 0s ease'),
     isDown = ref(false), wrapper = ref<HTMLDivElement | null>(),
     divWidth: number,
     breakPoint: number,
@@ -189,7 +196,7 @@ let count = ref(1), translateX = ref(0), transition = ref('transform 0s ease'),
         transition: `${transition.value}`
     }));
 
-let frontTag = branchList.slice(0, 1), rearTag = branchList.slice(-1),
+let frontTag = branchList.slice(0, 2), rearTag = branchList.slice(-2),
     showList = ref([...rearTag, ...branchList, ...frontTag])
 
 function changeSwiper(direction: -1 | 1) {
@@ -202,10 +209,10 @@ function changeSwiper(direction: -1 | 1) {
 
 function cloneList() {
     transition.value = 'transform 0s';
-    if (count.value == (showList.value.length - 1)) {
-        count.value = 1;
-    } else if (count.value == 0) {
-        count.value = showList.value.length - 2;
+    if (count.value == (showList.value.length - 2)) {
+        count.value = 2;
+    } else if (count.value == 1) {
+        count.value = showList.value.length - 3;
     }
     delaySpeed.value = 0.15;
     isDown.value = false;
@@ -257,17 +264,33 @@ let branchNameStyle = computed(() => {
         // transition: `${transition.value}`
     }
 })
+let prevBranch = computed(() => ({
+    position: 'absolute',
+    top: 'calc(570px)',
+    right: `calc(-160px - ${(count.value - 1) * 1905}px)`,
+    opacity: '0.5',
+}))
+let currBranch = computed(() => ({
+    display: 'none',
+}))
+let nextBranch = computed(() => ({
+    position: 'absolute',
+    top: 'calc(570px)',
+    right: `calc(-200px - ${(count.value) * 1905}px)`,
+    opacity: '0.5',
+}))
+
 let branchNameClass = computed(() => {
     return showList.value.map((_, index) => {
         switch (index) {
             case count.value - 1:
-                return 'prevBranch';
+                return prevBranch.value;
             case count.value:
-                return 'currBranch';
+                return currBranch.value;
             case count.value + 1:
-                return 'nextBranch';
+                return nextBranch.value;
             default:
-                return '';
+                return {};
         }
     })
 })
@@ -476,7 +499,7 @@ onUnmounted(() => {
         top: 5rem;
         left: 50%;
         transform: translateX(-50%);
-        opacity: 0.8;
+        opacity: 0.6;
     }
 
     .bgFilter {
@@ -543,27 +566,27 @@ onUnmounted(() => {
 
             .cloneSouth {
                 top: calc(435px);
-                left: calc(870px);
+                left: calc(870px + 100%);
             }
 
             .north {
                 top: calc(114px);
-                left: calc(1012px + 100%);
+                left: calc(1012px + 200%);
             }
 
             .central {
                 top: calc(236px);
-                left: calc(910px + 200%);
+                left: calc(910px + 300%);
             }
 
             .south {
                 top: calc(435px);
-                left: calc(870px + 300%);
+                left: calc(870px + 400%);
             }
 
             .cloneNorth {
                 top: calc(114px);
-                left: calc(1012px + 400%);
+                left: calc(1012px + 500%);
             }
 
             .fadeIn-enter-active,
@@ -587,6 +610,8 @@ onUnmounted(() => {
                 flex-direction: column;
                 // position: absolute;
                 // transition: transform 0.5s;
+                // animation: branchAnimation 0.5s ease forwards;
+
 
                 h1 {
                     font-size: 4rem;
@@ -612,16 +637,49 @@ onUnmounted(() => {
                 }
             }
 
+            @keyframes branchAnimation {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+
             // .prevBranch {
-            //     transform: translateX(50vw)
+            //     position: absolute;
+            //     top: calc(530px + 1rem);
+            //     right: -10vw;
+            //     // transform: translateX(50vw)
             // }
 
             // .currBranch {
-            //     transform: translateX(0)
+            //     position: absolute;
+            //     top: calc(530px + 1rem);
+            //     // transform: translateX(0)
             // }
 
             // .nextBranch {
-            //     transform: translateX(-50vw)
+            //     position: absolute;
+            //     top: calc(530px + 1rem);
+            //     right: -110vw;
+            //     // transform: translateX(-50vw)
+            // }
+
+            // .branch-enter-active,
+            // .branch-leave-active {
+            //     transition: opacity 0.5s 1s;
+            // }
+
+            // .branch-enter-to,
+            // .branch-leave-from {
+            //     opacity: 0.5;
+            // }
+
+            // .branch-enter-from,
+            // .branch-leave-to {
+            //     opacity: 0;
             // }
 
             .position {
