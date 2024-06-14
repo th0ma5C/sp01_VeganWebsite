@@ -94,6 +94,7 @@
  * //游標跟隨可以不用requestAnimationFrame，透過不斷移除animation、新增animation達成平滑移動
  * * 頭尾兩張clone時會閃爍，不時出現，原因未知
  * ? 封裝游標跟隨
+ * ? 取消游標跟隨mouseover，不確定影響
  */
 
 
@@ -417,7 +418,7 @@ const events = {
     cursor: [
         { event: 'mouseenter', handler: cursorPosition },
         { event: 'mousemove', handler: cursorPosition },
-        { event: 'mouseover', handler: cursorPosition },
+        // { event: 'mouseover', handler: cursorPosition },
         { event: 'mouseleave', handler: cursorLeave },
     ]
 }

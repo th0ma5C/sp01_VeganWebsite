@@ -1,195 +1,227 @@
 <template>
-    <div class="container">
-        <section>
-            <div class="textClip">NEWS</div>
-            <div class="text"
-                @mouseenter="setIconClass($event)"
-                @mouseleave="setIconClass($event)">
-                <a href="">
-                    <h3>
-                        最新消息
-                        <SvgIcon :name="'ConceptArrow'"
-                            width="18" height="18"
-                            class="arrow"
-                            :class="iconClass">
-                        </SvgIcon>
-                    </h3>
-                    <p>最新消息、限時優惠、當季限量餐點和精彩活動都在這裡！</p>
-                </a>
+    <div class="newsContainer">
+        <div class="tabContainer">
+            <div class="tabHeader">
+                <h2>
+                    <small>News</small>
+                    最新消息
+                </h2>
+                <ul>
+                    <li>全部</li>
+                    <li>新品</li>
+                    <li>活動</li>
+                    <li>會員</li>
+                </ul>
             </div>
-        </section>
-        <section>
-            <div class="textClip">About Us</div>
-            <div class="text"
-                @mouseenter="setIcon2Class($event)"
-                @mouseleave="setIcon2Class($event)">
-                <a href="">
-                    <h3>
-                        關於我們
-                        <SvgIcon :name="'ConceptArrow'"
-                            width="18" height="18"
-                            class="arrow"
-                            :class="icon2Class">
-                        </SvgIcon>
-                    </h3>
-                    <p>蔬食為本的綠色生活，帶著果漾對永續飲食文化的熱忱與願景。</p>
-                </a>
+            <div class="tabs">
+                <div class="tab">
+                    <ul>
+                        <li>
+                            <div>
+                                頭 日期
+                            </div>
+                            <div>
+                                標籤
+                            </div>
+                            <div>
+                                Lorem ipsum dolor sit amet
+                                consectetur adipisicing
+                                elit. Debitis, praesentium.
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                頭1
+                            </div>
+                            <div>
+                                標籤
+                            </div>
+                            <div>
+                                Lorem ipsum dolor sit amet
+                                consectetur adipisicing
+                                elit. Debitis, praesentium.
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                頭2
+                            </div>
+                            <div>
+                                標籤
+                            </div>
+                            <div>
+                                Lorem ipsum dolor sit amet
+                                consectetur adipisicing
+                                elit. Debitis, praesentium.
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                頭3
+                            </div>
+                            <div>
+                                標籤
+                            </div>
+                            <div>
+                                Lorem ipsum dolor sit amet
+                                consectetur adipisicing
+                                elit. Debitis, praesentium.
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                頭4
+                            </div>
+                            <div>
+                                標籤
+                            </div>
+                            <div>
+                                Lorem ipsum dolor sit amet
+                                consectetur adipisicing
+                                elit. Debitis, praesentium.
+                            </div>
+                        </li>
+
+                    </ul>
+                </div>
+                <!-- <div class="tab">
+                    <ul>
+                        <li>
+                            <div>
+                                頭
+                            </div>
+                            <div>
+                                標籤
+                            </div>
+                            <div>
+                                內文
+                            </div>
+                        </li>
+                        <li>2</li>
+                        <li>3</li>
+                        <li>4</li>
+                        <li>5</li>
+                    </ul>
+                </div> -->
             </div>
-        </section>
+        </div>
+        <div class="botBtn">
+            <button>列表-></button>
+        </div>
     </div>
+    <!-- <div class="conceptContainer">
+
+    </div> -->
 </template>
 
 <script setup lang="ts">
-import { onUnmounted, ref } from 'vue';
-import type { Ref } from 'vue';
+import { onMounted } from 'vue';
 
-let iconClass = ref('in'), icon2Class = ref('in');
-let timers: (ReturnType<typeof setTimeout> | null)[] = [];
-function debounce(target: Ref<string>) {
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    let timeStamp: number | null = null;
-    return function (e: MouseEvent) {
-        if (!timeStamp) {
-            timeStamp = Date.now();
-            determineClass(target, e.type);
-            timer = setTimeout(() => {
-                timeStamp = null;
-            }, 200 - (Date.now() - timeStamp))
-            return
-        }
-        if (timer) {
-            clearTimeout(timer);
-            const index = timers.indexOf(timer);
-            if (index !== -1) {
-                timers.splice(index, 1);
-            }
-        }
-        timeStamp = Date.now();
-        timer = setTimeout(() => {
-            determineClass(target, e.type);
-            timeStamp = null;
-        }, 200 - (Date.now() - timeStamp));
-        timers.push(timer);
-    }
-}
+onMounted(() => {
 
-function determineClass(target: Ref<string>, type: string) {
-    if (target === iconClass) {
-        type === 'mouseenter' ? target.value = 'out' : target.value = 'in';
-    } else {
-        type === 'mouseenter' ? target.value = 'out' : target.value = 'in';
-    }
-}
-const setIconClass = debounce(iconClass);
-const setIcon2Class = debounce(icon2Class);
-
-onUnmounted(() => {
-    timers.forEach(timer => {
-        if (timer) clearTimeout(timer);
-    })
 })
-
-
 </script>
 
 <style scoped lang="scss">
-@font-face {
-    font-family: 'MrDafoe';
-    src: url('@assets/fonts/Mr_Dafoe/MrDafoe-Regular.woff2') format('woff2');
+* {
+    // border: 1px solid;
 }
 
-@keyframes flyOut {
-    to {
-        opacity: 0;
-        transform: translate(100%, -100%);
-    }
-}
-
-@keyframes flyIn {
-    from {
-        opacity: 0;
-        transform: translate(-100%, 100%);
-    }
-
-    to {
-        opacity: 1;
-        transform: translate(0, 0);
-    }
-}
-
-.container {
+.newsContainer {
     @include main-part;
     @include flex-center-center;
-    height: 920px;
-    margin-top: 100px;
-    margin-bottom: 0;
-    gap: 3%;
+    flex-direction: column;
+    margin-top: 96px;
+    height: 888px;
 
-    section {
-        @include flex-center-center;
+    .tabContainer {
+        // @include flex-center-center;
+        @include WnH(100%);
+        display: flex;
+        align-items: center;
         flex-direction: column;
-        position: relative;
-        width: 48.5%;
-        transform: translateY(-148px);
+        gap: 1rem;
+    }
 
-        .textClip {
-            @include WnH(100%, 80%);
-            // min-width: 612px;
-            // min-height: 408px;
-            background: url('@assets/img/Home/Concept/fruit.jpg') center / cover no-repeat;
-            background-clip: text;
-            font-family: 'MrDafoe', 'NotoSans';
-            color: transparent;
-            font-size: 150px;
-            text-align: center;
-            line-height: 408px;
-            transition: font-size 0.2s ease-out;
+    .botBtn {
+        @include flex-center-center;
+        @include WnH(150px, 50px);
+        border: 1px solid black;
+        border-radius: 40px;
+        font-size: 20px;
+        margin: 0 8.5% 0 auto;
+    }
+}
 
-            &::before {
-                @include WnH(100%, 80%);
-                // min-width: 612px;
-                max-height: 408px;
-                content: '';
-                position: absolute;
-                left: 0;
-                background: linear-gradient(152deg,
-                        hsla(72, 67%, 57%, 0.1) 25%, hsla(9, 94%, 45%, 0.1) 80%);
-                border-radius: 0.5rem;
-                // z-index: 1;
-            }
-        }
 
-        &:hover {
-            .textClip {
-                font-size: 170px;
-            }
-        }
+.tabHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 83%;
+    margin-top: 3rem;
+    // padding-right: 2rem;
 
-        .text {
-            @include flex-center-center;
-            background-color: $primaryBacColor;
-            cursor: pointer;
-            // width: 100%;
+    h2 {
+        display: inline-flex;
+        justify-content: center;
+        flex-direction: column;
+        font-size: 2.5rem;
+        transform: translateY(-13px);
 
-            h3 {
-                display: inline-flex;
-                align-items: center;
-                overflow: hidden;
-
-                .arrow {
-                    margin-left: 0.25rem;
-                }
-
-                .in {
-                    animation: flyIn 0.2s ease-out forwards;
-                }
-
-                .out {
-                    animation: flyOut 0.2s ease-in forwards;
-                }
-            }
+        small {
+            transform: translateX(2px);
+            font-size: 1rem;
+            opacity: 0.5;
         }
     }
 
+    ul {
+        display: flex;
+
+        li {
+            font-size: 1.25rem;
+            margin-left: 2rem;
+        }
+    }
+}
+
+.tabs {
+    flex: 1;
+    width: 83%;
+}
+
+.tab {
+    display: flex;
+    height: 100%;
+
+    ul {
+        // height: 100%;
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+    }
+
+    li {
+        // height: 20%;
+        display: flex;
+        flex: 0 0 20%;
+        align-items: center;
+
+        div:nth-child(1) {
+            flex: 1;
+            text-align: center;
+        }
+
+        div:nth-child(2) {
+            flex: 1;
+            text-align: center;
+        }
+
+        div:nth-child(3) {
+            flex: 8;
+            padding-left: 2rem;
+        }
+    }
 }
 </style>
