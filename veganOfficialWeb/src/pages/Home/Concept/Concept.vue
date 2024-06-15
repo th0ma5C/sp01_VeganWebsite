@@ -117,6 +117,12 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 
+//TODO: 新聞資料建置、請求邏輯編寫、tab換頁邏輯
+/**
+ * *標籤SVG、背景跑馬燈、hover高亮圓圈、底線畫出
+ * *btn hover效果、箭頭SVG
+ */
+
 onMounted(() => {
 
 })
@@ -137,10 +143,15 @@ onMounted(() => {
     .tabContainer {
         // @include flex-center-center;
         @include WnH(100%);
-        display: flex;
         align-items: center;
+        display: flex;
         flex-direction: column;
         gap: 1rem;
+        // position: relative;
+
+        &>div {
+            width: 80%;
+        }
     }
 
     .botBtn {
@@ -149,7 +160,7 @@ onMounted(() => {
         border: 1px solid black;
         border-radius: 40px;
         font-size: 20px;
-        margin: 0 8.5% 0 auto;
+        margin: 0 10% 2rem auto;
     }
 }
 
@@ -158,9 +169,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 83%;
     margin-top: 3rem;
-    // padding-right: 2rem;
 
     h2 {
         display: inline-flex;
@@ -188,7 +197,6 @@ onMounted(() => {
 
 .tabs {
     flex: 1;
-    width: 83%;
 }
 
 .tab {
@@ -202,13 +210,36 @@ onMounted(() => {
         flex-direction: column;
     }
 
+    %pseudo-li-line {
+        @include WnH(100vw, 1px);
+        // background-color: black;
+        background: linear-gradient(to right, hsl(0, 0%, 50%) 33%, rgba(255, 255, 255, 0) 0%);
+        background-size: 5px 1px;
+        content: '';
+        position: absolute;
+        left: 0;
+        transform: translateX(calc(-1 * (6rem + (100vw - 6rem) * 0.1)));
+    }
+
     li {
         // height: 20%;
+        align-items: center;
         display: flex;
         flex: 0 0 20%;
-        align-items: center;
+        position: relative;
+
+        &::before {
+            @extend %pseudo-li-line;
+            top: 0;
+        }
+
+        &:last-child::after {
+            @extend %pseudo-li-line;
+            bottom: 0;
+        }
 
         div:nth-child(1) {
+            opacity: 0.5;
             flex: 1;
             text-align: center;
         }
