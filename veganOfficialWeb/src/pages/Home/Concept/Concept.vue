@@ -17,23 +17,21 @@
                 <div class="tab">
                     <ul>
                         <li>
-                            <div>
-                                頭 日期
+                            <div class="date">
+                                2024.06.16
+                            </div>
+                            <div class="label">
+                                活動
                             </div>
                             <div>
-                                標籤
-                            </div>
-                            <div>
-                                Lorem ipsum dolor sit amet
-                                consectetur adipisicing
-                                elit. Debitis, praesentium.
+                                參加我們的夏季促銷活動，享受最高50%的折扣！
                             </div>
                         </li>
                         <li>
-                            <div>
+                            <div class="date">
                                 頭1
                             </div>
-                            <div>
+                            <div class="label">
                                 標籤
                             </div>
                             <div>
@@ -43,10 +41,10 @@
                             </div>
                         </li>
                         <li>
-                            <div>
+                            <div class="date">
                                 頭2
                             </div>
-                            <div>
+                            <div class="label">
                                 標籤
                             </div>
                             <div>
@@ -56,10 +54,10 @@
                             </div>
                         </li>
                         <li>
-                            <div>
+                            <div class="date">
                                 頭3
                             </div>
-                            <div>
+                            <div class="label">
                                 標籤
                             </div>
                             <div>
@@ -69,10 +67,10 @@
                             </div>
                         </li>
                         <li>
-                            <div>
+                            <div class="date">
                                 頭4
                             </div>
-                            <div>
+                            <div class="label">
                                 標籤
                             </div>
                             <div>
@@ -86,7 +84,11 @@
             </div>
         </div>
         <div class="botBtn">
-            <button>列表-></button>
+            <button>
+                列表
+                <Svg-icon name="ConceptArrow" width="27"
+                    height="27"></Svg-icon>
+            </button>
         </div>
     </div>
     <!-- <div class="conceptContainer">
@@ -110,8 +112,7 @@ let news = ref({
             id: 1,
             timestamp: "2024-06-16T12:34:56Z",
             category: "活動",
-            title: "夏季特別促銷",
-            content: "參加我們的夏季促銷活動，享受最高50%的折扣！"
+            title: "餐廳周年慶活動，驚喜不斷，精彩活動等你來參加",
         },
     ]
 })
@@ -151,11 +152,16 @@ onMounted(() => {
 
     .botBtn {
         @include flex-center-center;
-        @include WnH(150px, 50px);
-        border: 1px solid black;
+        @include WnH(120px, 52px);
+        border: 1px solid rgba(0, 0, 0, 0.5);
         border-radius: 40px;
         font-size: 20px;
-        margin: 0 10% 2rem auto;
+        margin: 2rem 10% 2rem auto;
+
+        button {
+            @include flex-center-center;
+            gap: 0.5rem;
+        }
     }
 }
 
@@ -184,7 +190,7 @@ onMounted(() => {
         display: flex;
 
         li {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             margin-left: 2rem;
         }
     }
@@ -233,20 +239,26 @@ onMounted(() => {
             bottom: 0;
         }
 
-        div:nth-child(1) {
+        .date {
             opacity: 0.5;
+            font-size: 12px;
             flex: 1;
             text-align: center;
         }
 
-        div:nth-child(2) {
+        .label {
+            // color: rgb(0, 0, 0, 0.5);
+            font-size: 12px;
             flex: 1;
             text-align: center;
+            background: url('@assets/icons/ConceptLabel.svg') no-repeat center;
+            opacity: 0.5;
         }
 
         div:nth-child(3) {
             flex: 8;
             padding-left: 2rem;
+            font-size: 20px;
         }
     }
 }
