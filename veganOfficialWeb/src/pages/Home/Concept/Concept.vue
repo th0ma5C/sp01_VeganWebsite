@@ -81,28 +81,8 @@
                                 elit. Debitis, praesentium.
                             </div>
                         </li>
-
                     </ul>
                 </div>
-                <!-- <div class="tab">
-                    <ul>
-                        <li>
-                            <div>
-                                頭
-                            </div>
-                            <div>
-                                標籤
-                            </div>
-                            <div>
-                                內文
-                            </div>
-                        </li>
-                        <li>2</li>
-                        <li>3</li>
-                        <li>4</li>
-                        <li>5</li>
-                    </ul>
-                </div> -->
             </div>
         </div>
         <div class="botBtn">
@@ -115,13 +95,28 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 
 //TODO: 新聞資料建置、請求邏輯編寫、tab換頁邏輯
 /**
  * *標籤SVG、背景跑馬燈、hover高亮圓圈、底線畫出
  * *btn hover效果、箭頭SVG
+ * *內文靠上
  */
+
+let news = ref({
+    data: [
+        {
+            id: 1,
+            timestamp: "2024-06-16T12:34:56Z",
+            category: "活動",
+            title: "夏季特別促銷",
+            content: "參加我們的夏季促銷活動，享受最高50%的折扣！"
+        },
+    ]
+})
+
+
 
 onMounted(() => {
 

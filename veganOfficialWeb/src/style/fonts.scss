@@ -1,10 +1,12 @@
+//TODO: 改用google font api
+
 $variableFont: 'wght' 350;
 
-@font-face {
-    font-family: 'NotoSansTC';
-    src: url('@assets/fonts/Noto_Sans_TC/NotoSansTC-VariableFont_wght.woff2') format('woff2');
-    font-display: swap;
-}
+// @font-face {
+//     font-family: 'NotoSansTC';
+//     src: url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@350&display=swap');
+//     // font-display: swap;
+// }
 
 @font-face {
     font-family: 'NotoSans';
@@ -12,11 +14,21 @@ $variableFont: 'wght' 350;
     font-display: swap;
 }
 
+// @font-face {
+//     font-family: 'NotoSans';
+//     src: url('@assets/fonts/Noto_Sans/NotoSans-VariableFont_wdth,wght.woff2') format('woff2');
+//     font-display: swap;
+// }
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@350&display=swap');
 
 body,
 button {
-    font-family: 'NotoSans', 'NotoSansTC';
+    font-family: 'NotoSans', 'Noto Sans TC';
     font-variation-settings: $variableFont;
+    font-optical-sizing: auto;
+    font-weight: 350;
+    font-style: normal;
 
     h1,
     h2,
