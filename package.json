@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently \"npm run server-start\" \"npm run client-dev\"",
+    "start": "concurrently \"npm run mongo\" \"npm run server-start\" \"npm run client-dev\"",
     "server-start": "npm start --prefix veganWebServer",
     "client-dev": "npm run dev --prefix veganOfficialWeb",
+    "mongo": "start powershell -NoExit -Command mongod",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

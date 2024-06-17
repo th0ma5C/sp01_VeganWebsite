@@ -5,7 +5,7 @@ const path = require('path');
 
 /* GET new catalog */
 router.get('/newCatalog', (req, res) => {
-    const imagesDirectory = path.join(__dirname, '../../public/images/menu/homeCatalog');
+    const imagesDirectory = path.join(__dirname, '../../../public/images/menu/homeCatalog');
 
     // 讀取資料夾內所有文件的名稱
     fs.readdir(imagesDirectory, (err, files) => {
@@ -23,7 +23,7 @@ router.get('/newCatalog', (req, res) => {
 });
 /* GET hot catalog */
 router.get('/hotCatalog', (req, res) => {
-    const imagesDirectory = path.join(__dirname, '../../public/images/menu/homeCatalog');
+    const imagesDirectory = path.join(__dirname, '../../../public/images/menu/homeCatalog');
 
     fs.readdir(imagesDirectory, (err, files) => {
         if (err) {
