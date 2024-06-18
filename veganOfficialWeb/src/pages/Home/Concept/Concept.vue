@@ -97,7 +97,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { nextTick, onBeforeMount, onMounted, ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useNewsStore } from '@/store/newsStore';
 
 //TODO: 新聞資料建置、請求邏輯編寫、tab換頁邏輯
 /**
@@ -106,6 +108,8 @@ import { onMounted, ref } from 'vue';
  * *內文靠上
  */
 
+let { newsList } = storeToRefs(useNewsStore())
+console.log(newsList);
 let news = ref({
     data: [
         {
@@ -117,10 +121,10 @@ let news = ref({
     ]
 })
 
-
+onBeforeMount(() => {
+})
 
 onMounted(() => {
-
 })
 </script>
 

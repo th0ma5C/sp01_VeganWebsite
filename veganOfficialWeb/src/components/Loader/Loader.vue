@@ -37,10 +37,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, toRefs, watch } from 'vue';
+import { ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useLoader } from '@/store/loader';
 
-let { loaderActivated } = toRefs(useLoader())
+let { loaderActivated } = storeToRefs(useLoader())
 let loaded = ref(false)
 
 watch(loaderActivated, (newVal) => {
