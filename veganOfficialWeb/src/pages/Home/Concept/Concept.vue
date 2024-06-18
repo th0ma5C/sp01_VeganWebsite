@@ -106,23 +106,20 @@ import { useNewsStore } from '@/store/newsStore';
  * *標籤SVG、背景跑馬燈、hover高亮圓圈、底線畫出
  * *btn hover效果、箭頭SVG
  * *內文靠上
+ * *news pinia 重寫 https://medium.com/@lovebuizel/vue3-pinia-%E4%B8%AD%E5%A6%82%E4%BD%95%E5%84%AA%E9%9B%85%E7%9A%84%E4%BD%BF%E7%94%A8api-5e2636691d8b
+ * ! 決定數據結構
  */
 
-let { newsList } = storeToRefs(useNewsStore())
+let { newsData } = storeToRefs(useNewsStore())
+let newsList = []
+for (let i in newsData.value) {
+    newsList.push(...newsData.value[i])
+}
+newsList.sort((a, b) => {
+    return a.date - b.date
+})
 console.log(newsList);
-let news = ref({
-    data: [
-        {
-            id: 1,
-            timestamp: "2024-06-16T12:34:56Z",
-            category: "活動",
-            title: "餐廳周年慶活動，驚喜不斷，精彩活動等你來參加",
-        },
-    ]
-})
 
-onBeforeMount(() => {
-})
 
 onMounted(() => {
 })

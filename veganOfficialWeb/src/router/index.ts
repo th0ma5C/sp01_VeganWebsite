@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useNewsStore } from "@/store/newsStore";
 // import NProgress from 'nprogress'
 // import 'nprogress/nprogress.css'
 // NProgress.configure({ showSpinner: false })
@@ -18,7 +19,17 @@ const router = createRouter({
             path: '/',
             // redirect: '/home',
             component: Home,
-            alias: ['/home']
+            alias: ['/home'],
+            beforeEnter: async (to, from, next) => {
+                const { fetchNews } = useNewsStore();
+                try {
+                    await fetchNews();
+                    next();
+                } catch (err) {
+                    console.log('router fetchNews failed', err);
+                    next()
+                }
+            }
         },
         // {
         //     path: '/home',
