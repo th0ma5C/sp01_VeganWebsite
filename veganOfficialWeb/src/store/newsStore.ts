@@ -1,10 +1,11 @@
 import { defineStore } from "pinia";
 import { reqNewsList } from '@/api/news';
 import { ref, readonly } from "vue";
+import type { NewsRes } from "@/api/news/type";
 
 
 export const useNewsStore = defineStore('news', (() => {
-    let newsData = ref();
+    let newsData = ref<NewsRes | null>(null);
 
     let fetchNews = async () => {
         try {

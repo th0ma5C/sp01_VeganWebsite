@@ -107,18 +107,10 @@ import { useNewsStore } from '@/store/newsStore';
  * *btn hover效果、箭頭SVG
  * *內文靠上
  * *news pinia 重寫 https://medium.com/@lovebuizel/vue3-pinia-%E4%B8%AD%E5%A6%82%E4%BD%95%E5%84%AA%E9%9B%85%E7%9A%84%E4%BD%BF%E7%94%A8api-5e2636691d8b
- * ! 決定數據結構
  */
 
-let { newsData } = storeToRefs(useNewsStore())
-let newsList = []
-for (let i in newsData.value) {
-    newsList.push(...newsData.value[i])
-}
-newsList.sort((a, b) => {
-    return a.date - b.date
-})
-console.log(newsList);
+let { newsData } = storeToRefs(useNewsStore());
+console.log(newsData.value);
 
 
 onMounted(() => {

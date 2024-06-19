@@ -1,12 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const NewsModel = require('../../../models/NewsModel')
+const NewsModel = require('../../../models/NewsModel');
+const moment = require('moment')
 
 /* GET news */
 router.get('/newsList', async (req, res) => {
     try {
-        const newsList = await NewsModel.findOne({}).select('-_id');
-        res.status(200).json(newsList);
+        const data = await NewsModel.find().sort({ date: -1 }).exec();
+        // let newsList = data.map((item) => {
+        //     return {
+        //         ...item.toObject(),
+        //         date: moment(item.date).format('YYYY-MM-DD')
+        //     };
+        // })
+        res.status(200).json(data);
     } catch (err) {
         res.status(500).send('獲取news失敗')
     }
