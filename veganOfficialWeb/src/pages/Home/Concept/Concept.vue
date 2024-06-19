@@ -7,76 +7,35 @@
                     最新消息
                 </h2>
                 <ul>
-                    <li>最新</li>
-                    <li>活動</li>
-                    <li>優惠</li>
-                    <li>會員</li>
+                    <li @click="newsList.changeTab(0)">
+                        最新
+                    </li>
+                    <li @click="newsList.changeTab(1)">
+                        活動
+                    </li>
+                    <li @click="newsList.changeTab(2)">
+                        優惠
+                    </li>
+                    <li @click="newsList.changeTab(3)">
+                        會員
+                    </li>
                 </ul>
             </div>
             <div class="tabs">
-                <div class="tab">
+                <div class="tab"
+                    v-for="(tab, index) in newsList.tabs"
+                    v-show="index == newsList.showNews">
                     <ul>
-                        <li>
+                        <li v-for="(news, index) in newsList.latest"
+                            :key="index">
                             <div class="date">
-                                2024.06.16
+                                {{ news.date }}
                             </div>
                             <div class="label">
-                                活動
+                                {{ news.label }}
                             </div>
                             <div>
-                                參加我們的夏季促銷活動，享受最高50%的折扣！
-                            </div>
-                        </li>
-                        <li>
-                            <div class="date">
-                                頭1
-                            </div>
-                            <div class="label">
-                                標籤
-                            </div>
-                            <div>
-                                Lorem ipsum dolor sit amet
-                                consectetur adipisicing
-                                elit. Debitis, praesentium.
-                            </div>
-                        </li>
-                        <li>
-                            <div class="date">
-                                頭2
-                            </div>
-                            <div class="label">
-                                標籤
-                            </div>
-                            <div>
-                                Lorem ipsum dolor sit amet
-                                consectetur adipisicing
-                                elit. Debitis, praesentium.
-                            </div>
-                        </li>
-                        <li>
-                            <div class="date">
-                                頭3
-                            </div>
-                            <div class="label">
-                                標籤
-                            </div>
-                            <div>
-                                Lorem ipsum dolor sit amet
-                                consectetur adipisicing
-                                elit. Debitis, praesentium.
-                            </div>
-                        </li>
-                        <li>
-                            <div class="date">
-                                頭4
-                            </div>
-                            <div class="label">
-                                標籤
-                            </div>
-                            <div>
-                                Lorem ipsum dolor sit amet
-                                consectetur adipisicing
-                                elit. Debitis, praesentium.
+                                {{ news.title }}
                             </div>
                         </li>
                     </ul>
@@ -97,9 +56,11 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onBeforeMount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeMount, onMounted, reactive, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useNewsStore } from '@/store/newsStore';
+import type { Ref, ComputedRef } from 'vue';
+import moment from 'moment';
 
 //TODO: 新聞資料建置、請求邏輯編寫、tab換頁邏輯
 /**
@@ -110,7 +71,24 @@ import { useNewsStore } from '@/store/newsStore';
  */
 
 let { newsData } = storeToRefs(useNewsStore());
-console.log(newsData.value);
+interface newsItem {
+    date: Date,
+    title: string,
+    content: string,
+    label: string,
+}
+
+
+let newsList = reactive({
+    tabs: ['最新', '活動', '優惠', '會員'],
+    showNews: 0,
+    latest: newsData.value!.slice(0, 5),
+    changeTab(n: number) {
+        this.showNews = n;
+        console.log(this.showNews);
+    }
+})
+
 
 
 onMounted(() => {
