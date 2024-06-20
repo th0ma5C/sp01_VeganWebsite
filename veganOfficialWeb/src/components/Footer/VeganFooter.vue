@@ -18,10 +18,10 @@ import MainFooter from './MainFooter.vue';
 
 <style lang="scss" scoped>
 // @import url('https://fonts.googleapis.com/css2?family=Mr+Dafoe&display=swap');\
-@font-face {
-    font-family: 'MrDafoe';
-    src: url('@assets/fonts/Mr_Dafoe/MrDafoe-Regular.woff2') format('woff2');
-}
+// @font-face {
+//     font-family: 'MrDafoe';
+//     src: url('@assets/fonts/Mr_Dafoe/MrDafoe-Regular.woff2') format('woff2');
+// }
 
 .container {
     background-color: #00430b;
@@ -49,14 +49,16 @@ import MainFooter from './MainFooter.vue';
     }
 
     .footer-logo {
-        font-family: 'MrDafoe', sans-serif;
+        font-family: 'Mr Dafoe', cursive;
+        font-weight: 400;
+        font-style: normal;
         text-align: center;
         margin: 0;
         font-size: 33vh;
         white-space: nowrap;
         overflow: hidden;
 
-        span {}
+        // span {}
     }
 }
 </style>

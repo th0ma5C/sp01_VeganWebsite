@@ -15,5 +15,6 @@ export const useNewsStore = defineStore('news', (() => {
         }
     }
 
+
     return { newsData, fetchNews }
 }))

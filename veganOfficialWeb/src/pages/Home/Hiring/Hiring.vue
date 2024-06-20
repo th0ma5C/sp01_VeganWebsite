@@ -25,10 +25,10 @@
 </script>
 
 <style scoped lang="scss">
-@font-face {
-    font-family: 'MrDafoe';
-    src: url('@assets/fonts/Mr_Dafoe/MrDafoe-Regular.woff2') format('woff2');
-}
+// @font-face {
+//     font-family: 'MrDafoe';
+//     src: url('@assets/fonts/Mr_Dafoe/MrDafoe-Regular.woff2') format('woff2');
+// }
 
 .container {
     @include main-part;
@@ -71,7 +71,9 @@
 
         span {
             font-size: 7rem;
-            font-family: 'MrDafoe', 'NotoSans';
+            font-family: "Mr Dafoe", cursive;
+            font-weight: 400;
+            font-style: normal;
         }
 
     }

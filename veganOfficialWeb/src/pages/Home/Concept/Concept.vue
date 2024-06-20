@@ -7,27 +7,27 @@
                     最新消息
                 </h2>
                 <ul>
-                    <li @click="newsList.changeTab(0)">
+                    <li @click="newsList.changeTab($event)">
                         最新
                     </li>
-                    <li @click="newsList.changeTab(1)">
+                    <li @click="newsList.changeTab($event)">
                         活動
                     </li>
-                    <li @click="newsList.changeTab(2)">
+                    <li @click="newsList.changeTab($event)">
                         優惠
                     </li>
-                    <li @click="newsList.changeTab(3)">
+                    <li @click="newsList.changeTab($event)">
                         會員
                     </li>
                 </ul>
             </div>
             <div class="tabs">
                 <div class="tab"
-                    v-for="(tab, index) in newsList.tabs"
-                    v-show="index == newsList.showNews">
+                    v-for="(tab) in newsList.tabs"
+                    v-show="tab == newsList.tab">
                     <ul>
-                        <li v-for="(news, index) in newsList.latest"
-                            :key="index">
+                        <li v-for="(news) in newsList.showNews"
+                            :key="news._id">
                             <div class="date">
                                 {{ news.date }}
                             </div>
@@ -49,6 +49,11 @@
                     height="27"></Svg-icon>
             </button>
         </div>
+        <div class="marquee">
+            <span>Information / News</span>
+            <span>Information / News</span>
+            <span>Information / News</span>
+        </div>
     </div>
     <!-- <div class="conceptContainer">
 
@@ -56,40 +61,55 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeMount, onMounted, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeMount, onMounted, reactive, ref, watch, watchEffect } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useNewsStore } from '@/store/newsStore';
 import type { Ref, ComputedRef } from 'vue';
 import moment from 'moment';
 
-//TODO: 新聞資料建置、請求邏輯編寫、tab換頁邏輯
+//TODO: 背景跑馬燈、hover高亮圓圈、底線畫出
 /**
- * *標籤SVG、背景跑馬燈、hover高亮圓圈、底線畫出
+ * //新聞資料建置、請求資料編寫、換頁邏輯
+ * *list比例調整
+ * *用oberserver 控制跑馬燈是否顯示
  * *btn hover效果、箭頭SVG
  * *內文靠上
  * *news pinia 重寫 https://medium.com/@lovebuizel/vue3-pinia-%E4%B8%AD%E5%A6%82%E4%BD%95%E5%84%AA%E9%9B%85%E7%9A%84%E4%BD%BF%E7%94%A8api-5e2636691d8b
  */
 
-let { newsData } = storeToRefs(useNewsStore());
+let { newsData } = useNewsStore();
+
 interface newsItem {
     date: Date,
     title: string,
     content: string,
     label: string,
+    _id?: string
 }
-
 
 let newsList = reactive({
     tabs: ['最新', '活動', '優惠', '會員'],
-    showNews: 0,
-    latest: newsData.value!.slice(0, 5),
-    changeTab(n: number) {
-        this.showNews = n;
-        console.log(this.showNews);
+    tab: '最新',
+    showNews: [] as newsItem[],
+    changeTab(e: MouseEvent | null) {
+        const target = e?.target as HTMLElement
+        this.tab = target.innerHTML.trim();
     }
 })
 
+watchEffect(() => {
+    if (!newsData) return
 
+    if (newsList.tab == '最新') {
+        newsList.showNews = newsData.slice(0, 5)
+        return
+    }
+    newsList.showNews = newsData.filter((news) => {
+        if (news.label == newsList.tab) {
+            return news
+        }
+    })
+})
 
 onMounted(() => {
 })
@@ -103,18 +123,50 @@ onMounted(() => {
 .newsContainer {
     @include main-part;
     @include flex-center-center;
+    margin: 1rem 0;
     flex-direction: column;
     margin-top: 96px;
     height: 888px;
+    position: relative;
+    padding: 0 6rem;
+    overflow: hidden;
+
+    .marquee {
+        @include flex-center-center;
+        @include WnH(100%, 100%);
+
+        font-family: "EB Garamond", serif;
+        font-optical-sizing: auto;
+        font-weight: 400;
+        font-style: normal;
+        font-size: 12.8vw;
+        opacity: 0.05;
+        position: fixed;
+        pointer-events: none;
+        top: 0;
+        left: 0;
+        justify-content: flex-start;
+        z-index: 0;
+
+        span {
+            background: linear-gradient(0deg, transparent 20%, black 50%);
+            background-clip: text;
+            color: transparent;
+            white-space: nowrap;
+        }
+    }
 
     .tabContainer {
         // @include flex-center-center;
         @include WnH(100%);
+
+
         align-items: center;
         display: flex;
         flex-direction: column;
         gap: 1rem;
         // position: relative;
+        z-index: 1;
 
         &>div {
             width: 80%;
@@ -233,4 +285,8 @@ onMounted(() => {
         }
     }
 }
-</style>
+
+// font garamond setting
+// .eb-garamond-<uniquifier> {
+//     
+// }</style>

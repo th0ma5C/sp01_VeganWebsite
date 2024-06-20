@@ -1,5 +1,5 @@
 <template>
-    <div class="container relative" ref="container"
+    <div class="container relative z-[1]" ref="container"
         :style="[bgSize]"
         @mousedown.prevent="down($event); dragClick = 'grabbing'"
         @mouseup="dragClick = 'grab'">
