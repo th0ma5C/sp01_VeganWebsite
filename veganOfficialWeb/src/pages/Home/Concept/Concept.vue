@@ -1,5 +1,5 @@
 <template>
-    <div class="newsContainer">
+    <div class="newsContainer" ref="newsContainer">
         <div class="tabContainer">
             <div class="tabHeader">
                 <h2>
@@ -49,11 +49,13 @@
                     height="27"></Svg-icon>
             </button>
         </div>
-        <div class="marquee">
-            <span>Information / News</span>
-            <span>Information / News</span>
-            <span>Information / News</span>
-        </div>
+        <transition name="marquee">
+            <div class="marquee" v-show="enter">
+                <span>Information / News</span>
+                <span>Information / News</span>
+                <span>Information / News</span>
+            </div>
+        </transition>
     </div>
     <!-- <div class="conceptContainer">
 
@@ -61,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeMount, onMounted, reactive, ref, watch, watchEffect } from 'vue';
+import { computed, nextTick, onBeforeMount, onMounted, onUnmounted, reactive, ref, watch, watchEffect } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useNewsStore } from '@/store/newsStore';
 import type { Ref, ComputedRef } from 'vue';
@@ -77,6 +79,8 @@ import moment from 'moment';
  * *news pinia 重寫 https://medium.com/@lovebuizel/vue3-pinia-%E4%B8%AD%E5%A6%82%E4%BD%95%E5%84%AA%E9%9B%85%E7%9A%84%E4%BD%BF%E7%94%A8api-5e2636691d8b
  */
 
+
+// list 數據
 let { newsData } = useNewsStore();
 
 interface newsItem {
@@ -109,9 +113,36 @@ watchEffect(() => {
             return news
         }
     })
-})
+});
+
+// 背景顯示
+
+(function () {
+
+})();
+
+let newsContainer = ref()
+let enter = ref(false)
+
+let showBac = (entries: IntersectionObserverEntry[] | undefined) => {
+    if (entries) enter.value = entries[0].isIntersecting
+}
+
+const observer = new IntersectionObserver(showBac, {
+    root: null,
+    rootMargin: '',
+    threshold: 0
+});
+
+
 
 onMounted(() => {
+    observer.observe(newsContainer.value)
+
+})
+
+onUnmounted(() => {
+    observer.disconnect();
 })
 </script>
 
@@ -135,12 +166,7 @@ onMounted(() => {
         @include flex-center-center;
         @include WnH(100%, 100%);
 
-        font-family: "EB Garamond", serif;
-        font-optical-sizing: auto;
-        font-weight: 400;
-        font-style: normal;
-        font-size: 12.8vw;
-        opacity: 0.05;
+        opacity: 0.03;
         position: fixed;
         pointer-events: none;
         top: 0;
@@ -149,11 +175,31 @@ onMounted(() => {
         z-index: 0;
 
         span {
-            background: linear-gradient(0deg, transparent 20%, black 50%);
+            background: linear-gradient(0deg, transparent 25%, black 50%);
             background-clip: text;
             color: transparent;
+            font-family: "EB Garamond", serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-size: 12.8vw;
             white-space: nowrap;
         }
+    }
+
+    .marquee-enter-active,
+    .marquee-leave-active {
+        transition: opacity 0.3s ease;
+    }
+
+    .marquee-enter-from,
+    .marquee-leave-to {
+        opacity: 0;
+    }
+
+    .marquee-enter-to,
+    .marquee-leave-from {
+        opacity: 0.03;
     }
 
     .tabContainer {
@@ -213,8 +259,10 @@ onMounted(() => {
         display: flex;
 
         li {
+            cursor: pointer;
             font-size: 1.5rem;
             margin-left: 2rem;
+            user-select: none;
         }
     }
 }
@@ -285,8 +333,4 @@ onMounted(() => {
         }
     }
 }
-
-// font garamond setting
-// .eb-garamond-<uniquifier> {
-//     
-// }</style>
+</style>
