@@ -1,6 +1,6 @@
 <template>
-    <div class="newsContainer" ref="newsContainer">
-        <div class="tabContainer">
+    <div class="newsContainer">
+        <div class="tabContainer" ref="tabContainer">
             <div class="tabHeader">
                 <h2>
                     <small>News</small>
@@ -51,7 +51,7 @@
         </div>
         <transition name="marquee">
             <div class="marquee" v-show="enter">
-                <span>Information / News</span>
+                <span ref="test">Information / News</span>
                 <span>Information / News</span>
                 <span>Information / News</span>
             </div>
@@ -73,7 +73,8 @@ import moment from 'moment';
 /**
  * //新聞資料建置、請求資料編寫、換頁邏輯
  * *list比例調整
- * *用oberserver 控制跑馬燈是否顯示
+ * //用observer 控制跑馬燈是否顯示
+ * *marquee動畫
  * *btn hover效果、箭頭SVG
  * *內文靠上
  * *news pinia 重寫 https://medium.com/@lovebuizel/vue3-pinia-%E4%B8%AD%E5%A6%82%E4%BD%95%E5%84%AA%E9%9B%85%E7%9A%84%E4%BD%BF%E7%94%A8api-5e2636691d8b
@@ -116,29 +117,26 @@ watchEffect(() => {
 });
 
 // 背景顯示
-
-(function () {
-
-})();
-
-let newsContainer = ref()
+let tabContainer = ref()
 let enter = ref(false)
 
 let showBac = (entries: IntersectionObserverEntry[] | undefined) => {
-    if (entries) enter.value = entries[0].isIntersecting
+    if (entries) {
+        entries.forEach(entry => {
+            enter.value = entry.isIntersecting;
+        })
+    }
+
 }
 
 const observer = new IntersectionObserver(showBac, {
     root: null,
-    rootMargin: '',
-    threshold: 0
+    rootMargin: '-460px 0px',
+    threshold: [0]
 });
 
-
-
 onMounted(() => {
-    observer.observe(newsContainer.value)
-
+    observer.observe(tabContainer.value);
 })
 
 onUnmounted(() => {
@@ -274,6 +272,7 @@ onUnmounted(() => {
 .tab {
     display: flex;
     height: 100%;
+    padding: 0 4rem;
 
     ul {
         // height: 100%;
@@ -290,7 +289,7 @@ onUnmounted(() => {
         content: '';
         position: absolute;
         left: 0;
-        transform: translateX(calc(-1 * (6rem + (100vw - 6rem) * 0.1)));
+        transform: translateX(calc(-1 * (10rem + (100vw - 6rem) * 0.1)));
     }
 
     li {
@@ -328,7 +327,7 @@ onUnmounted(() => {
 
         div:nth-child(3) {
             flex: 8;
-            padding-left: 2rem;
+            padding-left: 4rem;
             font-size: 20px;
         }
     }
