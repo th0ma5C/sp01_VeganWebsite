@@ -1,5 +1,5 @@
 <template>
-    <div class="newsContainer">
+    <div class="newsContainer" ref="newsContainer">
         <div class="tabContainer" ref="tabContainer">
             <div class="tabHeader">
                 <h2>
@@ -17,35 +17,40 @@
                     </li>
                 </ul>
             </div>
-            <div class="tabs">
+            <div class="tabs" ref="tabs">
                 <div class="tab"
                     v-for="(tab) in newsList.tabs"
-                    v-show="tab == newsList.tab">
+                    :key="tab" v-show="tab == newsList.tab">
                     <ul>
-                        <li v-for="(news) in newsList.showNews"
-                            :key="news._id"
-                            @mouseover="setHover(news._id!)"
-                            @mouseout="setHover(null)">
-                            <!-- <div class="listWrapper"> -->
-                            <div class="date">
-                                {{ news.date }}
-                            </div>
-                            <div class="label">
-                                {{ news.label }}
-                            </div>
-                            <div>
-                                <span style="opacity: 1;"
-                                    :class="{
-                                        hover: hoverItem == news._id,
-                                        hideSlide: isHover
-                                    }">
-                                    {{ news.title }}
-                                </span>
-                            </div>
-                            <!-- </div> -->
-                        </li>
+                        <transition-group name="tab"
+                            @enter="hideSlide = true"
+                            @after-enter="hideSlide = false">
+                            <li v-for="(news) in newsList.showNews"
+                                :key="tab" ref="li"
+                                v-show="tab == newsList.tab"
+                                @mouseenter="setHover(news._id!)"
+                                @mouseleave="setHover(null)">
+                                <div class="date">
+                                    {{ news.date }}
+                                </div>
+                                <div class="label">
+                                    {{ news.label }}
+                                </div>
+                                <div>
+                                    <span
+                                        style="opacity: 1;"
+                                        :class="{
+                                            hover: hoverItem == news._id,
+                                            hideSlide: hideSlide
+                                        }">
+                                        {{ news.title }}
+                                    </span>
+                                </div>
+                            </li>
+                        </transition-group>
                     </ul>
                 </div>
+
             </div>
         </div>
         <div class="botBtn">
@@ -65,6 +70,13 @@
                 </span>
             </div>
         </transition>
+        <!-- <div class="cursor" ref="cursor"
+            :style="cursorStyle"
+            v-show="setCursorStyle.show"
+            @animationend="setCursorStyle.opacity = 0"
+            @transitionend="setCursorStyle.show = false;">
+            <p>DRAG</p>
+        </div> -->
     </div>
     <!-- <div class="conceptContainer">
 
@@ -77,6 +89,7 @@ import { storeToRefs } from 'pinia';
 import { useNewsStore } from '@/store/newsStore';
 import type { Ref, ComputedRef } from 'vue';
 import moment from 'moment';
+import { useCursorFollow } from '@/hooks/useCursorFollow';
 
 //TODO: hover高亮圓圈
 /**
@@ -87,7 +100,9 @@ import moment from 'moment';
  * //底線劃出
  * *btn hover效果、箭頭SVG
  * *內文靠上
- * *news pinia 重寫 https://medium.com/@lovebuizel/vue3-pinia-%E4%B8%AD%E5%A6%82%E4%BD%95%E5%84%AA%E9%9B%85%E7%9A%84%E4%BD%BF%E7%94%A8api-5e2636691d8b
+ * *news pinia 重寫 google:Vue3 Pinia 中如何優雅的使用API
+ * *標籤hover
+ * //!隱藏線條時間不夠，換頁動畫抖動
  */
 
 
@@ -109,9 +124,8 @@ let newsList = reactive({
     changeTab(index: number, e: MouseEvent | null) {
         const target = e?.target as HTMLElement
         this.tab = target.innerHTML.trim();
+
         currItem.value = index;
-        isHover.value = true;
-        setTimeout(() => (isHover.value = false), 300)
     }
 })
 
@@ -148,14 +162,22 @@ const observer = new IntersectionObserver(showBac, {
 });
 
 // 底線動畫
-let isHover = ref(false); //控制換頁時不顯示動畫
+let hideSlide = ref(false); //控制換頁時不顯示動畫
 let hoverItem: Ref<number | string | null> = ref(0);
 let currItem = ref(0);
 
-function setHover(index: number | string | null) {
+function setHover(index: number | string | null, e?: MouseEvent) {
     hoverItem.value = index;
 }
 
+// 游標高亮
+// let tabs = ref()
+// let { coordinate, setCursorStyle } = useCursorFollow(tabs)
+// setCursorStyle.enable = true;
+// let cursorStyle = computed(() => ({
+//     transform: `translate3d(calc(${coordinate.X}px),calc(${coordinate.Y}px), 0)`,
+//     opacity: setCursorStyle.opacity,
+// }))
 onMounted(() => {
     observer.observe(tabContainer.value);
 })
@@ -170,6 +192,54 @@ onUnmounted(() => {
     // border: 1px solid;
 }
 
+// hover底線動畫
+@mixin pseudoLine($speed) {
+    &::after {
+        @include WnH(100%, 1px);
+        animation: lineOut $speed ease forwards;
+        background-color: black;
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        transform: translateX(-100%);
+        // transition: transform $speed ease;
+    }
+
+    &.hover::after {
+        animation: lineIn $speed ease forwards;
+    }
+
+    &:not(.hover) {
+        opacity: 0.5;
+    }
+
+    &.hideSlide::after {
+        opacity: 0;
+    }
+}
+
+@keyframes lineIn {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(0%);
+    }
+}
+
+@keyframes lineOut {
+    from {
+        transform: translateX(0%);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
+
+// 跑馬燈動畫
 @keyframes marquee {
     from {
         transform: translateX(100%)
@@ -256,6 +326,7 @@ onUnmounted(() => {
         flex-direction: column;
         gap: 1rem;
         // position: relative;
+        overflow: hidden;
         z-index: 1;
 
         &>div {
@@ -275,6 +346,31 @@ onUnmounted(() => {
             @include flex-center-center;
             gap: 0.5rem;
         }
+    }
+
+    .cursor {
+        background-color: black;
+        @include WnH(100px);
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 2;
+        transition: opacity 0.75s ease;
+        pointer-events: none;
+        // background-color: black;
+
+        p {
+            color: $primaryBacColor;
+            text-align: center;
+            margin: 0.5rem auto;
+        }
+
+        .cursorArrow {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: cursor 1.5s 0.5s ease-out forwards;
+        }
+
     }
 }
 
@@ -304,7 +400,7 @@ onUnmounted(() => {
         display: flex;
 
         li {
-            @extend %pseudoLine;
+            @include pseudoLine(0.3s);
 
             cursor: pointer;
             font-size: 1.5rem;
@@ -317,52 +413,7 @@ onUnmounted(() => {
     }
 }
 
-// hover底線動畫
-%pseudoLine {
-    &::after {
-        @include WnH(100%, 1px);
-        animation: lineOut 0.3s ease forwards;
-        background-color: black;
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-    }
 
-    &.hover::after {
-        animation: lineIn 0.3s ease forwards;
-    }
-
-    &:not(.hover) {
-        opacity: 0.5;
-    }
-
-    &.hideSlide::after {
-        opacity: 0;
-    }
-}
-
-@keyframes lineIn {
-    from {
-        transform: translateX(-100%);
-    }
-
-    to {
-        transform: translateX(0%);
-    }
-}
-
-@keyframes lineOut {
-    from {
-        transform: translateX(0%);
-    }
-
-    to {
-        transform: translateX(100%);
-    }
-}
 
 .tabs {
     flex: 1;
@@ -435,7 +486,7 @@ onUnmounted(() => {
             font-size: 20px;
 
             span {
-                @extend %pseudoLine;
+                @include pseudoLine(0.5s);
 
                 cursor: pointer;
                 display: inline-block;
@@ -444,5 +495,25 @@ onUnmounted(() => {
             }
         }
     }
+}
+
+.tab-enter-active,
+// .tab-leave-active,
+.tab-move {
+    transition: opacity 0.5s ease-in;
+}
+
+// .tab-leave-active {
+//     transition: opacity 0.5s ease;
+// }
+
+.tab-enter-from,
+.tab-leave-to {
+    opacity: 0;
+}
+
+.tab-enter-to,
+.tab-leave-from {
+    opacity: 1;
 }
 </style>

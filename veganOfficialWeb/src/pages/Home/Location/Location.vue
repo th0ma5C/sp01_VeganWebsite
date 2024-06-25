@@ -4,9 +4,10 @@
         @mousedown.prevent="down($event); dragClick = 'grabbing'"
         @mouseup="dragClick = 'grab'">
         <div class="cursor" ref="cursor"
-            :style="cursorStyle" v-show="cursorShow"
-            @animationend="handleCursorStyle.opacity(0)"
-            @transitionend="cursorShow = false;">
+            :style="cursorStyle"
+            v-show="setCursorStyle.show"
+            @animationend="setCursorStyle.opacity = 0"
+            @transitionend="setCursorStyle.show = false;">
             <SvgIcon name="LocationArrow_L" width="100px"
                 height="24px" color="white"
                 class="cursorArrow">
@@ -103,6 +104,7 @@ import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpd
 import type { Ref } from 'vue';
 import debounce from 'lodash/debounce';
 import useListener from '@/hooks/useListener';
+import { useCursorFollow } from '@/hooks/useCursorFollow';
 
 
 //背景
@@ -328,78 +330,88 @@ function hoverDebounce(target: Ref<string>) {
 const setIconClass = hoverDebounce(iconClass);
 
 //游標跟隨
-let container = ref(), cursor = ref();
-let cursorX = ref<number | null>(null), cursorY = ref<number | null>(null);
-let targetX = ref<number | null>(null), targetY = ref<number | null>(null);
-let requestAnimationID: number | null = null;
-let cursorShow = ref(false), enable = ref(false);
+//#region 
+// let container = ref(), cursor = ref();
+// let cursorX = ref<number | null>(null), cursorY = ref<number | null>(null);
+// let targetX = ref<number | null>(null), targetY = ref<number | null>(null);
+// let requestAnimationID: number | null = null;
+// let cursorShow = ref(false), enable = ref(false);
+// let cursorStyle = computed(() => ({
+//     transform: `translate3d(calc(${cursorX.value}px - 50%),calc(${cursorY.value}px - 62px), 0)`,
+//     opacity: cursorOpacity.value,
+// }))
+
+// let containerRect = null;
+// let cursorTimer: (number | null | NodeJS.Timeout) = null, cursorOpacity = ref(1)
+
+
+
+// let handleCursorStyle = (function () {
+
+//     function opacity(n: number) {
+//         cursorOpacity.value = n
+//     }
+//     function show() {
+//         cursorShow.value = false
+//     }
+//     return { opacity, show }
+// })();
+
+// function cursorLeave() {
+//     handleCursorStyle.show();
+//     handleCursorStyle.opacity(1);
+//     stopAnimation();
+// }
+
+// function cursorPosition(e: MouseEvent) {
+//     if (!enable.value) return
+//     if (!requestAnimationID) { requestAnimationID = requestAnimationFrame(animateCursor); }
+//     containerRect = container.value.getBoundingClientRect()
+//     const mouseX = e.clientX - containerRect.left
+//     const mouseY = e.clientY - containerRect.top
+//     if (mouseX >= 0 && mouseX <= containerRect.width &&
+//         mouseY >= 0 && mouseY <= containerRect.height) {
+//         cursorShow.value = true;
+//     } else {
+//         cursorOpacity.value = 1
+//         cursorShow.value = false;
+//     }
+//     targetY.value = e.clientY
+//     targetX.value = e.clientX
+// }
+
+// function animateCursor() {
+//     if (targetX.value !== null && targetY.value !== null) {
+//         if (cursorX.value === null) cursorX.value = targetX.value;
+//         if (cursorY.value === null) cursorY.value = targetY.value;
+
+//         const deltaX = targetX.value - cursorX.value;
+//         const deltaY = targetY.value - cursorY.value;
+
+//         cursorX.value += Math.round(deltaX * 0.3 * 10) / 10;
+//         cursorY.value += Math.round(deltaY * 0.3 * 10) / 10;
+//     }
+//     requestAnimationID = requestAnimationFrame(animateCursor);
+// }
+// function stopAnimation() {
+//     if (requestAnimationID) {
+//         cancelAnimationFrame(requestAnimationID);
+//         requestAnimationID = null;
+//     }
+// }
+//#endregion
+let container = ref()//, cursor = ref();
 let cursorStyle = computed(() => ({
-    transform: `translate3d(calc(${cursorX.value}px - 50%),calc(${cursorY.value}px - 62px), 0)`,
-    opacity: cursorOpacity.value,
+    transform: `translate3d(calc(${coordinate.X}px - 50%),calc(${coordinate.Y}px - 62px), 0)`,
+    opacity: setCursorStyle.opacity,
 }))
-
-let containerRect = null;
-let cursorTimer: (number | null | NodeJS.Timeout) = null, cursorOpacity = ref(1)
-
 watchEffect(() => {
     if (bg.width >= 1905) {
-        enable.value = true
+        setCursorStyle.enable = true
     }
 })
 
-let handleCursorStyle = (function () {
-
-    function opacity(n: number) {
-        cursorOpacity.value = n
-    }
-    function show() {
-        cursorShow.value = false
-    }
-    return { opacity, show }
-})();
-
-function cursorLeave() {
-    handleCursorStyle.show();
-    handleCursorStyle.opacity(1);
-    stopAnimation();
-}
-
-function cursorPosition(e: MouseEvent) {
-    if (!enable.value) return
-    if (!requestAnimationID) { requestAnimationID = requestAnimationFrame(animateCursor); }
-    containerRect = container.value.getBoundingClientRect()
-    const mouseX = e.clientX - containerRect.left
-    const mouseY = e.clientY - containerRect.top
-    if (mouseX >= 0 && mouseX <= containerRect.width &&
-        mouseY >= 0 && mouseY <= containerRect.height) {
-        cursorShow.value = true;
-    } else {
-        cursorOpacity.value = 1
-        cursorShow.value = false;
-    }
-    targetY.value = e.clientY
-    targetX.value = e.clientX
-}
-
-function animateCursor() {
-    if (targetX.value !== null && targetY.value !== null) {
-        if (cursorX.value === null) cursorX.value = targetX.value;
-        if (cursorY.value === null) cursorY.value = targetY.value;
-
-        const deltaX = targetX.value - cursorX.value;
-        const deltaY = targetY.value - cursorY.value;
-
-        cursorX.value += Math.round(deltaX * 0.3 * 10) / 10;
-        cursorY.value += Math.round(deltaY * 0.3 * 10) / 10;
-    }
-    requestAnimationID = requestAnimationFrame(animateCursor);
-}
-function stopAnimation() {
-    if (requestAnimationID) {
-        cancelAnimationFrame(requestAnimationID);
-        requestAnimationID = null;
-    }
-}
+let { coordinate, setCursorStyle } = useCursorFollow(container)
 
 const events = {
     window: [
@@ -415,21 +427,19 @@ const events = {
     scroll: [
         { event: 'scroll', handler: bgScroll }
     ],
-    cursor: [
-        { event: 'mouseenter', handler: cursorPosition },
-        { event: 'mousemove', handler: cursorPosition },
-        // { event: 'mouseover', handler: cursorPosition },
-        { event: 'mouseleave', handler: cursorLeave },
-    ]
+    // cursor: [
+    //     { event: 'mouseenter', handler: cursorPosition },
+    //     { event: 'mousemove', handler: cursorPosition },
+    //     // { event: 'mouseover', handler: cursorPosition },
+    //     { event: 'mouseleave', handler: cursorLeave },
+    // ]
 }
 
 onMounted(() => {
     scrollY.value = window.scrollY;
     useListener(window, 'add', events.scroll);
     useListener(window, 'add', events.window);
-    useListener(container.value, 'add', events.cursor)
-
-    requestAnimationID = requestAnimationFrame(animateCursor);
+    // useListener(container.value, 'add', events.cursor)
 })
 onUpdated(() => {
     resize();
@@ -440,7 +450,6 @@ onUnmounted(() => {
     })
     useListener(window, 'remove', events.scroll);
     useListener(window, 'remove', events.window);
-    stopAnimation();
 })
 
 </script>
