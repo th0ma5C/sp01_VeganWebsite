@@ -25,27 +25,34 @@
                         <transition-group name="tab"
                             @enter="hideSlide = true"
                             @after-enter="hideSlide = false">
-                            <li v-for="(news) in newsList.showNews"
+                            <li v-for="({ date, label, title, _id }) in newsList.showNews"
                                 :key="tab" ref="li"
                                 v-show="tab == newsList.tab"
-                                @mouseenter="setHover(news._id!)"
-                                @mouseleave="setHover(null)">
+                                @mouseenter="setHover(_id!, $event)"
+                                @mouseleave="setHover(null, $event)"
+                                @mousemove="setStalkerPosition($event)">
                                 <div class="date">
-                                    {{ news.date }}
+                                    {{ date }}
                                 </div>
                                 <div class="label">
-                                    {{ news.label }}
+                                    {{ label }}
                                 </div>
                                 <div>
                                     <span
                                         style="opacity: 1;"
                                         :class="{
-                                            hover: hoverItem == news._id,
+                                            hover: hoverItem == _id,
                                             hideSlide: hideSlide
                                         }">
-                                        {{ news.title }}
+                                        {{ title }}
                                     </span>
                                 </div>
+                                <transition name="stalker">
+                                    <div class="stalker"
+                                        :style="stalkerStyle"
+                                        v-show="hoverItem == _id">
+                                    </div>
+                                </transition>
                             </li>
                         </transition-group>
                     </ul>
@@ -55,9 +62,15 @@
         </div>
         <div class="botBtn">
             <button>
-                列表
-                <Svg-icon name="ConceptArrow" width="27"
-                    height="27"></Svg-icon>
+                <span>
+                    更多資訊
+                </span>
+                <div class="wrapper">
+                    <Svg-icon name="ConceptArrow" width="24"
+                        height="24" class="arrow">
+                    </Svg-icon>
+                    <div class="circle"></div>
+                </div>
             </button>
         </div>
         <transition name="marquee">
@@ -70,13 +83,6 @@
                 </span>
             </div>
         </transition>
-        <!-- <div class="cursor" ref="cursor"
-            :style="cursorStyle"
-            v-show="setCursorStyle.show"
-            @animationend="setCursorStyle.opacity = 0"
-            @transitionend="setCursorStyle.show = false;">
-            <p>DRAG</p>
-        </div> -->
     </div>
     <!-- <div class="conceptContainer">
 
@@ -85,24 +91,22 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeMount, onMounted, onUnmounted, reactive, ref, watch, watchEffect } from 'vue';
-import { storeToRefs } from 'pinia';
 import { useNewsStore } from '@/store/newsStore';
-import type { Ref, ComputedRef } from 'vue';
-import moment from 'moment';
-import { useCursorFollow } from '@/hooks/useCursorFollow';
+import type { Ref } from 'vue';
 
-//TODO: hover高亮圓圈
+//TODO:btn hover效果、箭頭SVG
 /**
  * //新聞資料建置、請求資料編寫、換頁邏輯
  * //list比例調整
  * //用observer 控制跑馬燈是否顯示
  * //marquee動畫
  * //底線劃出
- * *btn hover效果、箭頭SVG
+ * //hover高亮圓圈
+ * //標籤hover
+ * //!隱藏線條時間不夠，換頁動畫抖動
+ * *btn翻轉效果
  * *內文靠上
  * *news pinia 重寫 google:Vue3 Pinia 中如何優雅的使用API
- * *標籤hover
- * //!隱藏線條時間不夠，換頁動畫抖動
  */
 
 
@@ -143,7 +147,7 @@ watchEffect(() => {
     })
 });
 
-// 背景跑馬燈顯示
+// 背景跑馬燈顯示/隱藏
 let tabContainer = ref()
 let enter = ref(false)
 
@@ -157,7 +161,7 @@ let showBac = (entries: IntersectionObserverEntry[] | undefined) => {
 
 const observer = new IntersectionObserver(showBac, {
     root: null,
-    rootMargin: '-460px 0px',
+    rootMargin: '-50% 0px',
     threshold: [0]
 });
 
@@ -168,16 +172,22 @@ let currItem = ref(0);
 
 function setHover(index: number | string | null, e?: MouseEvent) {
     hoverItem.value = index;
+    if (!e) return
+    setStalkerPosition(e);
 }
 
 // 游標高亮
-// let tabs = ref()
-// let { coordinate, setCursorStyle } = useCursorFollow(tabs)
-// setCursorStyle.enable = true;
-// let cursorStyle = computed(() => ({
-//     transform: `translate3d(calc(${coordinate.X}px),calc(${coordinate.Y}px), 0)`,
-//     opacity: setCursorStyle.opacity,
-// }))
+let stalkerX = ref(0)
+let stalkerStyle = computed(() => ({
+    transform: `translateX(calc(${stalkerX.value}px - 50%))`
+}))
+function setStalkerPosition(e: MouseEvent) {
+    let X = e.clientX;
+    stalkerX.value = X;
+    // console.log(e);
+}
+
+
 onMounted(() => {
     observer.observe(tabContainer.value);
 })
@@ -188,11 +198,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-* {
-    // border: 1px solid;
-}
-
-// hover底線動畫
+// hover畫底線
 @mixin pseudoLine($speed) {
     &::after {
         @include WnH(100%, 1px);
@@ -203,7 +209,6 @@ onUnmounted(() => {
         bottom: 0;
         left: 0;
         transform: translateX(-100%);
-        // transition: transform $speed ease;
     }
 
     &.hover::after {
@@ -219,6 +224,7 @@ onUnmounted(() => {
     }
 }
 
+// 底線動畫
 @keyframes lineIn {
     from {
         transform: translateX(-100%);
@@ -260,6 +266,17 @@ onUnmounted(() => {
     }
 }
 
+// 分隔虛線
+%pseudo-li-line {
+    @include WnH(100vw, 1px);
+    background: linear-gradient(to right, hsl(0, 0%, 50%) 33%, rgba(255, 255, 255, 0) 0%);
+    background-size: 5px 1px;
+    content: '';
+    position: absolute;
+    left: 0;
+    z-index: 1;
+}
+
 .newsContainer {
     @include main-part;
     @include flex-center-center;
@@ -268,7 +285,6 @@ onUnmounted(() => {
     margin-top: 96px;
     height: 888px;
     position: relative;
-    // padding: 0 6rem;
     overflow: hidden;
 
     .marquee {
@@ -317,7 +333,6 @@ onUnmounted(() => {
     }
 
     .tabContainer {
-        // @include flex-center-center;
         @include WnH(100%);
 
 
@@ -325,26 +340,11 @@ onUnmounted(() => {
         display: flex;
         flex-direction: column;
         gap: 1rem;
-        // position: relative;
         overflow: hidden;
         z-index: 1;
 
         &>div {
             width: 100%;
-        }
-    }
-
-    .botBtn {
-        @include flex-center-center;
-        @include WnH(120px, 52px);
-        border: 1px solid rgba(0, 0, 0, 0.5);
-        border-radius: 40px;
-        font-size: 20px;
-        margin: 2rem 15% 2rem auto;
-
-        button {
-            @include flex-center-center;
-            gap: 0.5rem;
         }
     }
 
@@ -357,7 +357,6 @@ onUnmounted(() => {
         z-index: 2;
         transition: opacity 0.75s ease;
         pointer-events: none;
-        // background-color: black;
 
         p {
             color: $primaryBacColor;
@@ -372,6 +371,70 @@ onUnmounted(() => {
         }
 
     }
+}
+
+.botBtn {
+    @include flex-center-center;
+    @include WnH(160px, 52px);
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 45px;
+    font-size: 20px;
+    margin: 2rem 15% 2rem auto;
+    transition: border-color 0.5s ease;
+
+    button {
+        @include flex-center-center;
+        justify-content: space-around;
+        width: 100%;
+
+
+        span {
+            // justify-items: center;
+            margin-left: 12px;
+        }
+
+        .wrapper {
+            @include flex-center-center;
+            @include WnH(30px);
+            position: relative;
+
+
+            .arrow {
+                color: black;
+                transition: color 0.5s ease;
+                position: absolute;
+                z-index: 2;
+            }
+
+            .circle {
+                @include WnH(36px);
+                background-color: $secondBacColor;
+                border-radius: 36px;
+                scale: 0;
+                transition: scale 0.5s ease;
+                position: absolute;
+                left: -3px;
+                top: -3px;
+                z-index: 1;
+            }
+        }
+
+    }
+
+    &:hover {
+        border-color: $secondBacColor;
+
+        & button .wrapper {
+            .arrow {
+                color: white;
+            }
+
+            .circle {
+                scale: 1;
+            }
+        }
+    }
+
 }
 
 
@@ -390,7 +453,7 @@ onUnmounted(() => {
         transform: translateY(-13px);
 
         small {
-            transform: translateX(2px);
+            transform: translateX(4px);
             font-size: 1rem;
             opacity: 0.5;
         }
@@ -422,29 +485,18 @@ onUnmounted(() => {
 .tab {
     display: flex;
     height: 100%;
-    // padding: 0 4rem;
 
     ul {
-        // height: 100%;
         display: flex;
         flex: 1;
         flex-direction: column;
     }
 
-    %pseudo-li-line {
-        @include WnH(100vw, 1px);
-        // background-color: black;
-        background: linear-gradient(to right, hsl(0, 0%, 50%) 33%, rgba(255, 255, 255, 0) 0%);
-        background-size: 5px 1px;
-        content: '';
-        position: absolute;
-        left: 0;
-        // transform: translateX(calc(-1 * (10rem + (100vw - 6rem) * 0.1)));
-    }
+
 
     li {
-        // height: 20%;
         align-items: center;
+        cursor: pointer;
         display: flex;
         flex: 0 0 20%;
         position: relative;
@@ -460,39 +512,67 @@ onUnmounted(() => {
             bottom: 0;
         }
 
-        .listWrapper {
-            // padding: 0 10%;
-        }
-
         .date {
+            cursor: default;
             opacity: 0.5;
             font-size: 12px;
             flex: 1;
             text-align: center;
+            z-index: 1;
         }
 
         .label {
-            // color: rgb(0, 0, 0, 0.5);
+            background: url('@assets/icons/ConceptLabel.svg') no-repeat center;
             font-size: 12px;
             flex: 1;
-            text-align: center;
-            background: url('@assets/icons/ConceptLabel.svg') no-repeat center;
             opacity: 0.5;
+            transition: opacity 0.3s ease;
+            text-align: center;
+            z-index: 1;
+
+            &:hover {
+                opacity: 1;
+            }
         }
 
         div:nth-child(3) {
             flex: 8;
             padding-left: 4rem;
             font-size: 20px;
+            z-index: 1;
 
             span {
                 @include pseudoLine(0.5s);
 
-                cursor: pointer;
                 display: inline-block;
                 position: relative;
                 overflow: hidden;
             }
+        }
+
+        .stalker {
+            @include WnH(100%);
+            background: linear-gradient(90deg, transparent 25%, rgb(0, 67, 11, 0.1) 50%, transparent 75%);
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .stalker-enter-active,
+        .stalker-leave-active {
+            transition: opacity 0.5s ease;
+        }
+
+        .stalker-enter-from,
+        .stalker-leave-to {
+            opacity: 0;
+        }
+
+        .stalker-enter-to,
+        .stalker-leave-from {
+            opacity: 1;
         }
     }
 }
