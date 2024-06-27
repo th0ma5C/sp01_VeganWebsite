@@ -21,7 +21,14 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 
+
+onMounted(() => {
+    // window.addEventListener('scrollend', (e) => {
+    //     console.log(window.scrollY);
+    // })
+})
 </script>
 
 <style scoped lang="scss">
@@ -33,10 +40,9 @@
 .container {
     @include main-part;
     @include flex-center-center;
-    @include WnH(1201px, 500px);
-    margin-top: 35px;
-    margin-bottom: 309px;
+    @include WnH(1200px, 500px);
     position: relative;
+    margin: 200px auto;
 
     // gap: 3rem;
     // justify-content: space-evenly;

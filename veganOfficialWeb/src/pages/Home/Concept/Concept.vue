@@ -62,14 +62,15 @@
         </div>
         <div class="botBtn">
             <button>
-                <span>
-                    更多資訊
-                </span>
+                <div class="cube" data-cubeBot="更多資訊">
+                    <span>
+                        More
+                    </span>
+                </div>
                 <div class="wrapper">
                     <Svg-icon name="ConceptArrow" width="24"
                         height="24" class="arrow">
                     </Svg-icon>
-                    <div class="circle"></div>
                 </div>
             </button>
         </div>
@@ -94,7 +95,7 @@ import { computed, nextTick, onBeforeMount, onMounted, onUnmounted, reactive, re
 import { useNewsStore } from '@/store/newsStore';
 import type { Ref } from 'vue';
 
-//TODO:btn hover效果、箭頭SVG
+//
 /**
  * //新聞資料建置、請求資料編寫、換頁邏輯
  * //list比例調整
@@ -104,8 +105,8 @@ import type { Ref } from 'vue';
  * //hover高亮圓圈
  * //標籤hover
  * //!隱藏線條時間不夠，換頁動畫抖動
- * *btn翻轉效果
- * *內文靠上
+ * //btn hover效果、箭頭SVG
+ * //內文靠上
  * *news pinia 重寫 google:Vue3 Pinia 中如何優雅的使用API
  */
 
@@ -388,9 +389,32 @@ onUnmounted(() => {
         width: 100%;
 
 
-        span {
-            // justify-items: center;
-            margin-left: 12px;
+        .cube {
+            @include WnH(92px, 30px);
+            backface-visibility: hidden;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.4s ease-out;
+            transform-origin: top;
+
+            span {
+                margin-left: 12px;
+                transform: translateZ(15px);
+                opacity: 1;
+                transition: opacity 0.3s ease-out, transform 0.4s ease;
+            }
+
+            &::after {
+                content: attr(data-cubeBot);
+                position: absolute;
+                left: 12px;
+                top: 0;
+                transform: rotateX(-90deg) translateZ(13px) translateY(50%);
+                opacity: 0;
+                transition: opacity 0.3s ease-out, transform 0.4s ease;
+
+            }
+
         }
 
         .wrapper {
@@ -406,10 +430,11 @@ onUnmounted(() => {
                 z-index: 2;
             }
 
-            .circle {
+            &::after {
                 @include WnH(36px);
                 background-color: $secondBacColor;
                 border-radius: 36px;
+                content: '';
                 scale: 0;
                 transition: scale 0.5s ease;
                 position: absolute;
@@ -418,25 +443,34 @@ onUnmounted(() => {
                 z-index: 1;
             }
         }
-
     }
+}
 
-    &:hover {
-        border-color: $secondBacColor;
+.botBtn:hover {
+    border-color: $secondBacColor;
 
-        & button .wrapper {
-            .arrow {
-                color: white;
-            }
+    .wrapper {
+        .arrow {
+            color: white;
+        }
 
-            .circle {
-                scale: 1;
-            }
+        &::after {
+            scale: 1;
         }
     }
 
-}
+    .cube {
+        transform: rotateX(90deg);
 
+        span {
+            opacity: 0;
+        }
+
+        &::after {
+            opacity: 1;
+        }
+    }
+}
 
 .tabHeader {
     display: flex;
@@ -512,6 +546,11 @@ onUnmounted(() => {
             bottom: 0;
         }
 
+        &>div {
+            // border: 1px solid black;
+            transform: translateY(-50%);
+        }
+
         .date {
             cursor: default;
             opacity: 0.5;
@@ -536,6 +575,7 @@ onUnmounted(() => {
         }
 
         div:nth-child(3) {
+            display: flex;
             flex: 8;
             padding-left: 4rem;
             font-size: 20px;
@@ -547,6 +587,7 @@ onUnmounted(() => {
                 display: inline-block;
                 position: relative;
                 overflow: hidden;
+                transform: translateY(5px);
             }
         }
 
