@@ -1,20 +1,25 @@
 <template>
-    <div>
-        <!-- <Loader></Loader> -->
-        <transition name="app">
-            <!-- <div v-show="!loaderActivated"> -->
-            <div>
+    <!-- <Loader></Loader> -->
+    <transition name="app">
+        <!-- <div v-show="!loaderActivated"> -->
+        <div>
+            <header>
                 <VeganHeader></VeganHeader>
+            </header>
+            <main>
                 <router-view></router-view>
+            </main>
+            <footer>
                 <VeganFooter></VeganFooter>
-            </div>
-        </transition>
-    </div>
+            </footer>
+        </div>
+    </transition>
 </template>
 
 <script setup lang="ts">
 import VeganHeader from './components/Header/VeganHeader.vue'
-import VeganFooter from './components/Footer/VeganFooter.vue'
+// import VeganFooter from './components/Footer/VeganFooter.vue'
+import VeganFooter from './components/Footer/VeganFooter.vue';
 import Loader from './components/Loader/Loader.vue';
 import { onMounted, watch, toRefs } from 'vue';
 import { useLoader } from '@/store/loader';
