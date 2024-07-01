@@ -76,4 +76,8 @@ body {
 .app-enter-to {
     transform: scale(1);
 }
+
+footer {
+    background-color: $secondBacColor;
+}
 </style>
