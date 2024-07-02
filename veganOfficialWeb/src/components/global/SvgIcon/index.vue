@@ -1,14 +1,14 @@
 <template>
     <div class="svgWrapper">
-        <svg :style="{ width, height, color }">
-            <use :href="symbolID"></use>
+        <svg :style="{ width, height }">
+            <use :href="symbolID" :fill="color"></use>
         </svg>
     </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-const { prefix, name } = defineProps({
+const { prefix, name, color } = defineProps({
     prefix: {
         type: String,
         default: 'icon',
@@ -26,14 +26,14 @@ const { prefix, name } = defineProps({
         type: String,
         default: '100px'
     },
-
 })
 
-const symbolID = computed(() => `#${prefix}-${name}`)
+const symbolID = computed(() => `#${prefix}-${name}`);
+
 </script>
 
 <style scoped lang="scss">
 div {
-    @include flex-center-center
+    @include flex-center-center;
 }
 </style>

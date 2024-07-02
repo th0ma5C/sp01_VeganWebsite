@@ -4,26 +4,33 @@
             <div class="sub">
                 <h2>訂閱第一手消息！</h2>
                 <p>成為我們的VIP！訂閱我們的電子報，即刻獲得獨家優惠、新菜品消息和特別活動邀請。
-                    每週精選的美味直送到您的信箱！
+                    每週精選的美味直送您的信箱！
                 </p>
                 <form action="" class="submitForm">
-                    <input type="text">
+                    <input type='email'
+                        placeholder="E-mail">
                     <button type="submit">訂閱</button>
                 </form>
             </div>
             <div class="app">
                 <div class="content">
-                    <h2>立即下載App！</h2>
+                    <h2>立即下載APP！</h2>
                     <p>
-                        即刻下載，掌握美味的滋味～<br>獨享訂單優惠、獨家菜單推薦，輕鬆預訂、方便外帶，尊享美食新體驗！
+                        即刻下載，立即掌握美味的滋味～獨享訂單優惠、專屬菜單推薦，輕鬆預訂、方便外帶，尊享美食新體驗！
                     </p>
                     <div class="download">
-                        <button>下載App</button>
+                        <button>下載APP</button>
                     </div>
                 </div>
                 <div class="phone">
-                    <img src="@assets/img/InfoFooter/phone.png"
+                    <img src="@assets/img/InfoFooter/app.png"
                         alt="" class="info-phone">
+                    <!-- <div class="screen"
+                        style="font-size: 5rem;color: #00430b;">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -39,16 +46,25 @@
                     <li v-for="(item, index) in content"
                         :key="item">
                         {{ item }}
+                        <SvgIcon name="ConceptArrow"
+                            width="18px" height="18px">
+                        </SvgIcon>
                     </li>
                 </ul>
+                <div class="socialLink">
+                    <a href=""
+                        v-for="(item, index) in iconList"
+                        :key="index">
+                        <SvgIcon :name="item" width="20px"
+                            height="20px" class="linkIcon">
+                        </SvgIcon>
+                    </a>
+                </div>
             </nav>
-            <div class="socialLink">
-                <a href="" v-for="(item, index) in iconList"
-                    :key="index">
-                    <SvgIcon :name="item" width="30px"
-                        height="30px" color="#FCFAF2">
-                    </SvgIcon>
-                </a>
+            <div class="copyRight">
+                <SvgIcon name="copyRight" width="17px"
+                    height="17px" color="#FCFAF2"></SvgIcon>
+                Relation-Ship&nbsp;果漾
             </div>
         </div>
         <div class="bot">
@@ -61,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 
 
 let footerList = reactive([
@@ -85,17 +101,24 @@ let footerList = reactive([
 
 let iconList = reactive(['Fb', 'Ig', 'LINE', 'Twitter']);
 
+let svgColor = '#FCFAF2', svgHoverColor = '#A59052';
+
 </script>
 
 <style scoped lang="scss">
 // DOING:切版
 /**
-** 右下角加商標 
-** line height
-** email width placeholder
-** nav li margin
-** app marquee
-** hover transition
+** 右下角加商標 ✅
+** line height ✅
+** email width placeholder ✅
+** nav li margin ✅
+** nav li icon hover
+** app marquee ❌
+** hover transition 
+** top bot 分隔線
+** 訂閱改箭頭
+** btn 顏色 ✅
+** 轉場時間
  */
 
 * {
@@ -128,6 +151,7 @@ let iconList = reactive(['Fb', 'Ig', 'LINE', 'Twitter']);
         margin-top: 1rem;
         padding: 1rem;
         text-align: justify;
+        line-height: 2rem;
     }
 
     .submitForm,
@@ -139,7 +163,7 @@ let iconList = reactive(['Fb', 'Ig', 'LINE', 'Twitter']);
 
         button {
             // @include WnH(9rem, 3rem);
-            border-radius: 2rem;
+            // border-radius: 2rem;
         }
 
     }
@@ -185,23 +209,45 @@ let iconList = reactive(['Fb', 'Ig', 'LINE', 'Twitter']);
                 margin-top: 4rem;
                 position: relative;
                 padding: 0 1rem;
+                text-align: end;
 
                 input {
-                    @include WnH(100%, 3rem);
+                    @include WnH(60%, 3rem);
                     border-radius: 2rem;
                     background-color: #B3D4B9;
+                    font-size: 14px;
+                    font-variation-settings: 'wght' 600;
+                    padding: 0 1.5rem;
+                    transform: translateX(-3px);
+
+                    &::placeholder {
+                        opacity: 0.75;
+                        transition: opacity 0.2s ease;
+                    }
+
+                    &:focus {
+                        outline: none;
+
+                        &::placeholder {
+                            opacity: 0;
+                        }
+                    }
                 }
 
                 button {
-                    @include WnH(9rem, 3rem);
+                    @include WnH(5rem, 3rem);
                     border-radius: 0 2rem 2rem 0;
-                    background-color: #00510E;
-                    border: 1px solid black;
-                    color: #FCFAF2;
-                    width: 6rem;
+                    background-color: #0d731e;
+                    // border: 1px solid #00510E;
+                    color: rgb(252, 250, 242);
                     position: absolute;
                     right: 1rem;
                     top: 0;
+                    transition: background-color 0.3s ease;
+
+                    &:hover {
+                        background-color: #A59052;
+                    }
                 }
             }
 
@@ -218,20 +264,20 @@ let iconList = reactive(['Fb', 'Ig', 'LINE', 'Twitter']);
                 .download {
 
                     margin-top: 2rem;
-                    right: calc(153px + 2rem);
+                    right: calc(153px + 1rem);
                     transform: translateX(0);
 
 
 
                     button {
-                        @include WnH(9rem, 3rem);
-                        background-color: #00510E;
-                        color: rgb(252, 250, 242, 0.75);
-                        transition: background-color 0.3s ease, color 0.3s ease;
+                        @include WnH(7rem, 3rem);
+                        background-color: #0d731e;
+                        border-radius: 2rem;
+                        color: rgb(252, 250, 242);
+                        transition: background-color 0.3s ease;
 
                         &:hover {
-                            background-color: #098E20;
-                            color: rgb(252, 250, 242);
+                            background-color: #A59052;
                         }
                     }
                 }
@@ -253,6 +299,12 @@ let iconList = reactive(['Fb', 'Ig', 'LINE', 'Twitter']);
                 img {
                     height: 294px;
                 }
+
+                .screen {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                }
             }
         }
     }
@@ -262,33 +314,63 @@ let iconList = reactive(['Fb', 'Ig', 'LINE', 'Twitter']);
 
         flex-direction: column;
         // justify-content: space-around;
-        padding: 2rem 4rem 0 4rem;
+        // padding: 2rem 4rem 0 4rem;
+
 
         nav {
+            padding: 0 0rem 0 4rem;
             font-size: 14px;
-            flex: 2 1 0;
             display: flex;
             justify-content: space-between;
-            align-items: center;
 
-            ul>li {
+            ul {
+                display: flex;
+                flex-direction: column;
 
-                h2 {
-                    font-size: 1.05rem;
+                li {
+
+                    h2 {
+                        font-size: 1.05rem;
+                    }
+
+                    &:has(h2) {
+                        cursor: default;
+                        margin-bottom: 0.75rem;
+                    }
+
+                    &:not(:has(h2)) {
+                        cursor: pointer;
+                        opacity: 0.5;
+                        margin-bottom: 0.25rem;
+                        display: flex;
+                        gap: 0.5rem;
+                    }
                 }
+            }
 
-                &:not(:has(h2)) {
-                    opacity: 0.5;
+            .socialLink {
+                align-self: self-start;
+                display: flex;
+                gap: 1rem;
+
+                .linkIcon {
+                    color: #FCFAF2;
+                    transition: scale 0.3s ease, color 0.3s ease;
+
+                    &:hover {
+                        color: #A59052;
+                        scale: 1.2;
+                    }
                 }
             }
         }
 
-        .socialLink {
-            flex: 1 1 0;
+        .copyRight {
+            cursor: default;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1.5rem;
+            font-size: 12px;
+            opacity: 0.5;
+            margin: 2rem 0.5rem 0 auto;
         }
     }
 

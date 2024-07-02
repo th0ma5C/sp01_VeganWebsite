@@ -26,6 +26,7 @@
 
     ##concept
     * 標籤顏色
+    * 箭頭換橫的
 
 # components
     TODO: 右側會員popover區塊
