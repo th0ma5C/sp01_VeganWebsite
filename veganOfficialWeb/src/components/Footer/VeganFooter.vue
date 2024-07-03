@@ -44,10 +44,13 @@
                         </h2>
                     </li>
                     <li v-for="(item, index) in content"
-                        :key="item">
+                        :key="item"
+                        @mouseenter="handleHover(item, $event);"
+                        @mouseleave="handleHover(item, $event)">
                         {{ item }}
                         <SvgIcon name="ConceptArrow"
-                            width="18px" height="18px">
+                            width="18px" height="18px"
+                            :class="item == currItem ? iconClass : 'in'">
                         </SvgIcon>
                     </li>
                 </ul>
@@ -77,7 +80,11 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref, watch, watchEffect } from 'vue';
+import type { Ref } from 'vue';
+import useArrowFly from '@/hooks/useArrowFly';
+import throttle from 'lodash/throttle';
+import debounce from 'lodash/debounce';
 
 
 let footerList = reactive([
@@ -101,7 +108,73 @@ let footerList = reactive([
 
 let iconList = reactive(['Fb', 'Ig', 'LINE', 'Twitter']);
 
-let svgColor = '#FCFAF2', svgHoverColor = '#A59052';
+// li icon hover
+let { iconClass, setIconClass, timers } = useArrowFly();
+let currItem: Ref<null | string> = ref(null);
+let isAnimating = ref(false);
+
+function handleHover(item: string, e: MouseEvent) {
+    if (currItem.value != item && e.type == 'mouseenter') {
+        iconClass.value = 'out'
+        currItem.value = item;
+        return
+    }
+    setIconClass(e);
+    currItem.value = item;
+    console.log(iconClass.value);
+}
+
+// let handleHoverThrottle = throttle(handleHover,300);
+
+// function handleHover(item: string, state: string, e: MouseEvent) {
+//     let timeStamp = null;
+
+//     return function () {
+//         timeStamp = Date.now();
+//         currItem.value = item;
+//         iconClass.value = state;
+//         if (e.type == 'mouseleave' && currItem.value == item) {
+//             let period = Date.now() - timeStamp;
+//             console.log(period);
+//             // if (period < 500) {
+//             //     console.log('short');
+//             // }
+//         }
+//     }
+// }
+
+// let handleHover = (function () {
+//     let timeStamp: (number | null) = null;
+
+//     function setClass(item: string, state: string, e: MouseEvent) {
+//         if (!timeStamp) {
+//             timeStamp = Date.now();
+//         }
+
+//         if (e.type == 'mouseleave' && currItem.value == item) {
+//             let period = Date.now() - timeStamp!;
+//             timeStamp = null;
+//             if (period > 500) return
+//             setTimeout(() => {
+//                 currItem.value = item;
+//                 e.type == 'mouseenter' ?
+//                     iconClass.value = state : iconClass.value = state;
+//             }, 500)
+//             return
+//         }
+
+//         currItem.value = item;
+//         iconClass.value = state;
+//     }
+
+//     return { setClass }
+// })()
+
+// let throttleHandleHover = throttle(handleHover, 300);
+// let debounceHandleHover = debounce(handleHover, 300, {
+//     'leading': true,
+//     'trailing': false
+// })
 
 </script>
 
@@ -124,6 +197,8 @@ let svgColor = '#FCFAF2', svgHoverColor = '#A59052';
 * {
     // border: 1px solid black;
 }
+
+
 
 %default {
     width: calc(80% - 6rem);
@@ -328,6 +403,7 @@ let svgColor = '#FCFAF2', svgHoverColor = '#A59052';
                 flex-direction: column;
 
                 li {
+                    overflow: hidden;
 
                     h2 {
                         font-size: 1.05rem;
@@ -344,6 +420,38 @@ let svgColor = '#FCFAF2', svgHoverColor = '#A59052';
                         margin-bottom: 0.25rem;
                         display: flex;
                         gap: 0.5rem;
+                    }
+
+                    @keyframes flyOut {
+                        to {
+                            opacity: 0;
+                            transform: translate(100%, -100%);
+                        }
+                    }
+
+                    @keyframes flyIn {
+                        from {
+                            opacity: 0;
+                            transform: translate(-100%, 100%);
+                        }
+
+                        to {
+                            opacity: 1;
+                            transform: translate(0, 0);
+                        }
+                    }
+
+
+                    // &:hover>div {
+                    //     animation: flyOut 0.5s ease-in forwards;
+                    // }
+
+                    .in {
+                        animation: flyIn 0.5s ease-out forwards;
+                    }
+
+                    .out {
+                        animation: flyOut 0.5s ease-in forwards;
                     }
                 }
             }

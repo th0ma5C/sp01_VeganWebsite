@@ -56,8 +56,8 @@
                         </h1>
                         <!-- </transition> -->
                         <div>
-                            <a @mouseenter="setIconClass($event);"
-                                @mouseleave="setIconClass($event);">
+                            <a @mouseenter="setIconClass($event); dragClick = 'pointer'"
+                                @mouseleave="setIconClass($event); dragClick = 'grab'">
                                 查看地圖
                             </a>
                             <SvgIcon name="LocationArrow"
@@ -105,6 +105,7 @@ import type { Ref } from 'vue';
 import debounce from 'lodash/debounce';
 import useListener from '@/hooks/useListener';
 import { useCursorFollow } from '@/hooks/useCursorFollow';
+import useArrowFly from '@/hooks/useArrowFly';
 
 
 //背景
@@ -295,39 +296,47 @@ let branchNameClass = computed(() => {
 })
 
 //icon hover
-let iconClass = ref('in');
-let timers: (ReturnType<typeof setTimeout> | null)[] = [];
+//#region 
+// let iconClass = ref('in');
+// let timers: (ReturnType<typeof setTimeout> | null)[] = [];
 
-function hoverDebounce(target: Ref<string>) {
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    let timeStamp: number | null = null;
-    return function (e: MouseEvent) {
-        e.type === 'mouseenter' ? dragClick.value = 'pointer' : dragClick.value = 'grab';
-        if (!timeStamp) {
-            timeStamp = Date.now();
-            e.type === 'mouseenter' ? target.value = 'out' : target.value = 'in';
-            timer = setTimeout(() => {
-                timeStamp = null;
-            }, 500 - (Date.now() - timeStamp))
-            return
-        }
-        if (timer) {
-            clearTimeout(timer);
-            const index = timers.indexOf(timer);
-            if (index !== -1) {
-                timers.splice(index, 1);
-            }
-        }
-        timeStamp = Date.now();
-        timer = setTimeout(() => {
-            e.type === 'mouseenter' ? target.value = 'out' : target.value = 'in';
-            timeStamp = null;
-        }, 500 - (Date.now() - timeStamp));
-        timers.push(timer);
-    }
-}
+// function hoverDebounce(target: Ref<string>) {
+//     let timer: ReturnType<typeof setTimeout> | null = null;
+//     let timeStamp: number | null = null;
+//     return function (e: MouseEvent) {
+//         e.type === 'mouseenter' ? dragClick.value = 'pointer' : dragClick.value = 'grab';
+//         if (!timeStamp) {
+//             timeStamp = Date.now();
+//             e.type === 'mouseenter' ? target.value = 'out' : target.value = 'in';
+//             timer = setTimeout(() => {
+//                 timeStamp = null;
+//             }, 500 - (Date.now() - timeStamp))
+//             return
+//         }
+//         if (timer) {
+//             clearTimeout(timer);
+//             const index = timers.indexOf(timer);
+//             if (index !== -1) {
+//                 timers.splice(index, 1);
+//             }
+//         }
+//         timeStamp = Date.now();
+//         timer = setTimeout(() => {
+//             e.type === 'mouseenter' ? target.value = 'out' : target.value = 'in';
+//             timeStamp = null;
+//         }, 500 - (Date.now() - timeStamp));
+//         timers.push(timer);
+//     }
+// }
 
-const setIconClass = hoverDebounce(iconClass);
+// const setIconClass = hoverDebounce(iconClass);
+//#endregion
+
+let { iconClass, setIconClass, timers } = useArrowFly();
+
+// watch(iconClass, (nVal) => {
+//     nVal == 'in' ? dragClick.value = 'pointer' : dragClick.value = 'grab';
+// })
 
 //游標跟隨
 //#region 
@@ -400,6 +409,7 @@ const setIconClass = hoverDebounce(iconClass);
 //     }
 // }
 //#endregion
+
 let container = ref()//, cursor = ref();
 let cursorStyle = computed(() => ({
     transform: `translate3d(calc(${coordinate.X}px - 50%),calc(${coordinate.Y}px - 62px), 0)`,
