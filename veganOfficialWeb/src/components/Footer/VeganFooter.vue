@@ -36,21 +36,22 @@
         </div>
         <div class="mid">
             <nav>
-                <ul v-for="({ title, content }, index) in footerList"
+                <ul v-for="({ title, content }, listIndex) in footerList"
                     :key="title">
                     <li>
                         <h2>
                             {{ title }}
                         </h2>
                     </li>
-                    <li v-for="(item, index) in content"
+                    <li v-for="(item, contentIndex) in content"
                         :key="item"
-                        @mouseenter="handleHover(item, $event);"
-                        @mouseleave="handleHover(item, $event)">
+                        @mouseenter="handleMouseEnter(listIndex, contentIndex)"
+                        @mouseleave="handleMouseLeave(listIndex, contentIndex)">
                         {{ item }}
                         <SvgIcon name="ConceptArrow"
                             width="18px" height="18px"
-                            :class="item == currItem ? iconClass : 'in'">
+                            class="in"
+                            :class="[{ 'out': iconStates[listIndex][contentIndex].setAnimate }]">
                         </SvgIcon>
                     </li>
                 </ul>
@@ -80,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch, watchEffect } from 'vue';
+import { computed, reactive, ref, watch, watchEffect, onMounted, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
 import useArrowFly from '@/hooks/useArrowFly';
 import throttle from 'lodash/throttle';
@@ -109,72 +110,92 @@ let footerList = reactive([
 let iconList = reactive(['Fb', 'Ig', 'LINE', 'Twitter']);
 
 // li icon hover
-let { iconClass, setIconClass, timers } = useArrowFly();
-let currItem: Ref<null | string> = ref(null);
-let isAnimating = ref(false);
+const iconStates = reactive(footerList.map(section =>
+    section.content.map(() => ({
+        isHover: false,
+        isAnimating: false,
+        timer: null as number | null | NodeJS.Timeout,
+        setAnimate: false
+    }))
+));
 
-function handleHover(item: string, e: MouseEvent) {
-    if (currItem.value != item && e.type == 'mouseenter') {
-        iconClass.value = 'out'
-        currItem.value = item;
-        return
+const ANIMATION_DURATION = 500;
+
+const handleMouseEnter = (listIndex: number, contentIndex: number) => {
+    iconStates[listIndex][contentIndex].isHover = true;
+    if (!iconStates[listIndex][contentIndex].isAnimating) {
+        triggerAnimation(listIndex, contentIndex, true);
     }
-    setIconClass(e);
-    currItem.value = item;
-    console.log(iconClass.value);
-}
+};
 
-// let handleHoverThrottle = throttle(handleHover,300);
+const handleMouseLeave = (listIndex: number, contentIndex: number) => {
+    iconStates[listIndex][contentIndex].isHover = false;
+    if (!iconStates[listIndex][contentIndex].isAnimating) {
+        triggerAnimation(listIndex, contentIndex, false);
+    }
+};
+const triggerAnimation = (listIndex: number, contentIndex: number, isEntering: boolean) => {
+    const state = iconStates[listIndex][contentIndex];
+    state.isAnimating = true;
+    state.setAnimate = isEntering;
 
-// function handleHover(item: string, state: string, e: MouseEvent) {
-//     let timeStamp = null;
+    if (state.timer) clearTimeout(state.timer);
 
-//     return function () {
-//         timeStamp = Date.now();
-//         currItem.value = item;
-//         iconClass.value = state;
-//         if (e.type == 'mouseleave' && currItem.value == item) {
-//             let period = Date.now() - timeStamp;
-//             console.log(period);
-//             // if (period < 500) {
-//             //     console.log('short');
-//             // }
-//         }
+    state.timer = setTimeout(() => {
+        completeAnimation(listIndex, contentIndex, isEntering);
+    }, ANIMATION_DURATION);
+};
+
+const completeAnimation = (listIndex: number, contentIndex: number, isEntering: boolean) => {
+    const state = iconStates[listIndex][contentIndex];
+    state.isAnimating = false;
+    if (state.isHover !== isEntering) {
+        triggerAnimation(listIndex, contentIndex, !isEntering);
+    }
+};
+// const handleMouseEnter = (sectionIndex: number, itemIndex: number) => {
+//     if (animationInProgress.value[sectionIndex][itemIndex]) {
+//         timers.value[sectionIndex][itemIndex] = setTimeout(()=>{
+//             iconStates.value[sectionIndex][itemIndex] = true;
+//         })
+//         return
+//     };
+//     // 清除之前的定时器
+//     if (timers.value[sectionIndex][itemIndex] !== null) {
+//         clearTimeout(timers.value[sectionIndex][itemIndex]!);
+//         timers.value[sectionIndex][itemIndex] = null;
 //     }
-// }
+//     iconStates.value[sectionIndex][itemIndex] = true;
+// };
 
-// let handleHover = (function () {
-//     let timeStamp: (number | null) = null;
+// const handleMouseLeave = (sectionIndex: number, itemIndex: number) => {
+//     if (timers.value[sectionIndex][itemIndex] != null) {
+//         // 设置新的定时器
+//         timers.value[sectionIndex][itemIndex] = setTimeout(() => {
+//             iconStates.value[sectionIndex][itemIndex] = false;
 
-//     function setClass(item: string, state: string, e: MouseEvent) {
-//         if (!timeStamp) {
-//             timeStamp = Date.now();
-//         }
-
-//         if (e.type == 'mouseleave' && currItem.value == item) {
-//             let period = Date.now() - timeStamp!;
-//             timeStamp = null;
-//             if (period > 500) return
+//             animationInProgress.value[sectionIndex][itemIndex] = true;
 //             setTimeout(() => {
-//                 currItem.value = item;
-//                 e.type == 'mouseenter' ?
-//                     iconClass.value = state : iconClass.value = state;
-//             }, 500)
-//             return
-//         }
+//                 animationInProgress.value[sectionIndex][itemIndex] = false;
+//             }, ANIMATION_DURATION);
 
-//         currItem.value = item;
-//         iconClass.value = state;
+//             timers.value[sectionIndex][itemIndex] = null;
+//         }, ANIMATION_DURATION);
+//         return
 //     }
+//     iconStates.value[sectionIndex][itemIndex] = false;
+// };
 
-//     return { setClass }
-// })()
-
-// let throttleHandleHover = throttle(handleHover, 300);
-// let debounceHandleHover = debounce(handleHover, 300, {
-//     'leading': true,
-//     'trailing': false
-// })
+// // 清理所有定时器
+// onUnmounted(() => {
+//     timers.value.forEach(sectionTimers => {
+//         sectionTimers.forEach(timer => {
+//             if (timer !== null) {
+//                 clearTimeout(timer);
+//             }
+//         });
+//     });
+// });
 
 </script>
 
@@ -185,7 +206,7 @@ function handleHover(item: string, e: MouseEvent) {
 ** line height ✅
 ** email width placeholder ✅
 ** nav li margin ✅
-** nav li icon hover
+** nav li icon hover ❗
 ** app marquee ❌
 ** hover transition 
 ** top bot 分隔線
@@ -403,6 +424,7 @@ function handleHover(item: string, e: MouseEvent) {
                 flex-direction: column;
 
                 li {
+                    align-self: self-start;
                     overflow: hidden;
 
                     h2 {
@@ -440,7 +462,6 @@ function handleHover(item: string, e: MouseEvent) {
                             transform: translate(0, 0);
                         }
                     }
-
 
                     // &:hover>div {
                     //     animation: flyOut 0.5s ease-in forwards;
