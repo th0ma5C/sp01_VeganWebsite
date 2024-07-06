@@ -10,7 +10,9 @@ export default function useListener<T extends Event>(element: Window | Document 
         });
     } else {
         events.forEach(({ event, handler }) => {
-            element.removeEventListener(event, handler as (e: Event) => void);
+            if (element) {
+                element.removeEventListener(event, handler as (e: Event) => void);
+            }
         });
     }
 }

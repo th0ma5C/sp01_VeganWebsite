@@ -9,7 +9,19 @@
                 <form action="" class="submitForm">
                     <input type='email'
                         placeholder="E-mail">
-                    <button type="submit">訂閱</button>
+                    <button
+                        @click.prevent="setArrowState('out')">
+                        <transition name="rightArrow">
+                            <div class="wrapper"
+                                v-show="arrowState == ''">
+                                <SvgIcon name="rightArrow"
+                                    color="#FCFAF2"
+                                    width="24px"
+                                    height="24px">
+                                </SvgIcon>
+                            </div>
+                        </transition>
+                    </button>
                 </form>
             </div>
             <div class="app">
@@ -84,8 +96,6 @@
 import { computed, reactive, ref, watch, watchEffect, onMounted, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
 import useArrowFly from '@/hooks/useArrowFly';
-import throttle from 'lodash/throttle';
-import debounce from 'lodash/debounce';
 
 
 let footerList = reactive([
@@ -122,15 +132,19 @@ const iconStates = reactive(footerList.map(section =>
 const ANIMATION_DURATION = 500;
 
 const handleMouseEnter = (listIndex: number, contentIndex: number) => {
-    iconStates[listIndex][contentIndex].isHover = true;
-    if (!iconStates[listIndex][contentIndex].isAnimating) {
+    const state = iconStates[listIndex][contentIndex];
+    state.isHover = true;
+
+    if (!state.isAnimating) {
         triggerAnimation(listIndex, contentIndex, true);
     }
 };
 
 const handleMouseLeave = (listIndex: number, contentIndex: number) => {
-    iconStates[listIndex][contentIndex].isHover = false;
-    if (!iconStates[listIndex][contentIndex].isAnimating) {
+    const state = iconStates[listIndex][contentIndex];
+    state.isHover = false;
+
+    if (!state.isAnimating) {
         triggerAnimation(listIndex, contentIndex, false);
     }
 };
@@ -153,72 +167,47 @@ const completeAnimation = (listIndex: number, contentIndex: number, isEntering: 
         triggerAnimation(listIndex, contentIndex, !isEntering);
     }
 };
-// const handleMouseEnter = (sectionIndex: number, itemIndex: number) => {
-//     if (animationInProgress.value[sectionIndex][itemIndex]) {
-//         timers.value[sectionIndex][itemIndex] = setTimeout(()=>{
-//             iconStates.value[sectionIndex][itemIndex] = true;
-//         })
-//         return
-//     };
-//     // 清除之前的定时器
-//     if (timers.value[sectionIndex][itemIndex] !== null) {
-//         clearTimeout(timers.value[sectionIndex][itemIndex]!);
-//         timers.value[sectionIndex][itemIndex] = null;
-//     }
-//     iconStates.value[sectionIndex][itemIndex] = true;
-// };
+function clearAllTimers() {
+    iconStates.forEach(i => {
+        i.forEach(j => {
+            if (j.timer) {
+                clearTimeout(j.timer)
+            }
+        })
+    })
+}
 
-// const handleMouseLeave = (sectionIndex: number, itemIndex: number) => {
-//     if (timers.value[sectionIndex][itemIndex] != null) {
-//         // 设置新的定时器
-//         timers.value[sectionIndex][itemIndex] = setTimeout(() => {
-//             iconStates.value[sectionIndex][itemIndex] = false;
+// sub btn hover
+let arrowState = ref('')
 
-//             animationInProgress.value[sectionIndex][itemIndex] = true;
-//             setTimeout(() => {
-//                 animationInProgress.value[sectionIndex][itemIndex] = false;
-//             }, ANIMATION_DURATION);
+function setArrowState(state: string) {
+    arrowState.value = state;
+}
 
-//             timers.value[sectionIndex][itemIndex] = null;
-//         }, ANIMATION_DURATION);
-//         return
-//     }
-//     iconStates.value[sectionIndex][itemIndex] = false;
-// };
 
-// // 清理所有定时器
-// onUnmounted(() => {
-//     timers.value.forEach(sectionTimers => {
-//         sectionTimers.forEach(timer => {
-//             if (timer !== null) {
-//                 clearTimeout(timer);
-//             }
-//         });
-//     });
-// });
+onMounted(() => {
+})
+onUnmounted(() => {
+    clearAllTimers();
+})
 
 </script>
 
 <style scoped lang="scss">
-// DOING:切版
+// TODO: 整理樣式
 /**
 ** 右下角加商標 ✅
 ** line height ✅
 ** email width placeholder ✅
 ** nav li margin ✅
-** nav li icon hover ❗
+** nav li icon hover ❗ -> ⭕
 ** app marquee ❌
-** hover transition 
-** top bot 分隔線
-** 訂閱改箭頭
+** hover transition ✅
+** top bot 分隔線 ✅
+** 訂閱改箭頭 ✅
 ** btn 顏色 ✅
-** 轉場時間
+** 轉場時間 ❓
  */
-
-* {
-    // border: 1px solid black;
-}
-
 
 
 %default {
@@ -287,14 +276,13 @@ const completeAnimation = (listIndex: number, contentIndex: number, isEntering: 
         // gap: 1rem;
         position: relative;
 
-        // &::after {
-        //     @include WnH(80%, 1px);
-        //     content: '';
-        //     position: absolute;
-        //     bottom: 0;
-        //     background-color: $primaryBacColor;
-        //     margin: auto 6rem;
-        // }
+        &::after {
+            @include WnH(calc(100% + 3rem), 1px);
+            content: '';
+            bottom: 0;
+            background-color: $primaryBacColor;
+            position: absolute;
+        }
 
         .sub {
             @extend %topLayout;
@@ -332,6 +320,7 @@ const completeAnimation = (listIndex: number, contentIndex: number, isEntering: 
 
                 button {
                     @include WnH(5rem, 3rem);
+                    @include flex-center-center;
                     border-radius: 0 2rem 2rem 0;
                     background-color: #0d731e;
                     // border: 1px solid #00510E;
@@ -339,10 +328,58 @@ const completeAnimation = (listIndex: number, contentIndex: number, isEntering: 
                     position: absolute;
                     right: 1rem;
                     top: 0;
+                    overflow: hidden;
                     transition: background-color 0.3s ease;
+
+                    .wrapper {
+                        overflow: hidden;
+                    }
 
                     &:hover {
                         background-color: #A59052;
+
+                        .wrapper>div {
+                            animation: rolling 0.5s ease-in-out forwards;
+                        }
+                    }
+
+                    @keyframes rolling {
+                        0% {
+                            opacity: 1;
+                            transform: translateX(0);
+                        }
+
+                        50% {
+                            opacity: 0;
+                            transform: translateX(100%);
+                        }
+
+                        51% {
+                            opacity: 0;
+                            transform: translateX(-100%);
+                        }
+
+                        100% {
+                            opacity: 1;
+                            transform: translateX(0);
+                        }
+                    }
+
+                    .rightArrow-enter-active,
+                    .rightArrow-leave-active {
+                        transition: opacity 0.3s ease, transform 0.3s ease;
+                    }
+
+                    .rightArrow-enter-from,
+                    .rightArrow-leave-to {
+                        opacity: 0;
+                        transform: translateX(100%);
+                    }
+
+                    .rightArrow-enter-to,
+                    .rightArrow-leave-from {
+                        opacity: 1;
+                        transform: translateX(0);
                     }
                 }
             }
@@ -380,8 +417,7 @@ const completeAnimation = (listIndex: number, contentIndex: number, isEntering: 
             }
 
             &::after {
-                width: calc(154px - 48px);
-                height: calc(294px - 32px);
+                @include WnH(calc(154px - 48px), calc(294px - 32px));
                 background-color: transparent;
                 content: '';
                 display: inline-block;
@@ -442,6 +478,11 @@ const completeAnimation = (listIndex: number, contentIndex: number, isEntering: 
                         margin-bottom: 0.25rem;
                         display: flex;
                         gap: 0.5rem;
+                    }
+
+                    &:hover:not(:has(h2)) {
+                        opacity: 1;
+                        scale: 1.05;
                     }
 
                     @keyframes flyOut {
@@ -518,97 +559,4 @@ const completeAnimation = (listIndex: number, contentIndex: number, isEntering: 
         }
     }
 }
-
-
-
-// .container {
-//     max-width: $primaryWidth;
-//     background-color: $secondBacColor;
-//     color: $primaryBacColor;
-
-//     display: flex;
-//     flex-direction: column;
-//     position: relative;
-//     max-height: 920px;
-//     overflow: hidden;
-
-//     &>div {
-//         flex: 1;
-//     }
-
-//     .top {
-//         @extend %default;
-//     }
-
-//     .mid {
-//         @extend %default;
-//     }
-
-//     .bot {
-//         margin-top: 2rem;
-//     }
-// }
-
-// .top {
-//     @include flex-center-center;
-//     align-items: stretch;
-//     gap: 1rem;
-//     position: relative;
-//     width: 80%;
-
-//     &::after {
-//         @include WnH(1201px, 1px);
-//         position: absolute;
-//         bottom: 0;
-//         content: '';
-//         background-color: $primaryBacColor;
-//         margin: auto 6rem;
-//     }
-
-//     .app {
-//         display: flex;
-//         position: relative;
-
-//         .content {
-//             display: flex;
-//             flex-direction: column;
-//         }
-
-//         .phone {
-//             // @include WnH(142px, 284px);
-//             @include WnH(100px);
-//             margin-bottom: 35px;
-//             position: absolute;
-//         }
-//     }
-// }
-
-// .mid {
-
-//     nav {
-//         display: flex;
-//         flex-direction: row;
-//         justify-content: space-evenly;
-
-//         ul {
-//             padding: 0;
-//         }
-//     }
-
-//     .socialLink {
-//         display: flex;
-//         gap: 2rem;
-//         justify-content: center;
-//     }
-// }
-
-// .bot {
-//     font-family: 'Mr Dafoe', cursive;
-//     font-weight: 400;
-//     font-style: normal;
-//     text-align: center;
-//     margin: 0;
-//     font-size: 33vh;
-//     white-space: nowrap;
-//     overflow: hidden;
-// }</style>
+</style>

@@ -1,6 +1,6 @@
 # TODO: 開始建置路由
 
-# DOING: footer 建置
+# DOING: 菜單建置
 
 # pages--home 
     TODO: 是否加入滾動畫面吸附
@@ -10,6 +10,7 @@
     * 圖片在大解析度時width不自然
 
     ## catalog
+    * !!! 呈現方式修改 !!! 
     * swiper說明字樣
     * 請求超時進不了首頁(基本架構完成就進頁面) 
     * catalog讀取完成後出現動畫

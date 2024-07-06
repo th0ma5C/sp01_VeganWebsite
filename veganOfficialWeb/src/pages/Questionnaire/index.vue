@@ -1,6 +1,6 @@
 <template>
     <div>
-
+        我是分析
     </div>
 </template>
 

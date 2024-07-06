@@ -7,10 +7,13 @@
             </a>
             <div>
                 <ul class="navLink">
-                    <li v-for="{ link } in navLink "
-                        :key="link">
-                        <a href=""><span>{{ link
-                                }}</span></a>
+                    <li v-for="{ title, url } in navLink "
+                        :key="title">
+                        <RouterLink :to="url" href="">
+                            <span>
+                                {{ title }}
+                            </span>
+                        </RouterLink>
                     </li>
                 </ul>
                 <ul class="navIcon">
@@ -31,9 +34,29 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import throttle from 'lodash/throttle';
+// import { RouterLink } from 'vue-router';
 
 let navLink = [
-    { link: '首頁' }, { link: '專屬分析' }, { link: '美味菜單' }, { link: '關於果漾' }
+    {
+
+        title: '首頁',
+        url: '/'
+    },
+    {
+
+        title: '專屬分析',
+        url: '/questionnaire'
+    },
+    {
+
+        title: '美味菜單',
+        url: '/menu'
+    },
+    {
+
+        title: '關於果漾',
+        url: '/about'
+    }
 ];
 let navIcon = [
     { icon: 'Search' }, { icon: 'Cart' }, { icon: 'Person' }
