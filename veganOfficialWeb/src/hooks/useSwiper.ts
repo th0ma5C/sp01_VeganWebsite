@@ -39,7 +39,7 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     /**------自動輪播------ */
     function startPlay() {
         stopPlay();
-        interval = setInterval(() => throttleChangeSwiper(1), intervalTime);
+        // interval = setInterval(() => throttleChangeSwiper(1), intervalTime);
     }
 
     function stopPlay() {

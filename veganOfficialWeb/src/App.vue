@@ -57,7 +57,11 @@ onMounted(() => {
 
 
 body {
+
     // overflow: hidden;
+    * {
+        outline: 1px solid black;
+    }
 }
 
 #app {

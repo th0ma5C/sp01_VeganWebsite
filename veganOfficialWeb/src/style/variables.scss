@@ -3,10 +3,26 @@ $primaryWidth: 120rem;
 $primaryBacColor: #FCFAF2;
 $secondBacColor: #00430b;
 
+%headerPseudo {
+    &::before {
+        content: '';
+        display: block;
+        height: 100px;
+        width: 100%;
+    }
+}
+
+
+
 @mixin flex-center-center {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+%fixContainer {
+    @include flex-center-center;
+    max-width: 100%;
 }
 
 @mixin main-part {

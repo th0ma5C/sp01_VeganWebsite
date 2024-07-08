@@ -3,7 +3,7 @@
 # DOING: 菜單建置
 
 # pages--home 
-    TODO: 是否加入滾動畫面吸附
+    TODO: 是否加入滾動畫面吸附、RWD layout
 
     ## mainBanner
     * 加入跳轉按鈕
@@ -31,6 +31,9 @@
 
 # components
     TODO: 右側會員popover區塊
+
+    ## header
+    * marquee btn hover
 
     ## header, footer
     * 在大解析度位置不正確

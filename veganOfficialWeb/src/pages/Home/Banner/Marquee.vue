@@ -48,18 +48,21 @@ const { throttleChangeSwiper, showSwiper, isDown, swiperStyle } = useSwiper(div,
 </script>
 
 <style lang="scss" scoped>
-.container {
+* {
+    // border: 1px solid black;
+}
 
-    &::before {
-        content: '';
-        display: block;
-        height: 100px;
-        width: 100%;
-    }
+.container {
+    @extend %fixContainer;
+    @extend %headerPseudo;
+
+    flex-direction: column;
+
+    &::before {}
 
     .marquee {
         @include flex-center-center;
-        max-width: 120rem;
+        max-width: 1888px;
         margin: 0 1rem;
         position: relative;
         justify-content: space-between;

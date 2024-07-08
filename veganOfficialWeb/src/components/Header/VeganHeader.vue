@@ -93,11 +93,14 @@ onBeforeUnmount(() => {
     position: fixed;
     top: -0.1%;
     transition: all 0.2s linear;
-    z-index: 3;
+    z-index: 99;
+
+    @extend %fixContainer;
 
     .header {
         @include flex-center-center;
         @include main-part;
+        width: 100%;
 
 
 
@@ -121,6 +124,8 @@ onBeforeUnmount(() => {
             }
 
             .navIcon {
+                display: flex;
+
                 li {
                     margin-right: 1rem;
                 }

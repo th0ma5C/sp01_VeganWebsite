@@ -3,7 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
-/* GET new catalog */
+/* GET home new catalog */
 router.get('/newCatalog', (req, res) => {
     const imagesDirectory = path.join(__dirname, '../../../public/images/menu/homeCatalog');
 
@@ -21,7 +21,7 @@ router.get('/newCatalog', (req, res) => {
         res.json(imagesUrls);
     });
 });
-/* GET hot catalog */
+/* GET home hot catalog */
 router.get('/hotCatalog', (req, res) => {
     const imagesDirectory = path.join(__dirname, '../../../public/images/menu/homeCatalog');
 

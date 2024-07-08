@@ -256,6 +256,7 @@ async function getUrl(req: ReqFunction) {
 onMounted(() => {
     getUrl(reqGetNewMenu).then(data => {
         if (data) menu.value[0].url = data;
+        console.log(data);
     });
     getUrl(reqGetHotMenu).then(data => {
         if (data) menu.value[1].url = data;
@@ -267,6 +268,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .tabContainer {
     @include main-part;
+    margin: 1rem auto;
     margin-top: 66px;
     display: flex;
     align-items: normal;

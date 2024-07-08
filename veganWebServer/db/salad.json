@@ -2,41 +2,72 @@
     {
         "name": "日出庭園沙拉",
         "description": "色彩斑斕的日出庭園沙拉，以新鮮葉生菜作底，配搭營養豐富的水煮蛋、櫻桃番茄、蘿蔔片及黃瓜，是早晨的完美開始。",
-        "ingredient": "維生素A、維生素C、鉀、葉酸以及高質量的蛋白質。",
+        "ingredients": [
+            "維生素A",
+            "維生素C",
+            "鉀",
+            "葉酸",
+            "高品質的蛋白質"
+        ],
         "price": 149,
         "category": "沙拉",
-        "imageURL": "/veganWebServer/public/images/menu/homeCatalog/1.png"
+        "imageURL": "/images/menu/homeCatalog/1.png"
     },
     {
         "name": "彩虹脆樂沙拉",
         "description": "品嚐這盤繽紛的彩虹脆樂沙拉，每一口都充滿層次。包含新鮮菠菜葉、生菜、鮮嫩黃椒與小番茄，配上自製酥脆麵包丁和細緻的羊乳芝士，絕對是您輕食首選。",
-        "ingredient": "高纖維、維生素C、維生素K、抗氧化物質、鈣質。",
+        "ingredients": [
+            "高纖維",
+            "維生素C",
+            "維生素K",
+            "抗氧化物質",
+            "鈣質"
+        ],
         "price": 199,
         "category": "沙拉",
-        "imageURL": "/veganWebServer/public/images/menu/homeCatalog/2.png"
+        "imageURL": "/images/menu/homeCatalog/2.png"
     },
     {
         "name": "清爽青翠沙拉",
-        "description": "清爽青翠沙拉結合了脆生菜、鮮嫩小黃瓜圈、以及飽滿的櫻桃番茄，每一口都是大自然的味道，為您的每日餐單增添一抹翠綠。",
-        "ingredient": "低熱量、高纖維、維生素A、維生素C、鉀。",
+        "description": "清爽青翠沙拉結合了脆生菜、鮮嫩小黃瓜、以及飽滿的櫻桃番茄，每一口都是大自然的味道，為您的每日餐單增添一抹翠綠。",
+        "ingredients": [
+            "高纖維",
+            "維生素A",
+            "維生素C",
+            "鉀",
+            "類黃酮"
+        ],
         "price": 149,
         "category": "沙拉",
-        "imageURL": "/veganWebServer/public/images/menu/homeCatalog/3.png"
+        "imageURL": "/images/menu/homeCatalog/3.png"
     },
     {
         "name": "地中海陽光沙拉",
         "description": "充滿陽光味道的地中海風情沙拉，融合了脆口生菜、甜美小番茄、新鮮黃瓜片、紫洋蔥、黑橄欖和嫩煙三文魚，帶給您一場味蕾的地中海之旅。",
-        "ingredient": "Omega-3脂肪酸、蛋白質、維生素D、鈣質、維生素E、高纖維。",
+        "ingredients": [
+            "Omega-3脂肪酸",
+            "蛋白質",
+            "維生素D",
+            "鈣質",
+            "維生素E",
+            "高纖維"
+        ],
         "price": 199,
         "category": "沙拉",
-        "imageURL": "/veganWebServer/public/images/menu/homeCatalog/4.png"
+        "imageURL": "/images/menu/homeCatalog/4.png"
     },
     {
         "name": "純淨蔬色沙拉",
         "description": "純淨蔬色沙拉以脆生菜為底，搭配新鮮小黃瓜、櫻桃番茄、胡蘿蔔絲，以及點綴的紅蘿蔔圈，是任何健康餐桌上的完美選擇。",
-        "ingredient": "豐富纖維、維生素A、維生素C、鉀。",
+        "ingredients": [
+            "豐富纖維",
+            "維生素A",
+            "維生素C",
+            "鉀",
+            "葉酸"
+        ],
         "price": 149,
         "category": "沙拉",
-        "imageURL": "/veganWebServer/public/images/menu/homeCatalog/5.png"
+        "imageURL": "/images/menu/homeCatalog/5.png"
     }
 ]

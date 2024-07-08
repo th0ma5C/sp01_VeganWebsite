@@ -281,7 +281,7 @@ onUnmounted(() => {
 .newsContainer {
     @include main-part;
     @include flex-center-center;
-    margin: 1rem 0;
+    margin: 1rem auto;
     flex-direction: column;
     margin-top: 96px;
     height: 888px;
