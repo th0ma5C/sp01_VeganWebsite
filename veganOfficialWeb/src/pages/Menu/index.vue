@@ -17,31 +17,61 @@
                 <div class="titleText">
                     SALADS and SIDES
                 </div>
-                <div class="filter">
-                    篩選：篩選
+                <div class="filterWrapper">
+                    <div class="filter">
+                        <span>篩選：</span>
+                        <input type="text" list="sort" />
+                        <datalist id="sort"
+                            style="background-color: red;">
+                            <option value="1"
+                                style="background-color: red;">
+                                1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                        </datalist>
+                    </div>
+                    <div class="sort">
+                        <div>
+                            <span>排序：</span>
+                            <select id="sortSelect">
+                                <option value="name">名稱
+                                </option>
+                                <option value="price">價格
+                                </option>
+                            </select>
+                        </div>
+                        <div>
+                            共幾項
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="saladMenu">
-                <div>1</div>
-                <div>2</div>
-                <div>3</div>
+                <div class="item" v-for="(item, index) in 9"
+                    :key="index">
+                    <img src="" alt="商品">
+                    <p>價格</p>
+                    <button>加入購物車/詳細資訊</button>
+                </div>
             </div>
             <div class="smoothyMenu">
                 <div>
                     SMOOTHIES
                 </div>
-                <div>
-                    <div>1</div>
-                    <div>2</div>
-                    <div>3</div>
+                <div class="itemWrapper">
+                    <div class="item"
+                        v-for="(item, index) in 6"
+                        :key="index">
+                        <img src="" alt="商品">
+                        <p>價格</p>
+                        <button>加入購物車/詳細資訊</button>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="analystBot">
-            <div>
-                圖片
-            </div>
-            <div>
+            <img src="" alt="商品">
+            <div class="content">
                 <h2>標題</h2>
                 <p>
                     Lorem ipsum dolor sit, amet consectetur
@@ -76,7 +106,8 @@
 
         &:nth-child(1),
         &:last-child {
-            padding: 0 6rem;
+            padding-left: 6rem;
+            padding-right: 6rem;
         }
     }
 
@@ -89,8 +120,118 @@
     @include flex-center-center;
     flex-direction: column;
 
-    &>* {
+    &>*:not(:first-child) {
         margin-top: 1rem;
+    }
+
+    p {
+        // font-size: 1rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    button {
+        font-size: 1.5rem;
+    }
+}
+
+.menuWrapper {
+    .title {
+        .breadCrumb {
+            font-size: 0.75rem;
+        }
+
+        .titleText {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .filterWrapper {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+
+            &>div {
+                display: flex;
+                align-items: center;
+            }
+
+            .filter {
+                // flex: 1;
+
+            }
+
+            .sort {
+                // flex: 1;
+            }
+        }
+    }
+
+    .saladMenu {
+        margin-top: 1.5rem;
+        display: grid;
+        justify-content: space-evenly;
+        grid-template-columns: 25% 25% 25%;
+        grid-template-rows: auto;
+        row-gap: 2rem;
+
+        .item {
+            @include flex-center-center;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+
+            &>img {
+                @include WnH(200px);
+            }
+        }
+    }
+
+    .smoothyMenu {
+        margin-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+
+        .itemWrapper {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: row;
+
+            .item {
+                @include flex-center-center;
+                flex-direction: column;
+                gap: 1rem;
+                // width: 25%;
+
+                &>img {
+                    @include WnH(200px);
+                }
+            }
+        }
+    }
+}
+
+.analystBot {
+    display: flex;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+
+    img {
+        @include WnH(300px);
+        flex-shrink: 0;
+        // flex: 1;
+    }
+
+    .content {
+        padding: 3rem 8rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1rem;
     }
 }
 </style>
