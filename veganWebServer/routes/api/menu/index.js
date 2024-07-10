@@ -5,7 +5,7 @@ const path = require('path');
 
 /* GET home new catalog */
 router.get('/newCatalog', (req, res) => {
-    const imagesDirectory = path.join(__dirname, '../../../public/images/menu/homeCatalog');
+    const imagesDirectory = path.join(__dirname, '../../../public/images/menu/salad');
 
     // 讀取資料夾內所有文件的名稱
     fs.readdir(imagesDirectory, (err, files) => {
@@ -16,14 +16,14 @@ router.get('/newCatalog', (req, res) => {
 
         // 建立圖片URL清單
         const imagesUrls = files.map(file => {
-            return `/images/menu/homeCatalog/${file}`;
+            return `/images/menu/salad/${file}`;
         });
         res.json(imagesUrls);
     });
 });
 /* GET home hot catalog */
 router.get('/hotCatalog', (req, res) => {
-    const imagesDirectory = path.join(__dirname, '../../../public/images/menu/homeCatalog');
+    const imagesDirectory = path.join(__dirname, '../../../public/images/menu/salad');
 
     fs.readdir(imagesDirectory, (err, files) => {
         if (err) {
@@ -32,7 +32,7 @@ router.get('/hotCatalog', (req, res) => {
         }
 
         const imagesUrls = files.map(file => {
-            return `/images/menu/homeCatalog/${file}`;
+            return `/images/menu/salad/${file}`;
         }).reverse();
         res.json(imagesUrls);
     });

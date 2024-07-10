@@ -60,7 +60,7 @@ body {
 
     // overflow: hidden;
     * {
-        outline: 1px solid black;
+        // outline: 1px solid black;
     }
 }
 
