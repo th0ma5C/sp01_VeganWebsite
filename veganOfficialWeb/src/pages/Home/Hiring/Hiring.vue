@@ -126,7 +126,7 @@ onMounted(() => {
             font-size: 1.25rem;
             font-variation-settings: 'wght' 600;
             color: $primaryBacColor;
-            background-color: $secondBacColor;
+            background-color: $btnBacColor;
             transition: transform 0.2s ease-out;
 
             &:hover {
@@ -142,7 +142,7 @@ onMounted(() => {
             top: 4px;
             left: 4px;
             z-index: -1;
-            background-color: $secondBacColor;
+            background-color: $btnBacColor;
             border-radius: 1rem;
         }
     }

@@ -432,7 +432,7 @@ onUnmounted(() => {
 
             &::after {
                 @include WnH(36px);
-                background-color: $secondBacColor;
+                background-color: $btnBacColor;
                 border-radius: 36px;
                 content: '';
                 scale: 0;

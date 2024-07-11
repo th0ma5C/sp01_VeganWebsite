@@ -297,7 +297,7 @@ onUnmounted(() => {
 
                 input {
                     @include WnH(60%, 3rem);
-                    border-radius: 2rem;
+                    border-radius: 3rem;
                     background-color: #B3D4B9;
                     font-size: 14px;
                     font-variation-settings: 'wght' 600;
@@ -321,7 +321,7 @@ onUnmounted(() => {
                 button {
                     @include WnH(5rem, 3rem);
                     @include flex-center-center;
-                    border-radius: 0 2rem 2rem 0;
+                    border-radius: 0 3rem 3rem 0;
                     background-color: #0d731e;
                     // border: 1px solid #00510E;
                     color: rgb(252, 250, 242);
@@ -405,7 +405,7 @@ onUnmounted(() => {
                     button {
                         @include WnH(7rem, 3rem);
                         background-color: #0d731e;
-                        border-radius: 2rem;
+                        border-radius: 3rem;
                         color: rgb(252, 250, 242);
                         transition: background-color 0.3s ease;
 

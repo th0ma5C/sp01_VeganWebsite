@@ -26,7 +26,8 @@
                                 <SvgIcon
                                     name="ListArrowDown"
                                     width="21px"
-                                    height="21px">
+                                    height="21px"
+                                    class="filterArrow">
                                 </SvgIcon>
                             </summary>
                             <div class="listWrapper">
@@ -82,10 +83,11 @@
                     <div class="sort">
                         <span>排序：</span>
                         <div class="sortWrapper">
-                            <span>名稱</span>
+                            <span
+                                @click="setShowList">名稱</span>
                             <SvgIcon name="ListArrowDown"
                                 width="21px" height="21px"
-                                class="sortIcon"
+                                :class="{ sortIcon: !showList }"
                                 @click="setShowList">
                             </SvgIcon>
                             <ul class="sortList"
@@ -112,10 +114,16 @@
                 <div class="item" v-for="(item, index) in 9"
                     :key="index">
                     <img src="@assets/img/1.jpg" alt="商品">
+                    <h3>品名</h3>
                     <p>價格</p>
-                    <button>加入購物車/詳細資訊</button>
+                    <div class="btnWrapper">
+                        <button
+                            class="cart-btn">加入購物車</button>
+                        <button
+                            class="info-btn">詳細資訊</button>
+                    </div>
                 </div>
-                <div class="showListBtn">
+                <div class="showFullMenuBtn">
                     <span>6 of 9</span>
                     <button>
                         展開
@@ -132,8 +140,14 @@
                         :key="index">
                         <img src="@assets/img/1.jpg"
                             alt="商品">
+                        <h3>品名</h3>
                         <p>價格</p>
-                        <button>加入購物車/詳細資訊</button>
+                        <div class="btnWrapper">
+                            <button
+                                class="cart-btn">加入購物車/</button>
+                            <button
+                                class="info-btn">詳細資訊</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -158,19 +172,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
-//TODO: 
+//TODO: 縮畫面會有白邊
+//DOING menu 按鈕樣式
 /**
- * 按鈕樣式
- * 篩選、排序箭頭轉場
- * 整理樣式
+ * //篩選、排序箭頭轉場
+ * //!整理樣式
  * 服務端導入資源
  * api 建構
  * req 編寫 
  * res 導入 pinia
  * bottom 診斷圖片
  * ? 加入購物車改為右上角icon
+ * 
  */
 
 
@@ -180,6 +195,9 @@ let showList = ref(false);
 function setShowList() {
     showList.value = !showList.value;
 }
+
+// menu btn
+
 
 </script>
 
@@ -207,6 +225,19 @@ function setShowList() {
     }
 }
 
+%analystBtn {
+    background-color: $btnBacColor;
+    border-radius: 1.5rem;
+    color: $primaryBacColor;
+    font-size: 1.5rem;
+    padding: 0.25rem 0.75rem;
+    transition: box-shadow 0.2s linear;
+
+    &:hover {
+        box-shadow: 0 0 0 2px $btnBacColor;
+    }
+}
+
 .analystTop {
     @include flex-center-center;
     flex-direction: column;
@@ -228,8 +259,9 @@ function setShowList() {
         }
     }
 
+
     button {
-        font-size: 1.5rem;
+        @extend %analystBtn;
     }
 }
 
@@ -257,14 +289,13 @@ function setShowList() {
             }
 
             .filter {
-                * {
-                    // outline: 1px solid black;
-                }
-
-                // flex: 1;
 
                 details {
                     margin-left: 14px;
+
+                    &:not([open]) .filterArrow {
+                        transform: rotateZ(90deg);
+                    }
 
                     summary {
                         font-size: 14px;
@@ -273,6 +304,10 @@ function setShowList() {
                         gap: 0.25rem;
                         cursor: pointer;
                         user-select: none;
+
+                        .filterArrow {
+                            transition: transform 0.3s ease;
+                        }
                     }
 
                     .listWrapper {
@@ -299,25 +334,27 @@ function setShowList() {
             }
 
             .sort {
-                * {
-                    // outline: 1px solid black;
-                }
-
-                // gap: 1.5rem;
                 user-select: none;
 
                 .sortWrapper {
                     $listWidth: 80px;
+
+                    cursor: pointer;
                     width: $listWidth;
                     display: flex;
-                    justify-content: space-between;
+                    gap: 0.25rem;
 
                     &>span {
-                        margin: auto;
+                        padding-left: 14px;
+                        text-align: center;
+                    }
+
+                    &>div {
+                        transition: transform 0.3s ease;
                     }
 
                     .sortIcon {
-                        cursor: pointer;
+                        transform: rotateZ(90deg);
                     }
 
                     .sortList {
@@ -325,16 +362,136 @@ function setShowList() {
                         background-color: $primaryBacColor;
                         border: 1px solid black;
                         flex-direction: column;
-                        width: calc($listWidth - 21px);
+                        width: calc(63px + 0.25rem);
                         position: absolute;
                         top: 21px;
                     }
                 }
 
                 .sortCount {
-                    margin-left: 1rem;
+                    margin-left: 0.25rem;
                 }
             }
+        }
+    }
+
+    %menuItem {
+        @include flex-center-center;
+        flex-direction: column;
+        gap: .75rem;
+        width: 100%;
+
+        &>img {
+            @include WnH(250px);
+        }
+
+        .btnWrapper {
+            display: flex;
+            justify-content: center;
+            white-space: nowrap;
+            width: 75%;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid gray;
+            border-radius: 6px;
+
+            * {
+                // border: 1px solid black;
+            }
+
+            &>button {
+                width: 50%;
+                transition: width 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+                overflow: hidden;
+                position: relative;
+
+                &:hover {
+                    background-color: $btnBacColor ;
+                    color: $primaryBacColor;
+                }
+            }
+
+            .cart-btn {
+                background-color: #0d731e;
+                color: $primaryBacColor;
+                // border-radius: 6px 0 0 6px;
+            }
+
+            .info-btn {
+                // background-color: #0d731e;
+                // border-radius: 0 6px 6px 0;
+            }
+
+            .cart-btn::after {
+                @include WnH(10px, 24px);
+                content: '';
+                position: absolute;
+                right: -5px;
+                background-color: $primaryBacColor;
+                transform: skew(20deg);
+                transition: width 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+            }
+
+
+            // .info-btn::before {
+            //     @include WnH(10px, 24px);
+            //     content: '';
+            //     position: absolute;
+            //     left: -5px;
+            //     background-color: $primaryBacColor;
+            //     transform: skew(20deg);
+            // }
+
+            // .cart-btn::after {
+            //     position: absolute;
+            //     content: '';
+            //     border-bottom: 40px solid #0d731e;
+            //     border-right: 20px solid #FCFAF2;
+            //     right: -5%;
+            //     z-index: 2;
+            //     transition: border 0.3s ease;
+            // }
+
+            // .info-btn {
+            //     background-color: red;
+            // }
+
+            // .info-btn::after {
+            //     position: absolute;
+            //     left: 0;
+            //     content: '';
+            //     border-top: 40px solid red;
+            //     border-left: 15px solid #FCFAF2;
+            // }
+
+            .cart-btn:hover {
+                width: 80%;
+
+
+            }
+
+            .cart-btn:hover+button {
+                width: 20%;
+
+                &::before {
+                    background-color: transparent;
+                }
+            }
+
+            .info-btn:hover {
+                width: 80%;
+            }
+
+            &:has(.info-btn:hover)>button:first-child {
+                background-color: $primaryBacColor;
+                color: black;
+                width: 20%;
+
+                &::after {
+                    background-color: #0d731e;
+                }
+            }
+
         }
     }
 
@@ -347,17 +504,10 @@ function setShowList() {
         row-gap: 2rem;
 
         .item {
-            @include flex-center-center;
-            flex-direction: column;
-            gap: 1rem;
-            width: 100%;
-
-            &>img {
-                @include WnH(250px);
-            }
+            @extend %menuItem;
         }
 
-        .showListBtn {
+        .showFullMenuBtn {
             grid-column: 2;
             justify-self: center;
             margin: 2rem 0;
@@ -385,14 +535,14 @@ function setShowList() {
             gap: 2rem;
 
             .item {
-                @include flex-center-center;
-                flex-direction: column;
+                @extend %menuItem;
                 flex-shrink: 0;
-                gap: 1rem;
+                width: auto;
 
                 &>img {
                     @include WnH(225px);
                 }
+
             }
         }
     }
@@ -406,14 +556,12 @@ function setShowList() {
     img {
         @include WnH(300px);
         flex-shrink: 0;
-        // flex: 1;
     }
 
     .content {
         padding: 3rem 8rem;
         display: flex;
         flex-direction: column;
-        // align-items: start;
         justify-content: center;
         gap: 1rem;
 
@@ -426,6 +574,7 @@ function setShowList() {
         }
 
         button {
+            @extend %analystBtn;
             font-size: 1.5rem;
             align-self: center;
         }
