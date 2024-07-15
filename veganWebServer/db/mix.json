@@ -14,7 +14,7 @@
                 ],
                 "price": 149,
                 "category": "沙拉",
-                "imageURL": "/images/menu/homeCatalog/1.png"
+                "fileName": "sunrise"
             },
             {
                 "name": "彩虹脆樂沙拉",
@@ -28,7 +28,7 @@
                 ],
                 "price": 199,
                 "category": "沙拉",
-                "imageURL": "/images/menu/homeCatalog/2.png"
+                "fileName": "rainbow"
             },
             {
                 "name": "清爽青翠沙拉",
@@ -42,7 +42,7 @@
                 ],
                 "price": 149,
                 "category": "沙拉",
-                "imageURL": "/images/menu/homeCatalog/3.png"
+                "fileName": "crisp"
             },
             {
                 "name": "地中海陽光沙拉",
@@ -57,7 +57,7 @@
                 ],
                 "price": 199,
                 "category": "沙拉",
-                "imageURL": "/images/menu/homeCatalog/4.png"
+                "fileName": "sunshine"
             },
             {
                 "name": "純淨蔬色沙拉",
@@ -71,7 +71,7 @@
                 ],
                 "price": 149,
                 "category": "沙拉",
-                "imageURL": "/images/menu/homeCatalog/5.png"
+                "fileName": "pureGreen"
             }
         ]
     },
@@ -90,7 +90,8 @@
                     "椰子水"
                 ],
                 "price": 120,
-                "category": "果昔"
+                "category": "果昔",
+                "fileName": "vegetable"
             },
             {
                 "name": "莓果活力果昔",
@@ -103,7 +104,8 @@
                     "杏仁奶"
                 ],
                 "price": 130,
-                "category": "果昔"
+                "category": "果昔",
+                "fileName": "berry"
             },
             {
                 "name": "熱帶清新果昔",
@@ -116,7 +118,8 @@
                     "奇亞籽"
                 ],
                 "price": 140,
-                "category": "果昔"
+                "category": "果昔",
+                "fileName": "mango"
             },
             {
                 "name": "香蕉花生果昔",
@@ -129,7 +132,8 @@
                     "杏仁奶"
                 ],
                 "price": 150,
-                "category": "果昔"
+                "category": "果昔",
+                "fileName": "peanut"
             },
             {
                 "name": "巧克力香蕉果昔",
@@ -142,7 +146,8 @@
                     "蜂蜜"
                 ],
                 "price": 135,
-                "category": "果昔"
+                "category": "果昔",
+                "fileName": "chocolate"
             }
         ]
     }

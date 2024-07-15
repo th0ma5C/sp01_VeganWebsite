@@ -26,6 +26,9 @@ const customAdapter: AxiosAdapter = async (config: AxiosRequestConfig): Promise<
 const requests = axios.create({
     // 基礎路徑
     baseURL: '/api',
+    // headers: {
+    //     'Content-Type': 'application/json',
+    // },
     // 超時時間
     //timeout: 5000,
     onDownloadProgress: (progressEvent) => {

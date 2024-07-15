@@ -247,6 +247,7 @@ type ReqFunction = () => Promise<string[]>;
 async function getUrl(req: ReqFunction) {
     try {
         let data: string[] = await req();
+        // return data
         return data.map((item) => '/api' + item)
     } catch (error) {
         console.log(`${req.name}請求失敗`, error);

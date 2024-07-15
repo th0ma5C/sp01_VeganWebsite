@@ -172,7 +172,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
+import { reqMenu } from '@/api/menu';
 
 //TODO: 縮畫面會有白邊
 //DOING menu 按鈕樣式
@@ -198,6 +199,23 @@ function setShowList() {
 
 // menu btn
 
+const query = `
+    query {
+    menu
+  }
+`
+
+onMounted(() => {
+    (async () => {
+        try {
+            let res = await reqMenu({ query });
+            console.log(res);
+        } catch (error) {
+            console.log(error);
+        }
+
+    })()
+})
 
 </script>
 
