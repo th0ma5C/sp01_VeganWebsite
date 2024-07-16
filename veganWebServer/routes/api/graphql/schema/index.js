@@ -1,48 +1,78 @@
-const { buildSchema } = require('graphql');
+const { GraphQLSchema, GraphQLNonNull, GraphQLObjectType, GraphQLString, GraphQLList, GraphQLFloat } = require('graphql');
+const MenuModel = require('../../../../models/MenuModel');
 
-const schema = buildSchema(`
-    type MenuItem {
-        name: String!
-        description: String
-        ingredients: [String]
-        price: Float
-        fileName: String
+const MenuItemType = new GraphQLObjectType({
+    name: 'MenuItem',
+    fields: {
+        name: { type: GraphQLString },
+        description: { type: GraphQLString },
+        ingredients: { type: new GraphQLList(GraphQLString) },
+        price: { type: GraphQLFloat },
+        category: { type: GraphQLString },
+        fileName: { type: GraphQLString }
     }
+});
 
-    type Menu {
-        id: ID!
-        name: String!
-        items: [MenuItem]
+const MenuType = new GraphQLObjectType({
+    name: 'Menu',
+    fields: {
+        name: { type: GraphQLString },
+        items: { type: new GraphQLList(MenuItemType) }
     }
+});
 
-    type Query {
-        menus: [Menu]
-        menu(id: ID!): Menu
-        menuByName(name: String!): Menu
-        menuItems(menuName: String!): [MenuItem]
-        menuItem(menuName: String!, itemName: String!): MenuItem
-    } 
-`);
-// const schema = buildSchema(`
-//     type MenuItem {
-//     name: String!
-//     description: String!
-//     ingredients: [String!]!
-//     price: Int!
-//     category: String!
-//     imageURL: String
-// }
+const QueryType = new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+        menu: {
+            type: new GraphQLList(MenuType),
+            args: {
+                name: { type: GraphQLString }
+            },
+            resolve: async (parent, args) => {
+                try {
+                    if (args.name) {
+                        return await MenuModel.find({ name: args.name });
+                    } else {
+                        return await MenuModel.find({});
+                    }
+                } catch (error) {
+                    console.error('Error fetching menus:', error);
+                    throw new Error('Unable to fetch menus');
+                }
+            }
+        }
+    }
+});
 
-//     type Category {
-//         name: String!
-//         items: [MenuItem!]!
-// }
-
-//     type Query {
-//         categories: [Category!]!
-//         menuItems(category: String): [MenuItem!]!
-//         menuItem(name: String!): MenuItem
-// }
-// `);
+const schema = new GraphQLSchema({
+    query: QueryType
+});
 
 module.exports = schema;
+
+
+// const { buildSchema } = require('graphql');
+
+// const schema = buildSchema(`
+//     type MenuItem {
+//         name: String!
+//         description: String
+//         ingredients: [String]
+//         price: Float
+//         category: String
+//         fileName: String
+//     }
+
+//     type Menu {
+//         name: String!
+//         items: [MenuItem]
+//     }
+
+//     type Query {
+//         menus: [Menu]
+//         menu(name: String!): Menu
+//   }
+// `);
+
+// module.exports = schema;

@@ -12,43 +12,13 @@ router.use('/news', news);
 
 // graphQL
 // const schema = require('./graphql/schema');
-// const root = require('./graphql/resolvers');
-const { GraphQLSchema, GraphQLObjectType, GraphQLString } = require('graphql');
-const schema = new GraphQLSchema({
-    query: new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-            hello: {
-                type: GraphQLString,
-                // resolve: () => 'world',
-            },
-            menu: {
-                type: GraphQLString,
-            }
-        },
-    }),
-});
-
-const Menu = require('../../models/MenuModel')
-let root = {
-    hello: () => {
-        return 'Hello world!';
-    },
-    menu: async () => {
-        try {
-            console.log('object');
-            return await Menu.find();
-        } catch (error) {
-            console.error('Error fetching menus:', error);
-            throw new Error('Unable to fetch menus');
-        }
-    }
-};
+// const resolvers = require('./graphql/resolvers');
+const schema = require('./graphql/schema')
 
 router.use('/graphql', createHandler({
-    schema: schema,
-    rootValue: root,
-    graphiql: true, // 用於開發測試的 GraphiQL 工具
+    schema
+    // rootValue: resolvers,
+    // graphiql: true
 }));
 
 module.exports = router;

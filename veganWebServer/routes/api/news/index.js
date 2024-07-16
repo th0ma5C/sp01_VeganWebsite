@@ -19,5 +19,16 @@ router.get('/newsList', async (req, res) => {
     }
 })
 
+// const MenuModel = require('../../../models/MenuModel')
+// router.get('/test', async (req, res) => {
+//     try {
+//         const data = await MenuModel.find()
+//         console.log(data);
+//         res.status(200).send('成功')
+//         return data
+//     } catch (error) {
+//         res.status(500).send('獲取失敗')
+//     }
+// })
 
 module.exports = router;

@@ -183,7 +183,7 @@ import { reqMenu } from '@/api/menu';
  * 服務端導入資源
  * api 建構
  * req 編寫 
- * res 導入 pinia
+ * doing: res 導入 pinia
  * bottom 診斷圖片
  * ? 加入購物車改為右上角icon
  * 
@@ -201,15 +201,26 @@ function setShowList() {
 
 const query = `
     query {
-    menu
+  menu {
+    name
+    items {
+      name
+      description
+      ingredients
+      price
+      category
+      fileName
+    }
   }
+}
+
 `
 
 onMounted(() => {
     (async () => {
         try {
             let res = await reqMenu({ query });
-            console.log(res);
+            console.log(res.data);
         } catch (error) {
             console.log(error);
         }
