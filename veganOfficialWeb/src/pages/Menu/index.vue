@@ -144,7 +144,7 @@
                         <p>價格</p>
                         <div class="btnWrapper">
                             <button
-                                class="cart-btn">加入購物車/</button>
+                                class="cart-btn">加入購物車</button>
                             <button
                                 class="info-btn">詳細資訊</button>
                         </div>
@@ -169,23 +169,26 @@
             </div>
         </div>
     </div>
+    <!-- <Skeleton></Skeleton> -->
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
 import { reqMenu } from '@/api/menu';
+import Skeleton from '@components/skeleton/skeleton.vue'
 
-//TODO: 縮畫面會有白邊
+//TODO:res 導入 pinia
 //DOING menu 按鈕樣式
 /**
  * //篩選、排序箭頭轉場
  * //!整理樣式
+ * //縮畫面會有白邊->max width: 100%
  * 服務端導入資源
  * api 建構
  * req 編寫 
- * doing: res 導入 pinia
  * bottom 診斷圖片
  * ? 加入購物車改為右上角icon
+ * ? 骨架屏
  * 
  */
 
@@ -217,15 +220,15 @@ const query = `
 `
 
 onMounted(() => {
-    (async () => {
-        try {
-            let res = await reqMenu({ query });
-            console.log(res.data);
-        } catch (error) {
-            console.log(error);
-        }
+    // (async () => {
+    //     try {
+    //         let res = await reqMenu({ query });
+    //         console.log(res.data);
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
 
-    })()
+    // })()
 })
 
 </script>
@@ -239,6 +242,7 @@ onMounted(() => {
     position: relative;
 
     &>div {
+        max-width: 100%;
         width: 1440px;
         margin: 1rem auto;
 
@@ -323,7 +327,7 @@ onMounted(() => {
                     margin-left: 14px;
 
                     &:not([open]) .filterArrow {
-                        transform: rotateZ(90deg);
+                        transform: rotateZ(-90deg);
                     }
 
                     summary {
@@ -383,7 +387,7 @@ onMounted(() => {
                     }
 
                     .sortIcon {
-                        transform: rotateZ(90deg);
+                        transform: rotateZ(-90deg);
                     }
 
                     .sortList {
@@ -421,8 +425,8 @@ onMounted(() => {
             width: 75%;
             overflow: hidden;
             position: relative;
-            border: 1px solid gray;
-            border-radius: 6px;
+            border: 1px solid rgb(0, 0, 0, 0.25);
+            border-radius: 8px;
 
             * {
                 // border: 1px solid black;
@@ -433,6 +437,7 @@ onMounted(() => {
                 transition: width 0.3s ease, background-color 0.3s ease, color 0.3s ease;
                 overflow: hidden;
                 position: relative;
+                // border: 1px solid black;
 
                 &:hover {
                     background-color: $btnBacColor ;
@@ -452,55 +457,22 @@ onMounted(() => {
             }
 
             .cart-btn::after {
-                @include WnH(10px, 24px);
+                @include WnH(10px, 36px);
                 content: '';
                 position: absolute;
-                right: -5px;
+                right: -8px;
                 background-color: $primaryBacColor;
-                transform: skew(20deg);
+                // background-color: black;
+                transform: skew(15deg);
                 transition: width 0.3s ease, background-color 0.3s ease, color 0.3s ease;
             }
 
-
-            // .info-btn::before {
-            //     @include WnH(10px, 24px);
-            //     content: '';
-            //     position: absolute;
-            //     left: -5px;
-            //     background-color: $primaryBacColor;
-            //     transform: skew(20deg);
-            // }
-
-            // .cart-btn::after {
-            //     position: absolute;
-            //     content: '';
-            //     border-bottom: 40px solid #0d731e;
-            //     border-right: 20px solid #FCFAF2;
-            //     right: -5%;
-            //     z-index: 2;
-            //     transition: border 0.3s ease;
-            // }
-
-            // .info-btn {
-            //     background-color: red;
-            // }
-
-            // .info-btn::after {
-            //     position: absolute;
-            //     left: 0;
-            //     content: '';
-            //     border-top: 40px solid red;
-            //     border-left: 15px solid #FCFAF2;
-            // }
-
             .cart-btn:hover {
-                width: 80%;
-
-
+                width: 84%;
             }
 
             .cart-btn:hover+button {
-                width: 20%;
+                width: 16%;
 
                 &::before {
                     background-color: transparent;
@@ -508,7 +480,7 @@ onMounted(() => {
             }
 
             .info-btn:hover {
-                width: 80%;
+                width: 82%;
             }
 
             &:has(.info-btn:hover)>button:first-child {

@@ -257,7 +257,7 @@ async function getUrl(req: ReqFunction) {
 onMounted(() => {
     getUrl(reqGetNewMenu).then(data => {
         if (data) menu.value[0].url = data;
-        console.log(data);
+        // console.log(data);
     });
     getUrl(reqGetHotMenu).then(data => {
         if (data) menu.value[1].url = data;
