@@ -285,7 +285,7 @@ import Skeleton from '@components/skeleton/skeleton.vue'
  * api 建構
  * req 編寫 
  * bottom 診斷圖片 用頭貼輪播
- * 菜單摺疊區塊 
+ * 菜單摺疊區塊
  * 圖片縮放比例
  * ? 初始化轉場
  * ? 加入購物車改為右上角icon
