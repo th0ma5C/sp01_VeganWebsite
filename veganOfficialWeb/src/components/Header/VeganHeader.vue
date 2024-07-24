@@ -21,7 +21,7 @@
                         :key="icon">
                         <a href="">
                             <SvgIcon :name="icon"
-                                width="40px" height="40px">
+                                width="35px" height="35px">
                             </SvgIcon>
                         </a>
                     </li>

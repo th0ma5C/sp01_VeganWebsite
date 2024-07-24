@@ -38,60 +38,85 @@
                     <div class="filter">
                         <span>篩選：</span>
                         <div class="details">
-                            <div class="summary">
-                                食材種類
+                            <div class="summary"
+                                @click="setFilter">
+                                <span>
+                                    食材種類
+                                </span>
                                 <SvgIcon
                                     name="ListArrowDown"
                                     width="21px"
                                     height="21px"
-                                    class="filterArrow">
+                                    class="filterArrow"
+                                    :class="{ rotateArrow: showFilter }">
                                 </SvgIcon>
                             </div>
-                            <div class="listWrapper">
-                                <div class="listHeader">
-                                    <input type="text">
-                                    <div>
-                                        已選取幾項
+                            <transition name="filter">
+                                <div class="listWrapper"
+                                    v-show="showFilter">
+                                    <SvgIcon name="cancel"
+                                        width="20"
+                                        height="20"
+                                        class="exit">
+                                    </SvgIcon>
+                                    <div class="listHeader">
+                                        <form action="">
+                                            <input
+                                                type="text"
+                                                placeholder="篩選條件">
+                                            <SvgIcon
+                                                name="Search02"
+                                                width="18px"
+                                                height="18px"
+                                                color="black"
+                                                class="searchIcon">
+                                            </SvgIcon>
+                                        </form>
+                                        <div>
+                                            已選取幾項
+                                        </div>
+                                        <div>
+                                            <button>重置</button>
+                                        </div>
                                     </div>
-                                    <div>
-                                        重設
+                                    <div class="fieldset">
+                                        <ul>
+                                            <li
+                                                class="select">
+                                                <label
+                                                    for="salad1">
+                                                    <input
+                                                        id="salad1"
+                                                        type="checkbox">
+                                                    1111111111111111
+                                                </label>
+                                                <span>111111111111</span>
+
+                                            </li>
+                                            <li>
+                                                <label
+                                                    for="salad2">
+                                                    <input
+                                                        id="salad2"
+                                                        type="checkbox">
+                                                    2222222222222222222
+                                                </label>
+                                                <span>2222222222222222222</span>
+                                            </li>
+                                            <li>
+                                                <label
+                                                    for="salad13">
+                                                    <input
+                                                        id="salad13"
+                                                        type="checkbox">
+                                                    33333333333333333
+                                                </label>
+                                                <span>33333333333333333</span>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
-                                <div class="fieldset">
-                                    <!-- <legend>
-                                        食材種類
-                                    </legend> -->
-                                    <ul>
-                                        <li>
-                                            <label
-                                                for="salad1">
-                                                <input
-                                                    id="salad1"
-                                                    type="checkbox">
-                                                1111111111111111
-                                            </label>
-                                        </li>
-                                        <li>
-                                            <label
-                                                for="salad2">
-                                                <input
-                                                    id="salad2"
-                                                    type="checkbox">
-                                                2222222222222222222
-                                            </label>
-                                        </li>
-                                        <li>
-                                            <label
-                                                for="salad13">
-                                                <input
-                                                    id="salad13"
-                                                    type="checkbox">
-                                                33333333333333333
-                                            </label>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+                            </transition>
                         </div>
                     </div>
                     <!-- <div>
@@ -100,26 +125,25 @@
                     <div class="sort">
                         <span>排序：</span>
                         <div class="sortWrapper">
-                            <span
-                                @click="setShowList">名稱</span>
-                            <SvgIcon name="ListArrowDown"
-                                width="21px" height="21px"
-                                :class="{ sortIcon: !showList }"
-                                @click="setShowList">
-                            </SvgIcon>
-                            <ul class="sortList"
-                                v-show="showList">
-                                <li>名稱</li>
-                                <li>價格</li>
-                                <li>人氣</li>
-                                <li>日期</li>
-                            </ul>
-                            <!-- <select id="sortSelect">
-                                <option value="name">名稱
-                                </option>
-                                <option value="price">價格
-                                </option>
-                            </select> -->
+                            <div class="header"
+                                @click="setSort">
+                                <span>名稱</span>
+                                <SvgIcon
+                                    name="ListArrowDown"
+                                    width="21px"
+                                    height="21px"
+                                    :class="{ sortIcon: !showSort }">
+                                </SvgIcon>
+                            </div>
+                            <transition name="sort">
+                                <ul class="sortList"
+                                    v-show="showSort">
+                                    <li>名稱</li>
+                                    <li>價格</li>
+                                    <li>人氣</li>
+                                    <li>日期</li>
+                                </ul>
+                            </transition>
                         </div>
                         <div class="sortCount">
                             共9項
@@ -294,11 +318,18 @@ import Skeleton from '@components/skeleton/skeleton.vue'
  */
 
 // 排序
-let showList = ref(false);
+function handleShowList() {
+    let isShow = ref(false);
 
-function setShowList() {
-    showList.value = !showList.value;
+    function setShow() {
+        isShow.value = !isShow.value;
+    }
+
+    return { isShow, setShow }
 }
+
+let { isShow: showFilter, setShow: setFilter } = handleShowList();
+let { isShow: showSort, setShow: setSort } = handleShowList();
 
 
 // menu btn
@@ -457,6 +488,25 @@ onMounted(() => {
     }
 }
 
+%hoverBotLine {
+    &::before {
+        @include WnH(100%, 1px);
+        background-color: black;
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    &:hover {
+        &::before {
+            transform: translateX(0);
+        }
+    }
+}
+
 .menuWrapper {
     // margin-top: 4rem;
 
@@ -479,85 +529,199 @@ onMounted(() => {
             font-size: 14px;
             position: relative;
 
+            * {
+                // outline: 1px solid black;
+            }
+
             &>div {
                 display: flex;
                 align-items: center;
             }
 
             .filter {
+                * {
+                    // outline: 1px solid black;
+                }
 
                 .details {
-                    margin-left: 14px;
-
-                    &:not([open]) .filterArrow {
-                        transform: rotateZ(-90deg);
-                    }
+                    margin-left: 1rem;
 
                     .summary {
+                        cursor: pointer;
                         font-size: 14px;
-                        list-style: none;
                         display: flex;
                         gap: 0.25rem;
-                        cursor: pointer;
                         user-select: none;
                         position: relative;
+                        overflow: hidden;
+
+                        span {
+                            position: relative;
+                            @extend %hoverBotLine;
+                        }
 
                         .filterArrow {
+                            transform: rotateZ(-90deg);
                             transition: transform 0.3s ease;
                         }
 
-                        &::after {
-                            @include WnH(100%, 1px);
-                            background-color: black;
-                            content: '';
-                            position: absolute;
-                            left: 0;
-                            bottom: 0;
+                        .rotateArrow {
+                            transform: rotateZ(0deg);
                         }
+
+
                     }
 
-                    // @keyframes slideDown {
-                    //     from {
-                    //         transform: translateY(-10%);
-                    //     }
-
-                    //     to {
-                    //         transform: translateY(0);
-                    //     }
-                    // }
-
-                    // &:not([open]) .listWrapper {
-                    //     // background-color: red;
-                    //     animation: slideUp 0.5s forwards;
-                    // }
-
-                    // &[open] .listWrapper {
-                    //     // background-color: red;
-                    //     animation: slideDown 0.5s forwards;
-                    // }
+                    &:hover .summary>span::before {
+                        transform: translateX(0);
+                    }
 
                     .listWrapper {
                         background-color: $primaryBacColor;
-                        border: 1px solid black;
+                        // border: 1px solid black;
+                        border-radius: 1rem;
+                        box-shadow: 1px 1px 4px black;
                         position: absolute;
                         top: 150%;
-                        width: 300px;
+                        width: 350px;
                         z-index: 3;
                         transition: transform 0.3s ease;
 
+                        .exit {
+                            cursor: pointer;
+                            position: absolute;
+                            z-index: 1;
+                            top: 5px;
+                            right: 5px;
+                            color: gray;
+
+                            &:hover {
+                                scale: 1.1;
+                                color: black;
+                            }
+                        }
+
                         .listHeader {
                             display: flex;
-                            padding: 1rem;
+                            margin: 8px 14px 0 14px;
+                            padding: 1rem 0.5rem;
                             justify-content: space-between;
+                            align-items: center;
+                            // box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.552);
+                            border-radius: calc(1rem - 12px);
+                            position: relative;
+
+                            form {
+                                position: relative;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+
+                                input {
+                                    // box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.551);
+                                    // border: 2px inset rgba(0, 0, 0, 0.45);
+                                    border-radius: 1rem;
+                                    padding-left: 0.75rem;
+                                    box-shadow: 1px 1px 4px inset rgba(0, 0, 0, 0.5);
+                                    background-color: $primaryBacColor;
+                                    line-height: 32px;
+                                    // transition: background-color 0.3s ease, opacity 0.3s ease;
+
+                                    &:focus {
+                                        // border: 2px solid gray;
+                                        transition: background-color 0.15s ease;
+                                        outline: none;
+                                        background-color: white;
+
+                                        &::placeholder {
+                                            transition: opacity 0.15s ease;
+                                            opacity: 0;
+                                        }
+                                    }
+                                }
+
+                                .searchIcon {
+                                    cursor: pointer;
+                                    position: absolute;
+                                    top: 50%;
+                                    right: 8px;
+                                    transform: translateY(-50%);
+                                }
+                            }
+
+                            &::after {
+                                @include WnH(100%, 2px);
+                                content: '';
+                                position: absolute;
+                                left: 0;
+                                bottom: 0;
+                                background-color: rgba(0, 0, 0, 0.25);
+                            }
                         }
 
                         .fieldset>ul {
-                            padding: 1rem;
+                            margin: 1rem calc(20px + 0.75rem);
+
+                            .select {
+                                border: 2px inset rgba(0, 0, 0, 1);
+                                box-shadow: inset 2px 2px 3px rgba(0, 0, 0, 0.5);
+                            }
 
                             li {
-                                padding: 0.5rem 0;
+                                cursor: pointer;
+                                padding: 0.25rem 0.25rem;
+                                margin: 6px 0;
+                                border: 2px outset rgba(0, 0, 0, 1);
+                                border-radius: 0.25rem;
+                                box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+                                position: relative;
+                                // // color: white;
+                                // background-color: green;
+
+                                label {
+                                    display: none;
+                                }
+
+                                span {}
+
+                                // &:nth-of-type(1):after {
+                                //     @include WnH(100%);
+                                //     border-radius: 0.25rem;
+                                //     content: '';
+                                //     position: absolute;
+                                //     background-color: green;
+                                //     top: 3px;
+                                //     left: 3px;
+                                //     z-index: -1;
+                                // }
                             }
                         }
+
+                        &::before {
+                            @include WnH(30%);
+                            content: '';
+                            position: absolute;
+                            top: -6%;
+                            left: 0;
+                            z-index: -1;
+                        }
+                    }
+
+                    .filter-enter-active,
+                    .filter-leave-active {
+                        transition: transform 0.3s ease, opacity 0.3s ease;
+                    }
+
+                    .filter-enter-from,
+                    .filter-leave-to {
+                        opacity: 0;
+                        transform: translateY(-5%);
+                    }
+
+                    .filter-enter-to,
+                    .filter-leave-from {
+                        opacity: 1;
+                        transform: translateY(0);
                     }
                 }
             }
@@ -565,25 +729,46 @@ onMounted(() => {
             .sort {
                 user-select: none;
 
+                &>span {
+                    margin-right: 1rem;
+                }
+
                 .sortWrapper {
-                    $listWidth: 80px;
-
+                    // $listWidth: 80px;
+                    position: relative;
                     cursor: pointer;
-                    width: $listWidth;
-                    display: flex;
-                    gap: 0.25rem;
+                    // width: $listWidth;
+                    // display: flex;
+                    // gap: 0.25rem;
 
-                    &>span {
-                        padding-left: 14px;
-                        text-align: center;
+                    .header {
+                        display: flex;
+                        gap: 0.25rem;
+                        overflow: hidden;
+                        width: 53px;
+                        position: relative;
+
+                        span {
+                            // padding-left: 14px;
+                            text-align: center;
+                            position: relative;
+                            @extend %hoverBotLine;
+                        }
+
+                        div {
+                            transition: transform 0.3s ease;
+                        }
+
+                        .sortIcon {
+                            transform: rotateZ(-90deg);
+                        }
+
+
+
                     }
 
-                    &>div {
-                        transition: transform 0.3s ease;
-                    }
-
-                    .sortIcon {
-                        transform: rotateZ(-90deg);
+                    &:hover .header>span::before {
+                        transform: translateX(0);
                     }
 
                     .sortList {
@@ -593,13 +778,40 @@ onMounted(() => {
                         flex-direction: column;
                         width: calc(63px + 0.25rem);
                         position: absolute;
-                        top: 21px;
+                        top: 150%;
                         z-index: 3;
+
+                        &::before {
+                            @include WnH(100%);
+                            content: '';
+                            position: absolute;
+                            top: -12%;
+                            left: 0;
+                            z-index: -1;
+                            // background-color: black;
+                        }
+                    }
+
+                    .sort-enter-active,
+                    .sort-leave-active {
+                        transition: transform 0.3s ease, opacity 0.3s ease;
+                    }
+
+                    .sort-enter-from,
+                    .sort-leave-to {
+                        opacity: 0;
+                        transform: translateY(-5%);
+                    }
+
+                    .sort-enter-to,
+                    .sort-leave-from {
+                        opacity: 1;
+                        transform: translateY(0);
                     }
                 }
 
                 .sortCount {
-                    margin-right: 0.25rem;
+                    margin-left: 1rem;
                 }
             }
         }
