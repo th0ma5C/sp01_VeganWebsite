@@ -281,15 +281,48 @@
             </div>
         </div>
         <div class="analystBot">
-            <img src="" alt="商品">
+            <div class="imgWrapper">
+                <swiper-container effect="fade" speed="700"
+                    autoplay-delay="4000"
+                    @swiperprogress="setDoc($event);">
+                    <swiper-slide>
+                        <img src="@assets/img/Menu/doc01.png"
+                            alt="doc">
+                    </swiper-slide>
+                    <swiper-slide
+                        data-swiper-autoplay="6000">
+                        <img src="@assets/img/Menu/doc02.png"
+                            alt="doc">
+                    </swiper-slide>
+                </swiper-container>
+                <span>
+                    {{ currDoc?.title }}
+                </span>
+            </div>
+            <!-- <div class="imgWrapper">
+                <img src="@assets/img/Menu/doc01.png"
+                    alt="商品">
+                <span>
+                    配方指導
+                </span>
+            </div> -->
             <div class="content">
-                <h2>標題</h2>
-                <p>
+                <h2>{{ currDoc?.name }}</h2>
+                <p v-show="docIndex == 0">
                     Lorem ipsum dolor sit, amet consectetur
                     adipisicing elit. Provident quis
                     doloribus illo explicabo architecto
                     deserunt aliquam autem officiis vel
-                    dicta?
+                    dicta illo explicabo architecto
+                    deserunt aliquam autem officiis vel
+                    dicta
+                </p>
+                <p v-show="docIndex == 1">
+                    Lorem ipsum, dolor sit amet consectetur
+                    adipisicing elit. Error fugit cum
+                    facilis voluptate mollitia labore.Lorem
+                    ipsum, dolor sit amet consectetur
+                    adipisicing elit.
                 </p>
                 <button>
                     開始診斷
@@ -301,7 +334,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, reactive } from 'vue';
+import { computed, ref, onMounted, reactive, watch } from 'vue';
 import type { Ref } from 'vue';
 import { reqMenu } from '@/api/menu';
 import Skeleton from '@components/skeleton/skeleton.vue'
@@ -359,6 +392,37 @@ let sortDirIcon = computed(() => ({
 }))
 
 // menu btn
+
+// bot swiper text
+// TODO:換index轉場新增
+let docData = [
+    {
+        title: '營養分析',
+        name: '李醫師',
+    },
+    {
+        title: '配方分析',
+        name: '張營養師',
+    }
+];
+
+let docIndex = ref(0)
+function setDoc(e: CustomEvent) {
+    let [swiper, progress] = e.detail;
+    docIndex.value = progress;
+};
+
+let currDoc = computed(() => {
+    switch (docIndex.value) {
+        case 0:
+            return docData[0]
+        case 1:
+            return docData[1]
+        default:
+            break;
+    }
+})
+
 
 const query = `
     query {
@@ -1032,7 +1096,7 @@ onMounted(() => {
             position: relative;
             // border: 1px solid rgb(0, 0, 0, 0.25);
             border-radius: 8px;
-            box-shadow: 2px 2px 5px rgb(0, 0, 0, 0.5);
+            box-shadow: 2px 2px 8px rgb(0, 0, 0, 0.5);
             z-index: 0;
             margin-top: 1.25rem;
 
@@ -1081,6 +1145,7 @@ onMounted(() => {
                 transform: translateY(-15%);
                 position: absolute;
                 z-index: -1;
+
 
                 g>* {
                     fill: $btnBacColor;
@@ -1176,7 +1241,20 @@ onMounted(() => {
         margin-top: 2rem;
         display: flex;
         flex-direction: column;
+        position: relative;
+        z-index: 0;
         // overflow: hidden;
+
+        &::after {
+            @include WnH(100vw, 100%);
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            z-index: -1;
+            // background-color: #FFEDA4;
+        }
 
         .title {
             font-size: 1.75rem;
@@ -1191,27 +1269,37 @@ onMounted(() => {
             padding-left: 1rem;
             display: flex;
             flex-direction: row;
-            gap: 1.5rem;
+            gap: 2rem;
 
             .item {
                 @extend %menuItem;
-                @include WnH(257px, 100%);
+                @include WnH(300px, 100%);
                 // flex-shrink: 0;
                 // width: auto;
                 flex: 0 0 auto;
                 padding: 1rem;
-                // border: 1px solid black;
-                border-radius: 8rem 8rem 1rem 1rem;
-                box-shadow: 2px 2px 6px black;
+                padding-top: 28px;
+                border: 1px solid black;
+                border-radius: 150px 150px 1rem 1rem;
+                box-shadow: 8px -5px 0px $secondBacColor;
                 overflow: hidden;
 
+                .btnWrapper {
+                    box-shadow: 1px 0px 5px black;
+
+                    .btnBackground {
+                        transform: translateY(-10%);
+                        scale: 1.5;
+                    }
+                }
+
                 .imgWrapper {
-                    @include WnH(225px);
+                    @include WnH(250px);
                     @include flex-center-center;
                     position: relative;
                     overflow: hidden;
-                    border-radius: 7rem 7rem 1rem 1rem;
-                    box-shadow: 2px 2px 3px black;
+                    border-radius: 134px 134px 1rem 1rem;
+                    box-shadow: 1px 0px 10px black;
                     // padding: 1rem;
 
                     img {
@@ -1251,21 +1339,67 @@ onMounted(() => {
 
 .analystBot {
     display: flex;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-    margin-top: 1rem;
+    // padding-top: 2rem;
+    // padding-bottom: 2rem;
+    // padding: 6rem 6rem 2rem 6rem !important;
+    // margin-top: 1rem;
+    margin-bottom: 4rem;
+    // border: 1px solid black;
+    // border-radius: 100% 100% 1rem 1rem;
+    // box-shadow: 3px 3px 10px black;
+    // position: relative;
 
-    img {
+
+
+
+    .imgWrapper {
         @include WnH(300px);
         flex-shrink: 0;
+        // border: 1px solid black;
+        box-shadow: 1px 1px 5px black;
+        border-radius: 100%;
+        // overflow: hidden;
+        position: relative;
+        z-index: 0;
+
+        img {
+            // @include WnH(100%);
+            // filter: drop-shadow(4px 0px 8px gray);
+            border-radius: 100%;
+        }
+
+        span {
+            @include WnH(140px, 40px);
+            background-color: #FFEDA4;
+            border: 1px solid black;
+            border-radius: 30px;
+            font-size: 1.5rem;
+            font-variation-settings: 'wght' 600;
+            position: absolute;
+            left: 50%;
+            bottom: -5%;
+            transform: translateX(-50%);
+            text-align: center;
+            line-height: 40px;
+            z-index: 1;
+        }
     }
 
     .content {
-        padding: 3rem 8rem;
+        * {
+            // outline: 1px solid black;
+        }
+
+        // padding: 3rem 8rem 0 8rem;
+        margin: auto 5rem;
+        padding: 2rem 3rem;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        gap: 1rem;
+        // align-items: center;
+        // gap: 1.5rem;
+        border-radius: 2rem;
+        box-shadow: 1px 1px 5px black;
 
         h2 {
             font-size: 2rem;
@@ -1273,12 +1407,18 @@ onMounted(() => {
 
         p {
             font-size: 1.25rem;
+            margin-top: 0.75rem;
+            // min-height: 90px;
+            height: 120px;
+            overflow: hidden;
         }
 
         button {
+            @include WnH(9rem, 3rem);
             @extend %analystBtn;
             font-size: 1.5rem;
             align-self: center;
+            margin-top: 1rem;
         }
     }
 }
