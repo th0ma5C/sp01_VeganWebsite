@@ -3,7 +3,9 @@
         <div class="analystTop">
             <div class="imgWrapper">
                 <swiper-container effect="fade" speed="700"
-                    autoplay-delay="4000">
+                    autoplay-delay="4000"
+                    :fadeEffect="{ crossFade: true }"
+                    class="test">
                     <swiper-slide>
                         <img src="@assets/img/Menu/doc01.png"
                             alt="doc">
@@ -16,7 +18,6 @@
                 </swiper-container>
             </div>
             <div class="textWrapper">
-                <!-- <p>您做過專屬個人診斷了嗎?</p> -->
                 <h1>
                     <span
                         class="subTitle">您做過專屬個人診斷了嗎?</span>
@@ -281,9 +282,79 @@
             </div>
         </div>
         <div class="analystBot">
+            <swiper-container effect="fade" speed="700"
+                :fadeEffect="{ crossFade: true }"
+                autoplay-delay="4000">
+                <swiper-slide>
+                    <div class="test">
+                        <div class="imgWrapper">
+                            <img src="@assets/img/Menu/doc01.png"
+                                alt="">
+                            <span>
+                                {{ currDoc?.title }}
+                            </span>
+                        </div>
+                        <div class="content">
+                            <h2>張醫師</h2>
+                            <p>
+                                Lorem ipsum dolor sit, amet
+                                consectetur
+                                adipisicing elit. Provident
+                                quis
+                                doloribus illo explicabo
+                                architecto
+                                deserunt aliquam autem
+                                officiis
+                                vel
+                                dicta illo explicabo
+                                architecto
+                                deserunt aliquam autem
+                                officiis
+                                vel
+                                dicta
+                            </p>
+                            <button>
+                                開始診斷
+                            </button>
+                        </div>
+                    </div>
+                </swiper-slide>
+                <swiper-slide>
+                    <div class="test">
+                        <div class="imgWrapper">
+                            <img src="@assets/img/Menu/doc02.png"
+                                alt="">
+                            <span>
+                                {{ currDoc?.title }}
+                            </span>
+                        </div>
+                        <div class="content">
+                            <h2>李醫師</h2>
+                            <p>
+                                Lorem ipsum, dolor sit amet
+                                consectetur
+                                adipisicing elit. Error
+                                fugit
+                                cum
+                                facilis voluptate mollitia
+                                labore.Lorem
+                                ipsum, dolor sit amet
+                                consectetur
+                                adipisicing elit.
+                            </p>
+                            <button>
+                                開始診斷
+                            </button>
+                        </div>
+                    </div>
+                </swiper-slide>
+            </swiper-container>
+        </div>
+        <!-- <div class="analystBot">
             <div class="imgWrapper">
                 <swiper-container effect="fade" speed="700"
                     autoplay-delay="4000"
+                    :fadeEffect="{ crossFade: true }"
                     @swiperprogress="setDoc($event);">
                     <swiper-slide>
                         <img src="@assets/img/Menu/doc01.png"
@@ -299,15 +370,9 @@
                     {{ currDoc?.title }}
                 </span>
             </div>
-            <!-- <div class="imgWrapper">
-                <img src="@assets/img/Menu/doc01.png"
-                    alt="商品">
-                <span>
-                    配方指導
-                </span>
-            </div> -->
             <div class="content">
-                <h2>{{ currDoc?.name }}</h2>
+                <h2>
+                    {{ currDoc?.name }}</h2>
                 <p v-show="docIndex == 0">
                     Lorem ipsum dolor sit, amet consectetur
                     adipisicing elit. Provident quis
@@ -328,7 +393,7 @@
                     開始診斷
                 </button>
             </div>
-        </div>
+        </div> -->
     </div>
     <!-- <Skeleton></Skeleton> -->
 </template>
@@ -391,10 +456,14 @@ let sortDirIcon = computed(() => ({
     transform: `rotateZ(${sortIconRotate.value}deg)`
 }))
 
+
 // menu btn
 
-// bot swiper text
+// bot swiper
 // TODO:換index轉場新增
+/**
+ * todo 按鈕不要轉場 樣式調整
+ */
 let docData = [
     {
         title: '營養分析',
@@ -462,6 +531,7 @@ onMounted(() => {
 
     flex-direction: column;
     position: relative;
+    overflow: hidden;
 
     * {
         // outline: 1px solid black;
@@ -537,6 +607,7 @@ onMounted(() => {
 
         img {
             @include WnH(100%);
+            // background-color: white;
         }
     }
 
@@ -1339,87 +1410,171 @@ onMounted(() => {
 
 .analystBot {
     display: flex;
-    // padding-top: 2rem;
-    // padding-bottom: 2rem;
-    // padding: 6rem 6rem 2rem 6rem !important;
-    // margin-top: 1rem;
     margin-bottom: 4rem;
-    // border: 1px solid black;
-    // border-radius: 100% 100% 1rem 1rem;
-    // box-shadow: 3px 3px 10px black;
-    // position: relative;
 
-
-
-
-    .imgWrapper {
-        @include WnH(300px);
-        flex-shrink: 0;
-        // border: 1px solid black;
-        box-shadow: 1px 1px 5px black;
-        border-radius: 100%;
-        // overflow: hidden;
-        position: relative;
-        z-index: 0;
-
-        img {
-            // @include WnH(100%);
-            // filter: drop-shadow(4px 0px 8px gray);
-            border-radius: 100%;
-        }
-
-        span {
-            @include WnH(140px, 40px);
-            background-color: #FFEDA4;
-            border: 1px solid black;
-            border-radius: 30px;
-            font-size: 1.5rem;
-            font-variation-settings: 'wght' 600;
-            position: absolute;
-            left: 50%;
-            bottom: -5%;
-            transform: translateX(-50%);
-            text-align: center;
-            line-height: 40px;
-            z-index: 1;
-        }
+    swiper-container {
+        width: 100%;
     }
 
-    .content {
-        * {
-            // outline: 1px solid black;
-        }
-
-        // padding: 3rem 8rem 0 8rem;
-        margin: auto 5rem;
-        padding: 2rem 3rem;
+    .test {
         display: flex;
-        flex-direction: column;
-        justify-content: center;
-        // align-items: center;
-        // gap: 1.5rem;
-        border-radius: 2rem;
-        box-shadow: 1px 1px 5px black;
+        margin-bottom: 4rem;
 
-        h2 {
-            font-size: 2rem;
+        .imgWrapper {
+            @include WnH(300px);
+            flex-shrink: 0;
+            // border: 1px solid black;
+            box-shadow: 1px 1px 5px black;
+            border-radius: 100%;
+            // overflow: hidden;
+            position: relative;
+            z-index: 0;
+
+            img {
+                // @include WnH(100%);
+                // filter: drop-shadow(4px 0px 8px gray);
+                border-radius: 100%;
+            }
+
+            span {
+                @include WnH(140px, 40px);
+                background-color: #FFEDA4;
+                border: 1px solid black;
+                border-radius: 30px;
+                font-size: 1.5rem;
+                font-variation-settings: 'wght' 600;
+                position: absolute;
+                left: 50%;
+                bottom: -5%;
+                transform: translateX(-50%);
+                text-align: center;
+                line-height: 40px;
+                z-index: 1;
+            }
         }
 
-        p {
-            font-size: 1.25rem;
-            margin-top: 0.75rem;
-            // min-height: 90px;
-            height: 120px;
-            overflow: hidden;
-        }
+        .content {
+            * {
+                // outline: 1px solid black;
+            }
 
-        button {
-            @include WnH(9rem, 3rem);
-            @extend %analystBtn;
-            font-size: 1.5rem;
-            align-self: center;
-            margin-top: 1rem;
+            // padding: 3rem 8rem 0 8rem;
+            margin: auto 5rem;
+            padding: 2rem 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            // align-items: center;
+            // gap: 1.5rem;
+            border-radius: 2rem;
+            box-shadow: 1px 1px 5px black;
+
+            h2 {
+                font-size: 2rem;
+            }
+
+            p {
+                font-size: 1.25rem;
+                margin-top: 0.75rem;
+                // min-height: 90px;
+                height: 120px;
+                overflow: hidden;
+            }
+
+            button {
+                @include WnH(9rem, 3rem);
+                @extend %analystBtn;
+                font-size: 1.5rem;
+                align-self: center;
+                margin-top: 1rem;
+            }
         }
     }
+
 }
-</style>
+
+// .analystBot {
+//     display: flex;
+//     // padding-top: 2rem;
+//     // padding-bottom: 2rem;
+//     // padding: 6rem 6rem 2rem 6rem !important;
+//     // margin-top: 1rem;
+//     margin-bottom: 4rem;
+//     // border: 1px solid black;
+//     // border-radius: 100% 100% 1rem 1rem;
+//     // box-shadow: 3px 3px 10px black;
+//     // position: relative;
+
+
+
+
+//     .imgWrapper {
+//         @include WnH(300px);
+//         flex-shrink: 0;
+//         // border: 1px solid black;
+//         box-shadow: 1px 1px 5px black;
+//         border-radius: 100%;
+//         // overflow: hidden;
+//         position: relative;
+//         z-index: 0;
+
+//         img {
+//             // @include WnH(100%);
+//             // filter: drop-shadow(4px 0px 8px gray);
+//             border-radius: 100%;
+//         }
+
+//         span {
+//             @include WnH(140px, 40px);
+//             background-color: #FFEDA4;
+//             border: 1px solid black;
+//             border-radius: 30px;
+//             font-size: 1.5rem;
+//             font-variation-settings: 'wght' 600;
+//             position: absolute;
+//             left: 50%;
+//             bottom: -5%;
+//             transform: translateX(-50%);
+//             text-align: center;
+//             line-height: 40px;
+//             z-index: 1;
+//         }
+//     }
+
+//     .content {
+//         * {
+//             // outline: 1px solid black;
+//         }
+
+//         // padding: 3rem 8rem 0 8rem;
+//         margin: auto 5rem;
+//         padding: 2rem 3rem;
+//         display: flex;
+//         flex-direction: column;
+//         justify-content: center;
+//         // align-items: center;
+//         // gap: 1.5rem;
+//         border-radius: 2rem;
+//         box-shadow: 1px 1px 5px black;
+
+//         h2 {
+//             font-size: 2rem;
+//         }
+
+//         p {
+//             font-size: 1.25rem;
+//             margin-top: 0.75rem;
+//             // min-height: 90px;
+//             height: 120px;
+//             overflow: hidden;
+//         }
+
+//         button {
+//             @include WnH(9rem, 3rem);
+//             @extend %analystBtn;
+//             font-size: 1.5rem;
+//             align-self: center;
+//             margin-top: 1rem;
+//         }
+//     }
+// }</style>
