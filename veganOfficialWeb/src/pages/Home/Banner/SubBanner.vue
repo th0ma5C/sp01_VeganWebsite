@@ -9,24 +9,36 @@
         <swiper-slide v-for="(item, index) in getUrl"
             :key="index">
             <a href="" @click.prevent>
-                <img :src="item.url" alt="">
+                <img :src="item" alt="">
             </a>
         </swiper-slide>
     </swiper-container>
 </template>
 
 <script lang="ts" setup>
-let imgs = [
-    { title: 'a' },
-    { title: 'b' },
-    { title: 'c' },
-    { title: 'd' },
-    { title: 'e' }
-]
+import useConcatImgPath from '@/hooks/useConcatImgPath';
 
-const getUrl = imgs.map(item => ({
-    url: new URL(`/src/assets/img/SubBanner/${item.title}.jpg`, import.meta.url).href
-}))
+// let imgs = [
+//     { title: 'a' },
+//     { title: 'b' },
+//     { title: 'c' },
+//     { title: 'd' },
+//     { title: 'e' }
+// ]
+let imgUrl = [
+    'a.jpg',
+    'b.jpg',
+    'c.jpg',
+    'd.jpg',
+    'e.jpg',
+], folder = 'SubBanner';
+
+let getUrl = useConcatImgPath(imgUrl, folder);
+
+// const getUrl = imgs.map(item => ({
+//     url: new URL(`/src/assets/img/SubBanner/${item.title}.jpg`, import.meta.url).href
+// }))
+
 </script>
 
 <style lang="scss" scoped>

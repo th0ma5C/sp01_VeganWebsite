@@ -5,7 +5,7 @@
                 <swiper-container effect="fade" speed="700"
                     autoplay-delay="4000"
                     :fadeEffect="{ crossFade: true }"
-                    class="test">
+                    :allowTouchMove="false" class="test">
                     <swiper-slide>
                         <img src="@assets/img/Menu/doc01.png"
                             alt="doc">
@@ -283,64 +283,24 @@
         </div>
         <div class="analystBot">
             <swiper-container effect="fade" speed="700"
-                :fadeEffect="{ crossFade: true }"
-                autoplay-delay="4000">
-                <swiper-slide>
-                    <div class="test">
+                :fadeEffect="{ crossFade: true }" :autoplay="{
+                    delay: 4000,
+                    pauseOnMouseEnter: true
+                }" :allowTouchMove="false">
+                <swiper-slide
+                    v-for="({ title, name, intro, avatarURL }, index) in docData"
+                    :key="index">
+                    <div class="analystSwiper">
                         <div class="imgWrapper">
-                            <img src="@assets/img/Menu/doc01.png"
-                                alt="">
+                            <img :src="avatarURL" alt="">
                             <span>
-                                {{ currDoc?.title }}
+                                {{ title }}
                             </span>
                         </div>
                         <div class="content">
-                            <h2>張醫師</h2>
+                            <h2>{{ name }}</h2>
                             <p>
-                                Lorem ipsum dolor sit, amet
-                                consectetur
-                                adipisicing elit. Provident
-                                quis
-                                doloribus illo explicabo
-                                architecto
-                                deserunt aliquam autem
-                                officiis
-                                vel
-                                dicta illo explicabo
-                                architecto
-                                deserunt aliquam autem
-                                officiis
-                                vel
-                                dicta
-                            </p>
-                            <button>
-                                開始診斷
-                            </button>
-                        </div>
-                    </div>
-                </swiper-slide>
-                <swiper-slide>
-                    <div class="test">
-                        <div class="imgWrapper">
-                            <img src="@assets/img/Menu/doc02.png"
-                                alt="">
-                            <span>
-                                {{ currDoc?.title }}
-                            </span>
-                        </div>
-                        <div class="content">
-                            <h2>李醫師</h2>
-                            <p>
-                                Lorem ipsum, dolor sit amet
-                                consectetur
-                                adipisicing elit. Error
-                                fugit
-                                cum
-                                facilis voluptate mollitia
-                                labore.Lorem
-                                ipsum, dolor sit amet
-                                consectetur
-                                adipisicing elit.
+                                {{ intro }}
                             </p>
                             <button>
                                 開始診斷
@@ -349,75 +309,52 @@
                     </div>
                 </swiper-slide>
             </swiper-container>
+            <div class="analystSwiper cloneSwiper">
+                <div class="imgWrapper">
+                    <img :src="docData[0].avatarURL" alt="">
+                    <span>
+                        {{ docData[0].title }}
+                    </span>
+                </div>
+                <div class="content">
+                    <h2>{{ docData[0].name }}</h2>
+                    <p>
+                        {{ docData[0].intro }}
+                    </p>
+                    <button class="target">
+                        開始診斷
+                    </button>
+                </div>
+            </div>
         </div>
-        <!-- <div class="analystBot">
-            <div class="imgWrapper">
-                <swiper-container effect="fade" speed="700"
-                    autoplay-delay="4000"
-                    :fadeEffect="{ crossFade: true }"
-                    @swiperprogress="setDoc($event);">
-                    <swiper-slide>
-                        <img src="@assets/img/Menu/doc01.png"
-                            alt="doc">
-                    </swiper-slide>
-                    <swiper-slide
-                        data-swiper-autoplay="6000">
-                        <img src="@assets/img/Menu/doc02.png"
-                            alt="doc">
-                    </swiper-slide>
-                </swiper-container>
-                <span>
-                    {{ currDoc?.title }}
-                </span>
-            </div>
-            <div class="content">
-                <h2>
-                    {{ currDoc?.name }}</h2>
-                <p v-show="docIndex == 0">
-                    Lorem ipsum dolor sit, amet consectetur
-                    adipisicing elit. Provident quis
-                    doloribus illo explicabo architecto
-                    deserunt aliquam autem officiis vel
-                    dicta illo explicabo architecto
-                    deserunt aliquam autem officiis vel
-                    dicta
-                </p>
-                <p v-show="docIndex == 1">
-                    Lorem ipsum, dolor sit amet consectetur
-                    adipisicing elit. Error fugit cum
-                    facilis voluptate mollitia labore.Lorem
-                    ipsum, dolor sit amet consectetur
-                    adipisicing elit.
-                </p>
-                <button>
-                    開始診斷
-                </button>
-            </div>
-        </div> -->
     </div>
     <!-- <Skeleton></Skeleton> -->
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, reactive, watch } from 'vue';
+import { computed, ref, onMounted, reactive, watch, onBeforeMount } from 'vue';
 import type { Ref } from 'vue';
 import { reqMenu } from '@/api/menu';
-import Skeleton from '@components/skeleton/skeleton.vue'
+import Skeleton from '@components/skeleton/skeleton.vue';
+import useConcatImgPath from '@/hooks/useConcatImgPath';
+import { useMenuStore } from '@/store/menuStore';
 
 //TODO:res 導入 pinia
-//DOING menu 按鈕樣式
+//DOING
 /**
  * //篩選、排序箭頭轉場
  * !整理樣式
  * //縮畫面會有白邊->max width: 100%
  * //menu改4行 WrapperMargin調整 grid space around
  * //top分析改排版
+ * //menu 按鈕樣式
  * 服務端導入資源
  * api 建構
  * req 編寫 
  * bottom 診斷圖片 用頭貼輪播
  * 菜單摺疊區塊
  * 圖片縮放比例
+ * 果昔跑馬燈
  * ? 初始化轉場
  * ? 加入購物車改為右上角icon
  * ? 骨架屏
@@ -460,37 +397,23 @@ let sortDirIcon = computed(() => ({
 // menu btn
 
 // bot swiper
-// TODO:換index轉場新增
-/**
- * todo 按鈕不要轉場 樣式調整
- */
+
+let docAvatarUrl = useConcatImgPath(['doc01.png', 'doc02.png'], 'Menu');
 let docData = [
     {
         title: '營養分析',
         name: '李醫師',
+        intro: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque ipsa eveniet similique tenetur laboriosam culpa maxime aspernatur incidunt aut saepe.',
+        avatarURL: docAvatarUrl[0]
     },
     {
         title: '配方分析',
         name: '張營養師',
+        intro: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Maxime velit totam, nulla dicta ea accusamus.',
+        avatarURL: docAvatarUrl[1]
     }
 ];
 
-let docIndex = ref(0)
-function setDoc(e: CustomEvent) {
-    let [swiper, progress] = e.detail;
-    docIndex.value = progress;
-};
-
-let currDoc = computed(() => {
-    switch (docIndex.value) {
-        case 0:
-            return docData[0]
-        case 1:
-            return docData[1]
-        default:
-            break;
-    }
-})
 
 
 const query = `
@@ -507,19 +430,43 @@ const query = `
     }
   }
 }
-
 `
+const GET_MENU = `
+    query {
+        menu {
+            name
+            items {
+                name
+                description
+                ingredients
+                price
+                category
+                fileName
+            }
+        }
+    }
+`
+// let menuData = ref();
+// let fetchMenu = async () => {
+//     try {
+//         let { data: { menu } } = await reqMenu({ query });
+//         console.log(menu);
+//     } catch (error) {
+//         console.log(fetchMenu.name, 'failed');
+//         console.log(error);
+//     }
+// }
+let { menuData, fetchMenu } = useMenuStore()
 
+onBeforeMount(() => {
+    fetchMenu()
+})
 onMounted(() => {
-    // (async () => {
-    //     try {
-    //         let res = await reqMenu({ query });
-    //         console.log(res.data);
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-
-    // })()
+    if (menuData) {
+        watch(menuData, (nVal) => {
+            if (nVal) console.log(nVal);
+        })
+    }
 })
 
 </script>
@@ -646,6 +593,7 @@ onMounted(() => {
     }
 
     button {
+        @include WnH(9rem, 3rem);
         @extend %analystBtn;
         // margin-top: 1rem;
         margin: 0 auto;
@@ -985,6 +933,7 @@ onMounted(() => {
                                 border-radius: 4px;
                                 width: 80%;
                                 position: relative;
+                                // text-align: center;
 
                                 &:hover {
                                     box-shadow: 0 0 3px black;
@@ -1409,16 +1358,19 @@ onMounted(() => {
 }
 
 .analystBot {
-    display: flex;
-    margin-bottom: 4rem;
+    // display: flex;
+    // margin-bottom: 4rem;
+    position: relative;
+    z-index: 0;
 
     swiper-container {
         width: 100%;
     }
 
-    .test {
+    .analystSwiper {
         display: flex;
-        margin-bottom: 4rem;
+        // margin-bottom: 4rem;
+        margin: 4rem 1rem 8rem 1rem;
 
         .imgWrapper {
             @include WnH(300px);
@@ -1470,6 +1422,7 @@ onMounted(() => {
             box-shadow: 1px 1px 5px black;
 
             h2 {
+                font-variation-settings: 'wght' 600;
                 font-size: 2rem;
             }
 
@@ -1487,94 +1440,26 @@ onMounted(() => {
                 font-size: 1.5rem;
                 align-self: center;
                 margin-top: 1rem;
+                // visibility: hidden;
             }
         }
     }
 
+    .cloneSwiper {
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+
+        .imgWrapper,
+        .content {
+            box-shadow: none;
+        }
+
+        &>div *:not(.target) {
+            visibility: hidden;
+        }
+    }
 }
-
-// .analystBot {
-//     display: flex;
-//     // padding-top: 2rem;
-//     // padding-bottom: 2rem;
-//     // padding: 6rem 6rem 2rem 6rem !important;
-//     // margin-top: 1rem;
-//     margin-bottom: 4rem;
-//     // border: 1px solid black;
-//     // border-radius: 100% 100% 1rem 1rem;
-//     // box-shadow: 3px 3px 10px black;
-//     // position: relative;
-
-
-
-
-//     .imgWrapper {
-//         @include WnH(300px);
-//         flex-shrink: 0;
-//         // border: 1px solid black;
-//         box-shadow: 1px 1px 5px black;
-//         border-radius: 100%;
-//         // overflow: hidden;
-//         position: relative;
-//         z-index: 0;
-
-//         img {
-//             // @include WnH(100%);
-//             // filter: drop-shadow(4px 0px 8px gray);
-//             border-radius: 100%;
-//         }
-
-//         span {
-//             @include WnH(140px, 40px);
-//             background-color: #FFEDA4;
-//             border: 1px solid black;
-//             border-radius: 30px;
-//             font-size: 1.5rem;
-//             font-variation-settings: 'wght' 600;
-//             position: absolute;
-//             left: 50%;
-//             bottom: -5%;
-//             transform: translateX(-50%);
-//             text-align: center;
-//             line-height: 40px;
-//             z-index: 1;
-//         }
-//     }
-
-//     .content {
-//         * {
-//             // outline: 1px solid black;
-//         }
-
-//         // padding: 3rem 8rem 0 8rem;
-//         margin: auto 5rem;
-//         padding: 2rem 3rem;
-//         display: flex;
-//         flex-direction: column;
-//         justify-content: center;
-//         // align-items: center;
-//         // gap: 1.5rem;
-//         border-radius: 2rem;
-//         box-shadow: 1px 1px 5px black;
-
-//         h2 {
-//             font-size: 2rem;
-//         }
-
-//         p {
-//             font-size: 1.25rem;
-//             margin-top: 0.75rem;
-//             // min-height: 90px;
-//             height: 120px;
-//             overflow: hidden;
-//         }
-
-//         button {
-//             @include WnH(9rem, 3rem);
-//             @extend %analystBtn;
-//             font-size: 1.5rem;
-//             align-self: center;
-//             margin-top: 1rem;
-//         }
-//     }
-// }</style>
+</style>
