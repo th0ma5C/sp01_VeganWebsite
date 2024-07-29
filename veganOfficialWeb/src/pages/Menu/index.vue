@@ -148,26 +148,23 @@
             </div>
             <div class="saladMenu">
                 <div class="item"
-                    v-for="(item, index) in 16"
+                    v-for="({ name, description, fileName, price }, index) in saladList"
                     :key="index">
                     <div class="menuImg">
-                        <img src="@assets/img/Menu/crisp.png"
-                            alt="商品">
-                        <p>120元</p>
+                        <img :src="fileName" alt="商品">
+                        <p>{{ price }}元</p>
                         <div class="description">
-                            <span>Lorem ipsum dolor sit
-                                amet.</span>
+                            <span>{{ description }}</span>
                         </div>
                     </div>
-                    <h3>品名</h3>
+                    <h3>{{ name }}</h3>
                     <!-- <p>價格</p> -->
                     <div class="ingredients">
-                        <span>維生素A</span>
-                        <span>維生素A</span>
-                        <span>維生素A</span>
-                        <span></span>
-                        <span></span>
-                        <span></span>
+                        <span
+                            v-for="(item) in saladIngredients![index]"
+                            :key="item">
+                            {{ item }}
+                        </span>
                     </div>
                     <div class="btnWrapper">
                         <button
@@ -213,31 +210,29 @@
                     </button>
                 </div>
             </div>
-            <div class="smoothyMenu">
+            <div class="smoothieMenu">
                 <div class="title">
                     SMOOTHIES
                 </div>
                 <div class="itemWrapper">
                     <div class="item"
-                        v-for="(item, index) in 6"
+                        v-for="({ name, description, price, fileName }, index) in smoothieList"
                         :key="index">
                         <div class="imgWrapper">
-                            <img src="@assets/img/1.jpg"
-                                alt="商品">
+                            <img :src="fileName" alt="商品">
                             <div class="description">
-                                <span>Lorem ipsum dolor sit
-                                    amet.</span>
+                                <span>{{ description
+                                    }}</span>
                             </div>
                         </div>
-                        <h3>品名</h3>
-                        <p>價格</p>
+                        <h3>{{ name }}</h3>
+                        <p>{{ price }}元</p>
                         <div class="ingredients">
-                            <span>維生素A</span>
-                            <span>維生素A</span>
-                            <span>維生素A</span>
-                            <span></span>
-                            <span></span>
-                            <span></span>
+                            <span
+                                v-for="(item) in smoothieIngredients![index]"
+                                :key="item">
+                                {{ item }}
+                            </span>
                         </div>
                         <div class="btnWrapper">
                             <button
@@ -327,38 +322,45 @@
                 </div>
             </div>
         </div>
+        <Skeleton v-show="!isLoaded"></Skeleton>
     </div>
-    <!-- <Skeleton></Skeleton> -->
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, reactive, watch, onBeforeMount } from 'vue';
+import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect } from 'vue';
 import type { Ref } from 'vue';
 import { reqMenu } from '@/api/menu';
 import Skeleton from '@components/skeleton/skeleton.vue';
 import useConcatImgPath from '@/hooks/useConcatImgPath';
 import { useMenuStore } from '@/store/menuStore';
+import type { MenuItem } from '@/api/menu/type'
+import { storeToRefs } from 'pinia';
 
 //TODO:res 導入 pinia
-//DOING
+//DOING  localStorage、ETag緩存 菜單摺疊
 /**
- * //篩選、排序箭頭轉場
  * !整理樣式
+ * --------------
+ * ? 初始化轉場
+ * ? 加入購物車改為右上角icon
+ * ? 骨架屏
+ * ? mongodb 聚合管道
+ * --------------
+ * 菜單摺疊區塊
+ * 果昔跑馬燈
+ * 篩選、排序邏輯
+ * 圖片縮放比例
+ * --------------
+ * //篩選、排序箭頭轉場
  * //縮畫面會有白邊->max width: 100%
  * //menu改4行 WrapperMargin調整 grid space around
  * //top分析改排版
  * //menu 按鈕樣式
- * 服務端導入資源
- * api 建構
- * req 編寫 
- * bottom 診斷圖片 用頭貼輪播
- * 菜單摺疊區塊
- * 圖片縮放比例
- * 果昔跑馬燈
- * ? 初始化轉場
- * ? 加入購物車改為右上角icon
- * ? 骨架屏
- * 
+ * //服務端導入資源
+ * //api 建構
+ * //req 編寫 
+ * //bottom 診斷圖片 用頭貼輪播
+ * //圖片路徑
  */
 
 // 排序
@@ -414,59 +416,42 @@ let docData = [
     }
 ];
 
+// menu
+const menuStore = useMenuStore()
+const { saladList, smoothieList, isLoaded } = storeToRefs(menuStore);
 
-
-const query = `
-    query {
-  menu {
-    name
-    items {
-      name
-      description
-      ingredients
-      price
-      category
-      fileName
-    }
-  }
-}
-`
-const GET_MENU = `
-    query {
-        menu {
-            name
-            items {
-                name
-                description
-                ingredients
-                price
-                category
-                fileName
+let saladIngredients = computed(() => {
+    if (!saladList.value) return
+    let arr = saladList.value.map((item) => {
+        return item.ingredients
+    });
+    arr.forEach(el => {
+        if (el.length < 6) {
+            for (let i = el.length; i < 6; i++) {
+                el.push('')
             }
         }
-    }
-`
-// let menuData = ref();
-// let fetchMenu = async () => {
-//     try {
-//         let { data: { menu } } = await reqMenu({ query });
-//         console.log(menu);
-//     } catch (error) {
-//         console.log(fetchMenu.name, 'failed');
-//         console.log(error);
-//     }
-// }
-let { menuData, fetchMenu } = useMenuStore()
+    });
+    return arr
+})
+let smoothieIngredients = computed(() => {
+    if (!smoothieList.value) return
+    let arr = smoothieList.value.map((item) => {
+        return item.ingredients
+    });
+    arr.forEach(el => {
+        if (el.length < 6) {
+            for (let i = el.length; i < 6; i++) {
+                el.push('')
+            }
+        }
+    });
+    return arr
+})
 
 onBeforeMount(() => {
-    fetchMenu()
 })
 onMounted(() => {
-    if (menuData) {
-        watch(menuData, (nVal) => {
-            if (nVal) console.log(nVal);
-        })
-    }
 })
 
 </script>
@@ -501,6 +486,12 @@ onMounted(() => {
     // .menuWrapper {
     //     padding: 0 6rem;
     // }
+
+    &:deep(.wrapper) {
+        flex-direction: column;
+
+        // background-color: red;
+    }
 }
 
 %analystBtn {
@@ -1043,6 +1034,10 @@ onMounted(() => {
                 border-radius: 2.5rem;
                 opacity: 0;
                 transition: opacity 0.3s ease;
+
+                span {
+                    padding: 1rem;
+                }
             }
 
             &:hover {
@@ -1257,7 +1252,7 @@ onMounted(() => {
         }
     }
 
-    .smoothyMenu {
+    .smoothieMenu {
         margin-top: 2rem;
         display: flex;
         flex-direction: column;
@@ -1340,6 +1335,11 @@ onMounted(() => {
                         border-radius: 7rem 7rem 1rem 1rem;
                         opacity: 0;
                         transition: opacity 0.3s ease;
+
+                        span {
+                            transform: translateY(20%);
+                            padding: 1rem
+                        }
                     }
 
                     &:hover {
@@ -1461,5 +1461,7 @@ onMounted(() => {
             visibility: hidden;
         }
     }
+
+
 }
 </style>

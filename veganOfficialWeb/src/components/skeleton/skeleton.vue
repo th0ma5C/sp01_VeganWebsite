@@ -74,6 +74,9 @@
 
 .textSkeleton {
     color: transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 
     &>* {
         border-radius: 0.25rem;

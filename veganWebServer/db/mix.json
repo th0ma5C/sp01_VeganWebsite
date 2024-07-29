@@ -10,10 +10,10 @@
                     "維生素C",
                     "鉀",
                     "葉酸",
-                    "高品質的蛋白質"
+                    "蛋白質"
                 ],
                 "price": 149,
-                "category": "沙拉",
+                "category": "salad",
                 "fileName": "sunrise"
             },
             {
@@ -23,11 +23,11 @@
                     "高纖維",
                     "維生素C",
                     "維生素K",
-                    "抗氧化物質",
+                    "抗氧化物",
                     "鈣質"
                 ],
                 "price": 199,
-                "category": "沙拉",
+                "category": "salad",
                 "fileName": "rainbow"
             },
             {
@@ -40,23 +40,23 @@
                     "鉀",
                     "類黃酮"
                 ],
-                "price": 149,
-                "category": "沙拉",
+                "price": 99,
+                "category": "salad",
                 "fileName": "crisp"
             },
             {
                 "name": "地中海陽光沙拉",
                 "description": "充滿陽光味道的地中海風情沙拉，融合了脆口生菜、甜美小番茄、新鮮黃瓜片、紫洋蔥、黑橄欖和嫩煙三文魚，帶給您一場味蕾的地中海之旅。",
                 "ingredients": [
-                    "Omega-3脂肪酸",
+                    "Omega-3",
                     "蛋白質",
                     "維生素D",
                     "鈣質",
                     "維生素E",
                     "高纖維"
                 ],
-                "price": 199,
-                "category": "沙拉",
+                "price": 219,
+                "category": "salad",
                 "fileName": "sunshine"
             },
             {
@@ -69,8 +69,8 @@
                     "鉀",
                     "葉酸"
                 ],
-                "price": 149,
-                "category": "沙拉",
+                "price": 119,
+                "category": "salad",
                 "fileName": "pureGreen"
             }
         ]
@@ -89,8 +89,8 @@
                     "檸檬汁",
                     "椰子水"
                 ],
-                "price": 120,
-                "category": "果昔",
+                "price": 95,
+                "category": "smoothies",
                 "fileName": "vegetable"
             },
             {
@@ -103,8 +103,8 @@
                     "香蕉",
                     "杏仁奶"
                 ],
-                "price": 130,
-                "category": "果昔",
+                "price": 180,
+                "category": "smoothies",
                 "fileName": "berry"
             },
             {
@@ -117,8 +117,8 @@
                     "橙汁",
                     "奇亞籽"
                 ],
-                "price": 140,
-                "category": "果昔",
+                "price": 120,
+                "category": "smoothies",
                 "fileName": "mango"
             },
             {
@@ -131,8 +131,8 @@
                     "亞麻籽",
                     "杏仁奶"
                 ],
-                "price": 150,
-                "category": "果昔",
+                "price": 170,
+                "category": "smoothies",
                 "fileName": "peanut"
             },
             {
@@ -145,8 +145,8 @@
                     "杏仁奶",
                     "蜂蜜"
                 ],
-                "price": 135,
-                "category": "果昔",
+                "price": 170,
+                "category": "smoothies",
                 "fileName": "chocolate"
             }
         ]

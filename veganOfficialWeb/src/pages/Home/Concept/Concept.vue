@@ -133,7 +133,7 @@ let newsList = reactive({
         currItem.value = index;
     }
 })
-
+// console.log(newsData);
 watchEffect(() => {
     if (!newsData) return
 

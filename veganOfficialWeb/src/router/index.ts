@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useNewsStore } from "@/store/newsStore";
+import { useMenuStore } from "@/store/menuStore";
 // import NProgress from 'nprogress'
 // import 'nprogress/nprogress.css'
 // NProgress.configure({ showSpinner: false })
@@ -41,7 +42,17 @@ const router = createRouter({
         },
         {
             path: '/menu',
-            component: Menu
+            component: Menu,
+            // beforeEnter: async (to, from, next) => {
+            //     const { fetchMenu } = useMenuStore();
+            //     try {
+            //         await fetchMenu();
+            //         next()
+            //     } catch (error) {
+            //         console.log('router fetchMenu failed', error);
+            //         next()
+            //     }
+            // }
         },
         {
             path: '/about',
