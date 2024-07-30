@@ -117,6 +117,7 @@
                                 <span>{{ sorting }}</span>
                                 <SvgIcon name="sortDown"
                                     width='16' height="16"
+                                    color="#0d731e"
                                     :style="sortDirIcon">
                                 </SvgIcon>
                                 <SvgIcon
@@ -141,73 +142,88 @@
                             </transition>
                         </div>
                         <div class="sortCount">
-                            共9項
+                            共{{ showMenuArr.size }}項
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="saladMenu">
-                <div class="item"
-                    v-for="({ name, description, fileName, price }, index) in saladList"
-                    :key="index">
-                    <div class="menuImg">
-                        <img :src="fileName" alt="商品">
-                        <p>{{ price }}元</p>
-                        <div class="description">
-                            <span>{{ description }}</span>
+            <div class="saladMenu"
+                :class="{ expandMenu: isShowFullMenu }">
+                <transition-group name="saladMenu"
+                    type="animation">
+                    <div class="item"
+                        v-for="({ name, description, fileName, price }, index) in saladList"
+                        :key="index"
+                        :class="{ hideItem: index > 7 }"
+                        v-show="showMenuArr.has(index)">
+                        <div class="menuImg">
+                            <img :src="fileName" alt="商品">
+                            <p>{{ price }}元</p>
+                            <div class="description">
+                                <span>{{ description
+                                    }}</span>
+                            </div>
                         </div>
-                    </div>
-                    <h3>{{ name }}</h3>
-                    <!-- <p>價格</p> -->
-                    <div class="ingredients">
-                        <span
-                            v-for="(item) in saladIngredients![index]"
-                            :key="item">
-                            {{ item }}
-                        </span>
-                    </div>
-                    <div class="btnWrapper">
-                        <button
-                            class="cart-btn">加入購物車</button>
-                        <button
-                            class="info-btn">詳細資訊</button>
-                        <div class="btnBackground">
-                            <svg width="260" height="48"
-                                viewBox="0 0 260 48"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <g id="btnBac"
-                                    filter="url('#btn')">
-                                    <rect id="center" y="21"
-                                        width="117.52"
-                                        height="6"
-                                        fill="currentColor" />
-                                    <path id="left"
-                                        d="M0 0H26.5417H53.0833H79.625H117.553L130 48H0V0Z"
-                                        fill="currentColor" />
-                                    <path id="right"
-                                        d="M260 48L233.458 48L206.917 48L180.375 48L142.447 48L130 4.93616e-06L260 1.5864e-05L260 48Z"
-                                        fill="currentColor" />
-                                </g>
-                                <filter id="btn">
-                                    <feGaussianBlur
-                                        in="SourceGraphic"
-                                        result="blur"
-                                        stdDeviation="5" />
-                                    <feColorMatrix in="blur"
-                                        mode="matrix"
-                                        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
-                                        result="btn" />
-                                </filter>
-                            </svg>
+                        <h3>{{ name }}</h3>
+                        <!-- <p>價格</p> -->
+                        <div class="ingredients">
+                            <span
+                                v-for="(item) in saladIngredients![index]"
+                                :key="item">
+                                {{ item }}
+                            </span>
                         </div>
+                        <div class="btnWrapper">
+                            <button
+                                class="cart-btn">加入購物車</button>
+                            <button
+                                class="info-btn">詳細資訊</button>
+                            <div class="btnBackground">
+                                <svg width="260" height="48"
+                                    viewBox="0 0 260 48"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <g id="btnBac"
+                                        filter="url('#btn')">
+                                        <rect id="center"
+                                            y="21"
+                                            width="117.52"
+                                            height="6"
+                                            fill="currentColor" />
+                                        <path id="left"
+                                            d="M0 0H26.5417H53.0833H79.625H117.553L130 48H0V0Z"
+                                            fill="currentColor" />
+                                        <path id="right"
+                                            d="M260 48L233.458 48L206.917 48L180.375 48L142.447 48L130 4.93616e-06L260 1.5864e-05L260 48Z"
+                                            fill="currentColor" />
+                                    </g>
+                                    <filter id="btn">
+                                        <feGaussianBlur
+                                            in="SourceGraphic"
+                                            result="blur"
+                                            stdDeviation="5" />
+                                        <feColorMatrix
+                                            in="blur"
+                                            mode="matrix"
+                                            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
+                                            result="btn" />
+                                    </filter>
+                                </svg>
+                            </div>
+                        </div>
+                        <div></div>
                     </div>
-                </div>
+                </transition-group>
                 <div class="showFullMenuBtn">
-                    <span>6 of 9</span>
-                    <button>
+                    <span>{{ showMenuArr.size }} of {{
+                        rawMenuLength }}</span>
+                    <!-- <transition name="showFullMenuBtn" -->
+                    <!-- type="animation"> -->
+                    <button @click="setFullMenu"
+                        v-show="showFullMenuBtn">
                         展開
                     </button>
+                    <!-- </transition> -->
                 </div>
             </div>
             <div class="smoothieMenu">
@@ -337,14 +353,17 @@ import type { MenuItem } from '@/api/menu/type'
 import { storeToRefs } from 'pinia';
 
 //TODO:res 導入 pinia
-//DOING  localStorage、ETag緩存 菜單摺疊
+//DOING 菜單摺疊
 /**
+ * doing 摺疊初步完成，grid沒辦法應用轉場
+ * --------------
  * !整理樣式
  * --------------
- * ? 初始化轉場
- * ? 加入購物車改為右上角icon
+ * ? 初始化轉場(數據初次返回時)
  * ? 骨架屏
- * ? mongodb 聚合管道
+ * ? localStorage、ETag緩存
+ * //? 加入購物車改為右上角icon
+ * //? mongodb 聚合管道
  * --------------
  * 菜單摺疊區塊
  * 果昔跑馬燈
@@ -395,27 +414,6 @@ let sortDirIcon = computed(() => ({
     transform: `rotateZ(${sortIconRotate.value}deg)`
 }))
 
-
-// menu btn
-
-// bot swiper
-
-let docAvatarUrl = useConcatImgPath(['doc01.png', 'doc02.png'], 'Menu');
-let docData = [
-    {
-        title: '營養分析',
-        name: '李醫師',
-        intro: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque ipsa eveniet similique tenetur laboriosam culpa maxime aspernatur incidunt aut saepe.',
-        avatarURL: docAvatarUrl[0]
-    },
-    {
-        title: '配方分析',
-        name: '張營養師',
-        intro: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Maxime velit totam, nulla dicta ea accusamus.',
-        avatarURL: docAvatarUrl[1]
-    }
-];
-
 // menu
 const menuStore = useMenuStore()
 const { saladList, smoothieList, isLoaded } = storeToRefs(menuStore);
@@ -448,6 +446,62 @@ let smoothieIngredients = computed(() => {
     });
     return arr
 })
+
+// -----menu 摺疊-----
+let showMenuArr = ref(new Set());
+let rawMenuLength = computed(() => {
+    return saladList.value?.length
+})
+let isShowFullMenu = ref(false);
+
+let showFullMenuBtn = computed(() => {
+    if (!rawMenuLength.value ||
+        showMenuArr.value.size !== rawMenuLength.value) {
+        isShowFullMenu.value = false;
+        return true
+    }
+    isShowFullMenu.value = true;
+    return false
+})
+
+for (let i = 0; i < 8; i++) {
+    showMenuArr.value.add(Number(i))
+}
+
+function setFullMenu() {
+    if (!rawMenuLength.value) {
+        console.log(rawMenuLength.value);
+        return
+    }
+    let currSize = showMenuArr.value.size;
+    let fullSize = rawMenuLength.value
+    for (let i = currSize; i < fullSize; i++) {
+        showMenuArr.value.add(i)
+    }
+}
+
+// watchEffect(() => {
+//     if()
+// })
+
+// bot swiper
+let docAvatarUrl = useConcatImgPath(['doc01.png', 'doc02.png'], 'Menu');
+let docData = [
+    {
+        title: '營養分析',
+        name: '李醫師',
+        intro: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque ipsa eveniet similique tenetur laboriosam culpa maxime aspernatur incidunt aut saepe.',
+        avatarURL: docAvatarUrl[0]
+    },
+    {
+        title: '配方分析',
+        name: '張營養師',
+        intro: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Maxime velit totam, nulla dicta ea accusamus.',
+        avatarURL: docAvatarUrl[1]
+    }
+];
+
+
 
 onBeforeMount(() => {
 })
@@ -1003,9 +1057,10 @@ onMounted(() => {
             // overflow: hidden;
 
             img {
-                @include WnH(70%);
+                @include WnH(85%);
                 filter: drop-shadow(4px 4px 4px black);
-                transition: scale 0.3s ease;
+                transition: transform 0.15s linear;
+                transform-origin: center;
             }
 
             p {
@@ -1042,7 +1097,8 @@ onMounted(() => {
 
             &:hover {
                 img {
-                    scale: 1.1;
+                    // scale: 1.1;
+                    transform: scale(1.1);
                 }
 
                 .description {
@@ -1185,29 +1241,64 @@ onMounted(() => {
         }
     }
 
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(5%);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0)
+        }
+    }
+
+    // .saladMenu-enter-active {
+    //     animation: slideUp 0.5s ease;
+    // }
+
+    // .saladMenu-leave-active {
+    //     animation: slideUp 0.5s ease reverse;
+    // }
+
+
     .saladMenu {
         margin-top: 1.5rem;
         padding: 0 1rem;
         display: grid;
         justify-content: space-between;
         grid-template-columns: 20% 20% 20% 20%;
-        // grid-template-columns: repeat(4, 1fr);
-        grid-template-rows: auto;
+        // grid-template-rows: repeat(2, 1fr);
+        grid-template-rows: 1fr 1fr 0fr 0.25fr;
         row-gap: 2rem;
+        transition: grid-template-rows 0.5s ease;
+        position: relative;
+        // transform: translateZ(0%);
 
         .item {
             @extend %menuItem;
+            // overflow: hidden;
+            // padding: 1rem;
         }
 
+        .hideItem {
+            animation: slideUp 0.5s ease;
+            // height: 0px;
+        }
+
+        // &:hover {
+        //     grid-template-rows: 1fr 1fr 1fr 0.25fr;
+        // }
+
         .showFullMenuBtn {
-            // grid-column: 2;
-            grid-column: 2 / span 2;
-            justify-self: center;
+            // @include flex-center-center;
+            @include absoluteCenterTLXY(calc(100% - 5rem), 50%);
             margin: 2rem 0;
             display: flex;
             flex-direction: column;
             gap: 1rem;
             font-variation-settings: 'wght' 500;
+            // overflow: hidden;
 
             span {
                 text-align: center
@@ -1220,7 +1311,7 @@ onMounted(() => {
                 position: relative;
                 z-index: 0;
                 overflow: hidden;
-                transition: box-shadow 0.2s ease;
+                transition: box-shadow 10s ease;
                 box-shadow: 1px 1px 3px black;
                 // background-color: black;
                 // background-clip: text;
@@ -1250,6 +1341,10 @@ onMounted(() => {
                 // }
             }
         }
+    }
+
+    .expandMenu {
+        grid-template-rows: 1fr 1fr 1fr 0.25fr;
     }
 
     .smoothieMenu {
@@ -1319,7 +1414,7 @@ onMounted(() => {
 
                     img {
                         @include WnH(100%);
-                        transition: scale 0.3s ease;
+                        transition: transform 0.15s ease;
                         // border-radius: 7rem 7rem 1rem 1rem;
                         // box-shadow: 2px 2px 3px black;
                     }
@@ -1344,7 +1439,8 @@ onMounted(() => {
 
                     &:hover {
                         img {
-                            scale: 1.05;
+                            // scale: 1.05;
+                            transform: scale(1.05);
                         }
 
                         .description {

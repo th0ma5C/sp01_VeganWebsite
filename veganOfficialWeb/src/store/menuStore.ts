@@ -45,7 +45,7 @@ export const useMenuStore = defineStore('menu', (() => {
             });
             smoothieList.value = menu[1].items;
 
-            console.log(smoothieList.value);
+            // console.log(smoothieList.value);
             isLoaded.value = true;
         } catch (error) {
             console.log(fetchMenu.name, 'failed');

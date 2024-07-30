@@ -1,4 +1,3 @@
 export default [
-    '/src/assets/img/Home/Catalog/salad.png',
-
+    '/src/assets/img/Home/Catalog/salad.svg',
 ]

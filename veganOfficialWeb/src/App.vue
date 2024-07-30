@@ -18,14 +18,15 @@
 
 <script setup lang="ts">
 import VeganHeader from './components/Header/VeganHeader.vue'
-// import VeganFooter from './components/Footer/VeganFooter.vue'
 import VeganFooter from './components/Footer/VeganFooter.vue';
 import Loader from './components/Loader/Loader.vue';
 import { onMounted, watch, toRefs, onUnmounted } from 'vue';
 import { useLoader } from '@/store/loader';
 import preloadImgList from './utils/preloadImgList';
+import { storeToRefs } from 'pinia';
 
-let { loaderActivated } = toRefs(useLoader());
+
+let { loaderActivated } = storeToRefs(useLoader());
 
 onMounted(() => {
     watch(loaderActivated, (newValue) => {
@@ -36,17 +37,18 @@ onMounted(() => {
         }
     });
 
-    preloadImgList.forEach(el => {
-        const img = new Image();
-        img.src = el;
-    });
-
-
-
+    // preloadImgList.forEach(el => {
+    //     const img = new Image();
+    //     img.src = el;
+    // });
     // window.addEventListener('scroll', function (event) {
     //     console.log('滾動距離:', window.scrollY);  // 垂直滾動距離
     //     console.log('滾動距離:', window.scrollX);  // 水平滾動距離
     // });
+})
+
+onUnmounted(() => {
+
 })
 </script>
 
