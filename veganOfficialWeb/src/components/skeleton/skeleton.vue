@@ -7,9 +7,8 @@
                 height="180" color="#00430b"></SvgIcon>
         </div>
         <div class="textSkeleton" v-show="true">
-            <h2>Lorem, ipsum.</h2>
-            <p>Lorem ipsum dolor sit
-                amet.</p>
+            <div></div>
+            <div></div>
         </div>
     </div>
 </template>
@@ -77,8 +76,11 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    user-select: none;
 
     &>* {
+        width: 160px;
+        height: 24px;
         border-radius: 0.25rem;
         background: linear-gradient(115deg,
                 #036313 40%,

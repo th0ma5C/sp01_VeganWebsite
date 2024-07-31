@@ -84,10 +84,17 @@
             </div>
         </div>
         <div class="bot">
-            <img src="@assets/icons/FooterFont.svg" alt="">
-            <!-- <span>
-                Relation-ship
-            </span> -->
+            <svg id="b" data-name="圖層 2"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 1095.78 245.4">
+                <g id="c" data-name="圖層 1">
+                    <text class="d"
+                        transform="translate(10.2 162.2)">
+                        <tspan x="0" y="0">Relation-Ship
+                        </tspan>
+                    </text>
+                </g>
+            </svg>
         </div>
     </div>
 </template>
@@ -546,16 +553,16 @@ onUnmounted(() => {
 
     .bot {
         text-align: center;
-        font-family: 'Mr Dafoe', cursive;
-        // font-size: 15rem;
-        // line-height: ;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
         overflow: hidden;
 
-        img {
+        svg {
             width: 95vw;
-            transform: translateY(8%);
+            font-family: 'Mr Dafoe', 'Noto Sans';
+            font-size: 200px;
+            fill: #FCFAF2;
+            transform: translateY(-13%);
         }
     }
 }

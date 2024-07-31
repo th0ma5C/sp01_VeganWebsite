@@ -301,6 +301,18 @@
                         </div>
                     </div>
                 </div>
+                <!-- <swiper-container class="itemWrapper"
+                    :slides-per-view="4"
+                    :space-between="16">
+                    <swiper-slide v-for="(item, index) in 8"
+                        :key="index">
+                        <Skeleton class="skeleton">
+                        </Skeleton>
+                    </swiper-slide>
+                </swiper-container> -->
+                <!-- <swiper-container> -->
+
+                <!-- </swiper-container> -->
             </div>
         </div>
         <div class="analystBot">
@@ -507,9 +519,9 @@ function setFullMenu() {
     }
 }
 
-// watchEffect(() => {
-//     if()
-// })
+// smoothie marquee
+
+
 
 // bot swiper
 let docAvatarUrl = useConcatImgPath(['doc01.png', 'doc02.png'], 'Menu');
@@ -1402,6 +1414,7 @@ onMounted(() => {
             gap: 2rem;
             position: relative;
 
+
             .item {
                 @extend %menuItem;
                 @include WnH(300px, 100%);
@@ -1412,7 +1425,7 @@ onMounted(() => {
                 padding-top: 28px;
                 border: 1px solid black;
                 border-radius: 150px 150px 1rem 1rem;
-                box-shadow: 8px -5px 0px $secondBacColor;
+                box-shadow: 8px -5px 0px $secondBacColor, 10px -7px 7px black;
                 overflow: hidden;
 
                 .btnWrapper {
@@ -1487,17 +1500,18 @@ onMounted(() => {
             z-index: 5;
 
 
-            &:deep(.wrapper) {
-                flex-direction: column;
-            }
+            // &:deep(.wrapper) {
+            //     flex-direction: column;
+            // }
 
             .skeleton {
                 width: 300px;
                 background-color: $primaryBacColor;
                 border: 1px solid black;
                 border-radius: 150px 150px 1rem 1rem;
-                box-shadow: 8px -5px 0px $secondBacColor;
+                box-shadow: 8px -5px 0px $secondBacColor, 10px -7px 7px black;
                 overflow: hidden;
+                flex-direction: column;
             }
         }
     }

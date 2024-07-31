@@ -34,6 +34,8 @@ export default defineConfig({
     }
   },
   server: {
+    // host: '192.168.0.106',
+    // port: 5173,
     open: process.env.BROWSER = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     proxy: {
       '/api': {
