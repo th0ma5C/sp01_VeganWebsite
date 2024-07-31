@@ -147,12 +147,17 @@
                     </div>
                 </div>
             </div>
+
             <div class="saladMenu"
                 :class="{ expandMenu: isShowFullMenu }">
+                <div class="skeleton" v-show="!isLoaded">
+                    <Skeleton v-for="(item, index) in 8"
+                        :key="index"></Skeleton>
+                </div>
                 <transition-group name="saladMenu"
                     type="animation">
                     <div class="item"
-                        v-for="({ name, description, fileName, price }, index) in saladList"
+                        v-for="({ name, description, fileName, price }, index) in showSaladList"
                         :key="index"
                         :class="{ hideItem: index > 7 }"
                         v-show="showMenuArr.has(index)">
@@ -211,10 +216,10 @@
                                 </svg>
                             </div>
                         </div>
-                        <div></div>
                     </div>
                 </transition-group>
-                <div class="showFullMenuBtn">
+                <div class="showFullMenuBtn"
+                    v-show="isLoaded">
                     <span>{{ showMenuArr.size }} of {{
                         rawMenuLength }}</span>
                     <!-- <transition name="showFullMenuBtn" -->
@@ -231,8 +236,14 @@
                     SMOOTHIES
                 </div>
                 <div class="itemWrapper">
+                    <div class="skeletonWrapper"
+                        v-show="!isLoaded">
+                        <Skeleton class="skeleton"
+                            v-for="(item, index) in 8"
+                            :key="index"></Skeleton>
+                    </div>
                     <div class="item"
-                        v-for="({ name, description, price, fileName }, index) in smoothieList"
+                        v-for="({ name, description, price, fileName }, index) in showSmoothieList"
                         :key="index">
                         <div class="imgWrapper">
                             <img :src="fileName" alt="商品">
@@ -338,7 +349,7 @@
                 </div>
             </div>
         </div>
-        <Skeleton v-show="!isLoaded"></Skeleton>
+        <!-- <Skeleton v-show="true"></Skeleton> -->
     </div>
 </template>
 
@@ -352,24 +363,24 @@ import { useMenuStore } from '@/store/menuStore';
 import type { MenuItem } from '@/api/menu/type'
 import { storeToRefs } from 'pinia';
 
-//TODO:res 導入 pinia
-//DOING 菜單摺疊
+//TODO:果昔跑馬燈 篩選、排序邏輯
+//DOING 骨架屏
 /**
- * doing 摺疊初步完成，grid沒辦法應用轉場
+ * doing 
+ * *骨架屏初步完成
  * --------------
  * !整理樣式
  * --------------
- * ? 初始化轉場(數據初次返回時)
- * ? 骨架屏
  * ? localStorage、ETag緩存
+ * ? grid轉場效果使用不順
  * //? 加入購物車改為右上角icon
  * //? mongodb 聚合管道
  * --------------
- * 菜單摺疊區塊
+ * 初始化轉場(數據初次返回時)
  * 果昔跑馬燈
  * 篩選、排序邏輯
  * 圖片縮放比例
- * --------------
+ * //菜單摺疊區塊
  * //篩選、排序箭頭轉場
  * //縮畫面會有白邊->max width: 100%
  * //menu改4行 WrapperMargin調整 grid space around
@@ -380,6 +391,7 @@ import { storeToRefs } from 'pinia';
  * //req 編寫 
  * //bottom 診斷圖片 用頭貼輪播
  * //圖片路徑
+ * //res 導入 pinia
  */
 
 // 排序
@@ -417,6 +429,21 @@ let sortDirIcon = computed(() => ({
 // menu
 const menuStore = useMenuStore()
 const { saladList, smoothieList, isLoaded } = storeToRefs(menuStore);
+
+let showSaladList = computed(() => {
+    if (!isLoaded.value) {
+        return Array(8).fill(saladList.value);
+    } else {
+        return saladList.value
+    }
+})
+let showSmoothieList = computed(() => {
+    if (!isLoaded.value) {
+        return Array(8).fill(smoothieList.value);
+    } else {
+        return smoothieList.value
+    }
+})
 
 let saladIngredients = computed(() => {
     if (!saladList.value) return
@@ -541,11 +568,7 @@ onMounted(() => {
     //     padding: 0 6rem;
     // }
 
-    &:deep(.wrapper) {
-        flex-direction: column;
 
-        // background-color: red;
-    }
 }
 
 %analystBtn {
@@ -1262,36 +1285,32 @@ onMounted(() => {
     // }
 
 
+
     .saladMenu {
         margin-top: 1.5rem;
         padding: 0 1rem;
         display: grid;
         justify-content: space-between;
         grid-template-columns: 20% 20% 20% 20%;
-        // grid-template-rows: repeat(2, 1fr);
         grid-template-rows: 1fr 1fr 0fr 0.25fr;
         row-gap: 2rem;
         transition: grid-template-rows 0.5s ease;
         position: relative;
-        // transform: translateZ(0%);
+
+        * {
+            // outline: 1px solid black;
+        }
 
         .item {
             @extend %menuItem;
-            // overflow: hidden;
-            // padding: 1rem;
+
         }
 
         .hideItem {
             animation: slideUp 0.5s ease;
-            // height: 0px;
         }
 
-        // &:hover {
-        //     grid-template-rows: 1fr 1fr 1fr 0.25fr;
-        // }
-
         .showFullMenuBtn {
-            // @include flex-center-center;
             @include absoluteCenterTLXY(calc(100% - 5rem), 50%);
             margin: 2rem 0;
             display: flex;
@@ -1313,32 +1332,33 @@ onMounted(() => {
                 overflow: hidden;
                 transition: box-shadow 10s ease;
                 box-shadow: 1px 1px 3px black;
-                // background-color: black;
-                // background-clip: text;
 
                 &:hover {
                     box-shadow: 1px 1px 6px black;
                 }
 
                 &:active {
-                    // transform: translateY(1px);
                     box-shadow: 0px 0px 3px black;
                 }
+            }
+        }
 
-                // &::after {
-                //     @include WnH(150%);
-                //     content: '';
-                //     position: absolute;
-                //     top: 50%;
-                //     left: calc(50%);
-                //     z-index: -1;
-                //     transform: translate(-50%, -50%) scale(1);
-                //     // background-color: $primaryBacColor;
-                //     background-color: transparent;
-                //     border-radius: 40px;
-                //     transition: transform 0.5s ease;
-                //     transform-origin: center;
-                // }
+        .skeleton {
+            background-color: $primaryBacColor;
+            padding: 0 1rem;
+            display: grid;
+            justify-content: space-between;
+            grid-template-columns: repeat(4, 20%);
+            grid-template-rows: 1fr 1fr 0.25fr;
+            row-gap: 2rem;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 5;
+
+            &:deep(.wrapper) {
+                flex-direction: column;
             }
         }
     }
@@ -1380,6 +1400,7 @@ onMounted(() => {
             display: flex;
             flex-direction: row;
             gap: 2rem;
+            position: relative;
 
             .item {
                 @extend %menuItem;
@@ -1448,6 +1469,35 @@ onMounted(() => {
                         }
                     }
                 }
+            }
+        }
+
+        .skeletonWrapper {
+            // background-color: $primaryBacColor;
+            // margin: 1.5rem 0;
+            // padding: 0 1rem;
+            padding-left: 1rem;
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 5;
+
+
+            &:deep(.wrapper) {
+                flex-direction: column;
+            }
+
+            .skeleton {
+                width: 300px;
+                background-color: $primaryBacColor;
+                border: 1px solid black;
+                border-radius: 150px 150px 1rem 1rem;
+                box-shadow: 8px -5px 0px $secondBacColor;
+                overflow: hidden;
             }
         }
     }

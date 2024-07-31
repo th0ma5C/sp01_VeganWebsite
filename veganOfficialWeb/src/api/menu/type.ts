@@ -3,12 +3,12 @@ type MenuRes = string[];
 type Ingredient = string;
 
 interface MenuItem {
-    name: string;
-    description: string;
+    name: string | null;
+    description: string | null;
     ingredients: Ingredient[];
-    price: number;
-    category: string;
-    fileName: string;
+    price: number | null;
+    category: string | null;
+    fileName: string | null;
 }
 
 interface MenuCategory {

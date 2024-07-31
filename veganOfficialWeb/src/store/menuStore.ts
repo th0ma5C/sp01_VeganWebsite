@@ -26,15 +26,31 @@ export const useMenuStore = defineStore('menu', (() => {
         }
     `
 
-    let saladList: Ref<MenuItem[] | null> = ref(null);
-    let smoothieList: Ref<MenuItem[] | null> = ref(null);
+    let saladList: Ref<MenuItem[]> = ref([
+        {
+            name: null,
+            description: null,
+            ingredients: [],
+            price: null,
+            category: null,
+            fileName: null
+        }
+    ]);
+    let smoothieList: Ref<MenuItem[]> = ref([
+        {
+            name: null,
+            description: null,
+            ingredients: [],
+            price: null,
+            category: null,
+            fileName: null
+        }
+    ]);
     let isLoaded = ref(false)
 
     let fetchMenu = async () => {
         try {
             let { data: { menu } } = await reqMenu({ query: GET_MENU });
-            // saladList.value = [...menu[0].items, ...menu[0].items];
-            // smoothieList.value = menu[1].items;
             menu[0].items.forEach((el) => {
                 el.fileName = '/api' + el.fileName + '.png'
             });
@@ -45,7 +61,7 @@ export const useMenuStore = defineStore('menu', (() => {
             });
             smoothieList.value = menu[1].items;
 
-            // console.log(smoothieList.value);
+            console.log(saladList.value);
             isLoaded.value = true;
         } catch (error) {
             console.log(fetchMenu.name, 'failed');
