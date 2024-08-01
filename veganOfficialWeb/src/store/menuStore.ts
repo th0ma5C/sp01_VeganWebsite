@@ -4,10 +4,14 @@ import type { Ref } from "vue";
 import { reqMenu } from '@/api/menu';
 import type { MenuItem } from '@/api/menu/type'
 
-// interface Menu {
-//     items: MenuItem[],
-//     name: string
-// }
+interface Menu {
+    items: MenuItem[],
+    name: string | null
+}
+
+interface ingredientsList {
+    ingredients: string[] | null
+}
 
 export const useMenuStore = defineStore('menu', (() => {
     const GET_MENU = `
@@ -25,7 +29,21 @@ export const useMenuStore = defineStore('menu', (() => {
             }
         }
     `
-
+    const GET_ingredients = `
+        query {
+            menu {
+                items {
+                    ingredients
+                }
+            }
+        }
+    `
+    let fullMenu: Ref<Menu[]> = ref([
+        {
+            items: [],
+            name: null,
+        }
+    ])
     let saladList: Ref<MenuItem[]> = ref([
         {
             name: null,
@@ -46,11 +64,17 @@ export const useMenuStore = defineStore('menu', (() => {
             fileName: null
         }
     ]);
+    let ingredientsList: Ref<ingredientsList[]> = ref([
+        { ingredients: null }
+    ])
     let isLoaded = ref(false)
 
     let fetchMenu = async () => {
         try {
             let { data: { menu } } = await reqMenu({ query: GET_MENU });
+
+            fullMenu.value = menu;
+
             menu[0].items.forEach((el) => {
                 el.fileName = '/api' + el.fileName + '.png'
             });
@@ -61,7 +85,7 @@ export const useMenuStore = defineStore('menu', (() => {
             });
             smoothieList.value = menu[1].items;
 
-            // console.log(saladList.value);
+            // console.log(data);
             isLoaded.value = true;
         } catch (error) {
             console.log(fetchMenu.name, 'failed');
@@ -69,10 +93,21 @@ export const useMenuStore = defineStore('menu', (() => {
         }
     }
 
-    if (isLoaded.value == false) {
-        // fetchMenu()
+    let fetchIngredients = async () => {
+        try {
+            let { data: { menu: [{ items: salad }, { items: smoothie }] } } = await reqMenu({ query: GET_ingredients });
+            ingredientsList.value = [...salad, ...smoothie];
+
+        } catch (error) {
+            console.log(fetchIngredients.name, 'failed');
+            console.log(error);
+        }
     }
 
+    if (isLoaded.value == false) {
+        fetchIngredients()
+        fetchMenu()
+    }
 
-    return { saladList, smoothieList, isLoaded }
+    return { fullMenu, saladList, smoothieList, ingredientsList, isLoaded }
 }))

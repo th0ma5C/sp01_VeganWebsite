@@ -82,21 +82,21 @@
                                     </div>
                                     <div class="fieldset">
                                         <ul>
-                                            <li v-for="index in 12"
+                                            <li v-for="(item, index) in ingredientSet"
                                                 :key="index"
-                                                :class="{ select: index == 1 }">
+                                                :class="{ select: index == 0 }">
                                                 <label
-                                                    :for="`salad${index}`">
+                                                    :for="`salad${item}`">
                                                     <input
-                                                        :id="`salad${index}`"
+                                                        :id="`salad${item}`"
                                                         type="checkbox">
                                                     {{
-                                                        index
+                                                        item
                                                     }}
                                                 </label>
                                                 <span>
                                                     {{
-                                                        '維生素A'
+                                                        item
                                                     }}
                                                 </span>
                                             </li>
@@ -158,9 +158,10 @@
                     type="animation">
                     <div class="item"
                         v-for="({ name, description, fileName, price }, index) in showSaladList"
-                        :key="index"
-                        :class="{ hideItem: index > 7 }"
-                        v-show="showMenuArr.has(index)">
+                        :key="index" :class="{
+                            hideItem: index > 7,
+                            onUnloaded: !isLoaded
+                        }" v-show="showMenuArr.has(index)">
                         <div class="menuImg">
                             <img :src="fileName" alt="商品">
                             <p>{{ price }}元</p>
@@ -242,7 +243,76 @@
                             v-for="(item, index) in 8"
                             :key="index"></Skeleton>
                     </div>
-                    <div class="item"
+                    <swiper-container slides-per-view="auto"
+                        ref="smoothieSwiper"
+                        grabCursor="true"
+                        :space-between="32" :loop="{
+                            delay: 0,
+                            pauseOnMouseEnter: true,
+                        }" speed="5000" :autoplay="false">
+                        <swiper-slide class="item"
+                            v-for="({ name, description, price, fileName }, index) in showSmoothieList"
+                            :key="index">
+                            <div class="imgWrapper">
+                                <img :src="fileName"
+                                    alt="商品">
+                                <div class="description">
+                                    <span>{{ description
+                                        }}</span>
+                                </div>
+                            </div>
+                            <h3>{{ name }}</h3>
+                            <p>{{ price }}元</p>
+                            <div class="ingredients">
+                                <span
+                                    v-for="(item) in smoothieIngredients![index]"
+                                    :key="item">
+                                    {{ item }}
+                                </span>
+                            </div>
+                            <div class="btnWrapper">
+                                <button
+                                    class="cart-btn">加入購物車</button>
+                                <button
+                                    class="info-btn">詳細資訊</button>
+                                <div class="btnBackground">
+                                    <svg width="260"
+                                        height="48"
+                                        viewBox="0 0 260 48"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <g id="btnBac"
+                                            filter="url('#btn')">
+                                            <rect
+                                                id="center"
+                                                y="21"
+                                                width="117.52"
+                                                height="6"
+                                                fill="currentColor" />
+                                            <path id="left"
+                                                d="M0 0H26.5417H53.0833H79.625H117.553L130 48H0V0Z"
+                                                fill="currentColor" />
+                                            <path id="right"
+                                                d="M260 48L233.458 48L206.917 48L180.375 48L142.447 48L130 4.93616e-06L260 1.5864e-05L260 48Z"
+                                                fill="currentColor" />
+                                        </g>
+                                        <filter id="btn">
+                                            <feGaussianBlur
+                                                in="SourceGraphic"
+                                                result="blur"
+                                                stdDeviation="5" />
+                                            <feColorMatrix
+                                                in="blur"
+                                                mode="matrix"
+                                                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
+                                                result="btn" />
+                                        </filter>
+                                    </svg>
+                                </div>
+                            </div>
+                        </swiper-slide>
+                    </swiper-container>
+                    <!-- <div class="item"
                         v-for="({ name, description, price, fileName }, index) in showSmoothieList"
                         :key="index">
                         <div class="imgWrapper">
@@ -299,20 +369,8 @@
                                 </svg>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
-                <!-- <swiper-container class="itemWrapper"
-                    :slides-per-view="4"
-                    :space-between="16">
-                    <swiper-slide v-for="(item, index) in 8"
-                        :key="index">
-                        <Skeleton class="skeleton">
-                        </Skeleton>
-                    </swiper-slide>
-                </swiper-container> -->
-                <!-- <swiper-container> -->
-
-                <!-- </swiper-container> -->
             </div>
         </div>
         <div class="analystBot">
@@ -375,13 +433,14 @@ import { useMenuStore } from '@/store/menuStore';
 import type { MenuItem } from '@/api/menu/type'
 import { storeToRefs } from 'pinia';
 
-//TODO:果昔跑馬燈 篩選、排序邏輯
-//DOING 骨架屏
+//DOING 篩選、排序邏輯
+//TODO 篩選 -> 點擊、搜尋選項 菜單響應 點擊關閉篩選
 /**
- * doing 
- * *骨架屏初步完成
+ * *骨架屏、果席跑馬燈初步完成
+ * *營養數據轉移
  * --------------
  * !整理樣式
+ * !RWD
  * --------------
  * ? localStorage、ETag緩存
  * ? grid轉場效果使用不順
@@ -389,9 +448,10 @@ import { storeToRefs } from 'pinia';
  * //? mongodb 聚合管道
  * --------------
  * 初始化轉場(數據初次返回時)
- * 果昔跑馬燈
  * 篩選、排序邏輯
  * 圖片縮放比例
+ * 麵包屑
+ * //果昔跑馬燈
  * //菜單摺疊區塊
  * //篩選、排序箭頭轉場
  * //縮畫面會有白邊->max width: 100%
@@ -406,7 +466,8 @@ import { storeToRefs } from 'pinia';
  * //res 導入 pinia
  */
 
-// 排序
+// -----篩選、排序樣式-----
+// 下拉顯示
 function handleShowList() {
     let isShow = ref(false);
 
@@ -420,7 +481,7 @@ function handleShowList() {
 let { isShow: filterIsShow, setShow: showFilter } = handleShowList();
 let { isShow: sortIsShow, setShow: showSort } = handleShowList();
 
-// 篩選
+// 排序箭頭、內容
 let sortList = ref(['名稱', '價格', '人氣', '日期']),
     sorting: Ref<null | string> = ref('名稱'),
     sortIconRotate = ref(0);
@@ -438,9 +499,10 @@ let sortDirIcon = computed(() => ({
     transform: `rotateZ(${sortIconRotate.value}deg)`
 }))
 
-// menu
+
+// -----menu 數據處理-----
 const menuStore = useMenuStore()
-const { saladList, smoothieList, isLoaded } = storeToRefs(menuStore);
+const { fullMenu, saladList, smoothieList, ingredientsList, isLoaded } = storeToRefs(menuStore);
 
 let showSaladList = computed(() => {
     if (!isLoaded.value) {
@@ -453,7 +515,8 @@ let showSmoothieList = computed(() => {
     if (!isLoaded.value) {
         return Array(8).fill(smoothieList.value);
     } else {
-        return smoothieList.value
+        // return smoothieList.value
+        return [...smoothieList.value, ...smoothieList.value]
     }
 })
 
@@ -483,8 +546,33 @@ let smoothieIngredients = computed(() => {
             }
         }
     });
-    return arr
+    return [...arr, ...arr]
 })
+
+// -----篩選、排序功能-----
+// 篩選
+// let ingredientSet = ref(new Set());
+// watch(isLoaded, (nVal) => {
+//     if (nVal == true) {
+//         for (let i of ingredientsList.value) {
+//             for (let j of i.ingredients!) {
+//                 ingredientSet.value.add(j)
+//             }
+//         }
+//     }
+// })
+let ingredientSet = computed(() => {
+    if (isLoaded.value) {
+        let set = new Set();
+        for (let i of ingredientsList.value) {
+            for (let j of i.ingredients!) {
+                set.add(j)
+            }
+        }
+        return set
+    }
+})
+
 
 // -----menu 摺疊-----
 let showMenuArr = ref(new Set());
@@ -519,11 +607,16 @@ function setFullMenu() {
     }
 }
 
-// smoothie marquee
+// -----smoothie marquee-----
+let smoothieSwiper = ref();
 
+watch(isLoaded, (nVal) => {
+    if (nVal == true) {
+        smoothieSwiper.value.swiper.autoplay.start();
+    }
+}, { once: true })
 
-
-// bot swiper
+// -----bot swiper-----
 let docAvatarUrl = useConcatImgPath(['doc01.png', 'doc02.png'], 'Menu');
 let docData = [
     {
@@ -541,10 +634,14 @@ let docData = [
 ];
 
 
-
+// -----生命週期-----
 onBeforeMount(() => {
 })
 onMounted(() => {
+    isLoaded.value ?
+        smoothieSwiper.value.swiper.autoplay.start() :
+        smoothieSwiper.value.swiper.autoplay.stop();
+
 })
 
 </script>
@@ -683,13 +780,13 @@ onMounted(() => {
 
 %hoverBotLine {
     &::before {
-        @include WnH(100%, 1px);
+        @include WnH(105%, 1px);
         background-color: black;
         content: '';
         position: absolute;
         left: 0;
         bottom: 0;
-        transform: translateX(-100%);
+        transform: translateX(-105%);
         transition: transform 0.3s ease;
     }
 
@@ -751,6 +848,10 @@ onMounted(() => {
                         span {
                             position: relative;
                             @extend %hoverBotLine;
+
+                            &::before {
+                                width: 102%;
+                            }
                         }
 
                         .filterArrow {
@@ -773,13 +874,34 @@ onMounted(() => {
                         @include WnH(375px, 400px);
                         background-color: $primaryBacColor;
                         // border: 1px solid black;
-                        // border-radius: 1rem;
+                        border-radius: 7px;
                         box-shadow: 1px 1px 4px black;
                         position: absolute;
                         top: 150%;
                         overflow-y: scroll;
                         z-index: 3;
                         transition: transform 0.3s ease;
+
+                        &::-webkit-scrollbar-thumb {
+                            background: #c1c1c1;
+                            border-radius: 10px !important;
+                        }
+
+                        &::-webkit-scrollbar-thumb:hover {
+                            background: #a8a8a8;
+                        }
+
+                        // &::-webkit-scrollbar-track {
+                        //     background: #e6e6e6;
+                        //     // border-left: 1px solid transparent;
+                        //     border-radius: 10px !important;
+                        // }
+
+                        &::-webkit-scrollbar {
+                            // height: 90%;
+                            width: 0.5rem;
+                            scroll-behavior: smooth !important;
+                        }
 
                         .exit {
                             cursor: pointer;
@@ -987,6 +1109,7 @@ onMounted(() => {
                         @include flex-center-center;
                         background-color: $primaryBacColor;
                         // border: 1px solid black;
+                        border-radius: 7px;
                         box-shadow: 1px 1px 4px black;
                         flex-direction: column;
                         // width: calc(63px + 0.25rem);
@@ -1322,6 +1445,10 @@ onMounted(() => {
             animation: slideUp 0.5s ease;
         }
 
+        .onUnloaded {
+            opacity: 0;
+        }
+
         .showFullMenuBtn {
             @include absoluteCenterTLXY(calc(100% - 5rem), 50%);
             margin: 2rem 0;
@@ -1406,14 +1533,26 @@ onMounted(() => {
         }
 
         .itemWrapper {
+            width: 100vw;
             margin: 1.5rem 0;
-            // padding: 0 1rem;
-            padding-left: 1rem;
+            padding: 0 1rem;
+            // padding-left: 1rem;
             display: flex;
             flex-direction: row;
             gap: 2rem;
             position: relative;
 
+            swiper-container {
+                width: 100%;
+
+                &::part(container) {
+                    overflow: visible;
+                }
+
+                &::part(wrapper) {
+                    // transition-timing-function: linear;
+                }
+            }
 
             .item {
                 @extend %menuItem;
@@ -1483,6 +1622,7 @@ onMounted(() => {
                     }
                 }
             }
+
         }
 
         .skeletonWrapper {
