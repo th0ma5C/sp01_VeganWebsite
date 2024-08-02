@@ -64,7 +64,8 @@
                                         <form action="">
                                             <input
                                                 type="text"
-                                                placeholder="篩選條件">
+                                                placeholder="篩選條件"
+                                                v-model="searchFilterWord">
                                             <SvgIcon
                                                 name="Search02"
                                                 width="18px"
@@ -74,17 +75,23 @@
                                             </SvgIcon>
                                         </form>
                                         <div>
-                                            已選取幾項
+                                            已選取
+                                            {{
+                                                currFilter.length
+                                            }}
+                                            項
                                         </div>
                                         <div>
-                                            <button>重置</button>
+                                            <button
+                                                @click="resetFilterSelect">重置</button>
                                         </div>
                                     </div>
                                     <div class="fieldset">
                                         <ul>
-                                            <li v-for="(item, index) in ingredientSet"
+                                            <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
-                                                :class="{ select: index == 0 }">
+                                                @click="setFilterSelect(index)"
+                                                :class="{ select: currFilter.includes(index) }">
                                                 <label
                                                     :for="`salad${item}`">
                                                     <input
@@ -505,80 +512,139 @@ const menuStore = useMenuStore()
 const { fullMenu, saladList, smoothieList, ingredientsList, isLoaded } = storeToRefs(menuStore);
 
 let showSaladList = computed(() => {
-    if (!isLoaded.value) {
-        return Array(8).fill(saladList.value);
-    } else {
-        return saladList.value
-    }
+    return isLoaded.value ? saladList.value : Array(8).fill(saladList.value);
+
+    // if (!isLoaded.value) {
+    //     return Array(8).fill(saladList.value);
+    // } else {
+    //     return saladList.value
+    // }
 })
 let showSmoothieList = computed(() => {
-    if (!isLoaded.value) {
-        return Array(8).fill(smoothieList.value);
-    } else {
-        // return smoothieList.value
-        return [...smoothieList.value, ...smoothieList.value]
-    }
+    return isLoaded.value ?
+        [...smoothieList.value, ...smoothieList.value] :
+        Array(8).fill(smoothieList.value);
+
+    // if (!isLoaded.value) {
+    //     return Array(8).fill(smoothieList.value);
+    // } else {
+    //     // return smoothieList.value
+    //     return [...smoothieList.value, ...smoothieList.value]
+    // }
 })
 
 let saladIngredients = computed(() => {
-    if (!saladList.value) return
-    let arr = saladList.value.map((item) => {
-        return item.ingredients
-    });
-    arr.forEach(el => {
-        if (el.length < 6) {
-            for (let i = el.length; i < 6; i++) {
-                el.push('')
-            }
+    if (!isLoaded.value || !saladList.value) return [];
+
+    return saladList.value.map((item) => {
+        let arr = [...item.ingredients];
+        while (arr.length < 6) {
+            arr.push('');
         }
-    });
-    return arr
+        return arr
+    })
+
+    // if (!saladList.value) return
+    // let arr = saladList.value.map((item) => {
+    //     return item.ingredients
+    // });
+    // arr.forEach(el => {
+    //     if (el.length < 6) {
+    //         for (let i = el.length; i < 6; i++) {
+    //             el.push('')
+    //         }
+    //     }
+    // });
+    // return arr
 })
 let smoothieIngredients = computed(() => {
-    if (!smoothieList.value) return
-    let arr = smoothieList.value.map((item) => {
-        return item.ingredients
-    });
-    arr.forEach(el => {
-        if (el.length < 6) {
-            for (let i = el.length; i < 6; i++) {
-                el.push('')
-            }
+    if (!isLoaded.value || !smoothieList.value) return [];
+
+    return smoothieList.value.map((item) => {
+        let arr = [...item.ingredients];
+        while (arr.length < 6) {
+            arr.push('');
         }
-    });
-    return [...arr, ...arr]
+        return [...arr, ...arr]
+    })
+
+    // if (!smoothieList.value) return
+    // let arr = smoothieList.value.map((item) => {
+    //     return item.ingredients
+    // });
+    // arr.forEach(el => {
+    //     if (el.length < 6) {
+    //         for (let i = el.length; i < 6; i++) {
+    //             el.push('')
+    //         }
+    //     }
+    // });
+    // return [...arr, ...arr]
 })
 
 // -----篩選、排序功能-----
-// 篩選
-// let ingredientSet = ref(new Set());
-// watch(isLoaded, (nVal) => {
-//     if (nVal == true) {
-//         for (let i of ingredientsList.value) {
-//             for (let j of i.ingredients!) {
-//                 ingredientSet.value.add(j)
-//             }
-//         }
-//     }
-// })
-let ingredientSet = computed(() => {
-    if (isLoaded.value) {
-        let set = new Set();
-        for (let i of ingredientsList.value) {
-            for (let j of i.ingredients!) {
-                set.add(j)
-            }
+// TODO 篩選搜尋(改icon?) menu響應 關閉篩選
+// DOING 沒找到顯示 改icon
+// 篩選資料
+let ingredientSet = computed<Set<string>>(() => {
+    if (!isLoaded.value) return new Set();
+
+    let set = new Set<string>();
+    for (let i of ingredientsList.value) {
+        for (let j of i.ingredients!) {
+            set.add(j)
         }
-        return set
     }
+    return set
 })
+
+let ingredientList = computed(() => {
+    return Array.from(ingredientSet.value)
+})
+
+// 篩選選中
+let currFilter: Ref<number[]> = ref([]);
+function setFilterSelect(n: number) {
+    if (!currFilter.value.includes(n)) {
+        currFilter.value.push(n)
+        return
+    }
+    currFilter.value = currFilter.value.filter((item) => {
+        return item !== n
+    })
+}
+
+// 篩選搜尋
+let searchFilterWord = ref('');
+let showIngredientList = computed(() => {
+    const word = searchFilterWord.value.trim();
+
+    if (word == '') {
+        console.log('空');
+        return ingredientList.value
+    }
+
+    return ingredientList.value.filter((item) => {
+        return item.indexOf(word) !== -1;
+    })
+})
+
+watch(searchFilterWord, (nVal) => {
+    console.log(showIngredientList.value);
+})
+
+
+
+// 篩選重置
+function resetFilterSelect() {
+    searchFilterWord.value = '';
+    currFilter.value = [];
+}
 
 
 // -----menu 摺疊-----
 let showMenuArr = ref(new Set());
-let rawMenuLength = computed(() => {
-    return saladList.value?.length
-})
+let rawMenuLength = computed(() => saladList.value?.length || 0);
 let isShowFullMenu = ref(false);
 
 let showFullMenuBtn = computed(() => {
@@ -596,12 +662,11 @@ for (let i = 0; i < 8; i++) {
 }
 
 function setFullMenu() {
-    if (!rawMenuLength.value) {
-        console.log(rawMenuLength.value);
-        return
-    }
+    if (!rawMenuLength.value) return;
+
     let currSize = showMenuArr.value.size;
-    let fullSize = rawMenuLength.value
+    let fullSize = rawMenuLength.value;
+
     for (let i = currSize; i < fullSize; i++) {
         showMenuArr.value.add(i)
     }
@@ -965,6 +1030,21 @@ onMounted(() => {
                                     top: 50%;
                                     right: 8px;
                                     transform: translateY(-50%);
+                                }
+                            }
+
+                            button {
+                                @include WnH(45px, 24px);
+                                border: 1px solid rgb(0, 0, 0, 0.5);
+                                border-radius: 0.5rem;
+                                transition: border-color 0.3s ease;
+
+                                &:hover {
+                                    border-color: black;
+                                }
+
+                                &:active {
+                                    transform: translateY(1px);
                                 }
                             }
 
