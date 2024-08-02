@@ -560,13 +560,14 @@ let saladIngredients = computed(() => {
 let smoothieIngredients = computed(() => {
     if (!isLoaded.value || !smoothieList.value) return [];
 
-    return smoothieList.value.map((item) => {
+    let list = smoothieList.value.map((item) => {
         let arr = [...item.ingredients];
         while (arr.length < 6) {
             arr.push('');
         }
-        return [...arr, ...arr]
+        return arr
     })
+    return [...list, ...list]
 
     // if (!smoothieList.value) return
     // let arr = smoothieList.value.map((item) => {
@@ -617,20 +618,29 @@ function setFilterSelect(n: number) {
 // 篩選搜尋
 let searchFilterWord = ref('');
 let showIngredientList = computed(() => {
-    const word = searchFilterWord.value.trim();
+    const word = searchFilterWord.value.trim().toLowerCase();
 
     if (word == '') {
-        console.log('空');
+        // console.log('空');
         return ingredientList.value
     }
 
     return ingredientList.value.filter((item) => {
-        return item.indexOf(word) !== -1;
+        return item.toLowerCase().indexOf(word) !== -1;
     })
 })
 
+
 watch(searchFilterWord, (nVal) => {
-    console.log(showIngredientList.value);
+    let foo = showSaladList.value.filter((item) => {
+        for (let i of showIngredientList.value) {
+            if (item.ingredients.some(el => el == i)) {
+                return true
+            }
+        }
+        return false
+    })
+    console.log(foo);
 })
 
 
