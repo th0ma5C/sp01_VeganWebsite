@@ -9,6 +9,7 @@ interface MenuItem {
     price: number | null;
     category: string | null;
     fileName: string | null;
+    [key: string]: any;
 }
 
 interface MenuCategory {

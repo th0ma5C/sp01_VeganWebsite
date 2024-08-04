@@ -3,6 +3,7 @@ import { ref, readonly, watch, computed } from "vue";
 import type { Ref } from "vue";
 import { reqMenu } from '@/api/menu';
 import type { MenuItem } from '@/api/menu/type'
+import { nanoid } from "nanoid";
 
 interface Menu {
     items: MenuItem[],
@@ -76,7 +77,7 @@ export const useMenuStore = defineStore('menu', (() => {
             fullMenu.value = menu;
 
             menu[0].items.forEach((el) => {
-                el.fileName = '/api' + el.fileName + '.png'
+                el.fileName = '/api' + el.fileName + '.png';
             });
             saladList.value = [...menu[0].items, ...menu[0].items];
 
