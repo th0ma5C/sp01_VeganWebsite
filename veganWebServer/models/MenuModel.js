@@ -19,7 +19,9 @@ const menuSchema = new Schema({
             ingredients: [String],
             price: Number,
             category: String,
-            fileName: String
+            fileName: String,
+            date: String,
+            rating: Number
         }
     ]
 }, { collection: 'menu' });

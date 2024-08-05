@@ -9,7 +9,9 @@ const MenuItemType = new GraphQLObjectType({
         ingredients: { type: new GraphQLList(GraphQLString) },
         price: { type: GraphQLFloat },
         category: { type: GraphQLString },
-        fileName: { type: GraphQLString }
+        fileName: { type: GraphQLString },
+        rating: { type: GraphQLFloat },
+        date: { type: GraphQLString }
     }
 });
 
@@ -50,6 +52,8 @@ const QueryType = new GraphQLObjectType({
                                         ingredients: "$$item.ingredients",
                                         price: "$$item.price",
                                         category: "$$item.category",
+                                        date: "$$item.date",
+                                        rating: "$$item.rating",
                                         fileName: { $concat: ["/images/menu/", "$$item.category", "/", "$$item.fileName"] }
                                     }
                                 }

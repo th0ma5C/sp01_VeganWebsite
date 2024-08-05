@@ -9,6 +9,8 @@ interface MenuItem {
     price: number | null;
     category: string | null;
     fileName: string | null;
+    rating: number | null;
+    date: string | null;
     [key: string]: any;
 }
 

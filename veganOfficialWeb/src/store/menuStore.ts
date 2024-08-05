@@ -26,6 +26,8 @@ export const useMenuStore = defineStore('menu', (() => {
                     price
                     category
                     fileName
+                    rating
+                    date
                 }
             }
         }
@@ -52,7 +54,9 @@ export const useMenuStore = defineStore('menu', (() => {
             ingredients: [],
             price: null,
             category: null,
-            fileName: null
+            fileName: null,
+            rating: null,
+            date: null
         }
     ]);
     let smoothieList: Ref<MenuItem[]> = ref([
@@ -62,7 +66,9 @@ export const useMenuStore = defineStore('menu', (() => {
             ingredients: [],
             price: null,
             category: null,
-            fileName: null
+            fileName: null,
+            rating: null,
+            date: null
         }
     ]);
     let ingredientsList: Ref<ingredientsList[]> = ref([

@@ -14,7 +14,9 @@
                 ],
                 "price": 149,
                 "category": "salad",
-                "fileName": "sunrise"
+                "fileName": "sunrise",
+                "date": "2023/10/12",
+                "rating": 5
             },
             {
                 "name": "彩虹脆樂沙拉",
@@ -28,7 +30,9 @@
                 ],
                 "price": 199,
                 "category": "salad",
-                "fileName": "rainbow"
+                "fileName": "rainbow",
+                "date": "2023/12/08",
+                "rating": 5
             },
             {
                 "name": "清爽青翠沙拉",
@@ -42,7 +46,9 @@
                 ],
                 "price": 99,
                 "category": "salad",
-                "fileName": "crisp"
+                "fileName": "crisp",
+                "date": "2024/05/06",
+                "rating": 4
             },
             {
                 "name": "地中海陽光沙拉",
@@ -57,7 +63,9 @@
                 ],
                 "price": 219,
                 "category": "salad",
-                "fileName": "sunshine"
+                "fileName": "sunshine",
+                "date": "2024/03/23",
+                "rating": 4
             },
             {
                 "name": "純淨蔬色沙拉",
@@ -71,7 +79,9 @@
                 ],
                 "price": 119,
                 "category": "salad",
-                "fileName": "pureGreen"
+                "fileName": "pureGreen",
+                "date": "2024/04/11",
+                "rating": 3
             }
         ]
     },
@@ -90,7 +100,9 @@
                 ],
                 "price": 95,
                 "category": "smoothies",
-                "fileName": "vegetable"
+                "fileName": "vegetable",
+                "date": "2023/10/04",
+                "rating": 3
             },
             {
                 "name": "莓果活力果昔",
@@ -104,7 +116,9 @@
                 ],
                 "price": 180,
                 "category": "smoothies",
-                "fileName": "berry"
+                "fileName": "berry",
+                "date": "2024/03/17",
+                "rating": 4
             },
             {
                 "name": "熱帶清新果昔",
@@ -118,7 +132,9 @@
                 ],
                 "price": 120,
                 "category": "smoothies",
-                "fileName": "mango"
+                "fileName": "mango",
+                "date": "2023/09/22",
+                "rating": 5
             },
             {
                 "name": "香蕉花生果昔",
@@ -132,7 +148,9 @@
                 ],
                 "price": 170,
                 "category": "smoothies",
-                "fileName": "peanut"
+                "fileName": "peanut",
+                "date": "2023/08/24",
+                "rating": 4
             },
             {
                 "name": "巧克力香蕉果昔",
@@ -146,7 +164,9 @@
                 ],
                 "price": 170,
                 "category": "smoothies",
-                "fileName": "chocolate"
+                "fileName": "chocolate",
+                "date": "2024/01/16",
+                "rating": 4
             }
         ]
     }

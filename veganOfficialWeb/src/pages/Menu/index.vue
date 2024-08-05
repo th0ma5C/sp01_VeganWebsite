@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="container" ref="main" @click="closePop">
         <div class="analystTop">
             <div class="imgWrapper">
                 <swiper-container effect="fade" speed="700"
@@ -36,7 +36,7 @@
                     SALADS and SIDES
                 </div>
                 <div class="filterWrapper">
-                    <div class="filter">
+                    <div class="filter" @click.stop>
                         <span>篩選：</span>
                         <div class="details">
                             <div class="summary"
@@ -54,18 +54,19 @@
                             </div>
                             <transition name="filter">
                                 <div class="listWrapper"
-                                    v-show="filterIsShow">
+                                    v-show="true">
                                     <SvgIcon name="cancel"
                                         width="20"
                                         height="20"
-                                        class="exit">
+                                        class="exit"
+                                        @click="showFilter">
                                     </SvgIcon>
                                     <div class="listHeader">
                                         <form action="">
                                             <input
                                                 type="text"
                                                 placeholder="篩選條件"
-                                                v-model="searchFilterWord">
+                                                v-model.trim="searchFilterWord">
                                             <SvgIcon
                                                 name="Search02"
                                                 width="18px"
@@ -89,11 +90,11 @@
                                     <div class="fieldset">
                                         <ul>
                                             <li class="selectAll"
-                                                v-show="searchFilterWord.trim() !== '' && showIngredientList.length !== 0"
+                                                v-show="searchFilterWord !== '' && showIngredientList.length !== 0"
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                }}</span>
+                                                    }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -129,7 +130,7 @@
                     <!-- <div>
                         選中
                     </div> -->
-                    <div class="sort">
+                    <div class="sort" @click.stop>
                         <span>排序：</span>
                         <div class="sortWrapper">
                             <div class="header"
@@ -137,7 +138,7 @@
                                 <span>{{ sorting }}</span>
                                 <SvgIcon name="sortDown"
                                     width='16' height="16"
-                                    color="#0d731e"
+                                    :color="sorting == '精選' ? '#FCFAF2' : '#0d731e'"
                                     :style="sortDirIcon">
                                 </SvgIcon>
                                 <SvgIcon
@@ -149,6 +150,7 @@
                             </div>
                             <transition name="sort">
                                 <ul class="sortList"
+                                    @click="showSort"
                                     v-show="sortIsShow">
                                     <li v-for="(item, index) in sortList"
                                         :key="index"
@@ -502,23 +504,14 @@ function handleShowList() {
 let { isShow: filterIsShow, setShow: showFilter } = handleShowList();
 let { isShow: sortIsShow, setShow: showSort } = handleShowList();
 
-// 排序箭頭、內容
-let sortList = ref(['名稱', '價格', '人氣', '日期']),
-    sorting: Ref<null | string> = ref('名稱'),
-    sortIconRotate = ref(0);
-
-function setSortDirection(n: string) {
-    if (sorting.value == n) {
-        sortIconRotate.value = sortIconRotate.value == 0 ? -180 : 0;
-        return
+// 點擊空白關閉 點擊排序後關閉
+function closePop() {
+    if (filterIsShow.value || sortIsShow.value) {
+        filterIsShow.value = false;
+        sortIsShow.value = false;
     }
-    sorting.value = n;
-    sortIconRotate.value = 0;
 }
 
-let sortDirIcon = computed(() => ({
-    transform: `rotateZ(${sortIconRotate.value}deg)`
-}))
 
 
 // -----menu 數據處理-----
@@ -527,24 +520,11 @@ const { fullMenu, saladList, smoothieList, ingredientsList, isLoaded } = storeTo
 
 let showSaladList: ComputedRef<MenuItem[]> = computed(() => {
     return isLoaded.value ? saladList.value : Array(8).fill(saladList.value);
-
-    // if (!isLoaded.value) {
-    //     return Array(8).fill(saladList.value);
-    // } else {
-    //     return saladList.value
-    // }
 })
 let showSmoothieList: ComputedRef<MenuItem[]> = computed(() => {
     return isLoaded.value ?
         [...smoothieList.value, ...smoothieList.value] :
         Array(8).fill(smoothieList.value);
-
-    // if (!isLoaded.value) {
-    //     return Array(8).fill(smoothieList.value);
-    // } else {
-    //     // return smoothieList.value
-    //     return [...smoothieList.value, ...smoothieList.value]
-    // }
 })
 
 let saladIngredients = computed(() => {
@@ -557,19 +537,6 @@ let saladIngredients = computed(() => {
         }
         return arr
     })
-
-    // if (!saladList.value) return
-    // let arr = saladList.value.map((item) => {
-    //     return item.ingredients
-    // });
-    // arr.forEach(el => {
-    //     if (el.length < 6) {
-    //         for (let i = el.length; i < 6; i++) {
-    //             el.push('')
-    //         }
-    //     }
-    // });
-    // return arr
 })
 let smoothieIngredients = computed(() => {
     if (!isLoaded.value || !smoothieList.value) return [];
@@ -582,24 +549,50 @@ let smoothieIngredients = computed(() => {
         return arr
     })
     return [...list, ...list]
-
-    // if (!smoothieList.value) return
-    // let arr = smoothieList.value.map((item) => {
-    //     return item.ingredients
-    // });
-    // arr.forEach(el => {
-    //     if (el.length < 6) {
-    //         for (let i = el.length; i < 6; i++) {
-    //             el.push('')
-    //         }
-    //     }
-    // });
-    // return [...arr, ...arr]
 })
 
 // -----篩選、排序功能-----
-// TODO menu響應 關閉篩選 篩選表頭fixed 展開按鈕 排序
-// DOING 
+// TODO menu響應 篩選表頭fixed 展開按鈕
+// DOING 響應動畫
+
+// 排序
+// 排序箭頭、內容
+let sortList = ref(['精選', '名稱', '價格', '人氣', '日期']),
+    sorting: Ref<null | string> = ref('精選'),
+    sortOrder = ref(0); //0 降序 -180升序
+
+function setSortDirection(n: string) {
+    if (sorting.value == n) {
+        sortOrder.value = sortOrder.value == 0 ? -180 : 0;
+        return
+    }
+    sorting.value = n;
+    sortOrder.value = 0;
+}
+
+let sortDirIcon = computed(() => ({
+    transform: `rotateZ(${sortOrder.value}deg)`
+}))
+
+// 排序功能
+type CompareFn<T> = (a: T, b: T) => number;
+
+const compareFn = <T>(key: (item: T) => any, order: number): CompareFn<T> => {
+    let isDESC = order !== 0;
+    return (a: T, b: T): number => {
+        const aValue = key(a);
+        const bValue = key(b);
+
+        if (aValue < bValue) {
+            return isDESC ? -1 : 1;
+        } else if (aValue > bValue) {
+            return isDESC ? 1 : -1;
+        } else {
+            return 0;
+        }
+    }
+}
+
 // 篩選資料
 let ingredientSet = computed<Set<string>>(() => {
     if (!isLoaded.value) return new Set();
@@ -644,7 +637,7 @@ function selectAll() {
 // 篩選搜尋
 let searchFilterWord = ref('');
 let showIngredientList = computed(() => {
-    const word = searchFilterWord.value.trim().toLowerCase();
+    const word = searchFilterWord.value.toLowerCase();
 
     if (word == '') {
         // console.log('空');
@@ -660,8 +653,11 @@ let regroup = computed(() => ({
     transition: ''
 }))
 
+
+
 let showMenu = computed(() => {
 
+    // 篩選
     let salad = (() => {
         if (!isLoaded.value) return Array(8).fill(saladList.value);
 
@@ -683,16 +679,46 @@ let showMenu = computed(() => {
             }
             return false
         })
-        list = list.map((item) => {
+        list = list.map((item, index) => {
             return {
                 ...item,
-                id: nanoid(4)
+                id: nanoid(4),
+                index
             }
         })
-        console.log(list);
         return list
     })();
 
+    // 排序
+    switch (sorting.value) {
+        case '名稱':
+            sortOrder.value == 0 ?
+                salad.sort(compareFn(item => item.name, 0)) :
+                salad.sort(compareFn(item => item.name, 1))
+
+            break;
+        case '價格':
+            sortOrder.value == 0 ?
+                salad.sort(compareFn(item => item.price, 0)) :
+                salad.sort(compareFn(item => item.price, 1))
+
+            break;
+        case '人氣':
+            sortOrder.value == 0 ?
+                salad.sort(compareFn(item => item.rating, 0)) :
+                salad.sort(compareFn(item => item.rating, 1))
+
+            break;
+        case '日期':
+            sortOrder.value == 0 ?
+                salad.sort(compareFn(item => item.date, 0)) :
+                salad.sort(compareFn(item => item.date, 1))
+
+            break;
+        default:
+            salad.sort(compareFn(item => item.index, 1))
+            break;
+    }
 
     let smoothies = (() => {
         if (!isLoaded.value) return Array(10).fill(smoothieList.value);
@@ -710,8 +736,47 @@ let showMenu = computed(() => {
             }
             return false
         })
+
+        list = list.map((item, index) => {
+            return {
+                ...item,
+                id: nanoid(4),
+                index
+            }
+        })
+
         return list
     })()
+
+    switch (sorting.value) {
+        case '名稱':
+            sortOrder.value == 0 ?
+                smoothies.sort(compareFn(item => item.name, 0)) :
+                smoothies.sort(compareFn(item => item.name, 1))
+
+            break;
+        case '價格':
+            sortOrder.value == 0 ?
+                smoothies.sort(compareFn(item => item.price, 0)) :
+                smoothies.sort(compareFn(item => item.price, 1))
+
+            break;
+        case '人氣':
+            sortOrder.value == 0 ?
+                smoothies.sort(compareFn(item => item.rating, 0)) :
+                smoothies.sort(compareFn(item => item.rating, 1))
+
+            break;
+        case '日期':
+            sortOrder.value == 0 ?
+                smoothies.sort(compareFn(item => item.date, 0)) :
+                smoothies.sort(compareFn(item => item.date, 1))
+
+            break;
+        default:
+            smoothies.sort(compareFn(item => item.index, 1))
+            break;
+    }
 
     return {
         salad,
@@ -720,14 +785,11 @@ let showMenu = computed(() => {
 })
 
 
-
-
 // 篩選重置
 function resetFilterSelect() {
     searchFilterWord.value = '';
     selectIngredient.value = [];
 }
-
 
 // -----menu 摺疊-----
 let showMenuArr = ref(new Set());
@@ -994,6 +1056,7 @@ onMounted(() => {
 
                 .details {
                     margin-left: 1rem;
+                    position: relative;
 
                     .summary {
                         cursor: pointer;
@@ -1042,6 +1105,7 @@ onMounted(() => {
                         transition: transform 0.3s ease;
 
                         &::-webkit-scrollbar-thumb {
+                            // background: transparent;
                             background: #c1c1c1;
                             border-radius: 10px !important;
                         }
@@ -1063,11 +1127,12 @@ onMounted(() => {
                         }
 
                         .exit {
+                            width: 20px;
                             cursor: pointer;
-                            position: absolute;
+                            position: sticky;
                             z-index: 1;
                             top: 5px;
-                            right: 5px;
+                            left: calc(100% - 30px);
                             color: gray;
 
                             &:hover {
@@ -1076,15 +1141,25 @@ onMounted(() => {
                             }
                         }
 
+                        /**
+                        *!向下滾動header背景有空隙，因為X寬度
+                        */
+
                         .listHeader {
+                            width: 100%;
                             display: flex;
-                            margin: 8px 14px 0 14px;
+                            // margin: 8px 14px 0 14px;
                             padding: 1rem 0.5rem;
                             justify-content: space-between;
                             align-items: center;
                             // box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.552);
-                            border-radius: calc(1rem - 12px);
-                            position: relative;
+                            // border-radius: calc(1rem - 12px);
+                            position: sticky;
+                            top: 13px;
+                            background-color: $primaryBacColor;
+                            z-index: 1;
+                            // outline: 1px solid black;
+                            // border-bottom: 1px solid rgba(0, 0, 0, 0.25);
 
                             form {
                                 position: relative;
@@ -1147,7 +1222,7 @@ onMounted(() => {
                                 content: '';
                                 position: absolute;
                                 left: 0;
-                                bottom: 0;
+                                bottom: 0px;
                                 background-color: rgba(0, 0, 0, 0.25);
                             }
                         }
@@ -1225,13 +1300,21 @@ onMounted(() => {
                             }
                         }
 
-                        &::before {
+                        // &::before {
+                        //     @include WnH(100%, 77px);
+                        //     content: '';
+                        //     display: block;
+                        //     // border-bottom: 1px solid black;
+                        // }
+
+                        &::after {
                             @include WnH(30%);
                             content: '';
                             position: absolute;
                             top: -6%;
                             left: 0;
                             z-index: -1;
+
                         }
                     }
 
