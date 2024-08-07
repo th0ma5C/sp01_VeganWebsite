@@ -94,7 +94,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                }}</span>
+                                                    }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -417,6 +417,7 @@ import { nanoid } from 'nanoid';
  * 篩選、排序邏輯
  * 圖片縮放比例
  * 麵包屑
+ * showMenu 拆分
  * //果昔跑馬燈
  * //菜單摺疊區塊
  * //篩選、排序箭頭轉場

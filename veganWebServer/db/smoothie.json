@@ -11,7 +11,9 @@
         ],
         "price": 95,
         "category": "smoothies",
-        "fileName": "vegetable"
+        "fileName": "vegetable",
+        "date": "2024/05/12",
+        "rating": 5
     },
     {
         "name": "莓果活力果昔",
@@ -25,7 +27,9 @@
         ],
         "price": 180,
         "category": "smoothies",
-        "fileName": "berry"
+        "fileName": "berry",
+        "date": "2024/07/15",
+        "rating": 3
     },
     {
         "name": "熱帶清新果昔",
@@ -39,7 +43,9 @@
         ],
         "price": 120,
         "category": "smoothies",
-        "fileName": "mango"
+        "fileName": "mango",
+        "date": "2024/07/13",
+        "rating": 4
     },
     {
         "name": "香蕉花生果昔",
@@ -53,7 +59,9 @@
         ],
         "price": 170,
         "category": "smoothies",
-        "fileName": "peanut"
+        "fileName": "peanut",
+        "date": "2023/11/01",
+        "rating": 4
     },
     {
         "name": "巧克力香蕉果昔",
@@ -67,6 +75,88 @@
         ],
         "price": 170,
         "category": "smoothies",
-        "fileName": "chocolate"
+        "fileName": "chocolate",
+        "date": "2024/03/09",
+        "rating": 4
+    },
+    {
+        "name": "陽光柳橙果昔",
+        "description": "融合了新鮮的橙子、香蕉和希臘優格，帶來豐富的口感和營養。這道果昔不僅美味，還富含多種維生素和礦物質，有助於增強免疫力和促進消化。",
+        "ingredients": [
+            "鉀",
+            "維生素B6",
+            "維生素C",
+            "鈣",
+            "膳食纖維"
+        ],
+        "price": 110,
+        "category": "smoothies",
+        "fileName": "orange",
+        "date": "2023/11/08",
+        "rating": 4
+    },
+    {
+        "name": "椰子鳳梨果昔",
+        "description": "融合了新鮮的椰子水、鳳梨和香蕉，帶來豐富的口感和營養。這道果昔不僅美味，還富含多種維生素和礦物質，有助於增強免疫力和促進消化。",
+        "ingredients": [
+            "鉀",
+            "維生素C",
+            "鈣",
+            "鎂",
+            "膳食纖維"
+        ],
+        "price": 160,
+        "category": "smoothies",
+        "fileName": "pineapple",
+        "date": "2023/09/16",
+        "rating": 3
+    },
+    {
+        "name": "藍莓香蕉果昔",
+        "description": "融合了新鮮的藍莓、香蕉和希臘優格，帶來豐富的口感和營養。這道果昔不僅美味，還富含多種維生素和礦物質，有助於增強免疫力和促進消化。",
+        "ingredients": [
+            "維生素C",
+            "高纖維",
+            "維生素K",
+            "鉀",
+            "鎂"
+        ],
+        "price": 140,
+        "category": "smoothies",
+        "fileName": "banana",
+        "date": "2024/02/22",
+        "rating": 5
+    },
+    {
+        "name": "草莓燕麥果昔",
+        "description": "新鮮的草莓、香蕉和燕麥，帶來豐富的口感和營養。這道果昔不僅美味，還富含多種維生素和礦物質，有助於增強免疫力和促進消化。",
+        "ingredients": [
+            "維生素C",
+            "高纖維",
+            "維生素E",
+            "鉀",
+            "鎂"
+        ],
+        "price": 160,
+        "category": "smoothies",
+        "fileName": "oat",
+        "date": "2024/06/24",
+        "rating": 5
+    },
+    {
+        "name": "芒果奇異果果昔",
+        "description": "新鮮的芒果、奇異果和香蕉，帶來豐富的口感和營養。這道果昔不僅美味，還富含多種維生素和礦物質，有助於增強免疫力和促進消化。",
+        "ingredients": [
+            "抗氧化物",
+            "高纖維",
+            "鉀",
+            "維生素A",
+            "葉酸"
+        ],
+        "price": 170,
+        "category": "smoothies",
+        "fileName": "kiwi",
+        "date": "2024/02/04",
+        "rating": 3
     }
 ]
