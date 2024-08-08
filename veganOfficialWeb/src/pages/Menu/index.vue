@@ -98,7 +98,7 @@
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
-                                                @click="handleFilterSelect(item); updateSlide()"
+                                                @click="handleFilterSelect(item);"
                                                 :class="{ select: selectIngredient.includes(item) }">
                                                 <label
                                                     :for="`salad${item}`">
@@ -164,7 +164,7 @@
                             </transition>
                         </div>
                         <div class="sortCount">
-                            共{{ showMenu.salad.length }}項
+                            共{{ showSalad.length }}項
                         </div>
                     </div>
                 </div>
@@ -176,87 +176,82 @@
                     <Skeleton v-for="(item, index) in 8"
                         :key="index"></Skeleton>
                 </div>
-                <transition-group name="saladMenu">
-                    <div class="item"
-                        v-for="({ name, description, fileName, price, id }, index) in showMenu.salad"
-                        :key="id ? id : index" :class="{
-                            hideItem: index > 7,
-                            onUnloaded: !isLoaded,
-                        }" :style="regroup"
-                        v-show="index < showMenuLimit">
-                        <div class="menuImg">
-                            <img :src="fileName!" alt="商品">
-                            <p>{{ price }}元</p>
-                            <div class="description">
-                                <span>{{ description
-                                    }}</span>
-                            </div>
-                        </div>
-                        <h3>{{ name }}</h3>
-                        <!-- <p>價格</p> -->
-                        <div class="ingredients">
-                            <span
-                                v-for="(item) in saladIngredients![index]"
-                                :key="item">
-                                {{ item }}
-                            </span>
-                        </div>
-                        <div class="btnWrapper">
-                            <button
-                                class="cart-btn">加入購物車</button>
-                            <button
-                                class="info-btn">詳細資訊</button>
-                            <div class="btnBackground">
-                                <svg width="260" height="48"
-                                    viewBox="0 0 260 48"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <g id="btnBac"
-                                        filter="url('#btn')">
-                                        <rect id="center"
-                                            y="21"
-                                            width="117.52"
-                                            height="6"
-                                            fill="currentColor" />
-                                        <path id="left"
-                                            d="M0 0H26.5417H53.0833H79.625H117.553L130 48H0V0Z"
-                                            fill="currentColor" />
-                                        <path id="right"
-                                            d="M260 48L233.458 48L206.917 48L180.375 48L142.447 48L130 4.93616e-06L260 1.5864e-05L260 48Z"
-                                            fill="currentColor" />
-                                    </g>
-                                    <filter id="btn">
-                                        <feGaussianBlur
-                                            in="SourceGraphic"
-                                            result="blur"
-                                            stdDeviation="5" />
-                                        <feColorMatrix
-                                            in="blur"
-                                            mode="matrix"
-                                            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
-                                            result="btn" />
-                                    </filter>
-                                </svg>
-                            </div>
+                <div class="item"
+                    v-for="({ name, description, fileName, price, id }, index) in showSalad"
+                    :key="id ? id : index" :class="{
+                        hideItem: index > 7,
+                        onUnloaded: !isLoaded,
+                    }" :style="regroup"
+                    v-show="index < showMenuLimit">
+                    <div class="menuImg">
+                        <img :src="fileName!" alt="商品">
+                        <p>{{ price }}元</p>
+                        <div class="description">
+                            <span>{{ description
+                                }}</span>
                         </div>
                     </div>
-                </transition-group>
-                <div class="showFullMenuBtn"
-                    v-show="isLoaded">
-                    <span>{{ currShow }} of {{
-                        saladList.length }}</span>
-                    <!-- <transition name="showFullMenuBtn" -->
-                    <!-- type="animation"> -->
-                    <button @click="setFullMenu"
-                        v-show="isShowBtn">
-                        展開
-                    </button>
-                    <!-- </transition> -->
+                    <h3>{{ name }}</h3>
+                    <!-- <p>價格</p> -->
+                    <div class="ingredients">
+                        <span
+                            v-for="(item) in saladIngredients![index]"
+                            :key="item">
+                            {{ item }}
+                        </span>
+                    </div>
+                    <div class="btnWrapper">
+                        <button
+                            class="cart-btn">加入購物車</button>
+                        <button
+                            class="info-btn">詳細資訊</button>
+                        <div class="btnBackground">
+                            <svg width="260" height="48"
+                                viewBox="0 0 260 48"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <g id="btnBac"
+                                    filter="url('#btn')">
+                                    <rect id="center" y="21"
+                                        width="117.52"
+                                        height="6"
+                                        fill="currentColor" />
+                                    <path id="left"
+                                        d="M0 0H26.5417H53.0833H79.625H117.553L130 48H0V0Z"
+                                        fill="currentColor" />
+                                    <path id="right"
+                                        d="M260 48L233.458 48L206.917 48L180.375 48L142.447 48L130 4.93616e-06L260 1.5864e-05L260 48Z"
+                                        fill="currentColor" />
+                                </g>
+                                <filter id="btn">
+                                    <feGaussianBlur
+                                        in="SourceGraphic"
+                                        result="blur"
+                                        stdDeviation="5" />
+                                    <feColorMatrix in="blur"
+                                        mode="matrix"
+                                        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
+                                        result="btn" />
+                                </filter>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            <div class="showFullMenuBtn" v-show="isLoaded">
+                <span>{{ currShow }} of {{
+                    saladList.length }}</span>
+                <!-- <transition name="showFullMenuBtn" -->
+                <!-- type="animation"> -->
+                <button @click="setFullMenu"
+                    v-show="isShowBtn">
+                    展開
+                </button>
+                <!-- </transition> -->
             </div>
             <div class="smoothieMenu">
                 <div class="title">
-                    SMOOTHIES
+                    SMOOTHIES <span></span>
                 </div>
                 <div class="itemWrapper">
                     <div class="skeletonWrapper"
@@ -265,16 +260,15 @@
                             v-for="(item, index) in 8"
                             :key="index"></Skeleton>
                     </div>
-                    <swiper-container centeredSlides="true"
-                        slides-per-view="auto"
+                    <swiper-container slides-per-view="auto"
                         ref="smoothieSwiper"
                         grabCursor="true"
                         :space-between="32" :loop="{
                             delay: 0,
                             pauseOnMouseEnter: true,
-                        }" speed="5000" :autoplay="false">
+                        }" speed="5000" :autoplay="true">
                         <swiper-slide class="item"
-                            v-for="({ name, description, price, fileName }, index) in showMenu.smoothies"
+                            v-for="({ name, description, price, fileName, id }, index) in showSmoothies"
                             :key="index">
                             <div class="imgWrapper">
                                 <img :src="fileName!"
@@ -398,8 +392,8 @@ import type { MenuItem } from '@/api/menu/type'
 import { storeToRefs } from 'pinia';
 import { nanoid } from 'nanoid';
 
-//DOING 篩選、排序邏輯
-//TODO 篩選 -> 點擊、搜尋選項 菜單響應 點擊關閉篩選
+//DOING 菜單響應 transitionGroup 因為絕對定位所以飛到左上角，轉場前宣告轉場元素的絕對定位解決
+//TODO 菜單響應
 /**
  * *骨架屏、果席跑馬燈初步完成
  * *營養數據轉移
@@ -407,6 +401,7 @@ import { nanoid } from 'nanoid';
  * !整理樣式
  * !RWD
  * !讀取中 menu沒被撐開
+ * !排序 篩選時會閃爍
  * --------------
  * ? localStorage、ETag緩存
  * ? grid轉場效果使用不順
@@ -418,6 +413,7 @@ import { nanoid } from 'nanoid';
  * 圖片縮放比例
  * 麵包屑
  * showMenu 拆分
+ * salad圖大小不一致
  * //果昔跑馬燈
  * //菜單摺疊區塊
  * //篩選、排序箭頭轉場
@@ -460,17 +456,130 @@ function closePop() {
 
 // -----menu 數據處理-----
 const menuStore = useMenuStore()
-const { fullMenu, saladList, smoothieList, ingredientsList, isLoaded } = storeToRefs(menuStore);
+const { fullMenu, saladList, smoothieList, ingredientsList, isLoaded, saladMap } = storeToRefs(menuStore);
 
-let showSaladList: ComputedRef<MenuItem[]> = computed(() => {
-    return isLoaded.value ? saladList.value : Array(8).fill(saladList.value);
-})
-let showSmoothieList: ComputedRef<MenuItem[]> = computed(() => {
-    return isLoaded.value ?
-        [...smoothieList.value, ...smoothieList.value] :
-        Array(8).fill(smoothieList.value);
+console.log(saladMap.value.size);
+
+let showSalad: ComputedRef<MenuItem[]> = computed(() => {
+    if (!isLoaded.value) return Array(8).fill(saladList.value);
+
+
+    // 篩選
+    let salad = (() => {
+        if (selectIngredient.value.length == 0) return saladList.value
+
+        let list = saladList.value.filter((item) => {
+            for (let factor of selectIngredient.value) {
+                if (item.ingredients.some(el => el == factor)) {
+                    return true
+                }
+            }
+            return false
+        })
+
+        return list
+    })();
+
+    // 排序
+    switch (sorting.value) {
+        case '名稱':
+            sortOrder.value == 0 ?
+                salad.sort(compareFn(item => item.name, 0)) :
+                salad.sort(compareFn(item => item.name, 1))
+
+            break;
+        case '價格':
+            sortOrder.value == 0 ?
+                salad.sort(compareFn(item => item.price, 0)) :
+                salad.sort(compareFn(item => item.price, 1))
+
+            break;
+        case '人氣':
+            sortOrder.value == 0 ?
+                salad.sort(compareFn(item => item.rating, 0)) :
+                salad.sort(compareFn(item => item.rating, 1))
+
+            break;
+        case '日期':
+            sortOrder.value == 0 ?
+                salad.sort(compareFn(item => item.date, 0)) :
+                salad.sort(compareFn(item => item.date, 1))
+
+            break;
+        default:
+            salad.sort(compareFn(item => item.index, 1))
+            break;
+    }
+    // console.log(salad);
+    return salad
 })
 
+
+let showSmoothies: ComputedRef<MenuItem[]> = computed(() => {
+    if (!isLoaded.value) return Array(8).fill(smoothieList.value);
+
+    // 篩選
+    let smoothies = (() => {
+        if (selectIngredient.value.length == 0) return smoothieList.value;
+
+        let list = smoothieList.value.filter((item) => {
+            for (let factor of selectIngredient.value) {
+                if (item.ingredients.some(el => el == factor)) {
+                    return true
+                }
+            }
+            return false
+        })
+
+        if (list.length == 0) {
+            handleSwiperSlide('start');
+            return smoothieList.value
+        }
+
+        return list
+    })()
+
+    // 排序
+    switch (sorting.value) {
+        case '名稱':
+            sortOrder.value == 0 ?
+                smoothies.sort(compareFn(item => item.name, 0)) :
+                smoothies.sort(compareFn(item => item.name, 1))
+
+            break;
+        case '價格':
+            sortOrder.value == 0 ?
+                smoothies.sort(compareFn(item => item.price, 0)) :
+                smoothies.sort(compareFn(item => item.price, 1))
+
+            break;
+        case '人氣':
+            sortOrder.value == 0 ?
+                smoothies.sort(compareFn(item => item.rating, 0)) :
+                smoothies.sort(compareFn(item => item.rating, 1))
+
+            break;
+        case '日期':
+            sortOrder.value == 0 ?
+                smoothies.sort(compareFn(item => item.date, 0)) :
+                smoothies.sort(compareFn(item => item.date, 1))
+
+            break;
+        default:
+            smoothies.sort(compareFn(item => item.index, 1))
+            break;
+    }
+
+    // if (smoothies.length < 10) {
+    //     while (smoothies.length < 10) {
+    //         smoothies.push(...smoothies);
+    //     }
+    // }
+
+    return smoothies
+})
+
+// 補足營養為六格
 let saladIngredients = computed(() => {
     if (!isLoaded.value || !saladList.value) return [];
 
@@ -485,7 +594,7 @@ let saladIngredients = computed(() => {
 let smoothieIngredients = computed(() => {
     if (!isLoaded.value || !smoothieList.value) return [];
 
-    let list = showMenu.value.smoothies.map((item) => {
+    let list = showSmoothies.value.map((item) => {
         let arr = [...item.ingredients];
         while (arr.length < 6) {
             arr.push('');
@@ -542,7 +651,7 @@ const compareFn = <T>(key: (item: T) => any, order: number): CompareFn<T> => {
     }
 }
 
-// 篩選資料
+// 篩選資料去重
 let ingredientSet = computed<Set<string>>(() => {
     if (!isLoaded.value) return new Set();
 
@@ -602,158 +711,23 @@ let regroup = computed(() => ({
     transition: ''
 }))
 
-
-
-let showMenu = computed(() => {
-
-    // 篩選
-    let salad = (() => {
-        if (!isLoaded.value) return Array(8).fill(saladList.value);
-
-        if (selectIngredient.value.length == 0) {
-            let list = saladList.value.map((item) => {
-                return {
-                    ...item,
-                    id: nanoid(4)
-                }
-            })
-            return list
-        }
-
-        let list = saladList.value.filter((item) => {
-            for (let factor of selectIngredient.value) {
-                if (item.ingredients.some(el => el == factor)) {
-                    return true
-                }
-            }
-            return false
-        })
-        list = list.map((item, index) => {
-            return {
-                ...item,
-                id: nanoid(4),
-                index
-            }
-        })
-        return list
-    })();
-
-    // 排序
-    switch (sorting.value) {
-        case '名稱':
-            sortOrder.value == 0 ?
-                salad.sort(compareFn(item => item.name, 0)) :
-                salad.sort(compareFn(item => item.name, 1))
-
-            break;
-        case '價格':
-            sortOrder.value == 0 ?
-                salad.sort(compareFn(item => item.price, 0)) :
-                salad.sort(compareFn(item => item.price, 1))
-
-            break;
-        case '人氣':
-            sortOrder.value == 0 ?
-                salad.sort(compareFn(item => item.rating, 0)) :
-                salad.sort(compareFn(item => item.rating, 1))
-
-            break;
-        case '日期':
-            sortOrder.value == 0 ?
-                salad.sort(compareFn(item => item.date, 0)) :
-                salad.sort(compareFn(item => item.date, 1))
-
-            break;
-        default:
-            salad.sort(compareFn(item => item.index, 1))
-            break;
-    }
-
-    let smoothies = (() => {
-        if (!isLoaded.value) return Array(10).fill(smoothieList.value);
-
-
-        if (selectIngredient.value.length == 0) {
-            return [...smoothieList.value, ...smoothieList.value]
-        }
-
-        let list = smoothieList.value.filter((item) => {
-            for (let factor of selectIngredient.value) {
-                if (item.ingredients.some(el => el == factor)) {
-                    return true
-                }
-            }
-            return false
-        })
-
-        list = list.map((item, index) => {
-            return {
-                ...item,
-                id: nanoid(4),
-                index
-            }
-        })
-
-        return list
-    })()
-
-    switch (sorting.value) {
-        case '名稱':
-            sortOrder.value == 0 ?
-                smoothies.sort(compareFn(item => item.name, 0)) :
-                smoothies.sort(compareFn(item => item.name, 1))
-
-            break;
-        case '價格':
-            sortOrder.value == 0 ?
-                smoothies.sort(compareFn(item => item.price, 0)) :
-                smoothies.sort(compareFn(item => item.price, 1))
-
-            break;
-        case '人氣':
-            sortOrder.value == 0 ?
-                smoothies.sort(compareFn(item => item.rating, 0)) :
-                smoothies.sort(compareFn(item => item.rating, 1))
-
-            break;
-        case '日期':
-            sortOrder.value == 0 ?
-                smoothies.sort(compareFn(item => item.date, 0)) :
-                smoothies.sort(compareFn(item => item.date, 1))
-
-            break;
-        default:
-            smoothies.sort(compareFn(item => item.index, 1))
-            break;
-    }
-
-    if (smoothies.length < 10) {
-        while (smoothies.length < 10) {
-            smoothies.push(...smoothies);
-        }
-    }
-
-    return {
-        salad,
-        smoothies
-    }
-})
-
-
 // 篩選重置
 function resetFilterSelect() {
     searchFilterWord.value = '';
     selectIngredient.value = [];
 }
 
+// -----menu 響應-----
+
+
 // -----menu 摺疊-----
-let isShowFullMenu = computed(() => showMenuLimit.value == showMenu.value.salad.length);
-let isShowBtn = computed(() => showMenuLimit.value < showMenu.value.salad.length)
+let isShowFullMenu = computed(() => showMenuLimit.value == showSalad.value.length);
+let isShowBtn = computed(() => showMenuLimit.value < showSalad.value.length)
 
 let showMenuLimit = ref(8);
 
 let currShow = computed(() => {
-    let length = showMenu.value.salad.length;
+    let length = showSalad.value.length;
     // console.log(length);
     if (length > showMenuLimit.value) {
         return showMenuLimit.value
@@ -763,7 +737,7 @@ let currShow = computed(() => {
 
 
 function setFullMenu() {
-    showMenuLimit.value = showMenu.value.salad.length
+    showMenuLimit.value = showSalad.value.length
 }
 
 // -----smoothie marquee-----
@@ -771,21 +745,38 @@ let smoothieSwiper = ref();
 
 watch(isLoaded, (nVal) => {
     if (nVal == true) {
-        smoothieSwiper.value.swiper.autoplay.start();
+        handleSwiperSlide('start');
     }
 }, { once: true })
 
 watch(selectIngredient, (nVal) => {
     // console.log(smoothieSwiper.value.swiper);
     if (nVal.length == 0) {
-        smoothieSwiper.value.swiper.autoplay.start();
+        handleSwiperSlide('start');
+        handleSwiperSlide('update');
+        return
     }
+    handleSwiperSlide('stop');
+    smoothieSwiper.value.swiperParams.centeredSlides = false;
+
 }, { deep: true })
 
-function updateSlide() {
-    smoothieSwiper.value.swiper.thumbs.update();
-    // console.log('object');
+
+function handleSwiperSlide(action: "start" | "stop" | "update") {
+    const actionsMap = {
+        start: () => smoothieSwiper.value.swiper.autoplay.start(),
+        stop: () => smoothieSwiper.value.swiper.autoplay.stop(),
+        update: () => smoothieSwiper.value.swiper.thumbs.update()
+    };
+
+    const actionHandler = actionsMap[action];
+
+    if (!actionHandler) return console.log('undefined action');
+
+    actionHandler();
+
 }
+
 
 // -----bot swiper-----
 let docAvatarUrl = useConcatImgPath(['doc01.png', 'doc02.png'], 'Menu');
@@ -809,7 +800,6 @@ let docData = [
 onBeforeMount(() => {
 })
 onMounted(() => {
-    // console.log(smoothieSwiper.value.swiper.thumbs.update);
     isLoaded.value ?
         smoothieSwiper.value.swiper.autoplay.start() :
         smoothieSwiper.value.swiper.autoplay.stop();
@@ -1430,7 +1420,7 @@ onMounted(() => {
         @include flex-center-center;
         flex-direction: column;
         // gap: 1rem;
-        width: 100%;
+        // width: 100%;
 
         .menuImg {
             @include flex-center-center;
@@ -1640,23 +1630,26 @@ onMounted(() => {
         }
     }
 
+    // .saladMenu-move,
     // .saladMenu-enter-active,
-    // .saladMenu-leave-active,
-    // .saladMenu-move {
-    //     transition: all 0.5s ease;
+    // .saladMenu-leave-active {
+    //     transition: all 1s ease;
     // }
 
     // .saladMenu-enter-from,
     // .saladMenu-leave-to {
+    //     transform: translateY(30px);
     //     opacity: 0;
     // }
 
     // .saladMenu-enter-to,
     // .saladMenu-leave-from {
+    //     // transform: translateY(0);
     //     opacity: 1;
     // }
 
     // .saladMenu-leave-active {
+    //     // left: 50%;
     //     position: absolute;
     // }
 
@@ -1666,11 +1659,11 @@ onMounted(() => {
         display: grid;
         justify-content: space-between;
         grid-template-columns: 20% 20% 20% 20%;
-        grid-template-rows: 1fr 1fr 0fr 0.25fr;
+        grid-template-rows: 1fr 1fr auto;
         row-gap: 2rem;
-        transition: grid-template-rows 0.5s ease;
+        // transition: grid-template-rows 0.5s ease;
         position: relative;
-        transition: all 0.5s ease;
+        // transition: all 0.5s ease;
 
         * {
             // outline: 1px solid black;
@@ -1691,38 +1684,7 @@ onMounted(() => {
             opacity: 0;
         }
 
-        .showFullMenuBtn {
-            @include absoluteCenterTLXY(calc(100% - 5rem), 50%);
-            margin: 2rem 0;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            font-variation-settings: 'wght' 500;
-            // overflow: hidden;
 
-            span {
-                text-align: center
-            }
-
-            button {
-                @include WnH(75px, 40px);
-                border: 1px solid rgba(0, 0, 0, 0.5);
-                border-radius: 40px;
-                position: relative;
-                z-index: 0;
-                overflow: hidden;
-                transition: box-shadow 10s ease;
-                box-shadow: 1px 1px 3px black;
-
-                &:hover {
-                    box-shadow: 1px 1px 6px black;
-                }
-
-                &:active {
-                    box-shadow: 0px 0px 3px black;
-                }
-            }
-        }
 
         .skeleton {
             background-color: $primaryBacColor;
@@ -1744,8 +1706,46 @@ onMounted(() => {
         }
     }
 
+    .showFullMenuBtn {
+        // @include absoluteCenterTLXY(calc(100% - 5rem), 50%);
+        @include flex-center-center;
+        flex-direction: column;
+        gap: 1rem;
+        margin: 4rem 0;
+        font-variation-settings: 'wght' 500;
+        // overflow: hidden;
+        // grid-column: 2 / span 2;
+
+        span {
+            text-align: center
+        }
+
+        button {
+            @include WnH(75px, 40px);
+            border: 1px solid rgba(0, 0, 0, 0.5);
+            border-radius: 40px;
+            position: relative;
+            z-index: 0;
+            overflow: hidden;
+            transition: box-shadow 10s ease;
+            box-shadow: 1px 1px 3px black;
+
+            &:hover {
+                box-shadow: 1px 1px 6px black;
+            }
+
+            &:active {
+                box-shadow: 0px 0px 3px black;
+            }
+        }
+    }
+
     .expandMenu {
-        grid-template-rows: 1fr 1fr 1fr 0.25fr;
+        // grid-template-rows: 1fr 1fr 1fr 0.25fr;
+
+        .showFullMenuBtn {
+            grid-column: 1 / span 4;
+        }
     }
 
     .smoothieMenu {
@@ -1783,6 +1783,7 @@ onMounted(() => {
             flex-direction: row;
             gap: 2rem;
             position: relative;
+            // transform: translateX(-50%);
 
             swiper-container {
                 width: 100%;

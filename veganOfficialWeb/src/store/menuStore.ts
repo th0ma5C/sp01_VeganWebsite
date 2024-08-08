@@ -74,7 +74,8 @@ export const useMenuStore = defineStore('menu', (() => {
     let ingredientsList: Ref<ingredientsList[]> = ref([
         { ingredients: null }
     ])
-    let isLoaded = ref(false)
+    let isLoaded = ref(false);
+    let saladMap = ref(new Map())
 
     let fetchMenu = async () => {
         try {
@@ -84,13 +85,18 @@ export const useMenuStore = defineStore('menu', (() => {
 
             menu[0].items.forEach((el) => {
                 el.fileName = '/api' + el.fileName + '.png';
+                el.id = nanoid(4);
             });
-            saladList.value = [...menu[0].items, ...menu[0].items];
+            saladList.value = menu[0].items;
 
             menu[1].items.forEach((el) => {
                 el.fileName = '/api' + el.fileName + '.jpg'
+                el.id = nanoid(4);
             });
             smoothieList.value = menu[1].items;
+            for (let i in smoothieList.value) {
+                saladMap.value.set(smoothieList.value[i].id, Number(i))
+            }
 
             // console.log(data);
             isLoaded.value = true;
@@ -116,5 +122,5 @@ export const useMenuStore = defineStore('menu', (() => {
         fetchMenu()
     }
 
-    return { fullMenu, saladList, smoothieList, ingredientsList, isLoaded }
+    return { fullMenu, saladList, smoothieList, ingredientsList, isLoaded, saladMap }
 }))
