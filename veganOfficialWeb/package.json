@@ -22,6 +22,7 @@
     "postcss-import": "^16.1.0",
     "postcss-nesting": "^12.1.4",
     "swiper": "^11.0.7",
+    "veganofficialweb": "file:",
     "vue": "^3.3.11",
     "vue-router": "^4.2.5"
   },

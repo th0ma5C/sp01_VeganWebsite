@@ -94,7 +94,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                    }}</span>
+                                                }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -176,67 +176,72 @@
                     <Skeleton v-for="(item, index) in 8"
                         :key="index"></Skeleton>
                 </div>
-                <div class="item"
-                    v-for="({ name, description, fileName, price, id }, index) in showSalad"
-                    :key="id ? id : index" :class="{
-                        hideItem: index > 7,
-                        onUnloaded: !isLoaded,
-                    }" :style="regroup"
-                    v-show="index < showMenuLimit">
-                    <div class="menuImg">
-                        <img :src="fileName!" alt="商品">
-                        <p>{{ price }}元</p>
-                        <div class="description">
-                            <span>{{ description
-                                }}</span>
+                <transition-group name="saladMenu">
+                    <div class="item"
+                        v-for="({ name, description, fileName, price, id }, index) in showSalad"
+                        :key="id ? id : index" :class="{
+                            hideItem: index > 7,
+                            onUnloaded: !isLoaded,
+                        }" :style="{}"
+                        v-show="index < showMenuLimit"
+                        ref="saladItem">
+                        <div class="menuImg">
+                            <img :src="fileName!" alt="商品">
+                            <p>{{ price }}元</p>
+                            <div class="description">
+                                <span>{{ description
+                                    }}</span>
+                            </div>
+                        </div>
+                        <h3>{{ name }}</h3>
+                        <!-- <p>價格</p> -->
+                        <div class="ingredients">
+                            <span
+                                v-for="(item) in saladIngredients![index]"
+                                :key="item">
+                                {{ item }}
+                            </span>
+                        </div>
+                        <div class="btnWrapper">
+                            <button
+                                class="cart-btn">加入購物車</button>
+                            <button
+                                class="info-btn">詳細資訊</button>
+                            <div class="btnBackground">
+                                <svg width="260" height="48"
+                                    viewBox="0 0 260 48"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <g id="btnBac"
+                                        filter="url('#btn')">
+                                        <rect id="center"
+                                            y="21"
+                                            width="117.52"
+                                            height="6"
+                                            fill="currentColor" />
+                                        <path id="left"
+                                            d="M0 0H26.5417H53.0833H79.625H117.553L130 48H0V0Z"
+                                            fill="currentColor" />
+                                        <path id="right"
+                                            d="M260 48L233.458 48L206.917 48L180.375 48L142.447 48L130 4.93616e-06L260 1.5864e-05L260 48Z"
+                                            fill="currentColor" />
+                                    </g>
+                                    <filter id="btn">
+                                        <feGaussianBlur
+                                            in="SourceGraphic"
+                                            result="blur"
+                                            stdDeviation="5" />
+                                        <feColorMatrix
+                                            in="blur"
+                                            mode="matrix"
+                                            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
+                                            result="btn" />
+                                    </filter>
+                                </svg>
+                            </div>
                         </div>
                     </div>
-                    <h3>{{ name }}</h3>
-                    <!-- <p>價格</p> -->
-                    <div class="ingredients">
-                        <span
-                            v-for="(item) in saladIngredients![index]"
-                            :key="item">
-                            {{ item }}
-                        </span>
-                    </div>
-                    <div class="btnWrapper">
-                        <button
-                            class="cart-btn">加入購物車</button>
-                        <button
-                            class="info-btn">詳細資訊</button>
-                        <div class="btnBackground">
-                            <svg width="260" height="48"
-                                viewBox="0 0 260 48"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <g id="btnBac"
-                                    filter="url('#btn')">
-                                    <rect id="center" y="21"
-                                        width="117.52"
-                                        height="6"
-                                        fill="currentColor" />
-                                    <path id="left"
-                                        d="M0 0H26.5417H53.0833H79.625H117.553L130 48H0V0Z"
-                                        fill="currentColor" />
-                                    <path id="right"
-                                        d="M260 48L233.458 48L206.917 48L180.375 48L142.447 48L130 4.93616e-06L260 1.5864e-05L260 48Z"
-                                        fill="currentColor" />
-                                </g>
-                                <filter id="btn">
-                                    <feGaussianBlur
-                                        in="SourceGraphic"
-                                        result="blur"
-                                        stdDeviation="5" />
-                                    <feColorMatrix in="blur"
-                                        mode="matrix"
-                                        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
-                                        result="btn" />
-                                </filter>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
+                </transition-group>
             </div>
             <div class="showFullMenuBtn" v-show="isLoaded">
                 <span>{{ currShow }} of {{
@@ -382,7 +387,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect } from 'vue';
+import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick } from 'vue';
 import type { ComputedRef, Ref } from 'vue';
 import { reqMenu } from '@/api/menu';
 import Skeleton from '@components/skeleton/skeleton.vue';
@@ -458,7 +463,6 @@ function closePop() {
 const menuStore = useMenuStore()
 const { fullMenu, saladList, smoothieList, ingredientsList, isLoaded, saladMap } = storeToRefs(menuStore);
 
-console.log(saladMap.value.size);
 
 let showSalad: ComputedRef<MenuItem[]> = computed(() => {
     if (!isLoaded.value) return Array(8).fill(saladList.value);
@@ -707,9 +711,7 @@ let showIngredientList = computed(() => {
     })
 })
 
-let regroup = computed(() => ({
-    transition: ''
-}))
+
 
 // 篩選重置
 function resetFilterSelect() {
@@ -718,6 +720,28 @@ function resetFilterSelect() {
 }
 
 // -----menu 響應-----
+let saladItem: Ref<HTMLElement[]> = ref([]);
+let saladPositionMap = ref(new Map());
+watch(isLoaded, (nVal) => {
+    if (nVal !== true) return
+    nextTick(() => {
+        // let map = saladItem.value.toReversed()
+        // console.log(map);
+    })
+})
+function foo(element: Element) {
+    const el = element as HTMLElement;
+    console.log(el);
+}
+
+let regroup = computed(() => ({
+    top: `100px`,
+    left: `100px`
+}))
+
+onMounted(() => {
+
+})
 
 
 // -----menu 摺疊-----
@@ -739,6 +763,7 @@ let currShow = computed(() => {
 function setFullMenu() {
     showMenuLimit.value = showSalad.value.length
 }
+
 
 // -----smoothie marquee-----
 let smoothieSwiper = ref();
@@ -800,10 +825,12 @@ let docData = [
 onBeforeMount(() => {
 })
 onMounted(() => {
-    isLoaded.value ?
-        smoothieSwiper.value.swiper.autoplay.start() :
-        smoothieSwiper.value.swiper.autoplay.stop();
+    // nextTick(() => {
+    //     isLoaded.value ?
+    //         smoothieSwiper.value.swiper.autoplay.start() :
+    //         smoothieSwiper.value.swiper.autoplay.stop();
 
+    // })
 })
 
 </script>
@@ -1630,28 +1657,28 @@ onMounted(() => {
         }
     }
 
-    // .saladMenu-move,
-    // .saladMenu-enter-active,
-    // .saladMenu-leave-active {
-    //     transition: all 1s ease;
-    // }
 
-    // .saladMenu-enter-from,
-    // .saladMenu-leave-to {
-    //     transform: translateY(30px);
-    //     opacity: 0;
-    // }
+    .saladMenu-enter-active,
+    .saladMenu-leave-active {
+        transition: all 1s ease;
+    }
+
+    .saladMenu-enter-from,
+    .saladMenu-leave-to {
+        transform: translateY(30px);
+        opacity: 0;
+    }
 
     // .saladMenu-enter-to,
     // .saladMenu-leave-from {
-    //     // transform: translateY(0);
+    //     transform: translateY(0);
     //     opacity: 1;
     // }
 
-    // .saladMenu-leave-active {
-    //     // left: 50%;
-    //     position: absolute;
-    // }
+    .saladMenu-leave-active {
+        left: 50%;
+        position: absolute;
+    }
 
     .saladMenu {
         margin-top: 1.5rem;
