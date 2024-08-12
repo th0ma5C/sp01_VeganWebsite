@@ -84,19 +84,25 @@ export const useMenuStore = defineStore('menu', (() => {
             fullMenu.value = menu;
 
             menu[0].items.forEach((el) => {
+                // 補全圖片地址
                 el.fileName = '/api' + el.fileName + '.png';
+                // 新增ID
                 el.id = nanoid(4);
+                // 補足數量6個
+                while (el.ingredients.length < 6) {
+                    el.ingredients.push('');
+                }
             });
             saladList.value = menu[0].items;
 
             menu[1].items.forEach((el) => {
                 el.fileName = '/api' + el.fileName + '.jpg'
                 el.id = nanoid(4);
+                while (el.ingredients.length < 6) {
+                    el.ingredients.push('');
+                }
             });
             smoothieList.value = menu[1].items;
-            for (let i in smoothieList.value) {
-                saladMap.value.set(smoothieList.value[i].id, Number(i))
-            }
 
             // console.log(data);
             isLoaded.value = true;
@@ -122,5 +128,5 @@ export const useMenuStore = defineStore('menu', (() => {
         fetchMenu()
     }
 
-    return { fullMenu, saladList, smoothieList, ingredientsList, isLoaded, saladMap }
+    return { fullMenu, saladList, smoothieList, ingredientsList, isLoaded }
 }))
