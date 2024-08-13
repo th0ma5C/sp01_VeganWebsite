@@ -180,11 +180,10 @@
                             :key="index"></Skeleton>
                     </div>
                 </transition>
-                <!-- <transition-group name="saladMenu"
-                    :css="false"
-                    @before-enter="saladMenuOnBeforeEnter"
-                    @enter="saladMenuOnEnter"
-                    @leave="saladMenuOnLeave"> -->
+                <div class="loadingScene">
+
+                </div>
+                <!-- <transition-group name="saladMenu"> -->
                 <!-- <div class="item"
                         v-for="(item, index) in saladList"
                         :key="item.id ? item.id : index"
@@ -199,8 +198,9 @@
                     :key="id ? id : index" :class="{
                         hideItem: index > (showMenuLimit - 1),
                         onUnloaded: !isLoaded,
-                    }" v-show="index < showMenuLimit"
-                    ref="saladItem">
+                    }"
+                    v-show="index < showMenuLimit && isLoaded"
+                    :ref="el => setElementRef(el as HTMLElement | null, id)">
                     <div class="menuImg">
                         <img :src="fileName!" alt="商品">
                         <p>{{ price }}元</p>
@@ -400,15 +400,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick } from 'vue';
+import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick, onBeforeUpdate, onUpdated } from 'vue';
 import type { ComputedRef, Ref } from 'vue';
 import Skeleton from '@components/skeleton/skeleton.vue';
 import useConcatImgPath from '@/hooks/useConcatImgPath';
 import { useMenuStore } from '@/store/menuStore';
 import type { MenuItem } from '@/api/menu/type'
 import { storeToRefs } from 'pinia';
-import gsap from 'gsap';
-import Flip from 'gsap/Flip';
+// import gsap from 'gsap';
+// import Flip from 'gsap/Flip';
 
 
 //DOING 菜單響應 transitionGroup 因為絕對定位所以飛到左上角，轉場前宣告轉場元素的絕對定位解決
@@ -421,7 +421,7 @@ import Flip from 'gsap/Flip';
  * !RWD
  * !讀取中 menu沒被撐開
  * !排序 篩選時會閃爍
- * !篩選多個時 展開按鈕有錯誤
+ * //!篩選多個時 展開按鈕有錯誤 => 改setFullMenu limit 為原數據數量
  * --------------
  * ? localStorage、ETag緩存
  * ? grid轉場效果使用不順
@@ -592,7 +592,7 @@ function resetFilterSelect() {
 let isShowFullMenu = computed(() => showMenuLimit.value == showSalad.value.length);
 let isShowBtn = computed(() => showMenuLimit.value < showSalad.value.length)
 
-let showMenuLimit = ref(8);
+let showMenuLimit = ref(Infinity);
 
 let currShow = computed(() => {
     let length = showSalad.value.length;
@@ -605,9 +605,8 @@ let currShow = computed(() => {
 
 
 function setFullMenu() {
-    showMenuLimit.value = showSalad.value.length
+    showMenuLimit.value = saladList.value.length
 }
-
 
 // -----smoothie marquee-----
 let smoothieSwiper = ref();
@@ -647,9 +646,9 @@ function handleSwiperSlide(action: "start" | "stop" | "update") {
 }
 
 // ----- show數據 -----
-
 let showSalad: ComputedRef<MenuItem[]> = computed(() => {
     if (!isLoaded.value) return Array(8).fill(saladList.value);
+
 
     // 篩選
     let salad = (() => {
@@ -698,6 +697,7 @@ let showSalad: ComputedRef<MenuItem[]> = computed(() => {
             break;
     }
     // console.log(salad);
+
     return salad
 })
 
@@ -766,46 +766,98 @@ let showSmoothies: ComputedRef<MenuItem[]> = computed(() => {
 })
 
 // -----menu 響應-----
-// gsap.registerPlugin(Flip);
-// let saladItem = ref();
+// let saladItem = ref<HTMLElement[]>([]);
+// let saladPositionMap = ref(new Map());
+// function setSaladPosition() {
+//     let arr = [...saladItem.value].reverse();
 
-// const animateList = () => {
-//     if (!saladItem.value) return
+//     for (let i in arr) {
+//         let top = arr[i].offsetTop;
+//         let left = arr[i].offsetLeft;
+//         saladPositionMap.value.set(i, {
+//             top,
+//             left
+//         })
+//     }
 
-//     let items = saladItem.value;
-
-//     gsap.fromTo(items,
-//         { opacity: 0, y: 50 },
-//         { opacity: 1, y: 0, duration: 0.5 }
-//     );
-
-//     // let state = Flip.getState(saladItem.value);
-
-//     // Flip.from(state, {
-//     //     duration: 1,
-//     //     // scale: true,
-//     //     absoluteOnLeave: true,
-//     //     absolute: ".item",
-//     //     ease: "power1.inOut",
-//     //     onEnter: (elements) =>
-//     //         gsap.fromTo(
-//     //             elements,
-//     //             { opacity: 0, scale: 0 },
-//     //             { opacity: 1, scale: 1, duration: 1 }
-//     //         ),
-//     //     onLeave: (elements) =>
-//     //         gsap.to(elements, { opacity: 0, scale: 0, duration: 1 })
-//     // });
-
+//     showMenuLimit.value = 8;
 // }
 
-// watch(showSalad, (nVal) => {
+// watch(isLoaded, () => {
 //     nextTick(() => {
-//         animateList()
+//         setSaladPosition()
+//         console.log(saladPositionMap.value);
 //     })
-// }, { deep: true })
+// })
+
+interface ElementPosition {
+    top: number;
+    left: number;
+}
+
+const elementRefs: Ref<Record<string | number, HTMLElement | null>> = ref({});
+const elementPositions: Ref<Record<string, ElementPosition>> = ref({});
+const initialElementPositions: Ref<Record<string, ElementPosition>> = ref({});
+
+const setElementRef = (el: HTMLElement | null, id: string | null) => {
+    if (el && id) {
+        elementRefs.value[id] = el;
+
+        nextTick(() => {
+            if (elementRefs.value[id]) {
+                const position = {
+                    top: el.offsetTop,
+                    left: el.offsetLeft,
+                };
+
+                // 存储元素的实时位置
+                elementPositions.value[id] = position;
+
+                // 如果初始位置未记录，则记录初始位置
+                if (!initialElementPositions.value[id]) {
+                    initialElementPositions.value[id] = position;
+                }
+            }
+        })
+    }
+};
 
 
+const getElementPositions = () => {
+    const positions: Record<number, { top: number; left: number }> = {};
+    showSalad.value.forEach(item => {
+        const element = elementRefs.value[item.id];
+        if (element) {
+            // const rect = element.getBoundingClientRect();
+            const top = element.offsetTop;
+            const left = element.offsetLeft;
+            positions[item.id] = {
+                top,
+                left
+            };
+        }
+    });
+    // console.log('position', positions);
+    console.log('raw', initialElementPositions.value);
+};
+onMounted(() => {
+    nextTick(() => {
+        getElementPositions();
+    });
+});
+
+watch(showSalad, () => {
+    nextTick(() => {
+        getElementPositions();
+    });
+
+
+});
+
+function foo(el: Element) {
+    const element = el as HTMLElement
+    // console.log(el);
+}
 
 // -----bot swiper-----
 let docAvatarUrl = useConcatImgPath(['doc01.png', 'doc02.png'], 'Menu');
@@ -1662,36 +1714,31 @@ onMounted(() => {
     }
 
 
-    // .saladMenu-enter-active,
-    // .saladMenu-leave-active,
-    // .saladMenu-move {
-    //     transition: all 1s ease;
-    // }
+    .saladMenu-enter-active,
+    .saladMenu-leave-active {
+        transition: opacity 0.8s ease;
+    }
 
-    // .saladMenu-enter-from,
-    // .saladMenu-leave-to {
-    //     opacity: 0;
-    // }
+    .saladMenu-enter-from,
+    .saladMenu-leave-to {
+        opacity: 0;
+    }
 
-    // .saladMenu-enter-to,
-    // .saladMenu-leave-from {
-    //     opacity: 1;
-    // }
-
-    // .saladMenu-leave-active {
-    //     // left: 50%;
-    //     position: absolute;
-    // }
+    .saladMenu-enter-to,
+    .saladMenu-leave-from {
+        opacity: 1;
+    }
 
     .saladMenu {
+        // overflow: hidden;
         margin-top: 1.5rem;
-        padding: 0 1rem;
+        padding: 1rem 1rem;
         display: grid;
         justify-content: space-between;
         grid-template-columns: 20% 20% 20% 20%;
         grid-template-rows: 1fr 1fr auto;
         row-gap: 2rem;
-        // transition: grid-template-rows 0.5s ease;
+        // transition: opacity 0.5s ease;
         position: relative;
 
         * {
@@ -1700,7 +1747,7 @@ onMounted(() => {
 
         .item {
             @extend %menuItem;
-            transition: all 0.5s ease;
+            // transition: all 0.5s ease;
 
         }
 
@@ -1747,6 +1794,17 @@ onMounted(() => {
             &:deep(.wrapper) {
                 flex-direction: column;
             }
+        }
+
+        .loadingScene {
+            display: none;
+            @include WnH(100%);
+            // @include
+            position: absolute;
+            z-index: 3;
+            left: 0;
+            top: 0;
+            background-color: hsla(47, 60%, 97%, 0.3)
         }
     }
 
