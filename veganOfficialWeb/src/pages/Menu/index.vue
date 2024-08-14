@@ -94,7 +94,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                }}</span>
+                                                    }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -183,7 +183,8 @@
                 <div class="loadingScene">
 
                 </div>
-                <!-- <transition-group name="saladMenu"> -->
+                <!-- <transition-group name="saladMenu"
+                    type="animation"> -->
                 <!-- <div class="item"
                         v-for="(item, index) in saladList"
                         :key="item.id ? item.id : index"
@@ -193,26 +194,35 @@
                         }"
                         v-show="showSalad.includes(item) && index < showMenuLimit"
                         ref="saladItem"> -->
-                <div class="item"
+                <!-- <div class="item"
                     v-for="({ name, description, ingredients, fileName, price, id }, index) in showSalad"
                     :key="id ? id : index" :class="{
                         hideItem: index > (showMenuLimit - 1),
                         onUnloaded: !isLoaded,
                     }"
                     v-show="index < showMenuLimit && isLoaded"
-                    :ref="el => setElementRef(el as HTMLElement | null, id)">
+                    :ref="el => setElementRef(el as HTMLElement | null, id)"> -->
+                <div class="item"
+                    v-for="(item, index) in showSalad"
+                    :key="item.id ? item.id : index" :class="{
+                        hideItem: index > (showMenuLimit - 1),
+                        onUnloaded: !isLoaded,
+                    }"
+                    v-show="showSalad.includes(item) && index < showMenuLimit && isLoaded"
+                    ref="elList">
                     <div class="menuImg">
-                        <img :src="fileName!" alt="商品">
-                        <p>{{ price }}元</p>
+                        <img :src="item.fileName!" alt="商品">
+                        <p>{{ item.price }}元</p>
                         <div class="description">
-                            <span>{{ description
+                            <span>{{ item.description
                                 }}</span>
                         </div>
                     </div>
-                    <h3>{{ name }}</h3>
+                    <h3>{{ item.name }}</h3>
                     <!-- <p>價格</p> -->
                     <div class="ingredients">
-                        <span v-for="(el) in ingredients"
+                        <span
+                            v-for="(el) in item.ingredients"
                             :key="el">
                             {{ el }}
                         </span>
@@ -548,6 +558,7 @@ let selectAllText = computed(() => {
 })
 
 function handleFilterSelect(n: string) {
+    setFullMenu();
     if (selectIngredient.value.includes(n)) {
         selectIngredient.value = selectIngredient.value.filter(item => item !== n)
         return
@@ -584,6 +595,7 @@ let showIngredientList = computed(() => {
 
 // 篩選重置
 function resetFilterSelect() {
+    if (selectIngredient.value.length == 0) return
     searchFilterWord.value = '';
     selectIngredient.value = [];
 }
@@ -605,7 +617,7 @@ let currShow = computed(() => {
 
 
 function setFullMenu() {
-    showMenuLimit.value = saladList.value.length
+    showMenuLimit.value = saladList.value.length;
 }
 
 // -----smoothie marquee-----
@@ -790,73 +802,155 @@ let showSmoothies: ComputedRef<MenuItem[]> = computed(() => {
 //     })
 // })
 
-interface ElementPosition {
-    top: number;
-    left: number;
-}
+// interface ElementPosition {
+//     top: number;
+//     left: number;
+// }
 
-const elementRefs: Ref<Record<string | number, HTMLElement | null>> = ref({});
-const elementPositions: Ref<Record<string, ElementPosition>> = ref({});
-const initialElementPositions: Ref<Record<string, ElementPosition>> = ref({});
+// const elementRefs: Ref<Record<string | number, HTMLElement | null>> = ref({});
+// const elementPositions: Ref<Record<string, ElementPosition>> = ref({});
+// const initialElementPositions: Ref<Record<string, ElementPosition>> = ref({});
 
-const setElementRef = (el: HTMLElement | null, id: string | null) => {
-    if (el && id) {
-        elementRefs.value[id] = el;
+// const setElementRef = (el: HTMLElement | null, id: string | null) => {
+//     if (el && id) {
+//         elementRefs.value[id] = el;
 
-        nextTick(() => {
-            if (elementRefs.value[id]) {
-                const position = {
-                    top: el.offsetTop,
-                    left: el.offsetLeft,
-                };
+//         nextTick(() => {
+//             if (elementRefs.value[id]) {
+//                 const position = {
+//                     top: el.offsetTop,
+//                     left: el.offsetLeft,
+//                 };
 
-                // 存储元素的实时位置
-                elementPositions.value[id] = position;
+//                 elementPositions.value[id] = position;
 
-                // 如果初始位置未记录，则记录初始位置
-                if (!initialElementPositions.value[id]) {
-                    initialElementPositions.value[id] = position;
-                }
-            }
-        })
-    }
-};
+//                 if (!initialElementPositions.value[id]) {
+//                     initialElementPositions.value[id] = position;
+//                     el.style.top = `${el.offsetTop}px`;
+//                     el.style.left = `${el.offsetLeft}px`;
+//                 }
+//             }
+//             if (showMenuLimit.value == Infinity) {
+//                 showMenuLimit.value = 8;
+//             }
+//         })
+//     }
+// };
 
 
-const getElementPositions = () => {
-    const positions: Record<number, { top: number; left: number }> = {};
-    showSalad.value.forEach(item => {
-        const element = elementRefs.value[item.id];
-        if (element) {
-            // const rect = element.getBoundingClientRect();
-            const top = element.offsetTop;
-            const left = element.offsetLeft;
-            positions[item.id] = {
-                top,
-                left
-            };
-        }
-    });
-    // console.log('position', positions);
-    console.log('raw', initialElementPositions.value);
-};
-onMounted(() => {
-    nextTick(() => {
-        getElementPositions();
-    });
-});
+// const setElementPositions = (actions: 'set' | 'reset') => {
+//     const positions: Record<string, { top: number; left: number }> = {};
+//     showSalad.value.forEach(item => {
+//         const element = elementRefs.value[item.id];
+//         if (element) {
+//             // const rect = element.getBoundingClientRect();
+//             const top = element.offsetTop;
+//             const left = element.offsetLeft;
+//             positions[item.id] = {
+//                 top,
+//                 left
+//             };
+//         }
+//     });
+//     if (Object.keys(initialElementPositions.value).length == 0) return
+
+//     switch (actions) {
+//         case 'set':
+//             for (let i in positions) {
+//                 let deltaX = positions[i].left - initialElementPositions.value[i].left;
+//                 let deltaY = positions[i].top - initialElementPositions.value[i].top;
+
+//                 elementRefs.value[i]!.style.position = `absolute`;
+//                 elementRefs.value[i]!.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+//                 setTimeout(() => {
+//                     // elementRefs.value[i]!.style.position = `static`;
+//                     // elementRefs.value[i]!.style.transform = `translate(${0}px, ${0}px)`;
+//                 }, 500)
+//             }
+//             break;
+
+//         case 'reset':
+//             for (let i in positions) {
+//                 //     let deltaX = -positions[i].left - initialElementPositions.value[i].left;
+//                 //     let deltaY = -positions[i].top - initialElementPositions.value[i].top;
+
+//                 //     elementRefs.value[i]!.style.position = `absolute`;
+//                 //     elementRefs.value[i]!.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+//                 //     setTimeout(() => {
+//                 elementRefs.value[i]!.style.position = `static`;
+//                 elementRefs.value[i]!.style.transform = `translate(${0}px, ${0}px)`;
+//                 //         // elementRefs.value[i]!.style.transform = `translate(${0}px, ${0}px)`;
+//                 //     }, 500)
+//             }
+//             break;
+
+//         default:
+//             break;
+//     }
+
+
+//     console.log('position', positions);
+//     // console.log('elementRefs', elementRefs.value);
+//     // console.log('raw', initialElementPositions.value);
+//     // console.log('new', elementPositions.value);
+// };
+
+// watch(selectIngredient, (nVal, oVal) => {
+//     if (nVal.length !== 0) {
+//         nextTick(() => {
+//             setElementPositions('set');
+//         });
+//     } else {
+//         nextTick(() => {
+//             setElementPositions('reset');
+//         })
+//     }
+// }, { deep: true });
+
+import gsap from 'gsap';
+import { Flip } from 'gsap/Flip';
+import { RFC_2822 } from 'moment';
+
+gsap.registerPlugin(Flip);
+
+let elList = ref()
+let saladContainer = ref<HTMLElement>();
 
 watch(showSalad, () => {
+    saladGSAP()
     nextTick(() => {
-        getElementPositions();
-    });
+        saladGSAP()
+    })
+})
 
 
-});
+function saladGSAP() {
 
-function foo(el: Element) {
-    const element = el as HTMLElement
-    // console.log(el);
+    const state = Flip.getState(elList.value);
+    console.log(1, state);
+    nextTick(() => {
+        console.log(2, state);
+
+        Flip.from(state, {
+            fade: true,
+            duration: 0.75,
+            absolute: true,
+            ease: "power1.inOut",
+            onEnter: (elements) => {
+                // console.log(elements);
+                return gsap.fromTo(elements,
+                    { opacity: 0 },
+                    { opacity: 1, duration: 1 })
+            },
+            onLeave: (elements) => {
+                // console.log(elements);
+                return gsap.fromTo(elements,
+                    { opacity: 1 },
+                    { opacity: 0, duration: 1 })
+            }
+        });
+
+    })
 }
 
 // -----bot swiper-----
@@ -1714,25 +1808,25 @@ onMounted(() => {
     }
 
 
-    .saladMenu-enter-active,
-    .saladMenu-leave-active {
-        transition: opacity 0.8s ease;
-    }
+    // .saladMenu-enter-active,
+    // .saladMenu-leave-active {
+    //     transition: opacity 0.8s ease;
+    // }
 
-    .saladMenu-enter-from,
-    .saladMenu-leave-to {
-        opacity: 0;
-    }
+    // .saladMenu-enter-from,
+    // .saladMenu-leave-to {
+    //     opacity: 0;
+    // }
 
-    .saladMenu-enter-to,
-    .saladMenu-leave-from {
-        opacity: 1;
-    }
+    // .saladMenu-enter-to,
+    // .saladMenu-leave-from {
+    //     opacity: 1;
+    // }
 
     .saladMenu {
         // overflow: hidden;
         margin-top: 1.5rem;
-        padding: 1rem 1rem;
+        padding: 1rem 0rem;
         display: grid;
         justify-content: space-between;
         grid-template-columns: 20% 20% 20% 20%;
@@ -1740,6 +1834,7 @@ onMounted(() => {
         row-gap: 2rem;
         // transition: opacity 0.5s ease;
         position: relative;
+        min-height: 930px;
 
         * {
             // outline: 1px solid black;
@@ -1747,8 +1842,9 @@ onMounted(() => {
 
         .item {
             @extend %menuItem;
-            // transition: all 0.5s ease;
-
+            // transition: top 0.5s ease,
+            //     left 0.5s ease;
+            // transition: transform 0.5s ease;
         }
 
         .hideItem {
