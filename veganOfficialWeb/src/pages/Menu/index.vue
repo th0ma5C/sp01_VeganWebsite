@@ -172,6 +172,7 @@
 
             <div class="saladMenu"
                 :class="{ expandMenu: isShowFullMenu }"
+                :style="saladMenuStyle"
                 ref="saladContainer">
                 <transition name="skeleton">
                     <div class="skeleton"
@@ -203,7 +204,7 @@
                     v-show="index < showMenuLimit && isLoaded"
                     :ref="el => setElementRef(el as HTMLElement | null, id)"> -->
                 <div class="item"
-                    v-for="(item, index) in showSalad"
+                    v-for="(item, index) in sortedSalad"
                     :key="item.id ? item.id : index" :class="{
                         hideItem: index > (showMenuLimit - 1),
                         onUnloaded: !isLoaded,
@@ -410,40 +411,44 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick, onBeforeUpdate, onUpdated } from 'vue';
-import type { ComputedRef, Ref } from 'vue';
+import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick, onBeforeUpdate, onUpdated, toRefs } from 'vue';
+import type { ComputedRef, Ref, WritableComputedRef } from 'vue';
 import Skeleton from '@components/skeleton/skeleton.vue';
 import useConcatImgPath from '@/hooks/useConcatImgPath';
 import { useMenuStore } from '@/store/menuStore';
 import type { MenuItem } from '@/api/menu/type'
 import { storeToRefs } from 'pinia';
-// import gsap from 'gsap';
-// import Flip from 'gsap/Flip';
+import gsap from 'gsap';
+import Flip from 'gsap/Flip';
 
 
-//DOING 菜單響應 transitionGroup 因為絕對定位所以飛到左上角，轉場前宣告轉場元素的絕對定位解決
-//TODO 菜單響應
+//DOING
+//TODO 排序精選無轉場 salad圖大小不一致
 /**
  * *骨架屏、果席跑馬燈初步完成
  * *營養數據轉移
+ * *新增數據量
+ * *響應初步完成
  * --------------
- * !整理樣式
- * !RWD
  * !讀取中 menu沒被撐開
- * !排序 篩選時會閃爍
+ * !整理樣式
+ * !整理腳本
+ * !RWD
+ * //!排序 篩選時會閃爍
  * //!篩選多個時 展開按鈕有錯誤 => 改setFullMenu limit 為原數據數量
  * --------------
  * ? localStorage、ETag緩存
- * ? grid轉場效果使用不順
+ * //? grid轉場效果使用不順 gsap解決
  * //? 加入購物車改為右上角icon
  * //? mongodb 聚合管道
  * --------------
+ * 排序精選無轉場
  * 初始化轉場(數據初次返回時)
- * 篩選、排序邏輯
  * 圖片縮放比例
  * 麵包屑
- * showMenu 拆分
  * salad圖大小不一致
+ * //篩選、排序邏輯
+ * //菜單響應
  * //營養改在store補足6個
  * //果昔跑馬燈
  * //菜單摺疊區塊
@@ -488,14 +493,6 @@ const menuStore = useMenuStore()
 const { fullMenu, saladList, smoothieList, ingredientsList, isLoaded } = storeToRefs(menuStore);
 
 // -----篩選、排序功能-----
-// TODO menu響應 展開的轉場生硬(少於 1 row 時會撐開 2 row)
-// DOING 響應動畫
-/**
- * store數據增加ID屬性
- * !讀取中 menu 沒被撐開
- * ?不要設置row是否使轉場滑順
- */
-
 // 排序
 // 排序箭頭、內容
 let sortList = ref(['精選', '名稱', '價格', '人氣', '日期']),
@@ -503,6 +500,7 @@ let sortList = ref(['精選', '名稱', '價格', '人氣', '日期']),
     sortOrder = ref(0); //0 降序 -180升序
 
 function setSortDirection(n: string) {
+    setFullMenu();
     if (sorting.value == n) {
         sortOrder.value = sortOrder.value == 0 ? -180 : 0;
         return
@@ -516,6 +514,7 @@ let sortDirIcon = computed(() => ({
 }))
 
 // 排序功能
+// 比較函數
 type CompareFn<T> = (a: T, b: T) => number;
 
 const compareFn = <T>(key: (item: T) => any, order: number): CompareFn<T> => {
@@ -531,6 +530,38 @@ const compareFn = <T>(key: (item: T) => any, order: number): CompareFn<T> => {
         } else {
             return 0;
         }
+    }
+}
+// 排序
+function saladSortFn(list: MenuItem[]) {
+    switch (sorting.value) {
+        case '名稱':
+            sortOrder.value == 0 ?
+                list.sort(compareFn(item => item.name, 0)) :
+                list.sort(compareFn(item => item.name, 1))
+
+            break;
+        case '價格':
+            sortOrder.value == 0 ?
+                list.sort(compareFn(item => item.price, 0)) :
+                list.sort(compareFn(item => item.price, 1))
+
+            break;
+        case '人氣':
+            sortOrder.value == 0 ?
+                list.sort(compareFn(item => item.rating, 0)) :
+                list.sort(compareFn(item => item.rating, 1))
+
+            break;
+        case '日期':
+            sortOrder.value == 0 ?
+                list.sort(compareFn(item => item.date, 0)) :
+                list.sort(compareFn(item => item.date, 1))
+
+            break;
+        default:
+            // list.sort(compareFn(item => item.rating, 0))
+            break;
     }
 }
 
@@ -600,11 +631,27 @@ function resetFilterSelect() {
     selectIngredient.value = [];
 }
 
+// 篩選
+let saladFilter = () => {
+    if (selectIngredient.value.length === 0) return [...saladList.value]
+
+    let list = saladList.value.filter((item) => {
+        for (let factor of selectIngredient.value) {
+            if (item.ingredients.some(el => el == factor)) {
+                return true
+            }
+        }
+        return false
+    })
+
+    return list
+}
+
 // -----menu 摺疊-----
 let isShowFullMenu = computed(() => showMenuLimit.value == showSalad.value.length);
 let isShowBtn = computed(() => showMenuLimit.value < showSalad.value.length)
 
-let showMenuLimit = ref(Infinity);
+let showMenuLimit = ref(8);
 
 let currShow = computed(() => {
     let length = showSalad.value.length;
@@ -625,6 +672,7 @@ let smoothieSwiper = ref();
 
 watch(isLoaded, (nVal) => {
     if (nVal == true) {
+        showMenuLimit.value = 8
         handleSwiperSlide('start');
     }
 }, { once: true })
@@ -657,61 +705,68 @@ function handleSwiperSlide(action: "start" | "stop" | "update") {
 
 }
 
+// -----menu GSAP-----
+gsap.registerPlugin(Flip);
+let elList = ref<HTMLElement[]>([]);
+let saladContainer = ref();
+
+function setSaladGSAP(state: Flip.FlipState) {
+    Flip.from(state, {
+        fade: true,
+        simple: true,
+        duration: 0.75,
+        absolute: true,
+        ease: "power1.inOut",
+        onEnter: (elements) => {
+            return gsap.fromTo(elements,
+                { opacity: 0 },
+                { opacity: 1, duration: 1 })
+        },
+        onLeave: (elements) => {
+            return gsap.fromTo(elements,
+                { opacity: 1 },
+                { opacity: 0, duration: 1 })
+        }
+    });
+}
+
 // ----- show數據 -----
+
 let showSalad: ComputedRef<MenuItem[]> = computed(() => {
-    if (!isLoaded.value) return Array(8).fill(saladList.value);
 
+    const state = Flip.getState(elList.value);
 
-    // 篩選
-    let salad = (() => {
-        if (selectIngredient.value.length === 0) return saladList.value
+    let salad = saladFilter();
 
-        let list = saladList.value.filter((item) => {
-            for (let factor of selectIngredient.value) {
-                if (item.ingredients.some(el => el == factor)) {
-                    return true
-                }
-            }
-            return false
-        })
-
-        return list
-    })();
-
-    // 排序
-    switch (sorting.value) {
-        case '名稱':
-            sortOrder.value == 0 ?
-                salad.sort(compareFn(item => item.name, 0)) :
-                salad.sort(compareFn(item => item.name, 1))
-
-            break;
-        case '價格':
-            sortOrder.value == 0 ?
-                salad.sort(compareFn(item => item.price, 0)) :
-                salad.sort(compareFn(item => item.price, 1))
-
-            break;
-        case '人氣':
-            sortOrder.value == 0 ?
-                salad.sort(compareFn(item => item.rating, 0)) :
-                salad.sort(compareFn(item => item.rating, 1))
-
-            break;
-        case '日期':
-            sortOrder.value == 0 ?
-                salad.sort(compareFn(item => item.date, 0)) :
-                salad.sort(compareFn(item => item.date, 1))
-
-            break;
-        default:
-            salad.sort(compareFn(item => item.rating, 0))
-            break;
-    }
-    // console.log(salad);
-
+    nextTick(() => {
+        setSaladGSAP(state);
+    })
     return salad
 })
+
+let sortedSalad = computed(() => {
+    if (!isLoaded.value) return Array(8).fill(saladList.value);
+    if (sorting.value == '精選') {
+        // const state = Flip.getState(elList.value);
+        // nextTick(() => {
+        //     setSaladGSAP(state);
+        // })
+
+        return saladList.value;
+    }
+
+    const state = Flip.getState(elList.value);
+
+    let list = [...saladList.value];
+
+    saladSortFn(list);
+
+    nextTick(() => {
+        setSaladGSAP(state);
+    })
+
+    return list
+});
 
 let showSmoothies: ComputedRef<MenuItem[]> = computed(() => {
     if (!isLoaded.value) return Array(8).fill(smoothieList.value);
@@ -768,190 +823,20 @@ let showSmoothies: ComputedRef<MenuItem[]> = computed(() => {
             break;
     }
 
-    // if (smoothies.length < 10) {
-    //     while (smoothies.length < 10) {
-    //         smoothies.push(...smoothies);
-    //     }
-    // }
-
     return smoothies
 })
 
-// -----menu 響應-----
-// let saladItem = ref<HTMLElement[]>([]);
-// let saladPositionMap = ref(new Map());
-// function setSaladPosition() {
-//     let arr = [...saladItem.value].reverse();
+// menu min height minmax(0, 200px)
+let gridRow = ref(2);
+let saladMenuStyle = computed(() => ({
+    'grid-template-rows': `repeat(${gridRow.value}, minmax(0, 450px))`
+}))
+watch(selectIngredient, (nVal) => {
+    if (nVal.length == 0) return
+    let rowNum = Math.ceil(showSalad.value.length / 4);
+    gridRow.value = rowNum;
 
-//     for (let i in arr) {
-//         let top = arr[i].offsetTop;
-//         let left = arr[i].offsetLeft;
-//         saladPositionMap.value.set(i, {
-//             top,
-//             left
-//         })
-//     }
-
-//     showMenuLimit.value = 8;
-// }
-
-// watch(isLoaded, () => {
-//     nextTick(() => {
-//         setSaladPosition()
-//         console.log(saladPositionMap.value);
-//     })
-// })
-
-// interface ElementPosition {
-//     top: number;
-//     left: number;
-// }
-
-// const elementRefs: Ref<Record<string | number, HTMLElement | null>> = ref({});
-// const elementPositions: Ref<Record<string, ElementPosition>> = ref({});
-// const initialElementPositions: Ref<Record<string, ElementPosition>> = ref({});
-
-// const setElementRef = (el: HTMLElement | null, id: string | null) => {
-//     if (el && id) {
-//         elementRefs.value[id] = el;
-
-//         nextTick(() => {
-//             if (elementRefs.value[id]) {
-//                 const position = {
-//                     top: el.offsetTop,
-//                     left: el.offsetLeft,
-//                 };
-
-//                 elementPositions.value[id] = position;
-
-//                 if (!initialElementPositions.value[id]) {
-//                     initialElementPositions.value[id] = position;
-//                     el.style.top = `${el.offsetTop}px`;
-//                     el.style.left = `${el.offsetLeft}px`;
-//                 }
-//             }
-//             if (showMenuLimit.value == Infinity) {
-//                 showMenuLimit.value = 8;
-//             }
-//         })
-//     }
-// };
-
-
-// const setElementPositions = (actions: 'set' | 'reset') => {
-//     const positions: Record<string, { top: number; left: number }> = {};
-//     showSalad.value.forEach(item => {
-//         const element = elementRefs.value[item.id];
-//         if (element) {
-//             // const rect = element.getBoundingClientRect();
-//             const top = element.offsetTop;
-//             const left = element.offsetLeft;
-//             positions[item.id] = {
-//                 top,
-//                 left
-//             };
-//         }
-//     });
-//     if (Object.keys(initialElementPositions.value).length == 0) return
-
-//     switch (actions) {
-//         case 'set':
-//             for (let i in positions) {
-//                 let deltaX = positions[i].left - initialElementPositions.value[i].left;
-//                 let deltaY = positions[i].top - initialElementPositions.value[i].top;
-
-//                 elementRefs.value[i]!.style.position = `absolute`;
-//                 elementRefs.value[i]!.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-//                 setTimeout(() => {
-//                     // elementRefs.value[i]!.style.position = `static`;
-//                     // elementRefs.value[i]!.style.transform = `translate(${0}px, ${0}px)`;
-//                 }, 500)
-//             }
-//             break;
-
-//         case 'reset':
-//             for (let i in positions) {
-//                 //     let deltaX = -positions[i].left - initialElementPositions.value[i].left;
-//                 //     let deltaY = -positions[i].top - initialElementPositions.value[i].top;
-
-//                 //     elementRefs.value[i]!.style.position = `absolute`;
-//                 //     elementRefs.value[i]!.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-//                 //     setTimeout(() => {
-//                 elementRefs.value[i]!.style.position = `static`;
-//                 elementRefs.value[i]!.style.transform = `translate(${0}px, ${0}px)`;
-//                 //         // elementRefs.value[i]!.style.transform = `translate(${0}px, ${0}px)`;
-//                 //     }, 500)
-//             }
-//             break;
-
-//         default:
-//             break;
-//     }
-
-
-//     console.log('position', positions);
-//     // console.log('elementRefs', elementRefs.value);
-//     // console.log('raw', initialElementPositions.value);
-//     // console.log('new', elementPositions.value);
-// };
-
-// watch(selectIngredient, (nVal, oVal) => {
-//     if (nVal.length !== 0) {
-//         nextTick(() => {
-//             setElementPositions('set');
-//         });
-//     } else {
-//         nextTick(() => {
-//             setElementPositions('reset');
-//         })
-//     }
-// }, { deep: true });
-
-import gsap from 'gsap';
-import { Flip } from 'gsap/Flip';
-import { RFC_2822 } from 'moment';
-
-gsap.registerPlugin(Flip);
-
-let elList = ref()
-let saladContainer = ref<HTMLElement>();
-
-watch(showSalad, () => {
-    saladGSAP()
-    nextTick(() => {
-        saladGSAP()
-    })
-})
-
-
-function saladGSAP() {
-
-    const state = Flip.getState(elList.value);
-    console.log(1, state);
-    nextTick(() => {
-        console.log(2, state);
-
-        Flip.from(state, {
-            fade: true,
-            duration: 0.75,
-            absolute: true,
-            ease: "power1.inOut",
-            onEnter: (elements) => {
-                // console.log(elements);
-                return gsap.fromTo(elements,
-                    { opacity: 0 },
-                    { opacity: 1, duration: 1 })
-            },
-            onLeave: (elements) => {
-                // console.log(elements);
-                return gsap.fromTo(elements,
-                    { opacity: 1 },
-                    { opacity: 0, duration: 1 })
-            }
-        });
-
-    })
-}
+}, { deep: true })
 
 // -----bot swiper-----
 let docAvatarUrl = useConcatImgPath(['doc01.png', 'doc02.png'], 'Menu');
@@ -970,7 +855,6 @@ let docData = [
     }
 ];
 
-
 // -----生命週期-----
 onBeforeMount(() => {
 })
@@ -986,6 +870,9 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+$imgContainer_width: 250px;
+$menuItemContainer_height: 405px;
+
 .container {
     @extend %fixContainer;
     @extend %headerPseudo;
@@ -1830,11 +1717,10 @@ onMounted(() => {
         display: grid;
         justify-content: space-between;
         grid-template-columns: 20% 20% 20% 20%;
-        grid-template-rows: 1fr 1fr auto;
+        grid-template-rows: repeat(auto, minmax(0, 450px));
         row-gap: 2rem;
         // transition: opacity 0.5s ease;
         position: relative;
-        min-height: 930px;
 
         * {
             // outline: 1px solid black;
@@ -1939,11 +1825,7 @@ onMounted(() => {
     }
 
     .expandMenu {
-        // grid-template-rows: 1fr 1fr 1fr 0.25fr;
-
-        .showFullMenuBtn {
-            grid-column: 1 / span 4;
-        }
+        min-height: 1750px;
     }
 
     .smoothieMenu {
@@ -2207,7 +2089,19 @@ onMounted(() => {
             visibility: hidden;
         }
     }
-
-
 }
+
+@media only screen and (min-width: ($large-screen)) {
+    .saladMenu {
+        min-height: 930px;
+    }
+
+    .expandMenu {
+        // min-height: 1750px;
+    }
+}
+
+@media only screen and (min-width: ($medium-screen + 1)) and (max-width: $large-screen) {}
+
+@media only screen and (max-width: $medium-screen) {}
 </style>

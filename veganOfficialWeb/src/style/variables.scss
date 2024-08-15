@@ -4,6 +4,9 @@ $primaryBacColor: #FCFAF2;
 $secondBacColor: #00430b;
 $btnBacColor: #0d731e;
 $btnBacColor_light: #3EA350;
+$small-screen: 480px;
+$medium-screen: 768px;
+$large-screen: 1440px;
 
 %headerPseudo {
     &::before {
