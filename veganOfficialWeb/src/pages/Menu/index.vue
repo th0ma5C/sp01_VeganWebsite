@@ -164,7 +164,7 @@
                             </transition>
                         </div>
                         <div class="sortCount">
-                            共{{ showSalad.length }}項
+                            共{{ filteredSalad.length }}項
                         </div>
                     </div>
                 </div>
@@ -181,35 +181,12 @@
                             :key="index"></Skeleton>
                     </div>
                 </transition>
-                <div class="loadingScene">
-
-                </div>
-                <!-- <transition-group name="saladMenu"
-                    type="animation"> -->
-                <!-- <div class="item"
-                        v-for="(item, index) in saladList"
-                        :key="item.id ? item.id : index"
-                        :class="{
-                            hideItem: index > (showMenuLimit - 1),
-                            onUnloaded: !isLoaded,
-                        }"
-                        v-show="showSalad.includes(item) && index < showMenuLimit"
-                        ref="saladItem"> -->
-                <!-- <div class="item"
-                    v-for="({ name, description, ingredients, fileName, price, id }, index) in showSalad"
-                    :key="id ? id : index" :class="{
-                        hideItem: index > (showMenuLimit - 1),
-                        onUnloaded: !isLoaded,
-                    }"
-                    v-show="index < showMenuLimit && isLoaded"
-                    :ref="el => setElementRef(el as HTMLElement | null, id)"> -->
                 <div class="item"
                     v-for="(item, index) in sortedSalad"
                     :key="item.id ? item.id : index" :class="{
                         hideItem: index > (showMenuLimit - 1),
-                        onUnloaded: !isLoaded,
                     }"
-                    v-show="showSalad.includes(item) && index < showMenuLimit && isLoaded"
+                    v-show="filteredSalad.includes(item) && index < showMenuLimit && isLoaded"
                     ref="elList">
                     <div class="menuImg">
                         <img :src="item.fileName!" alt="商品">
@@ -282,7 +259,8 @@
                 <div class="title">
                     SMOOTHIES <span></span>
                 </div>
-                <div class="itemWrapper">
+                <div class="itemWrapper" ref="itemWrapper"
+                    :style="itemWrapperStyle">
                     <div class="skeletonWrapper"
                         v-show="!isLoaded">
                         <Skeleton class="skeleton"
@@ -290,28 +268,31 @@
                             :key="index"></Skeleton>
                     </div>
                     <swiper-container slides-per-view="auto"
+                        :centerInsufficientSlides="true"
+                        :loopAddBlankSlides="true"
                         ref="smoothieSwiper"
                         grabCursor="true"
-                        :space-between="32" :loop="{
-                            delay: 0,
-                            pauseOnMouseEnter: true,
-                        }" speed="5000" :autoplay="true">
+                        :space-between="32"
+                        :loop="loopProps" speed="5000"
+                        :autoplay="true">
                         <swiper-slide class="item"
-                            v-for="({ name, description, ingredients, price, fileName, id }, index) in showSmoothies"
+                            v-for="(items, index) in sortedSmoothies"
+                            v-show="filteredSmoothie.includes(items)"
                             :key="index">
                             <div class="imgWrapper">
-                                <img :src="fileName!"
+                                <img :src="items.fileName!"
                                     alt="商品">
                                 <div class="description">
-                                    <span>{{ description
+                                    <span>{{
+                                        items.description
                                         }}</span>
                                 </div>
                             </div>
-                            <h3>{{ name }}</h3>
-                            <p>{{ price }}元</p>
+                            <h3>{{ items.name }}</h3>
+                            <p>{{ items.price }}元</p>
                             <div class="ingredients">
                                 <span
-                                    v-for="(item) in ingredients"
+                                    v-for="(item) in items.ingredients"
                                     :key="item">
                                     {{ item }}
                                 </span>
@@ -420,10 +401,11 @@ import type { MenuItem } from '@/api/menu/type'
 import { storeToRefs } from 'pinia';
 import gsap from 'gsap';
 import Flip from 'gsap/Flip';
+import { transform } from 'lodash';
 
 
 //DOING
-//TODO 排序精選無轉場 salad圖大小不一致
+//TODO salad圖大小不一致 商品內頁
 /**
  * *骨架屏、果席跑馬燈初步完成
  * *營養數據轉移
@@ -442,11 +424,11 @@ import Flip from 'gsap/Flip';
  * //? 加入購物車改為右上角icon
  * //? mongodb 聚合管道
  * --------------
- * 排序精選無轉場
- * 初始化轉場(數據初次返回時)
  * 圖片縮放比例
  * 麵包屑
  * salad圖大小不一致
+ * //初始化轉場(數據初次返回時)
+ * //排序精選無轉場
  * //篩選、排序邏輯
  * //菜單響應
  * //營養改在store補足6個
@@ -533,35 +515,32 @@ const compareFn = <T>(key: (item: T) => any, order: number): CompareFn<T> => {
     }
 }
 // 排序
-function saladSortFn(list: MenuItem[]) {
+function sort(el: Ref<MenuItem[]>) {
+    let list = [...el.value];
+
     switch (sorting.value) {
         case '名稱':
             sortOrder.value == 0 ?
                 list.sort(compareFn(item => item.name, 0)) :
                 list.sort(compareFn(item => item.name, 1))
-
-            break;
+            return list
         case '價格':
             sortOrder.value == 0 ?
                 list.sort(compareFn(item => item.price, 0)) :
                 list.sort(compareFn(item => item.price, 1))
-
-            break;
+            return list
         case '人氣':
             sortOrder.value == 0 ?
                 list.sort(compareFn(item => item.rating, 0)) :
                 list.sort(compareFn(item => item.rating, 1))
-
-            break;
+            return list
         case '日期':
             sortOrder.value == 0 ?
                 list.sort(compareFn(item => item.date, 0)) :
                 list.sort(compareFn(item => item.date, 1))
-
-            break;
+            return list
         default:
-            // list.sort(compareFn(item => item.rating, 0))
-            break;
+            return list
     }
 }
 
@@ -632,10 +611,10 @@ function resetFilterSelect() {
 }
 
 // 篩選
-let saladFilter = () => {
-    if (selectIngredient.value.length === 0) return [...saladList.value]
+function filter(el: Ref<MenuItem[]>) {
+    if (selectIngredient.value.length === 0) return [...el.value]
 
-    let list = saladList.value.filter((item) => {
+    let list = el.value.filter((item) => {
         for (let factor of selectIngredient.value) {
             if (item.ingredients.some(el => el == factor)) {
                 return true
@@ -648,13 +627,13 @@ let saladFilter = () => {
 }
 
 // -----menu 摺疊-----
-let isShowFullMenu = computed(() => showMenuLimit.value == showSalad.value.length);
-let isShowBtn = computed(() => showMenuLimit.value < showSalad.value.length)
+let isShowFullMenu = computed(() => showMenuLimit.value == filteredSalad.value.length);
+let isShowBtn = computed(() => showMenuLimit.value < filteredSalad.value.length)
 
 let showMenuLimit = ref(8);
 
 let currShow = computed(() => {
-    let length = showSalad.value.length;
+    let length = filteredSalad.value.length;
     // console.log(length);
     if (length > showMenuLimit.value) {
         return showMenuLimit.value
@@ -662,31 +641,62 @@ let currShow = computed(() => {
     return length
 })
 
-
 function setFullMenu() {
     showMenuLimit.value = saladList.value.length;
 }
 
+let skeletonIsShow = ref(true); //初始化時待skeleton消失
+function setSkeletonIsShow() {
+    skeletonIsShow.value = false;
+}
+
+
 // -----smoothie marquee-----
 let smoothieSwiper = ref();
+let itemWrapper = ref();
+let loopProps = computed(() => {
+    if (selectIngredient.value.length === 0) {
+        return {
+            delay: 0,
+            pauseOnMouseEnter: true,
+        }
+    }
+    return false
+})
+
+let itemWrapperStyle = computed(() => {
+    let translateX = ref();
+    if (itemWrapper.value) {
+        let { left } = itemWrapper.value.getBoundingClientRect();
+        translateX.value = left;
+    }
+
+    return {
+        transform: `translateX(-${translateX.value}px)`
+    }
+})
 
 watch(isLoaded, (nVal) => {
     if (nVal == true) {
         showMenuLimit.value = 8
-        handleSwiperSlide('start');
+        nextTick(() => {
+            handleSwiperSlide('start');
+        })
     }
 }, { once: true })
 
 watch(selectIngredient, (nVal) => {
-    // console.log(smoothieSwiper.value.swiper);
     if (nVal.length == 0) {
-        handleSwiperSlide('start');
-        handleSwiperSlide('update');
+        nextTick(() => {
+            handleSwiperSlide('update');
+            handleSwiperSlide('start');
+        })
         return
     }
-    handleSwiperSlide('stop');
-    smoothieSwiper.value.swiperParams.centeredSlides = false;
-
+    nextTick(() => {
+        handleSwiperSlide('update');
+        handleSwiperSlide('stop');
+    })
 }, { deep: true })
 
 
@@ -694,15 +704,15 @@ function handleSwiperSlide(action: "start" | "stop" | "update") {
     const actionsMap = {
         start: () => smoothieSwiper.value.swiper.autoplay.start(),
         stop: () => smoothieSwiper.value.swiper.autoplay.stop(),
-        update: () => smoothieSwiper.value.swiper.thumbs.update()
+        update: () => {
+            smoothieSwiper.value.swiper.update();
+            smoothieSwiper.value.swiper.slideToLoop(0, 1000);
+        }
     };
 
     const actionHandler = actionsMap[action];
 
-    if (!actionHandler) return console.log('undefined action');
-
     actionHandler();
-
 }
 
 // -----menu GSAP-----
@@ -732,11 +742,11 @@ function setSaladGSAP(state: Flip.FlipState) {
 
 // ----- show數據 -----
 
-let showSalad: ComputedRef<MenuItem[]> = computed(() => {
+let filteredSalad = computed(() => {
 
     const state = Flip.getState(elList.value);
 
-    let salad = saladFilter();
+    let salad = filter(saladList);
 
     nextTick(() => {
         setSaladGSAP(state);
@@ -746,82 +756,34 @@ let showSalad: ComputedRef<MenuItem[]> = computed(() => {
 
 let sortedSalad = computed(() => {
     if (!isLoaded.value) return Array(8).fill(saladList.value);
-    if (sorting.value == '精選') {
-        // const state = Flip.getState(elList.value);
-        // nextTick(() => {
-        //     setSaladGSAP(state);
-        // })
 
-        return saladList.value;
-    }
-
-    const state = Flip.getState(elList.value);
-
-    let list = [...saladList.value];
-
-    saladSortFn(list);
-
-    nextTick(() => {
-        setSaladGSAP(state);
-    })
+    let list = sort(saladList);
 
     return list
 });
 
-let showSmoothies: ComputedRef<MenuItem[]> = computed(() => {
+watch(sortedSalad, (nVal) => {
+    const state = Flip.getState(elList.value);
+    nextTick(() => {
+        setSaladGSAP(state);
+    })
+})
+
+let filteredSmoothie = computed(() => {
+    let smoothies = filter(smoothieList);
+
+    if (smoothies.length == 0) {
+        handleSwiperSlide('start');
+        smoothies = [...smoothieList.value]
+    }
+
+    return smoothies
+})
+
+let sortedSmoothies = computed(() => {
     if (!isLoaded.value) return Array(8).fill(smoothieList.value);
 
-    // 篩選
-    let smoothies = (() => {
-        if (selectIngredient.value.length == 0) return smoothieList.value;
-
-        let list = smoothieList.value.filter((item) => {
-            for (let factor of selectIngredient.value) {
-                if (item.ingredients.some(el => el == factor)) {
-                    return true
-                }
-            }
-            return false
-        })
-
-        if (list.length == 0) {
-            handleSwiperSlide('start');
-            return smoothieList.value
-        }
-
-        return list
-    })()
-
-    // 排序
-    switch (sorting.value) {
-        case '名稱':
-            sortOrder.value == 0 ?
-                smoothies.sort(compareFn(item => item.name, 0)) :
-                smoothies.sort(compareFn(item => item.name, 1))
-
-            break;
-        case '價格':
-            sortOrder.value == 0 ?
-                smoothies.sort(compareFn(item => item.price, 0)) :
-                smoothies.sort(compareFn(item => item.price, 1))
-
-            break;
-        case '人氣':
-            sortOrder.value == 0 ?
-                smoothies.sort(compareFn(item => item.rating, 0)) :
-                smoothies.sort(compareFn(item => item.rating, 1))
-
-            break;
-        case '日期':
-            sortOrder.value == 0 ?
-                smoothies.sort(compareFn(item => item.date, 0)) :
-                smoothies.sort(compareFn(item => item.date, 1))
-
-            break;
-        default:
-            smoothies.sort(compareFn(item => item.rating, 0))
-            break;
-    }
+    let smoothies = sort(smoothieList);
 
     return smoothies
 })
@@ -833,10 +795,11 @@ let saladMenuStyle = computed(() => ({
 }))
 watch(selectIngredient, (nVal) => {
     if (nVal.length == 0) return
-    let rowNum = Math.ceil(showSalad.value.length / 4);
+    let rowNum = Math.ceil(filteredSalad.value.length / 4);
     gridRow.value = rowNum;
 
 }, { deep: true })
+
 
 // -----bot swiper-----
 let docAvatarUrl = useConcatImgPath(['doc01.png', 'doc02.png'], 'Menu');
@@ -859,12 +822,6 @@ let docData = [
 onBeforeMount(() => {
 })
 onMounted(() => {
-    // nextTick(() => {
-    //     isLoaded.value ?
-    //         smoothieSwiper.value.swiper.autoplay.start() :
-    //         smoothieSwiper.value.swiper.autoplay.stop();
-
-    // })
 })
 
 </script>
@@ -1721,6 +1678,7 @@ $menuItemContainer_height: 405px;
         row-gap: 2rem;
         // transition: opacity 0.5s ease;
         position: relative;
+        // opacity: 1;
 
         * {
             // outline: 1px solid black;
@@ -1740,13 +1698,23 @@ $menuItemContainer_height: 405px;
             // opacity: 0;
         }
 
+        @keyframes onUnloaded {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
         .onUnloaded {
-            opacity: 0;
+            // overflow: hidden;
         }
 
         .skeleton-enter-active,
         .skeleton-leave-active {
-            transition: opacity 0.8s ease;
+            transition: opacity .75s ease;
         }
 
         .skeleton-enter-from,
@@ -1760,17 +1728,19 @@ $menuItemContainer_height: 405px;
         }
 
         .skeleton {
+            // opacity: 0.5;
+            @include WnH(110%, 100%);
             background-color: $primaryBacColor;
-            padding: 0 1rem;
+            padding: 0 4rem;
             display: grid;
             justify-content: space-between;
             grid-template-columns: repeat(4, 20%);
-            grid-template-rows: 1fr 1fr;
+            // grid-template-rows: 1fr 1fr;
+            grid-template-rows: repeat(auto, minmax(0, 450px));
             row-gap: 2rem;
-            width: 100%;
             position: absolute;
             top: 0;
-            left: 0;
+            left: -5%;
             z-index: 5;
 
             &:deep(.wrapper) {
