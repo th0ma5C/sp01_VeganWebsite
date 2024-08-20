@@ -94,7 +94,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                    }}</span>
+                                                }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -168,8 +168,23 @@
                         </div>
                     </div>
                 </div>
+                <div class="filterTagWrapper">
+                    <div class="tag"
+                        v-for="(item, index) in selectIngredient"
+                        :key="index"
+                        @click="handleFilterSelect(item)">
+                        <span>{{ item }}</span>
+                        <SvgIcon name="cancel" width="16"
+                            height="16" color="black">
+                        </SvgIcon>
+                    </div>
+                    <div class="cancelSelect"
+                        v-show="selectIngredient.length !== 0"
+                        @click="resetFilterSelect">
+                        <span>取消篩選</span>
+                    </div>
+                </div>
             </div>
-
             <div class="saladMenu"
                 :class="{ expandMenu: isShowFullMenu }"
                 :style="saladMenuStyle"
@@ -244,7 +259,9 @@
                 </div>
                 <!-- </transition-group> -->
             </div>
-            <div class="showFullMenuBtn" v-show="isLoaded">
+            <div class="showFullMenuBtn" :class="{
+                onUnloaded: !isLoaded
+            }" v-show="true">
                 <span>{{ currShow }} of {{
                     saladList.length }}</span>
                 <!-- <transition name="showFullMenuBtn" -->
@@ -264,7 +281,7 @@
                     <div class="skeletonWrapper"
                         v-show="!isLoaded">
                         <Skeleton class="skeleton"
-                            v-for="(item, index) in 8"
+                            v-for="(item, index) in 4"
                             :key="index"></Skeleton>
                     </div>
                     <swiper-container slides-per-view="auto"
@@ -285,7 +302,7 @@
                                 <div class="description">
                                     <span>{{
                                         items.description
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
                             <h3>{{ items.name }}</h3>
@@ -401,10 +418,9 @@ import type { MenuItem } from '@/api/menu/type'
 import { storeToRefs } from 'pinia';
 import gsap from 'gsap';
 import Flip from 'gsap/Flip';
-import { transform } from 'lodash';
 
 
-//DOING
+//DOING 篩選後減少可選選項 畫面縮放後更新smoothie marquee
 //TODO salad圖大小不一致 商品內頁
 /**
  * *骨架屏、果席跑馬燈初步完成
@@ -412,10 +428,10 @@ import { transform } from 'lodash';
  * *新增數據量
  * *響應初步完成
  * --------------
- * !讀取中 menu沒被撐開
  * !整理樣式
  * !整理腳本
  * !RWD
+ * //!讀取中 menu沒被撐開
  * //!排序 篩選時會閃爍
  * //!篩選多個時 展開按鈕有錯誤 => 改setFullMenu limit 為原數據數量
  * --------------
@@ -427,6 +443,8 @@ import { transform } from 'lodash';
  * 圖片縮放比例
  * 麵包屑
  * salad圖大小不一致
+ * 畫面縮放後更新smoothie marquee
+ * //篩選下方篩選標籤
  * //初始化轉場(數據初次返回時)
  * //排序精選無轉場
  * //篩選、排序邏輯
@@ -585,6 +603,14 @@ function selectAll() {
     }
     selectIngredient.value = [];
 }
+
+// 選中後list
+let filteredMenu = computed(() => {
+    let list = [...filteredSalad.value]
+
+    console.log(list);
+    return list
+})
 
 // 篩選搜尋
 let searchFilterWord = ref('');
@@ -781,7 +807,7 @@ let filteredSmoothie = computed(() => {
 })
 
 let sortedSmoothies = computed(() => {
-    if (!isLoaded.value) return Array(8).fill(smoothieList.value);
+    if (!isLoaded.value) return Array(4).fill(smoothieList.value);
 
     let smoothies = sort(smoothieList);
 
@@ -1435,6 +1461,63 @@ $menuItemContainer_height: 405px;
                 }
             }
         }
+
+        .filterTagWrapper {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+
+            & * {
+                // outline: 1px solid black;
+            }
+
+            .tag {
+                border: 1px solid gray;
+                background-color: transparent;
+                display: flex;
+                gap: .5rem;
+                padding: 0 0.5rem 0 12px;
+                border-radius: 2rem;
+                position: relative;
+                transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+                &:hover {
+                    cursor: pointer;
+                    border-color: black;
+                    box-shadow: 0 0 2px black;
+                }
+
+                &:active {
+                    transform: translate(1px, 1px);
+                }
+
+                span {
+                    padding: 1px 0;
+                    user-select: none;
+                }
+            }
+
+            .cancelSelect {
+                cursor: pointer;
+                margin-left: 0.5rem;
+
+                span {
+                    line-height: 27px;
+                    border-bottom: 1px solid black;
+                    transition: box-shadow 0.3s ease;
+                }
+
+                &:hover {
+                    span {
+                        box-shadow: 0 1px 0 black;
+                    }
+                }
+
+                &:active {
+                    transform: translate(1px, 1px);
+                }
+            }
+        }
     }
 
     %menuItem {
@@ -1669,7 +1752,7 @@ $menuItemContainer_height: 405px;
 
     .saladMenu {
         // overflow: hidden;
-        margin-top: 1.5rem;
+        // margin-top: 1rem;
         padding: 1rem 0rem;
         display: grid;
         justify-content: space-between;
@@ -1698,19 +1781,16 @@ $menuItemContainer_height: 405px;
             // opacity: 0;
         }
 
-        @keyframes onUnloaded {
-            from {
-                opacity: 0;
-            }
+        // @keyframes onUnloaded {
+        //     from {
+        //         opacity: 0;
+        //     }
 
-            to {
-                opacity: 1;
-            }
-        }
+        //     to {
+        //         opacity: 1;
+        //     }
+        // }
 
-        .onUnloaded {
-            // overflow: hidden;
-        }
 
         .skeleton-enter-active,
         .skeleton-leave-active {
@@ -1758,6 +1838,11 @@ $menuItemContainer_height: 405px;
             top: 0;
             background-color: hsla(47, 60%, 97%, 0.3)
         }
+    }
+
+    .onUnloaded {
+        min-height: 80px;
+        opacity: 0;
     }
 
     .showFullMenuBtn {
@@ -1924,6 +2009,7 @@ $menuItemContainer_height: 405px;
         }
 
         .skeletonWrapper {
+            @include absoluteCenterTLXY($top: 0, $Y: 0);
             // background-color: $primaryBacColor;
             // margin: 1.5rem 0;
             // padding: 0 1rem;
@@ -1932,9 +2018,9 @@ $menuItemContainer_height: 405px;
             flex-direction: row;
             gap: 2rem;
             height: 100%;
-            position: absolute;
-            left: 0;
-            top: 0;
+            // position: absolute;
+            // left: 50%;
+            // top: 0;
             z-index: 5;
 
 
@@ -2068,6 +2154,10 @@ $menuItemContainer_height: 405px;
 
     .expandMenu {
         // min-height: 1750px;
+    }
+
+    .smoothieMenu .itemWrapper {
+        min-height: 475px
     }
 }
 
