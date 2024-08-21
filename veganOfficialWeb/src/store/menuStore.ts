@@ -13,6 +13,9 @@ interface Menu {
 interface ingredientsList {
     ingredients: string[] | null
 }
+// export type {
+// ingredientsList
+// }
 
 export const useMenuStore = defineStore('menu', (() => {
     const GET_MENU = `
@@ -75,7 +78,6 @@ export const useMenuStore = defineStore('menu', (() => {
         { ingredients: null }
     ])
     let isLoaded = ref(false);
-    let saladMap = ref(new Map())
 
     let fetchMenu = async () => {
         try {

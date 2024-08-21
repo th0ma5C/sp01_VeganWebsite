@@ -94,12 +94,15 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                }}</span>
+                                                    }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
                                                 @click="handleFilterSelect(item);"
-                                                :class="{ select: selectIngredient.includes(item) }">
+                                                :class="{
+                                                    select: selectIngredient.includes(item),
+                                                    unSelect: !filteredIngredient.includes(item)
+                                                }">
                                                 <label
                                                     :for="`salad${item}`">
                                                     <input
@@ -154,8 +157,7 @@
                                     v-show="sortIsShow">
                                     <li v-for="(item, index) in sortList"
                                         :key="index"
-                                        @click="setSortDirection(item)"
-                                        @mousedown="">
+                                        @click="setSortDirection(item)">
                                         <button>
                                             {{ item }}
                                         </button>
@@ -302,7 +304,7 @@
                                 <div class="description">
                                     <span>{{
                                         items.description
-                                    }}</span>
+                                        }}</span>
                                 </div>
                             </div>
                             <h3>{{ items.name }}</h3>
@@ -414,14 +416,15 @@ import type { ComputedRef, Ref, WritableComputedRef } from 'vue';
 import Skeleton from '@components/skeleton/skeleton.vue';
 import useConcatImgPath from '@/hooks/useConcatImgPath';
 import { useMenuStore } from '@/store/menuStore';
+// import type { ingredientsList } from '@/store/menuStore';
 import type { MenuItem } from '@/api/menu/type'
 import { storeToRefs } from 'pinia';
 import gsap from 'gsap';
 import Flip from 'gsap/Flip';
 
 
-//DOING 篩選後減少可選選項 畫面縮放後更新smoothie marquee
-//TODO salad圖大小不一致 商品內頁
+//DOING  畫面縮放後更新smoothie marquee salad圖ps改成一致
+//TODO 商品內頁 麵包屑
 /**
  * *骨架屏、果席跑馬燈初步完成
  * *營養數據轉移
@@ -440,10 +443,10 @@ import Flip from 'gsap/Flip';
  * //? 加入購物車改為右上角icon
  * //? mongodb 聚合管道
  * --------------
- * 圖片縮放比例
  * 麵包屑
  * salad圖大小不一致
  * 畫面縮放後更新smoothie marquee
+ * //篩選後減少可選選項
  * //篩選下方篩選標籤
  * //初始化轉場(數據初次返回時)
  * //排序精選無轉場
@@ -563,6 +566,23 @@ function sort(el: Ref<MenuItem[]>) {
 }
 
 // 篩選資料去重
+// interface ingredientsList {
+//     ingredients: string[] | null
+// }
+// function removeDuplicates(list: Ref<ingredientsList[]>) {
+//     let set = new Set();
+
+//     for (let i of list.value) {
+//         i.ingredients!.forEach((ingredient) => {
+//             if (ingredient != '') {
+//                 set.add(ingredient);
+//             }
+//         })
+//     }
+
+//     return [...set]
+// }
+
 let ingredientSet = computed<Set<string>>(() => {
     if (!isLoaded.value) return new Set();
 
@@ -587,6 +607,7 @@ let selectAllText = computed(() => {
 
 function handleFilterSelect(n: string) {
     setFullMenu();
+    if (!filteredIngredient.value.includes(n)) return
     if (selectIngredient.value.includes(n)) {
         selectIngredient.value = selectIngredient.value.filter(item => item !== n)
         return
@@ -603,14 +624,6 @@ function selectAll() {
     }
     selectIngredient.value = [];
 }
-
-// 選中後list
-let filteredMenu = computed(() => {
-    let list = [...filteredSalad.value]
-
-    console.log(list);
-    return list
-})
 
 // 篩選搜尋
 let searchFilterWord = ref('');
@@ -812,6 +825,26 @@ let sortedSmoothies = computed(() => {
     let smoothies = sort(smoothieList);
 
     return smoothies
+})
+
+// 篩選後 ingredient list 樣式
+let filteredIngredient = computed(() => {
+    let list = [...filteredSalad.value];
+
+    let set = new Set();
+
+    for (let i of list) {
+        i.ingredients.forEach((item) => {
+            if (item != '') {
+                set.add(item)
+            }
+        })
+    }
+
+    return [...set]
+})
+watch(filteredIngredient, () => {
+    console.log(filteredIngredient.value);
 })
 
 // menu min height minmax(0, 200px)
@@ -1239,6 +1272,22 @@ $menuItemContainer_height: 405px;
                                 }
                             }
 
+                            .unSelect {
+                                cursor: not-allowed;
+                                user-select: none;
+                                opacity: 0.3;
+
+                                &:not(.select):hover {
+                                    &:hover {
+                                        box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+                                    }
+
+                                    &:active {
+                                        transform: none;
+                                    }
+                                }
+                            }
+
                             li {
                                 cursor: pointer;
                                 padding: 0.25rem 0.25rem;
@@ -1250,7 +1299,7 @@ $menuItemContainer_height: 405px;
                                 text-align: center;
                                 // // color: white;
                                 // background-color: green;
-                                transition: box-shadow 0.2s ease;
+                                transition: box-shadow 0.2s ease, opacity 0.2s ease;
 
                                 label {
                                     display: none;
@@ -1464,8 +1513,10 @@ $menuItemContainer_height: 405px;
 
         .filterTagWrapper {
             display: flex;
+            flex-wrap: wrap;
             gap: 1rem;
             margin-top: 1rem;
+            min-height: 28px;
 
             & * {
                 // outline: 1px solid black;
@@ -1480,6 +1531,7 @@ $menuItemContainer_height: 405px;
                 border-radius: 2rem;
                 position: relative;
                 transition: border-color 0.3s ease, box-shadow 0.3s ease;
+                white-space: nowrap;
 
                 &:hover {
                     cursor: pointer;
@@ -1505,6 +1557,7 @@ $menuItemContainer_height: 405px;
                     line-height: 27px;
                     border-bottom: 1px solid black;
                     transition: box-shadow 0.3s ease;
+                    white-space: nowrap;
                 }
 
                 &:hover {
@@ -1518,6 +1571,7 @@ $menuItemContainer_height: 405px;
                 }
             }
         }
+
     }
 
     %menuItem {
