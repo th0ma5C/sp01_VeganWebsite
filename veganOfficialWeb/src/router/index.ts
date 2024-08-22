@@ -12,6 +12,7 @@ import Menu from '@pages/Menu/index.vue'
 import About from '@pages/About/index.vue'
 import Cart from '@pages/Cart/index.vue'
 import Profile from '@pages/Profile/index.vue'
+import Product from "@/pages/Menu/product/Product.vue";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -43,16 +44,19 @@ const router = createRouter({
         {
             path: '/menu',
             component: Menu,
-            // beforeEnter: async (to, from, next) => {
-            //     const { fetchMenu } = useMenuStore();
-            //     try {
-            //         await fetchMenu();
-            //         next()
-            //     } catch (error) {
-            //         console.log('router fetchMenu failed', error);
-            //         next()
+            // children: [
+            //     {
+            //         name: 'Product',
+            //         path: 'product',
+            //         component: Product
             //     }
-            // }
+            // ]
+        },
+        {
+            name: 'Product',
+            component: Product,
+            path: '/product/:name'
+
         },
         {
             path: '/about',

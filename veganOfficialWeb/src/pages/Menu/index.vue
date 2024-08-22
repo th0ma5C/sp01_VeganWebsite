@@ -1,4 +1,5 @@
 <template>
+    <!-- <router-view></router-view> -->
     <div class="container" ref="main" @click="closePop">
         <div class="analystTop">
             <div class="imgWrapper">
@@ -94,7 +95,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                    }}</span>
+                                                }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -226,6 +227,7 @@
                         <button
                             class="cart-btn">加入購物車</button>
                         <button
+                            @click="routerPush(item.name!)"
                             class="info-btn">詳細資訊</button>
                         <div class="btnBackground">
                             <svg width="260" height="48"
@@ -287,7 +289,6 @@
                             :key="index"></Skeleton>
                     </div>
                     <swiper-container slides-per-view="auto"
-                        :centerInsufficientSlides="true"
                         :loopAddBlankSlides="true"
                         ref="smoothieSwiper"
                         grabCursor="true"
@@ -304,7 +305,7 @@
                                 <div class="description">
                                     <span>{{
                                         items.description
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
                             <h3>{{ items.name }}</h3>
@@ -421,9 +422,10 @@ import type { MenuItem } from '@/api/menu/type'
 import { storeToRefs } from 'pinia';
 import gsap from 'gsap';
 import Flip from 'gsap/Flip';
+import { useRouter } from 'vue-router';
 
 
-//DOING  畫面縮放後更新smoothie marquee salad圖ps改成一致
+//DOING salad圖ps改成一致
 //TODO 商品內頁 麵包屑
 /**
  * *骨架屏、果席跑馬燈初步完成
@@ -445,7 +447,7 @@ import Flip from 'gsap/Flip';
  * --------------
  * 麵包屑
  * salad圖大小不一致
- * 畫面縮放後更新smoothie marquee
+ * //畫面縮放後更新smoothie marquee
  * //篩選後減少可選選項
  * //篩選下方篩選標籤
  * //初始化轉場(數據初次返回時)
@@ -684,10 +686,10 @@ function setFullMenu() {
     showMenuLimit.value = saladList.value.length;
 }
 
-let skeletonIsShow = ref(true); //初始化時待skeleton消失
-function setSkeletonIsShow() {
-    skeletonIsShow.value = false;
-}
+// let skeletonIsShow = ref(true); //初始化時待skeleton消失
+// function setSkeletonIsShow() {
+//     skeletonIsShow.value = false;
+// }
 
 
 // -----smoothie marquee-----
@@ -704,14 +706,17 @@ let loopProps = computed(() => {
 })
 
 let itemWrapperStyle = computed(() => {
-    let translateX = ref();
+    let translateX = ref(0);
     if (itemWrapper.value) {
         let { left } = itemWrapper.value.getBoundingClientRect();
-        translateX.value = left;
+        let width = itemWrapper.value.offsetWidth;
+        // console.log(itemWrapper);
+        translateX.value = left > 336 ? 336 : left;
+        // translateX.value = left;
     }
 
     return {
-        transform: `translateX(-${translateX.value}px)`
+        // transform: `translateX(-${translateX.value}px)`
     }
 })
 
@@ -793,7 +798,7 @@ let filteredSalad = computed(() => {
     return salad
 })
 
-let sortedSalad = computed(() => {
+let sortedSalad = computed<MenuItem[]>(() => {
     if (!isLoaded.value) return Array(8).fill(saladList.value);
 
     let list = sort(saladList);
@@ -843,9 +848,9 @@ let filteredIngredient = computed(() => {
 
     return [...set]
 })
-watch(filteredIngredient, () => {
-    console.log(filteredIngredient.value);
-})
+// watch(filteredIngredient, () => {
+// console.log(filteredIngredient.value);
+// })
 
 // menu min height minmax(0, 200px)
 let gridRow = ref(2);
@@ -877,10 +882,28 @@ let docData = [
     }
 ];
 
+// 路由跳轉
+const router = useRouter();
+let switchRouter = ref(false);
+
+function routerPush(name: string) {
+    router.push({
+        name: 'Product',
+        params: {
+            name
+        }
+    })
+}
+
 // -----生命週期-----
 onBeforeMount(() => {
 })
 onMounted(() => {
+    window.addEventListener('resize', () => {
+        nextTick(() => {
+            handleSwiperSlide('update');
+        })
+    })
 })
 
 </script>
@@ -1964,7 +1987,8 @@ $menuItemContainer_height: 405px;
         }
 
         .itemWrapper {
-            width: 100vw;
+            width: clamp(100%, 100vw, 1920px);
+            // width: 100vw;
             margin: 3rem 0;
             padding: 0 1rem;
             // padding-left: 1rem;
@@ -1972,7 +1996,7 @@ $menuItemContainer_height: 405px;
             flex-direction: row;
             gap: 2rem;
             position: relative;
-            // transform: translateX(-50%);
+            // transform: translateX(-336px);
 
             swiper-container {
                 width: 100%;
