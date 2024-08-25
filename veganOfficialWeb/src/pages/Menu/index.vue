@@ -412,7 +412,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick, onBeforeUpdate, onUpdated, toRefs } from 'vue';
+import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick, onBeforeUpdate, onUpdated, toRefs, onUnmounted } from 'vue';
 import type { ComputedRef, Ref, WritableComputedRef } from 'vue';
 import Skeleton from '@components/skeleton/skeleton.vue';
 import useConcatImgPath from '@/hooks/useConcatImgPath';
@@ -423,6 +423,7 @@ import { storeToRefs } from 'pinia';
 import gsap from 'gsap';
 import Flip from 'gsap/Flip';
 import { useRouter } from 'vue-router';
+import { async } from 'fast-glob';
 
 
 //DOING salad圖ps改成一致
@@ -759,6 +760,11 @@ function handleSwiperSlide(action: "start" | "stop" | "update") {
     actionHandler();
 }
 
+async function handleResize() {
+    await nextTick();
+    handleSwiperSlide('update');
+}
+
 // -----menu GSAP-----
 gsap.registerPlugin(Flip);
 let elList = ref<HTMLElement[]>([]);
@@ -884,7 +890,6 @@ let docData = [
 
 // 路由跳轉
 const router = useRouter();
-let switchRouter = ref(false);
 
 function routerPush(name: string) {
     router.push({
@@ -899,11 +904,11 @@ function routerPush(name: string) {
 onBeforeMount(() => {
 })
 onMounted(() => {
-    window.addEventListener('resize', () => {
-        nextTick(() => {
-            handleSwiperSlide('update');
-        })
-    })
+    window.addEventListener('resize', handleResize);
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', handleResize);
 })
 
 </script>
