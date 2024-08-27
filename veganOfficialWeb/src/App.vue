@@ -61,6 +61,7 @@ onUnmounted(() => {
 body {
 
     // overflow: hidden;
+
     * {
         // outline: 1px solid black;
     }
@@ -68,6 +69,7 @@ body {
 
 #app {
     background-color: $primaryBacColor;
+    // overflow: hidden;
 }
 
 
@@ -87,5 +89,7 @@ body {
 
 footer {
     background-color: $secondBacColor;
+    position: relative;
+
 }
 </style>

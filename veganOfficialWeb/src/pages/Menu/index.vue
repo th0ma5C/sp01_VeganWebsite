@@ -227,7 +227,7 @@
                         <button
                             class="cart-btn">加入購物車</button>
                         <button
-                            @click="routerPush(item.name!)"
+                            @click="routerPush(item.name!, item.id)"
                             class="info-btn">詳細資訊</button>
                         <div class="btnBackground">
                             <svg width="260" height="48"
@@ -891,12 +891,12 @@ let docData = [
 // 路由跳轉
 const router = useRouter();
 
-function routerPush(name: string) {
+function routerPush(name: string, id: string) {
     router.push({
         name: 'Product',
         params: {
-            name
-        }
+            name,
+        },
     })
 }
 

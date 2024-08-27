@@ -15,27 +15,18 @@
             <div class="contentWrapper">
                 <div class="topContent">
                     <h1>
-                        品名
+                        {{ productInfo?.name }}
                     </h1>
                     <div class="ingredientWrapper">
-                        <span>維生素A</span>
-                        <span>維生素A</span>
-                        <span>維生素A</span>
-                        <span>維生素A</span>
-                        <span>維生素A</span>
-                        <span>維生素A</span>
+                        <span
+                            v-for="(item, index) in productInfo?.ingredients"
+                            :key="index"
+                            v-show="item !== ''">
+                            {{ item }}
+                        </span>
                     </div>
                     <p>
-                        Lorem, ipsum dolor sit amet
-                        consectetur
-                        adipisicing elit. Ex nostrum laborum
-                        tempora reiciendis, perspiciatis
-                        delectus sequi dolor sit earum
-                        nesciunt
-                        suscipit cupiditate ipsa quia
-                        reprehenderit dignissimos
-                        perferendis
-                        molestias inventore repudiandae.
+                        {{ productInfo?.description }}
                     </p>
                 </div>
 
@@ -130,8 +121,31 @@
 
                     <div class="infoFolder">
                         <div class="Wrapper">
-                            <p>title</p>
-                            <div>
+                            <h2>宅配資訊</h2>
+                            <div class="folder">
+                                <p>
+                                    Lorem ipsum dolor sit
+                                    amet consectetur
+                                    adipisicing elit.
+                                    Doloribus, quaerat
+                                    repellat culpa rerum
+                                    atque blanditiis ducimus
+                                    facere ad quibusdam
+                                    magnam.
+                                    atque blanditiis ducimus
+                                    facere ad quibusdam
+                                    magnam.
+                                    facere ad quibusdam
+                                    magnam.
+                                    atque blanditiis ducimus
+                                    facere ad quibusdam
+                                    magnam.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="Wrapper">
+                            <h2>食材清單</h2>
+                            <div class="folder">
                                 <p>
                                     Lorem ipsum dolor sit
                                     amet consectetur
@@ -145,8 +159,8 @@
                             </div>
                         </div>
                         <div class="Wrapper">
-                            <p>title</p>
-                            <div>
+                            <h2>卡路里&營養標示</h2>
+                            <div class="folder">
                                 <p>
                                     Lorem ipsum dolor sit
                                     amet consectetur
@@ -156,18 +170,6 @@
                                     atque blanditiis ducimus
                                     facere ad quibusdam
                                     magnam.
-                                </p>
-                            </div>
-                        </div>
-                        <div class="Wrapper">
-                            <p>title</p>
-                            <div>
-                                <p>
-                                    Lorem ipsum dolor sit
-                                    amet consectetur
-                                    adipisicing elit.
-                                    Doloribus, quaerat
-                                    repellat culpa rerum
                                     atque blanditiis ducimus
                                     facere ad quibusdam
                                     magnam.
@@ -181,43 +183,42 @@
 
         <section class="socialMedia">
             <div class="wrapper">
-                IG
+                <img src="@assets/img/IG temp.jpg" alt="">
             </div>
             <div class="wrapper">
-                IG
+                <img src="@assets/img/IG temp.jpg" alt="">
             </div>
             <div class="wrapper">
-                IG
+                <img src="@assets/img/IG temp.jpg" alt="">
+            </div>
+            <div class="wrapper">
+                <img src="@assets/img/IG temp.jpg" alt="">
+            </div>
+            <div class="wrapper">
+                <img src="@assets/img/IG temp.jpg" alt="">
             </div>
         </section>
 
-        <section class="buyMore">
-            <div class="analyst">
-                分析推薦
-            </div>
-            <div class="recommend">
-                推薦搭配
-            </div>
-            <div class="peopleBuy">
-                其他人也會買
-            </div>
-        </section>
+        <!-- <Recommend class="buyMore"></Recommend> -->
     </div>
 </template>
 
 <script setup lang="ts">
 /**
- * todo: IG假圖*5 推薦菜單架構
+ * todo: 推薦菜單架構(分頁形式)
  * doing: 摺疊區塊 按鈕顏色 陰影 包裝圖片大小 營養tag icon 字體寬度 樣式完成
  * --------------------
- * 
+ * *
  * --------------------
- * 
+ * !取消大圓圈，overflow會使圖片sticky失效
  * --------------------
  * ?價格試算移到結帳頁面
  * //?小圖去掉，改只放一張大圖就好
  * 
  * --------------------
+ * 加入購物車按鈕寬度
+ * 骨架屏
+ * 折疊icon(可否重用menu的折疊)
  * 點擊圖片跳出放大圖
  * 營養Tag
  * IG假圖*5
@@ -225,11 +226,38 @@
  * //detail區顏色
  */
 
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { useMenuStore } from '@/store/menuStore';
+import type { MenuItem } from '@/api/menu/type';
+import Recommend from './recommend/Recommend.vue';
+import { storeToRefs } from 'pinia';
+
+// store數據
+let productInfo = ref<MenuItem>();
+
+function initProductInfo() {
+    productInfo.value = getInfoByName(name);
+}
+
+// 路由props
+const { name } = defineProps(['name']);
+
+const menuStore = useMenuStore();
+const { isLoaded } = storeToRefs(useMenuStore());
+const { getInfoByName } = useMenuStore();
+
+menuStore.$subscribe((mutation, state) => {
+    if (state.isLoaded) {
+        initProductInfo()
+    }
+})
 
 
 onMounted(() => {
-    // console.log(window.innerHeight);
+    if (isLoaded.value) {
+        initProductInfo()
+    }
 })
 
 </script>
@@ -251,6 +279,11 @@ onMounted(() => {
         width: 100%;
         max-width: 1440px;
         margin-top: 2rem;
+
+    }
+
+    &>section {
+        margin-top: 4rem;
     }
 
     .breadCrumb {
@@ -293,7 +326,12 @@ onMounted(() => {
     }
 }
 
-.contentWrapper {}
+.contentWrapper {
+    h2 {
+        margin-left: 0.75rem;
+        font-size: 20px;
+    }
+}
 
 .topContent {
     // padding: 0 1rem;
@@ -317,7 +355,6 @@ onMounted(() => {
         font-size: 1.25rem;
         text-indent: 2rem;
         text-align: justify;
-        // hyphens: auto;
     }
 }
 
@@ -336,11 +373,6 @@ onMounted(() => {
     }
 
     .sizeSelector {
-
-        h2 {
-            margin-left: 0.75rem;
-            font-size: 1.25rem;
-        }
 
         .selectWrapper {
             display: flex;
@@ -399,10 +431,6 @@ onMounted(() => {
         flex-direction: row;
         position: relative;
 
-        &>* {
-            // position: absolute;
-        }
-
         span {
             @include absoluteCenterTLXY($left: 0.75rem, $X: 0);
             font-size: 20px;
@@ -418,8 +446,6 @@ onMounted(() => {
                 @include flex-center-center;
                 border: 1px solid black;
                 border-radius: 6px;
-                // text-align: center;
-                // line-height: 20px;
             }
 
             input {
@@ -435,11 +461,6 @@ onMounted(() => {
         flex-direction: row;
         line-height: 30px;
 
-        h2 {
-            margin-left: 0.75rem;
-            font-size: 20px;
-        }
-
         & span:nth-of-type(1) {
             font-size: 20px;
             margin-left: auto;
@@ -453,16 +474,36 @@ onMounted(() => {
 
     .addCart>button {
         @include WnH(100%, 46px);
+        background-color: #3EA350;
         border: 1px solid black;
         border-radius: 23px;
+        color: #FCFAF2;
         font-size: 20px;
         line-height: 46px;
     }
 
-    .infoFolder {}
+    .infoFolder>.Wrapper {
+        .folder {
+            overflow: hidden;
+            // height: 0;
+        }
+    }
 }
 
-.socialMedia {}
+.socialMedia {
+    // @include flex-center-center;
+    display: flex;
+    flex-direction: row;
+    // gap: 4rem;
+
+    .wrapper {
+        @include WnH(300px, 430px);
+        box-shadow: 3px 3px 6px gray;
+        flex: 1 0 auto;
+
+        img {}
+    }
+}
 
 .buyMore {}
 </style>

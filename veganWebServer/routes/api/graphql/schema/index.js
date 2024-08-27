@@ -71,6 +71,48 @@ const QueryType = new GraphQLObjectType({
         }
     }
 });
+// const QueryType = new GraphQLObjectType({
+//     name: 'Query',
+//     fields: {
+//         menu: {
+//             type: new GraphQLList(MenuType),
+//             args: {
+//                 name: { type: GraphQLString },  // 原有的菜单 name 参数
+//                 itemName: { type: GraphQLString }  // 新增的 items.name 参数
+//             },
+//             resolve: async (parent, args) => {
+//                 try {
+//                     const matchMenuStage = args.name ? { $match: { name: args.name } } : { $match: {} };
+//                     const unwindStage = { $unwind: "$items" };
+//                     const matchItemStage = args.itemName ? { $match: { "items.name": args.itemName } } : { $match: {} };
+//                     const groupStage = {
+//                         $group: {
+//                             _id: "$_id",
+//                             name: { $first: "$name" },
+//                             items: { $push: "$items" }
+//                         }
+//                     };
+//                     const addFieldsStage = {
+//                         $addFields: {
+//                             "items.fileName": {
+//                                 $concat: ["/images/menu/", "$items.category", "/", "$items.fileName"]
+//                             }
+//                         }
+//                     };
+
+//                     const pipeline = [matchMenuStage, unwindStage, matchItemStage, groupStage, addFieldsStage];
+//                     const menus = await MenuModel.aggregate(pipeline).exec();
+//                     return menus;
+
+//                 } catch (error) {
+//                     console.error('Error fetching menus:', error);
+//                     throw new Error('Unable to fetch menus');
+//                 }
+//             }
+//         }
+//     }
+// });
+
 
 const schema = new GraphQLSchema({
     query: QueryType

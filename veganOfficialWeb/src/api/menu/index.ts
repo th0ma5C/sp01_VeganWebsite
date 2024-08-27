@@ -13,3 +13,6 @@ export const reqGetHotMenu = (params?: any) => request.get<any, menuType.MenuRes
 
 // 菜單頁
 export const reqMenu = (params?: any) => request.post<any, menuType.MenuQueryResponse>(API.graphQL, params);
+
+// 商品頁
+// export const reqProductByName = (name: string) => request.post(API.graphQL, name);

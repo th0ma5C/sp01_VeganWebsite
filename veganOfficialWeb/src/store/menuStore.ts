@@ -83,8 +83,6 @@ export const useMenuStore = defineStore('menu', (() => {
         try {
             let { data: { menu } } = await reqMenu({ query: GET_MENU });
 
-            fullMenu.value = menu;
-
             menu[0].items.forEach((el) => {
                 // 補全圖片地址
                 el.fileName = '/api' + el.fileName + '.png';
@@ -95,19 +93,22 @@ export const useMenuStore = defineStore('menu', (() => {
                     el.ingredients.push('');
                 }
             });
-            saladList.value = menu[0].items;
 
             menu[1].items.forEach((el) => {
-                el.fileName = '/api' + el.fileName + '.jpg'
+                el.fileName = '/api' + el.fileName + '.jpg';
                 el.id = nanoid(4);
                 while (el.ingredients.length < 6) {
                     el.ingredients.push('');
                 }
             });
+
+            fullMenu.value = menu;
+            saladList.value = menu[0].items;
             smoothieList.value = menu[1].items;
 
-            // console.log(data);
+            // console.log(fullMenu.value);
             isLoaded.value = true;
+
         } catch (error) {
             console.log(fetchMenu.name, 'failed');
             console.log(error);
@@ -125,10 +126,21 @@ export const useMenuStore = defineStore('menu', (() => {
         }
     }
 
+    let getInfoByName = (name: string) => {
+        let result
+        for (let i in fullMenu.value) {
+            result = fullMenu.value[i].items.find((item) => {
+                return item.name === name
+            })
+            if (result) break
+        }
+        return result
+    }
+
     if (isLoaded.value == false) {
         fetchIngredients()
         fetchMenu()
     }
 
-    return { fullMenu, saladList, smoothieList, ingredientsList, isLoaded }
+    return { fullMenu, saladList, smoothieList, ingredientsList, isLoaded, getInfoByName }
 }))
