@@ -95,7 +95,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                }}</span>
+                                                    }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -305,7 +305,7 @@
                                 <div class="description">
                                     <span>{{
                                         items.description
-                                    }}</span>
+                                        }}</span>
                                 </div>
                             </div>
                             <h3>{{ items.name }}</h3>
@@ -447,7 +447,7 @@ import { async } from 'fast-glob';
  * //? mongodb 聚合管道
  * --------------
  * 麵包屑
- * salad圖大小不一致
+ * //salad圖大小不一致
  * //畫面縮放後更新smoothie marquee
  * //篩選後減少可選選項
  * //篩選下方篩選標籤

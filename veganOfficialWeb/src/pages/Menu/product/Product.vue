@@ -3,13 +3,8 @@
         <div class="breadCrumb">麵包屑/麵包屑/麵包屑</div>
         <div class="productWrapper">
             <div class="imgWrapper">
-                <img src="" alt="大圖">
-                <!-- <div class="thumbnail">
-                    <img src="" alt="小圖">
-                    <img src="" alt="小圖">
-                    <img src="" alt="小圖">
-                    <img src="" alt="小圖">
-                </div> -->
+                <img src="@assets/img/saladTemp.png"
+                    alt="大圖">
             </div>
 
             <div class="contentWrapper">
@@ -34,51 +29,28 @@
                     <div class="sizeSelector">
                         <h2>包裝尺寸</h2>
                         <div class="selectWrapper">
-                            <label for="">
-                                <div>
-                                    <img src="" alt=""
-                                        style="width: 100px;height: 100px;">
-                                </div>
+                            <label for=""
+                                @click="setSelectAmount(index)"
+                                :class="{ selected: selectedIndex == index }"
+                                v-for="({ size, amount, icon }, index) in selectOptions"
+                                :key="index">
+                                <SvgIcon class="amountIcon"
+                                    :name="`productAmount${icon}`"
+                                    width="125px"
+                                    height="100px">
+                                </SvgIcon>
                                 <div class="selector">
                                     <input type="radio"
                                         name="" id="">
                                     <span
                                         class="marker"></span>
                                     <div class="mount">
-                                        <span>S"</span>
-                                        <span>三入</span>
-                                    </div>
-                                </div>
-                            </label>
-                            <label for="">
-                                <div>
-                                    <img src="" alt=""
-                                        style="width: 100px;height: 100px;">
-                                </div>
-                                <div class="selector">
-                                    <input type="radio"
-                                        name="" id="">
-                                    <span
-                                        class="marker"></span>
-                                    <div class="mount">
-                                        <span>M"</span>
-                                        <span>十五入</span>
-                                    </div>
-                                </div>
-                            </label>
-                            <label for="">
-                                <div>
-                                    <img src="" alt=""
-                                        style="width: 100px;height: 100px;">
-                                </div>
-                                <div class="selector">
-                                    <input type="radio"
-                                        name="" id="">
-                                    <span
-                                        class="marker"></span>
-                                    <div class="mount">
-                                        <span>L"</span>
-                                        <span>三十入</span>
+                                        <span>
+                                            {{ size }}
+                                        </span>
+                                        <span>
+                                            {{ amount }}
+                                        </span>
                                     </div>
                                 </div>
                             </label>
@@ -87,32 +59,23 @@
                     <div class="orderCounter">
                         <span>數量</span>
                         <div class="counterControl">
-                            <button>-</button>
+                            <button>
+                                <SvgIcon name="productMinus"
+                                    width="24" height="24">
+                                </SvgIcon>
+                            </button>
                             <input type="text" value="1">
-                            <button>+</button>
+                            <button>
+                                <SvgIcon name="productPlus"
+                                    width="24" height="24">
+                                </SvgIcon>
+                            </button>
                         </div>
                     </div>
                     <div class="price">
                         <h2>價格</h2>
                         <span>999</span>
                         <span>/1包</span>
-                        <!-- <span>價格</span>
-                        <table>
-                            <tr>
-                                <th>數量</th>
-                                <th>單位</th>
-                                <th>折扣</th>
-                                <th>運費</th>
-                                <th>總共</th>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>包</td>
-                                <td>0.95</td>
-                                <td>60</td>
-                                <td>999</td>
-                            </tr>
-                        </table> -->
                     </div>
 
                     <div class="addCart">
@@ -120,59 +83,23 @@
                     </div>
 
                     <div class="infoFolder">
-                        <div class="Wrapper">
-                            <h2>宅配資訊</h2>
-                            <div class="folder">
+                        <div class="Wrapper"
+                            v-for="({ title, content, classState }, index) in infoData"
+                            :key="index">
+                            <h2 @click="setInfoOpen(index)">
+                                <SvgIcon
+                                    name="ListArrowDown"
+                                    width="28px"
+                                    height="28px"
+                                    color="black"
+                                    :class="{ folderIcon: classState }">
+                                </SvgIcon>
+                                {{ title }}
+                            </h2>
+                            <div class="folder"
+                                :class="{ folderText: classState }">
                                 <p>
-                                    Lorem ipsum dolor sit
-                                    amet consectetur
-                                    adipisicing elit.
-                                    Doloribus, quaerat
-                                    repellat culpa rerum
-                                    atque blanditiis ducimus
-                                    facere ad quibusdam
-                                    magnam.
-                                    atque blanditiis ducimus
-                                    facere ad quibusdam
-                                    magnam.
-                                    facere ad quibusdam
-                                    magnam.
-                                    atque blanditiis ducimus
-                                    facere ad quibusdam
-                                    magnam.
-                                </p>
-                            </div>
-                        </div>
-                        <div class="Wrapper">
-                            <h2>食材清單</h2>
-                            <div class="folder">
-                                <p>
-                                    Lorem ipsum dolor sit
-                                    amet consectetur
-                                    adipisicing elit.
-                                    Doloribus, quaerat
-                                    repellat culpa rerum
-                                    atque blanditiis ducimus
-                                    facere ad quibusdam
-                                    magnam.
-                                </p>
-                            </div>
-                        </div>
-                        <div class="Wrapper">
-                            <h2>卡路里&營養標示</h2>
-                            <div class="folder">
-                                <p>
-                                    Lorem ipsum dolor sit
-                                    amet consectetur
-                                    adipisicing elit.
-                                    Doloribus, quaerat
-                                    repellat culpa rerum
-                                    atque blanditiis ducimus
-                                    facere ad quibusdam
-                                    magnam.
-                                    atque blanditiis ducimus
-                                    facere ad quibusdam
-                                    magnam.
+                                    {{ content }}
                                 </p>
                             </div>
                         </div>
@@ -182,31 +109,22 @@
         </div>
 
         <section class="socialMedia">
-            <div class="wrapper">
-                <img src="@assets/img/IG temp.jpg" alt="">
-            </div>
-            <div class="wrapper">
-                <img src="@assets/img/IG temp.jpg" alt="">
-            </div>
-            <div class="wrapper">
-                <img src="@assets/img/IG temp.jpg" alt="">
-            </div>
-            <div class="wrapper">
-                <img src="@assets/img/IG temp.jpg" alt="">
-            </div>
-            <div class="wrapper">
+            <div class="wrapper" v-for="(item, index) in 5"
+                :key="index">
                 <img src="@assets/img/IG temp.jpg" alt="">
             </div>
         </section>
 
-        <!-- <Recommend class="buyMore"></Recommend> -->
+        <section>
+
+        </section>
     </div>
 </template>
 
 <script setup lang="ts">
 /**
  * todo: 推薦菜單架構(分頁形式)
- * doing: 摺疊區塊 按鈕顏色 陰影 包裝圖片大小 營養tag icon 字體寬度 樣式完成
+ * doing: 尺寸選擇 字體寬度 樣式完成
  * --------------------
  * *
  * --------------------
@@ -216,28 +134,36 @@
  * //?小圖去掉，改只放一張大圖就好
  * 
  * --------------------
- * 加入購物車按鈕寬度
  * 骨架屏
- * 折疊icon(可否重用menu的折疊)
  * 點擊圖片跳出放大圖
- * 營養Tag
- * IG假圖*5
  * 推薦菜單架構
+ * 麵包屑
+ * 大圖JPG
+ * //折疊icon(可否重用menu的折疊)
+ * //營養Tag
+ * //IG假圖*5
+ * //加入購物車按鈕寬度
+ * //包裝圖片長寬
+ * //+-按鈕
+ * //摺疊區塊底線
  * //detail區顏色
  */
 
-import { onMounted, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useMenuStore } from '@/store/menuStore';
 import type { MenuItem } from '@/api/menu/type';
 import Recommend from './recommend/Recommend.vue';
 import { storeToRefs } from 'pinia';
+import { LoremIpsum } from "lorem-ipsum";
 
 // store數據
 let productInfo = ref<MenuItem>();
 
-function initProductInfo() {
-    productInfo.value = getInfoByName(name);
+function initProductInfo(init: boolean) {
+    if (init) {
+        productInfo.value = getInfoByName(name);
+    }
 }
 
 // 路由props
@@ -248,16 +174,63 @@ const { isLoaded } = storeToRefs(useMenuStore());
 const { getInfoByName } = useMenuStore();
 
 menuStore.$subscribe((mutation, state) => {
-    if (state.isLoaded) {
-        initProductInfo()
-    }
+    initProductInfo(state.isLoaded);
 })
 
+// 選擇尺寸
+const selectOptions = [
+    {
+        size: 'S"',
+        amount: '一入',
+        icon: ''
+    },
+    {
+        size: 'M"',
+        amount: '七入',
+        icon: '7'
+    },
+    {
+        size: 'L"',
+        amount: '十四入',
+        icon: '14'
+    },
 
+];
+
+const selectedIndex = ref(0);
+
+function setSelectAmount(index: number) {
+    selectedIndex.value = index
+}
+
+
+// info摺疊
+const lorem = new LoremIpsum();
+const infoData = reactive([
+    {
+        title: '宅配資訊',
+        content: lorem.generateWords(20),
+        classState: true
+    },
+    {
+        title: '食材清單',
+        content: lorem.generateWords(15),
+        classState: false
+    },
+    {
+        title: '卡路里&營養標示',
+        content: lorem.generateWords(30),
+        classState: false
+    },
+]);
+
+function setInfoOpen(index: number) {
+    infoData[index].classState = !infoData[index].classState;
+}
+
+// 生命週期
 onMounted(() => {
-    if (isLoaded.value) {
-        initProductInfo()
-    }
+    initProductInfo(isLoaded.value);
 })
 
 </script>
@@ -271,7 +244,7 @@ onMounted(() => {
     width: 100%;
 
     * {
-        outline: 1px solid black;
+        // outline: 1px solid black;
     }
 
     &>div,
@@ -308,7 +281,7 @@ onMounted(() => {
     flex-direction: column;
 
     &>img {
-        @include WnH(50%);
+        // @include WnH(50%);
         position: sticky;
         top: 188px;
         // width: 80%;
@@ -348,6 +321,37 @@ onMounted(() => {
 
         span {
             padding: 0 4px;
+            background-color: $secondBacColor;
+            border-radius: 0 6px 6px 0;
+            color: $primaryBacColor;
+            padding-right: 6px;
+            margin-right: 1rem;
+            position: relative;
+            z-index: 0;
+
+            &:first-of-type {
+                margin-left: 14px;
+            }
+
+            &::after {
+                @include WnH(100%, 0px);
+                content: '';
+                border-top: 12px solid transparent;
+                border-right: 13px solid $secondBacColor;
+                border-bottom: 12px solid transparent;
+                position: absolute;
+                top: 0;
+                left: -100%;
+                z-index: -1;
+            }
+
+            &::before {
+                @include WnH(3px);
+                @include absoluteCenterTLXY($left: -6px, $X: 0);
+                content: '';
+                border-radius: 100%;
+                background-color: white;
+            }
         }
     }
 
@@ -363,7 +367,7 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    margin-top: 1rem;
+    margin-top: 2rem;
     padding: 1rem;
     border-radius: 1rem;
 
@@ -380,9 +384,21 @@ onMounted(() => {
             margin-top: 1rem;
 
             label {
+                width: 30%;
+                cursor: pointer;
+
+                .amountIcon {
+                    padding: .5rem;
+                    border: 1px solid rgba(0, 0, 0, 0.5);
+                    border-radius: .5rem;
+                    opacity: .5;
+                    transition: opacity 0.3s ease;
+                }
 
                 .selector {
                     display: flex;
+                    justify-content: center;
+                    margin-top: 1rem;
 
                     input {
                         display: none;
@@ -395,14 +411,6 @@ onMounted(() => {
                         border-radius: 8px;
                         margin: 9px 5px 4px 4px;
                         position: relative;
-
-                        &::after {
-                            @include WnH(6px);
-                            @include absoluteCenterTLXY;
-                            content: '';
-                            background-color: $secondBacColor;
-                            border-radius: 3px;
-                        }
                     }
 
                     .mount {
@@ -420,6 +428,24 @@ onMounted(() => {
                         }
                     }
                 }
+
+                &:hover .amountIcon {
+                    opacity: 1;
+                }
+            }
+
+            .selected {
+                .amountIcon {
+                    opacity: 1;
+                }
+
+                .marker::after {
+                    @include WnH(6px);
+                    @include absoluteCenterTLXY;
+                    content: '';
+                    background-color: $secondBacColor;
+                    border-radius: 3px;
+                }
             }
         }
     }
@@ -430,6 +456,7 @@ onMounted(() => {
         border-radius: 0.5rem;
         flex-direction: row;
         position: relative;
+        margin-top: 1rem;
 
         span {
             @include absoluteCenterTLXY($left: 0.75rem, $X: 0);
@@ -444,7 +471,7 @@ onMounted(() => {
             button {
                 @include WnH(24px, 20px);
                 @include flex-center-center;
-                border: 1px solid black;
+                // border: 1px solid black;
                 border-radius: 6px;
             }
 
@@ -460,6 +487,7 @@ onMounted(() => {
     .price {
         flex-direction: row;
         line-height: 30px;
+        margin-top: .5rem;
 
         & span:nth-of-type(1) {
             font-size: 20px;
@@ -468,24 +496,95 @@ onMounted(() => {
 
         & span:nth-of-type(2) {
             font-size: 12px;
-            margin-right: calc(5rem - 40px);
+            margin-left: 8px;
+            margin-right: calc(5rem - 48px);
         }
     }
 
-    .addCart>button {
-        @include WnH(100%, 46px);
-        background-color: #3EA350;
-        border: 1px solid black;
-        border-radius: 23px;
-        color: #FCFAF2;
-        font-size: 20px;
-        line-height: 46px;
+    .addCart {
+        margin-top: 1rem;
+        justify-content: center;
+        align-items: center;
+
+        button {
+            @include WnH(95%, 46px);
+            background-color: #3EA350;
+            border: 1px solid rgba(0, 0, 0, 0.5);
+            border-radius: 23px;
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+            color: #FCFAF2;
+            font-size: 20px;
+            line-height: 46px;
+            transition: box-shadow 0.15s ease;
+
+            &:hover {
+                box-shadow: 3px 4px 6px rgba(0, 0, 0, 0.75);
+            }
+
+            &:active {
+                transform: translate(1px, 1px);
+            }
+        }
+    }
+
+    %divideLine {
+        @include WnH(100%, 1px);
+        content: '';
+        background-color: rgba(0, 0, 0, .25);
+        display: block;
+        margin: .5rem 0 .5rem 0;
     }
 
     .infoFolder>.Wrapper {
+
+        h2 {
+            cursor: pointer;
+            display: flex;
+            color: rgba(0, 0, 0, 0.5);
+            transition: color 0.3s ease;
+            user-select: none;
+
+            &>div {
+                // outline: 1px solid black;
+                transform: rotate(-90deg);
+                transition: transform .2s linear;
+            }
+
+            .folderIcon {
+                transform: rotate(0deg);
+            }
+
+            &:has(.folderIcon) {
+                color: black;
+            }
+        }
+
         .folder {
+            padding-left: 1.5rem;
             overflow: hidden;
-            // height: 0;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.5s ease, opacity 0.3s ease;
+
+            p {
+                color: rgba(0, 0, 0, 0.5);
+                padding: .5rem 1rem .5rem 24px;
+                text-align: justify;
+                transition: color 0.3s ease;
+            }
+        }
+
+        .folderText {
+            max-height: min(300px);
+            opacity: 1;
+
+            p {
+                color: black;
+            }
+        }
+
+        &::before {
+            @extend %divideLine;
         }
     }
 }
