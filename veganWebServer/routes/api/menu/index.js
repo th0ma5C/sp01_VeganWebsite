@@ -1,41 +1,72 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
+const MenuModel = require('@models/MenuModel');
+
+// let getSaladList = async () => {
+//     try {
+//         const result = await MenuModel.find({ name: "salad" });
+//         if (result.length === 0) return [];
+//         return result[0].items;
+//     } catch (err) {
+//         console.error('Error fetching salad list:', err);
+//         throw err;
+//     }
+// }
+
+let getMenuList = async (name) => {
+    try {
+        const result = await MenuModel.find({ name });
+
+        return result[0].items
+
+    } catch (err) {
+        console.error('Error fetching salad list:', err);
+        throw err;
+    }
+}
+
+
+async function findSalad(sortField) {
+    try {
+        let data = await getMenuList('salad');
+        data.sort((a, b) => {
+            return new Date(b[sortField]) - new Date(a[sortField])
+        });
+
+        data.forEach((item) => {
+            item.fileName = `/api/images/menu/salad/${item.fileName}.png`
+        })
+        // console.log(data);
+
+        let list = data.slice(0, 5);
+
+        return list
+    } catch (error) {
+        console.log(findSalad.name, error);
+    }
+}
 
 /* GET home new catalog */
-router.get('/newCatalog', (req, res) => {
-    const imagesDirectory = path.join(__dirname, '../../../public/images/menu/salad');
+router.get('/newCatalog', async (req, res) => {
+    try {
 
-    // 讀取資料夾內所有文件的名稱
-    fs.readdir(imagesDirectory, (err, files) => {
-        if (err) {
-            console.log(err);
-            return res.status(500).json({ message: '無法讀取圖片資料夾' });
-        }
+        let data = await findSalad('date');
+        return res.json(data);
 
-        // 建立圖片URL清單
-        const imagesUrls = files.map(file => {
-            return `/images/menu/salad/${file}`;
-        });
-        res.json(imagesUrls);
-    });
+    } catch (error) {
+        console.log(error);
+    }
 });
 /* GET home hot catalog */
-router.get('/hotCatalog', (req, res) => {
-    const imagesDirectory = path.join(__dirname, '../../../public/images/menu/salad');
+router.get('/hotCatalog', async (req, res) => {
+    try {
+        let data = await findSalad('rating');
+        return res.json(data);
 
-    fs.readdir(imagesDirectory, (err, files) => {
-        if (err) {
-            console.log(err);
-            return res.status(500).json({ message: '無法讀取圖片資料夾' });
-        }
-
-        const imagesUrls = files.map(file => {
-            return `/images/menu/salad/${file}`;
-        }).reverse();
-        res.json(imagesUrls);
-    });
+    } catch (error) {
+        console.log(error);
+    }
 });
+
 
 module.exports = router;

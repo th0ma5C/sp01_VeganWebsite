@@ -52,10 +52,10 @@
                         navigation="true" rewind="true"
                         :injectStyles="injectStyles">
                         <swiper-slide
-                            v-for="(url, index) in item.url"
+                            v-for="({ fileName, name, description }, index) in item.list"
                             :key="index">
                             <a href="" @click.prevent>
-                                <img :src="url" alt=""
+                                <img :src="fileName" alt=""
                                     @load="imgCounter"
                                     v-show="isLoaded == true">
                                 <div class="imgSkeleton"
@@ -65,11 +65,11 @@
                                 </div>
                             </a>
                             <div>
-                                <div
+                                <div class="tabContent"
                                     v-show="isLoaded == true">
-                                    <h2>Lorem, ipsum.</h2>
-                                    <p>Lorem ipsum dolor sit
-                                        amet.</p>
+                                    <h2>{{ name }}</h2>
+                                    <p>{{ description }}</p>
+
                                 </div>
                                 <div class="textSkeleton"
                                     v-show="isLoaded == false">
@@ -87,11 +87,11 @@
                         free-mode="true"
                         watch-slides-progress="true">
                         <swiper-slide
-                            v-for="(url, index) in item.url"
+                            v-for="({ fileName }, index) in item.list"
                             :key="index"
                             :class="{ 'swiper-slide-thumb-active': index == 0 }">
                             <a href="" @click.prevent>
-                                <img :src="url" alt=""
+                                <img :src="fileName" alt=""
                                     v-show="isLoaded == true">
                                 <div class="imgSkeleton"
                                     v-show="isLoaded == false">
@@ -121,31 +121,32 @@
  * *0425vip測試連結按鈕 字體轉檔woff2 *0426讀取Skeleton
  * *0429改Skeleton邏輯、CSS Skeleton圖片預加載 *0501完整菜單連結hover、線條動畫
  */
-import { watch, onMounted, ref } from 'vue';
+import { watch, onMounted, ref, reactive } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
 import { useLoader } from '@/store/loader';
 import { storeToRefs } from 'pinia';
+import type { MenuItem } from '@/api/menu/type';
 
-let newList = ref<string[]>(), hotList = ref<string[]>();
-let menu = ref([
+let menu = reactive([
     {
         name: 'new',
         icon: 'CatalogNew',
         title: '當季新品',
-        url: newList.value
+        list: [] as MenuItem[]
     },
     {
         name: 'hot',
         icon: 'CatalogTrendingUp',
         title: '熱銷排行',
-        url: hotList.value
+        list: []
     },
     {
         name: 'vip',
         icon: 'CatalogVip',
         title: '專屬分析',
     },
-])
+]);
+
 let injectStyles = [
     `
     :host{
@@ -232,7 +233,7 @@ function imgCounter() {
 let { loaderActivated } = storeToRefs(useLoader());
 let isLoaded = ref(false);
 watch([imgCount, menu], ([newCount,]) => {
-    let done = (menu.value[0].url!.length) + (menu.value[1].url!.length);
+    let done = (menu[0].list!.length) + (menu[1].list!.length);
     if (newCount == done) {
         loaderActivated.value = false;
         isLoaded.value = true;
@@ -243,26 +244,13 @@ watch(show, (newVal, oldVal) => {
     newVal > oldVal ? transitionName.value = 'rightIn' : transitionName.value = 'leftIn';
 })
 
-type ReqFunction = () => Promise<string[]>;
-async function getUrl(req: ReqFunction) {
-    try {
-        let data: string[] = await req();
-        // return data
-        return data.map((item) => '/api' + item)
-    } catch (error) {
-        console.log(`${req.name}請求失敗`, error);
-    }
-}
-
 onMounted(() => {
-    getUrl(reqGetNewMenu).then(data => {
-        if (data) menu.value[0].url = data;
-        // console.log(data);
-    });
-    getUrl(reqGetHotMenu).then(data => {
-        if (data) menu.value[1].url = data;
-    });
-
+    reqGetNewMenu().then((data) => {
+        menu[0].list = [...data]
+    })
+    reqGetHotMenu().then((data) => {
+        menu[1].list = [...data]
+    })
 })
 </script>
 
@@ -539,6 +527,10 @@ onMounted(() => {
                 .menuSubSwiper0,
                 .menuSubSwiper1 {
                     @include subCatalogTab;
+                }
+
+                .tabContent {
+                    width: 300px;
                 }
 
                 .analyzeLink {

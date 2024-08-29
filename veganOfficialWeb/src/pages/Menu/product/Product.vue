@@ -115,8 +115,59 @@
             </div>
         </section>
 
-        <section>
+        <section class="buyMore">
+            <h1>
+                為您推薦
+            </h1>
 
+            <div class="hot">
+                <h2>
+                    同款熱門
+                </h2>
+
+                <!-- <Product_template></Product_template> -->
+
+            </div>
+
+            <div class="analyze">
+                <h2>
+                    專屬推薦
+                </h2>
+                <ul>
+                    <li>
+                        1
+                    </li>
+                    <li>
+                        1
+                    </li>
+                    <li>
+                        1
+                    </li>
+                    <li>
+                        1
+                    </li>
+                </ul>
+            </div>
+
+            <div class="new">
+                <h2>
+                    熱門新品
+                </h2>
+                <ul>
+                    <li>
+                        1
+                    </li>
+                    <li>
+                        1
+                    </li>
+                    <li>
+                        1
+                    </li>
+                    <li>
+                        1
+                    </li>
+                </ul>
+            </div>
         </section>
     </div>
 </template>
@@ -124,7 +175,7 @@
 <script setup lang="ts">
 /**
  * todo: 推薦菜單架構(分頁形式)
- * doing: 尺寸選擇 字體寬度 樣式完成
+ * doing: 數量 字體寬度 樣式完成
  * --------------------
  * *
  * --------------------
@@ -139,6 +190,7 @@
  * 推薦菜單架構
  * 麵包屑
  * 大圖JPG
+ * //尺寸選擇
  * //折疊icon(可否重用menu的折疊)
  * //營養Tag
  * //IG假圖*5
@@ -150,10 +202,10 @@
  */
 
 import { onMounted, reactive, ref } from 'vue';
+import Product_template from '@/components/Product/Product_template.vue';
 import { useRoute } from 'vue-router';
 import { useMenuStore } from '@/store/menuStore';
 import type { MenuItem } from '@/api/menu/type';
-import Recommend from './recommend/Recommend.vue';
 import { storeToRefs } from 'pinia';
 import { LoremIpsum } from "lorem-ipsum";
 
@@ -209,12 +261,12 @@ const lorem = new LoremIpsum();
 const infoData = reactive([
     {
         title: '宅配資訊',
-        content: lorem.generateWords(20),
+        content: lorem.generateWords(30),
         classState: true
     },
     {
         title: '食材清單',
-        content: lorem.generateWords(15),
+        content: lorem.generateWords(20),
         classState: false
     },
     {
@@ -244,7 +296,7 @@ onMounted(() => {
     width: 100%;
 
     * {
-        // outline: 1px solid black;
+        outline: 1px solid black;
     }
 
     &>div,
@@ -604,5 +656,24 @@ onMounted(() => {
     }
 }
 
-.buyMore {}
+.buyMore {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    h1 {
+        font-size: 36px;
+    }
+
+    &>div {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 0 2rem;
+
+        ul {
+            display: flex;
+        }
+    }
+}
 </style>

@@ -199,7 +199,17 @@
                             :key="index"></Skeleton>
                     </div>
                 </transition>
-                <div class="item"
+
+                <Product_template :item="item"
+                    v-for="(item, index) in sortedSalad"
+                    :key="item.id ? item.id : index" :class="{
+                        hideItem: index > (showMenuLimit - 1),
+                    }"
+                    v-show="filteredSalad.includes(item) && index < showMenuLimit && isLoaded"
+                    ref="COMList">
+                </Product_template>
+
+                <!-- <div class="item"
                     v-for="(item, index) in sortedSalad"
                     :key="item.id ? item.id : index" :class="{
                         hideItem: index > (showMenuLimit - 1),
@@ -215,7 +225,6 @@
                         </div>
                     </div>
                     <h3>{{ item.name }}</h3>
-                    <!-- <p>價格</p> -->
                     <div class="ingredients">
                         <span
                             v-for="(el) in item.ingredients"
@@ -260,7 +269,7 @@
                             </svg>
                         </div>
                     </div>
-                </div>
+                </div> -->
                 <!-- </transition-group> -->
             </div>
             <div class="showFullMenuBtn" :class="{
@@ -415,6 +424,7 @@
 import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick, onBeforeUpdate, onUpdated, toRefs, onUnmounted } from 'vue';
 import type { ComputedRef, Ref, WritableComputedRef } from 'vue';
 import Skeleton from '@components/skeleton/skeleton.vue';
+import Product_template from '@/components/Product/Product_template.vue';
 import useConcatImgPath from '@/hooks/useConcatImgPath';
 import { useMenuStore } from '@/store/menuStore';
 // import type { ingredientsList } from '@/store/menuStore';
@@ -767,8 +777,19 @@ async function handleResize() {
 
 // -----menu GSAP-----
 gsap.registerPlugin(Flip);
-let elList = ref<HTMLElement[]>([]);
 let saladContainer = ref();
+
+const COMList = ref<InstanceType<typeof Product_template>[]>();
+function getProductElState() {
+    let list: HTMLElement[] = [];
+    if (isLoaded.value && COMList.value) {
+        COMList.value.forEach((component) => {
+            list.push(component.productEl)
+            // console.log(component.productEl);
+        })
+    }
+    return list
+}
 
 function setSaladGSAP(state: Flip.FlipState) {
     Flip.from(state, {
@@ -794,7 +815,8 @@ function setSaladGSAP(state: Flip.FlipState) {
 
 let filteredSalad = computed(() => {
 
-    const state = Flip.getState(elList.value);
+    let elList = getProductElState()
+    const state = Flip.getState(elList);
 
     let salad = filter(saladList);
 
@@ -809,11 +831,16 @@ let sortedSalad = computed<MenuItem[]>(() => {
 
     let list = sort(saladList);
 
+    // for (let i of list) {
+    //     console.log(i);
+    // }
+
     return list
 });
 
 watch(sortedSalad, (nVal) => {
-    const state = Flip.getState(elList.value);
+    let elList = getProductElState()
+    const state = Flip.getState(elList);
     nextTick(() => {
         setSaladGSAP(state);
     })
@@ -1910,16 +1937,15 @@ $menuItemContainer_height: 405px;
             }
         }
 
-        .loadingScene {
-            display: none;
-            @include WnH(100%);
-            // @include
-            position: absolute;
-            z-index: 3;
-            left: 0;
-            top: 0;
-            background-color: hsla(47, 60%, 97%, 0.3)
-        }
+        // .loadingScene {
+        //     display: none;
+        //     @include WnH(100%);
+        //     position: absolute;
+        //     z-index: 3;
+        //     left: 0;
+        //     top: 0;
+        //     background-color: hsla(47, 60%, 97%, 0.3)
+        // }
     }
 
     .onUnloaded {
