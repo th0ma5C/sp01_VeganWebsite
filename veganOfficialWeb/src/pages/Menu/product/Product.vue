@@ -174,7 +174,7 @@
 
 <script setup lang="ts">
 /**
- * todo: 推薦菜單架構(分頁形式)
+ * todo: 推薦菜單架構(分頁形式) 進路由去頁首
  * doing: 數量 字體寬度 樣式完成
  * --------------------
  * *
@@ -210,24 +210,27 @@ import { storeToRefs } from 'pinia';
 import { LoremIpsum } from "lorem-ipsum";
 
 // store數據
-let productInfo = ref<MenuItem>();
-
-function initProductInfo(init: boolean) {
-    if (init) {
-        productInfo.value = getInfoByName(name);
-    }
-}
-
-// 路由props
-const { name } = defineProps(['name']);
-
 const menuStore = useMenuStore();
 const { isLoaded } = storeToRefs(useMenuStore());
-const { getInfoByName } = useMenuStore();
+const { fetchMenu, getInfoByName } = useMenuStore();
 
 menuStore.$subscribe((mutation, state) => {
     initProductInfo(state.isLoaded);
 })
+
+
+// 路由props
+const { name } = defineProps(['name']);
+
+let productInfo = ref<MenuItem>();
+
+async function initProductInfo(isInit: boolean) {
+    if (!isInit) {
+        await fetchMenu();
+    }
+    productInfo.value = getInfoByName(name);
+}
+
 
 // 選擇尺寸
 const selectOptions = [

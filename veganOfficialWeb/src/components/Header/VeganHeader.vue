@@ -9,11 +9,11 @@
                 <ul class="navLink">
                     <li v-for="{ title, url } in navLink "
                         :key="title">
-                        <!-- <RouterLink :to="url" href=""> -->
-                        <span @click="routerTo(url)">
-                            {{ title }}
-                        </span>
-                        <!-- </RouterLink> -->
+                        <RouterLink :to="url" href="">
+                            <span>
+                                {{ title }}
+                            </span>
+                        </RouterLink>
                     </li>
                 </ul>
                 <ul class="navIcon">
@@ -35,13 +35,6 @@
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import throttle from 'lodash/throttle';
 import { useRouter } from 'vue-router';
-
-const Router = useRouter();
-function routerTo(url: string) {
-    Router.push({
-        path: '/menu'
-    })
-}
 
 let navLink = [
     {

@@ -127,6 +127,9 @@ export const useMenuStore = defineStore('menu', (() => {
     }
 
     let getInfoByName = (name: string) => {
+        if (!isLoaded.value) {
+            fetchMenu()
+        }
         let result
         for (let i in fullMenu.value) {
             result = fullMenu.value[i].items.find((item) => {
@@ -137,10 +140,14 @@ export const useMenuStore = defineStore('menu', (() => {
         return result
     }
 
-    if (isLoaded.value == false) {
-        fetchIngredients()
-        fetchMenu()
+    function init() {
+        if (isLoaded.value == false) {
+            fetchIngredients()
+            fetchMenu()
+        }
     }
+    init();
 
-    return { fullMenu, saladList, smoothieList, ingredientsList, isLoaded, getInfoByName }
+
+    return { fullMenu, saladList, smoothieList, ingredientsList, isLoaded, fetchMenu, getInfoByName }
 }))

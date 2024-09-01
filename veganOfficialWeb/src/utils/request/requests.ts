@@ -8,7 +8,7 @@ const customAdapter: AxiosAdapter = async (config: AxiosRequestConfig): Promise<
         } catch (error) {
             const maxRetries = 3;
             if (retryCount < maxRetries) {
-                const retryDelay = Math.pow(2, retryCount) * 1000;
+                const retryDelay = Math.pow(2, retryCount) * 5000;
                 return new Promise((resolve, reject) => {
                     setTimeout(() => {
                         reqRetry(retryCount + 1).then(resolve).catch(reject);

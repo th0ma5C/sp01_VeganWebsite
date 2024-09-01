@@ -95,7 +95,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                    }}</span>
+                                                }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -294,7 +294,7 @@
                     <div class="skeletonWrapper"
                         v-show="!isLoaded">
                         <Skeleton class="skeleton"
-                            v-for="(item, index) in 4"
+                            v-for="(item, index) in 6"
                             :key="index"></Skeleton>
                     </div>
                     <swiper-container slides-per-view="auto"
@@ -314,7 +314,7 @@
                                 <div class="description">
                                     <span>{{
                                         items.description
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
                             <h3>{{ items.name }}</h3>
@@ -858,7 +858,7 @@ let filteredSmoothie = computed(() => {
 })
 
 let sortedSmoothies = computed(() => {
-    if (!isLoaded.value) return Array(4).fill(smoothieList.value);
+    if (!isLoaded.value) return Array(6).fill(smoothieList.value);
 
     let smoothies = sort(smoothieList);
 
@@ -932,12 +932,10 @@ onBeforeMount(() => {
 })
 onMounted(() => {
     window.addEventListener('resize', handleResize);
-    console.log('mounted');
 })
 
 onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
-    console.log('unmounted');
 })
 
 </script>

@@ -23,16 +23,6 @@ const router = createRouter({
             // redirect: '/home',
             component: Home,
             name: 'Home',
-            beforeEnter: async (to, from, next) => {
-                const { fetchNews } = useNewsStore();
-                try {
-                    await fetchNews();
-                    next();
-                } catch (err) {
-                    console.log('router fetchNews failed', err);
-                    next()
-                }
-            }
         },
         // {
         //     path: '/home',
@@ -45,13 +35,6 @@ const router = createRouter({
         {
             path: '/menu',
             component: Menu,
-            // children: [
-            //     {
-            //         name: 'Product',
-            //         path: 'product',
-            //         component: Product
-            //     }
-            // ]
         },
         {
             name: 'Product',

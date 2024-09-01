@@ -25,21 +25,21 @@
                     </SvgIcon>
                 </button>
             </div>
-            <!-- <a href=""> -->
-            <div class="flipper" @click="toMenu"
-                @mouseenter="switchText($event)"
-                @mouseleave="switchText($event)">
-                <transition name="linkText">
-                    <span class="linkText"
-                        v-if="side == 'front'">
-                        More
-                    </span>
-                    <span class="linkText" v-else>
-                        完整菜單
-                    </span>
-                </transition>
-            </div>
-            <!-- </a> -->
+            <router-link to="/menu">
+                <div class="flipper"
+                    @mouseenter="switchText($event)"
+                    @mouseleave="switchText($event)">
+                    <transition name="linkText">
+                        <span class="linkText"
+                            v-if="side == 'front'">
+                            More
+                        </span>
+                        <span class="linkText" v-else>
+                            完整菜單
+                        </span>
+                    </transition>
+                </div>
+            </router-link>
         </div>
         <transition-group tag="div" :name="transitionName"
             class="tabsContainer">
@@ -56,23 +56,24 @@
                             :key="index">
                             <a href="" @click.prevent>
                                 <img :src="fileName!" alt=""
+                                    @click="gotoProductPage(name)"
                                     @load="imgCounter"
-                                    v-show="isLoaded == true">
+                                    v-show="isLoaded">
                                 <div class="imgSkeleton"
-                                    v-show="isLoaded == false">
+                                    v-show="!isLoaded">
                                     <img src="@assets/img/Home/Catalog/salad.png"
                                         alt="">
                                 </div>
                             </a>
                             <div>
                                 <div class="tabContent"
-                                    v-show="isLoaded == true">
+                                    v-show="isLoaded">
                                     <h2>{{ name }}</h2>
                                     <p>{{ description }}</p>
 
                                 </div>
                                 <div class="textSkeleton"
-                                    v-show="isLoaded == false">
+                                    v-show="!isLoaded">
                                     <h2>Lorem, ipsum.</h2>
                                     <p>Lorem ipsum dolor sit
                                         amet.</p>
@@ -113,13 +114,13 @@
 
 <script setup lang="ts">
 /**
- * todo: swiper說明字樣
  * todo: 請求超時進不了首頁(基本架構完成就進頁面) catalog讀取完成後出現動畫
  * 
  * *0411解決切換動畫進出問題、swiper樣式問題 *0412解決服務端返回數據 *0418完成字體放本地、中英字體分離
  * *0423初步完成catalog skeleton、去背 *0424壓縮圖片、解決兩個swiper實例問題、選中效果
  * *0425vip測試連結按鈕 字體轉檔woff2 *0426讀取Skeleton
  * *0429改Skeleton邏輯、CSS Skeleton圖片預加載 *0501完整菜單連結hover、線條動畫
+ * *0901swiper說明字樣
  */
 import { watch, onMounted, ref, reactive } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
@@ -127,13 +128,14 @@ import { useLoader } from '@/store/loader';
 import { storeToRefs } from 'pinia';
 import type { MenuItem } from '@/api/menu/type';
 import { useRouter } from 'vue-router';
+import { useMenuStore } from '@/store/menuStore';
 
 let menu = reactive([
     {
         name: 'new',
         icon: 'CatalogNew',
         title: '當季新品',
-        list: [] as MenuItem[]
+        list: Array(5).fill('')
     },
     {
         name: 'hot',
@@ -156,7 +158,10 @@ let injectStyles = [
         --swiper-navigation-color: #00430b;
     }
     .swiper-button-next{
-        right:0;
+        right:18%;
+    }
+    .swiper-button-prev{
+        left:18%;
     }
     `
 ]
@@ -234,13 +239,13 @@ function imgCounter() {
 
 let { loaderActivated } = storeToRefs(useLoader());
 let isLoaded = ref(false);
-watch([imgCount, menu], ([newCount,]) => {
-    let done = (menu[0].list!.length) + (menu[1].list!.length);
-    if (newCount == done) {
-        loaderActivated.value = false;
-        isLoaded.value = true;
-    }
-})
+// watch([imgCount, menu], ([newCount,]) => {
+//     let done = (menu[0].list!.length) + (menu[1].list!.length);
+//     if (newCount == done) {
+//         loaderActivated.value = false;
+//         isLoaded.value = true;
+//     }
+// })
 
 watch(show, (newVal, oldVal) => {
     newVal > oldVal ? transitionName.value = 'rightIn' : transitionName.value = 'leftIn';
@@ -248,29 +253,41 @@ watch(show, (newVal, oldVal) => {
 
 // 路由跳轉
 /**
- * doing 路由跳轉會重新渲染 圖片導航商品頁 more字體位置
- * todo hot new list 儲存到Store
- * !more a標籤導致router壞掉
+ * doing 圖片導航商品頁
+ * ?todo hot new list 儲存到Store
  */
-const Router = useRouter();
+// const { getInfoByName } = useMenuStore();
+const router = useRouter();
 
-function toMenu() {
-    Router.push({
-        path: '/menu'
+function gotoProductPage(name: string) {
+    router.push({
+        name: 'Product',
+        params: {
+            name
+        }
     })
 }
 
+//  數據請求
+async function fetchMenuList() {
+    try {
+        [menu[0].list, menu[1].list] = await Promise.all([reqGetNewMenu(), reqGetHotMenu()]);
+        isLoaded.value = true;
+    } catch (error) {
+        console.log(fetchMenuList.name, error);
+    }
+}
+
 onMounted(() => {
-    reqGetNewMenu().then((data) => {
-        menu[0].list = [...data]
-    })
-    reqGetHotMenu().then((data) => {
-        menu[1].list = [...data]
-    })
+    fetchMenuList();
 })
 </script>
 
 <style lang="scss" scoped>
+* {
+    // outline: 1px solid black;
+}
+
 .tabContainer {
     @include main-part;
     margin: 1rem auto;
@@ -291,7 +308,7 @@ onMounted(() => {
         .btnContainer {
             display: flex;
             align-items: center;
-            width: 80%;
+            width: 65%;
 
             &:after {
                 content: '';
@@ -360,7 +377,7 @@ onMounted(() => {
         }
 
         a {
-            @include WnH(64px, 19px);
+            @include WnH(64px, 42px);
 
             // &:hover>div {
             //     transform: rotateX(180deg);
@@ -369,16 +386,19 @@ onMounted(() => {
             .flipper {
                 @include WnH(100%);
                 position: relative;
+                top: -1px;
                 transform-style: preserve-3d;
                 text-align: center;
 
                 .linkText {
+                    @include WnH(100%);
                     @include flex-center-center;
                     color: $secondBacColor;
                     position: absolute;
                     right: 0;
                     backface-visibility: hidden;
                     background-color: #FCFAF2;
+                    line-height: 42px;
                 }
 
             }

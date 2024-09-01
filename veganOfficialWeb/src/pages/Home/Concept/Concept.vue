@@ -94,6 +94,7 @@
 import { computed, nextTick, onBeforeMount, onMounted, onUnmounted, reactive, ref, watch, watchEffect } from 'vue';
 import { useNewsStore } from '@/store/newsStore';
 import type { Ref } from 'vue';
+import { storeToRefs } from 'pinia';
 
 //
 /**
@@ -108,11 +109,20 @@ import type { Ref } from 'vue';
  * //btn hover效果、箭頭SVG
  * //內文靠上
  * *news pinia 重寫 google:Vue3 Pinia 中如何優雅的使用API
+ * !把路由api請求改到onMounted
  */
 
 
 // list 數據
-let { newsData } = useNewsStore();
+const NewsStore = useNewsStore();
+const { fetchNews } = useNewsStore();
+const { newsData } = storeToRefs(useNewsStore());
+
+NewsStore.$subscribe((_, state) => {
+    if (state.newsData) {
+        newsList.showNews = state.newsData.slice(0, 5);
+    }
+})
 
 interface newsItem {
     date: Date,
@@ -129,23 +139,20 @@ let newsList = reactive({
     changeTab(index: number, e: MouseEvent | null) {
         const target = e?.target as HTMLElement
         this.tab = target.innerHTML.trim();
-
         currItem.value = index;
     }
 })
-// console.log(newsData);
-watchEffect(() => {
-    if (!newsData) return
 
-    if (newsList.tab == '最新') {
-        newsList.showNews = newsData.slice(0, 5)
-        return
+watchEffect(() => {
+    if (!newsData.value) return
+
+    if (newsList.tab === '最新') {
+        newsList.showNews = newsData.value.slice(0, 5)
+    } else {
+        newsList.showNews = newsData.value.filter((news) => {
+            if (news.label == newsList.tab) return news
+        })
     }
-    newsList.showNews = newsData.filter((news) => {
-        if (news.label == newsList.tab) {
-            return news
-        }
-    })
 });
 
 // 背景跑馬燈顯示/隱藏
@@ -191,6 +198,7 @@ function setStalkerPosition(e: MouseEvent) {
 
 onMounted(() => {
     observer.observe(tabContainer.value);
+    fetchNews();
 })
 
 onUnmounted(() => {
