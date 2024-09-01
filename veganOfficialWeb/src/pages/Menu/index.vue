@@ -932,10 +932,12 @@ onBeforeMount(() => {
 })
 onMounted(() => {
     window.addEventListener('resize', handleResize);
+    console.log('mounted');
 })
 
 onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
+    console.log('unmounted');
 })
 
 </script>

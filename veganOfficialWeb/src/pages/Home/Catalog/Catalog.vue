@@ -25,21 +25,21 @@
                     </SvgIcon>
                 </button>
             </div>
-            <a href="">
-                <div class="flipper"
-                    @mouseenter="switchText($event)"
-                    @mouseleave="switchText($event)">
-                    <transition name="linkText">
-                        <span class="linkText"
-                            v-if="side == 'front'">
-                            More
-                        </span>
-                        <span class="linkText" v-else>
-                            完整菜單
-                        </span>
-                    </transition>
-                </div>
-            </a>
+            <!-- <a href=""> -->
+            <div class="flipper" @click="toMenu"
+                @mouseenter="switchText($event)"
+                @mouseleave="switchText($event)">
+                <transition name="linkText">
+                    <span class="linkText"
+                        v-if="side == 'front'">
+                        More
+                    </span>
+                    <span class="linkText" v-else>
+                        完整菜單
+                    </span>
+                </transition>
+            </div>
+            <!-- </a> -->
         </div>
         <transition-group tag="div" :name="transitionName"
             class="tabsContainer">
@@ -55,7 +55,7 @@
                             v-for="({ fileName, name, description }, index) in item.list"
                             :key="index">
                             <a href="" @click.prevent>
-                                <img :src="fileName" alt=""
+                                <img :src="fileName!" alt=""
                                     @load="imgCounter"
                                     v-show="isLoaded == true">
                                 <div class="imgSkeleton"
@@ -83,7 +83,7 @@
                     <swiper-container
                         :class="{ 'menuSubSwiper0': index == 0, 'menuSubSwiper1': index == 1 }"
                         space-between="2"
-                        :slides-per-view="item.url?.length"
+                        :slides-per-view="item.list.length"
                         free-mode="true"
                         watch-slides-progress="true">
                         <swiper-slide
@@ -91,7 +91,7 @@
                             :key="index"
                             :class="{ 'swiper-slide-thumb-active': index == 0 }">
                             <a href="" @click.prevent>
-                                <img :src="fileName" alt=""
+                                <img :src="fileName!" alt=""
                                     v-show="isLoaded == true">
                                 <div class="imgSkeleton"
                                     v-show="isLoaded == false">
@@ -126,6 +126,7 @@ import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
 import { useLoader } from '@/store/loader';
 import { storeToRefs } from 'pinia';
 import type { MenuItem } from '@/api/menu/type';
+import { useRouter } from 'vue-router';
 
 let menu = reactive([
     {
@@ -138,12 +139,13 @@ let menu = reactive([
         name: 'hot',
         icon: 'CatalogTrendingUp',
         title: '熱銷排行',
-        list: []
+        list: [] as MenuItem[]
     },
     {
         name: 'vip',
         icon: 'CatalogVip',
         title: '專屬分析',
+        list: [] as MenuItem[]
     },
 ]);
 
@@ -243,6 +245,20 @@ watch([imgCount, menu], ([newCount,]) => {
 watch(show, (newVal, oldVal) => {
     newVal > oldVal ? transitionName.value = 'rightIn' : transitionName.value = 'leftIn';
 })
+
+// 路由跳轉
+/**
+ * doing 路由跳轉會重新渲染 圖片導航商品頁 more字體位置
+ * todo hot new list 儲存到Store
+ * !more a標籤導致router壞掉
+ */
+const Router = useRouter();
+
+function toMenu() {
+    Router.push({
+        path: '/menu'
+    })
+}
 
 onMounted(() => {
     reqGetNewMenu().then((data) => {
@@ -434,7 +450,7 @@ onMounted(() => {
 
         swiper-slide {
             @include flex-center-center;
-            gap: 1rem;
+            gap: 1.5rem;
 
             img {
                 @include WnH(300px);
@@ -530,7 +546,22 @@ onMounted(() => {
                 }
 
                 .tabContent {
-                    width: 300px;
+                    // outline: 1px solid black;
+                    width: 375px;
+                    transform: translateY(-18px);
+
+                    h2 {
+                        font-size: 2rem;
+                        margin-bottom: 1rem;
+                        // text-align: center;
+                    }
+
+                    p {
+                        font-size: 1rem;
+                        // text-indent: 2rem;
+                        line-height: 1.75;
+                        // padding-left: 1rem;
+                    }
                 }
 
                 .analyzeLink {

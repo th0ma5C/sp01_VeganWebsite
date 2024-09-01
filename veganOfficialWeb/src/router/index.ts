@@ -19,9 +19,10 @@ const router = createRouter({
     routes: [
         {
             path: '/',
+            alias: ['/home'],
             // redirect: '/home',
             component: Home,
-            alias: ['/home'],
+            name: 'Home',
             beforeEnter: async (to, from, next) => {
                 const { fetchNews } = useNewsStore();
                 try {
