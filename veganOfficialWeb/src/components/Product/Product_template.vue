@@ -1,7 +1,7 @@
 <template>
     <div class="item" ref="productEl">
         <div class="menuImg">
-            <img :src="item.fileName" alt="商品">
+            <img :src="item.fileName!" alt="商品">
             <p>{{ item.price }}元</p>
             <div class="description">
                 <span>{{ item.description }}</span>
@@ -17,7 +17,7 @@
         <div class="btnWrapper">
             <button class="cart-btn">加入購物車</button>
             <button class="info-btn"
-                @click="routerPush(item.name)">詳細資訊</button>
+                @click="routerPush(item.name!)">詳細資訊</button>
             <div class="btnBackground">
                 <svg width="260" height="48"
                     viewBox="0 0 260 48" fill="none"
@@ -90,7 +90,7 @@ function routerPush(name: string, id?: string) {
     @include flex-center-center;
     flex-direction: column;
     // gap: 1rem;
-    // width: 100%;
+    width: fit-content;
 
     .menuImg {
         @include flex-center-center;

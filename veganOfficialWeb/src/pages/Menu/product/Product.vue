@@ -74,7 +74,8 @@
                     </div>
                     <div class="price">
                         <h2>價格</h2>
-                        <span>999</span>
+                        <span>{{ productInfo?.price
+                            }}</span>
                         <span>/1包</span>
                     </div>
 
@@ -125,8 +126,12 @@
                     同款熱門
                 </h2>
 
-                <!-- <Product_template></Product_template> -->
-
+                <div class="itemWrapper">
+                    <Product_template
+                        v-for="(item, index) in similarList"
+                        :key="index" :item="item">
+                    </Product_template>
+                </div>
             </div>
 
             <div class="analyze">
@@ -153,20 +158,13 @@
                 <h2>
                     熱門新品
                 </h2>
-                <ul>
-                    <li>
-                        1
-                    </li>
-                    <li>
-                        1
-                    </li>
-                    <li>
-                        1
-                    </li>
-                    <li>
-                        1
-                    </li>
-                </ul>
+
+                <!-- <div class="itemWrapper">
+                    <Product_template
+                        v-for="(item, index) in newList"
+                        :key="index" :item="item">
+                    </Product_template>
+                </div> -->
             </div>
         </section>
     </div>
@@ -174,7 +172,7 @@
 
 <script setup lang="ts">
 /**
- * todo: 推薦菜單架構(分頁形式) 進路由去頁首
+ * todo: 推薦菜單架構(分頁形式) 單位價格隨尺寸改變
  * doing: 數量 字體寬度 樣式完成
  * --------------------
  * *
@@ -182,6 +180,7 @@
  * !取消大圓圈，overflow會使圖片sticky失效
  * --------------------
  * ?價格試算移到結帳頁面
+ * ?麵包屑組件
  * //?小圖去掉，改只放一張大圖就好
  * 
  * --------------------
@@ -199,9 +198,10 @@
  * //+-按鈕
  * //摺疊區塊底線
  * //detail區顏色
+ * //進路由去頁首
  */
 
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import Product_template from '@/components/Product/Product_template.vue';
 import { useRoute } from 'vue-router';
 import { useMenuStore } from '@/store/menuStore';
@@ -211,12 +211,14 @@ import { LoremIpsum } from "lorem-ipsum";
 
 // store數據
 const menuStore = useMenuStore();
-const { isLoaded } = storeToRefs(useMenuStore());
-const { fetchMenu, getInfoByName } = useMenuStore();
+const { isLoaded, saladList } = storeToRefs(useMenuStore());
+const { fetchMenu, getInfoByName, getSameStyleItem } = useMenuStore();
 
-menuStore.$subscribe((mutation, state) => {
-    initProductInfo(state.isLoaded);
-})
+// menuStore.$subscribe((mutation, state) => {
+//     if (state.isLoaded) {
+//         initProductInfo(state.isLoaded);
+//     }
+// })
 
 
 // 路由props
@@ -283,9 +285,27 @@ function setInfoOpen(index: number) {
     infoData[index].classState = !infoData[index].classState;
 }
 
+// 推薦
+// 同款熱門
+const similarList = ref<MenuItem[]>([]);
+
+async function getSimilarList() {
+    if (!isLoaded.value) {
+        await fetchMenu();
+    }
+
+    similarList.value = getSameStyleItem(productInfo.value!.ingredients);
+}
+
+// 熱門新品
+const newList = ref<MenuItem[]>([]);
+
+
 // 生命週期
 onMounted(() => {
     initProductInfo(isLoaded.value);
+
+    getSimilarList();
 })
 
 </script>
@@ -676,6 +696,14 @@ onMounted(() => {
 
         ul {
             display: flex;
+        }
+    }
+
+    .hot {
+
+        .itemWrapper {
+            display: flex;
+            flex-direction: row;
         }
     }
 }

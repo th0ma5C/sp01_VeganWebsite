@@ -4,6 +4,7 @@ import type { Ref } from "vue";
 import { reqMenu } from '@/api/menu';
 import type { MenuItem } from '@/api/menu/type'
 import { nanoid } from "nanoid";
+import getTopFiveMostSimilarity from "@/utils/findMostSimilar";
 
 interface Menu {
     items: MenuItem[],
@@ -89,17 +90,17 @@ export const useMenuStore = defineStore('menu', (() => {
                 // 新增ID
                 el.id = nanoid(4);
                 // 補足數量6個
-                while (el.ingredients.length < 6) {
-                    el.ingredients.push('');
-                }
+                // while (el.ingredients.length < 6) {
+                //     el.ingredients.push('');
+                // }
             });
 
             menu[1].items.forEach((el) => {
                 el.fileName = '/api' + el.fileName + '.jpg';
                 el.id = nanoid(4);
-                while (el.ingredients.length < 6) {
-                    el.ingredients.push('');
-                }
+                // while (el.ingredients.length < 6) {
+                //     el.ingredients.push('');
+                // }
             });
 
             fullMenu.value = menu;
@@ -127,9 +128,6 @@ export const useMenuStore = defineStore('menu', (() => {
     }
 
     let getInfoByName = (name: string) => {
-        if (!isLoaded.value) {
-            fetchMenu()
-        }
         let result
         for (let i in fullMenu.value) {
             result = fullMenu.value[i].items.find((item) => {
@@ -137,6 +135,20 @@ export const useMenuStore = defineStore('menu', (() => {
             })
             if (result) break
         }
+        return result
+    }
+
+    function getSameStyleItem(targetArr: string[]) {
+        const arrays = saladList.value.map((salad) => {
+            return [...salad.ingredients]
+        });
+
+        const indexList = getTopFiveMostSimilarity(arrays, targetArr);
+
+        const result = indexList.map((index) => {
+            return saladList.value[index]
+        })
+
         return result
     }
 
@@ -149,5 +161,14 @@ export const useMenuStore = defineStore('menu', (() => {
     init();
 
 
-    return { fullMenu, saladList, smoothieList, ingredientsList, isLoaded, fetchMenu, getInfoByName }
+    return {
+        fullMenu,
+        saladList,
+        smoothieList,
+        ingredientsList,
+        isLoaded,
+        fetchMenu,
+        getInfoByName,
+        getSameStyleItem
+    }
 }))

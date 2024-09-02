@@ -508,6 +508,13 @@ function closePop() {
 const menuStore = useMenuStore()
 const { fullMenu, saladList, smoothieList, ingredientsList, isLoaded } = storeToRefs(menuStore);
 
+menuStore.$subscribe((_, state) => {
+    if (state.isLoaded) {
+        fillListToSix(saladList.value);
+        fillListToSix(smoothieList.value);
+    }
+})
+
 // -----篩選、排序功能-----
 // 排序
 // 排序箭頭、內容
@@ -578,6 +585,15 @@ function sort(el: Ref<MenuItem[]>) {
     }
 }
 
+// ingredients補足6個
+function fillListToSix(list: MenuItem[]) {
+    list.forEach((item) => {
+        while (item.ingredients.length < 6) {
+            item.ingredients.push('');
+        }
+    })
+}
+
 // 篩選資料去重
 // interface ingredientsList {
 //     ingredients: string[] | null
@@ -612,7 +628,7 @@ let ingredientList = computed(() => {
     return [...ingredientSet.value]
 })
 
-// 篩選選中
+// 篩選清單選中
 let selectIngredient: Ref<string[]> = ref([]);
 let selectAllText = computed(() => {
     return selectIngredient.value.length == 0 ? '全選' : '取消'
@@ -638,7 +654,7 @@ function selectAll() {
     selectIngredient.value = [];
 }
 
-// 篩選搜尋
+// 篩選清單搜尋
 let searchFilterWord = ref('');
 let showIngredientList = computed(() => {
     const word = searchFilterWord.value.toLowerCase();
@@ -932,6 +948,7 @@ onBeforeMount(() => {
 })
 onMounted(() => {
     window.addEventListener('resize', handleResize);
+    // console.log(sortedSalad.value);
 })
 
 onUnmounted(() => {
@@ -1877,7 +1894,7 @@ $menuItemContainer_height: 405px;
         }
 
         .item {
-            @extend %menuItem;
+            // @extend %menuItem;
             // transition: top 0.5s ease,
             //     left 0.5s ease;
             // transition: transform 0.5s ease;
