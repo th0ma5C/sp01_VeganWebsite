@@ -95,7 +95,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                }}</span>
+                                                    }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -314,7 +314,7 @@
                                 <div class="description">
                                     <span>{{
                                         items.description
-                                    }}</span>
+                                        }}</span>
                                 </div>
                             </div>
                             <h3>{{ items.name }}</h3>
@@ -508,12 +508,12 @@ function closePop() {
 const menuStore = useMenuStore()
 const { fullMenu, saladList, smoothieList, ingredientsList, isLoaded } = storeToRefs(menuStore);
 
-menuStore.$subscribe((_, state) => {
-    if (state.isLoaded) {
-        fillListToSix(saladList.value);
-        fillListToSix(smoothieList.value);
-    }
-})
+// menuStore.$subscribe((_, state) => {
+//     if (state.isLoaded) {
+//         // fillListToSix(saladList.value);
+//         // fillListToSix(smoothieList.value);
+//     }
+// })
 
 // -----篩選、排序功能-----
 // 排序
@@ -1752,16 +1752,27 @@ $menuItemContainer_height: 405px;
                     border-radius: 0 0.5rem 0 0;
                 }
 
-                &:nth-last-of-type(3) {
-                    border-radius: 0 0 0 0.5rem;
+                &:nth-of-type(4) {
+                    border-radius: 0 0 0 .5rem;
                 }
 
-                &:last-of-type {
-                    border-radius: 0 0 0.5rem 0;
+                &:nth-of-type(6) {
+                    border-radius: 0 0 .5rem 0;
                 }
             }
 
+            &::after {
+                @include WnH(100%);
+                content: '';
+                background-color: $btnBacColor_light;
+                border-radius: 0 0 .5rem 0;
+                grid-column: span 1;
+                grid-row: span 1;
+            }
 
+            &>span:nth-child(6)~ ::after {
+                display: none;
+            }
         }
 
         .btnWrapper {

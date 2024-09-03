@@ -3,8 +3,8 @@
         <div class="breadCrumb">麵包屑/麵包屑/麵包屑</div>
         <div class="productWrapper">
             <div class="imgWrapper">
-                <img src="@assets/img/saladTemp.png"
-                    alt="大圖">
+                <img v-if="productInfo && productInfo.fileName"
+                    :src="productInfo.fileName" alt="大圖">
             </div>
 
             <div class="contentWrapper">
@@ -29,7 +29,8 @@
                     <div class="sizeSelector">
                         <h2>包裝尺寸</h2>
                         <div class="selectWrapper">
-                            <label for=""
+                            <label
+                                :for="`selectOption-${icon}`"
                                 @click="setSelectAmount(index)"
                                 :class="{ selected: selectedIndex == index }"
                                 v-for="({ size, amount, icon }, index) in selectOptions"
@@ -41,7 +42,9 @@
                                 </SvgIcon>
                                 <div class="selector">
                                     <input type="radio"
-                                        name="" id="">
+                                        :name="`selectOption-${icon}`"
+                                        :value="Number(icon)"
+                                        :id="`selectOption-${icon}`">
                                     <span
                                         class="marker"></span>
                                     <div class="mount">
@@ -59,13 +62,19 @@
                     <div class="orderCounter">
                         <span>數量</span>
                         <div class="counterControl">
-                            <button>
+                            <button
+                                :class="{ unclickable: limitAlert && counterVal <= min }"
+                                v-on:click="counter('-')">
                                 <SvgIcon name="productMinus"
                                     width="24" height="24">
                                 </SvgIcon>
                             </button>
-                            <input type="text" value="1">
-                            <button>
+                            <input type="text"
+                                name="orderAmount"
+                                v-model.lazy="counterVal">
+                            <button
+                                :class="{ unclickable: limitAlert && counterVal >= max }"
+                                v-on:click="counter('+')">
                                 <SvgIcon name="productPlus"
                                     width="24" height="24">
                                 </SvgIcon>
@@ -74,9 +83,25 @@
                     </div>
                     <div class="price">
                         <h2>價格</h2>
-                        <span>{{ productInfo?.price
-                            }}</span>
-                        <span>/1包</span>
+                        <span>
+                            {{ productInfo?.price }}
+                            <span>
+                                9折
+                            </span>
+                        </span>
+                        <span>
+                            /
+                            <div class="selectSize"
+                                :style="selectSizeStyle">
+                                <span
+                                    v-for="({ icon }, index) in selectOptions"
+                                    :key="index">
+                                    {{ icon }}
+                                </span>
+                            </div>
+
+                            <span>入</span>
+                        </span>
                     </div>
 
                     <div class="addCart">
@@ -159,12 +184,12 @@
                     熱門新品
                 </h2>
 
-                <!-- <div class="itemWrapper">
+                <div class="itemWrapper">
                     <Product_template
-                        v-for="(item, index) in newList"
+                        v-for="(item, index) in showHotList"
                         :key="index" :item="item">
                     </Product_template>
-                </div> -->
+                </div>
             </div>
         </section>
     </div>
@@ -172,7 +197,7 @@
 
 <script setup lang="ts">
 /**
- * todo: 推薦菜單架構(分頁形式) 單位價格隨尺寸改變
+ * todo:  單位價格隨尺寸改變
  * doing: 數量 字體寬度 樣式完成
  * --------------------
  * *
@@ -184,11 +209,12 @@
  * //?小圖去掉，改只放一張大圖就好
  * 
  * --------------------
- * 骨架屏
- * 點擊圖片跳出放大圖
  * 推薦菜單架構
+ * 點擊圖片跳出放大圖
+ * 骨架屏
  * 麵包屑
- * 大圖JPG
+ * //推薦菜單架構
+ * //大圖JPG
  * //尺寸選擇
  * //折疊icon(可否重用menu的折疊)
  * //營養Tag
@@ -201,7 +227,7 @@
  * //進路由去頁首
  */
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect } from 'vue';
 import Product_template from '@/components/Product/Product_template.vue';
 import { useRoute } from 'vue-router';
 import { useMenuStore } from '@/store/menuStore';
@@ -211,8 +237,8 @@ import { LoremIpsum } from "lorem-ipsum";
 
 // store數據
 const menuStore = useMenuStore();
-const { isLoaded, saladList } = storeToRefs(useMenuStore());
-const { fetchMenu, getInfoByName, getSameStyleItem } = useMenuStore();
+const { isLoaded, hotList, fullMenu } = storeToRefs(useMenuStore());
+const { fetchMenu, fetchHotList, getInfoByName, getSameStyleItem } = useMenuStore();
 
 // menuStore.$subscribe((mutation, state) => {
 //     if (state.isLoaded) {
@@ -231,15 +257,16 @@ async function initProductInfo(isInit: boolean) {
         await fetchMenu();
     }
     productInfo.value = getInfoByName(name);
+    replaceImgFileName(productInfo.value!);
 }
 
-
 // 選擇尺寸
+const selectSize = ref(1)
 const selectOptions = [
     {
         size: 'S"',
         amount: '一入',
-        icon: ''
+        icon: '1'
     },
     {
         size: 'M"',
@@ -259,6 +286,55 @@ const selectedIndex = ref(0);
 function setSelectAmount(index: number) {
     selectedIndex.value = index
 }
+
+// 數量+-
+const counterVal = ref(1);
+let prevCounterVal = 1;
+const limitAlert = ref(false);
+const max = 99, min = 1;
+
+function counter(actions: '+' | '-') {
+    switch (actions) {
+        case '+':
+            if (counterVal.value >= max) break
+            counterVal.value += 1;
+            break;
+
+        case '-':
+            if (counterVal.value <= min) break
+            counterVal.value -= 1;
+            break;
+
+        default:
+            break;
+    }
+}
+
+watch(counterVal, (nVal) => {
+    counterVal.value = Number(counterVal.value);
+
+    if (nVal > max || nVal < min || isNaN(nVal)) {
+        counterVal.value = prevCounterVal;
+    }
+    if (nVal >= max || nVal <= min) return limitAlert.value = true;
+
+    limitAlert.value = false;
+    prevCounterVal = nVal;
+
+}, { immediate: true });
+
+// 價格單位過度
+const sizeChanges = ref('biggerSize');
+let currSizeIndex = 0;
+const selectSizeStyle = computed(() => ({
+    transform: `translateY(-${selectedIndex.value * 30}px)`,
+}))
+
+// watchEffect(() => {
+//     if (selectedIndex.value < currSizeIndex) {
+//         return
+//     }
+// })
 
 
 // info摺疊
@@ -298,14 +374,30 @@ async function getSimilarList() {
 }
 
 // 熱門新品
-const newList = ref<MenuItem[]>([]);
+const showHotList = ref<MenuItem[]>([]);
+
+async function getHotList() {
+    if (hotList.value.length == 0) {
+        await fetchHotList()
+    }
+    showHotList.value = [...hotList.value];
+}
+
+// 大圖檔名
+function replaceImgFileName(info: MenuItem) {
+    const reg = /\.png$/;
+    info.fileName = info.fileName!.replace(reg, '.jpg');
+}
 
 
 // 生命週期
 onMounted(() => {
     initProductInfo(isLoaded.value);
-
     getSimilarList();
+    getHotList();
+})
+
+onUnmounted(() => {
 })
 
 </script>
@@ -418,6 +510,7 @@ onMounted(() => {
                 top: 0;
                 left: -100%;
                 z-index: -1;
+
             }
 
             &::before {
@@ -556,6 +649,11 @@ onMounted(() => {
                 line-height: 24px;
                 width: 80px;
             }
+
+            .unclickable {
+                opacity: 0.15;
+                cursor: not-allowed;
+            }
         }
     }
 
@@ -564,16 +662,47 @@ onMounted(() => {
         line-height: 30px;
         margin-top: .5rem;
 
-        & span:nth-of-type(1) {
-            font-size: 20px;
-            margin-left: auto;
+        span {
+            line-height: 30px;
         }
 
-        & span:nth-of-type(2) {
+        &>span:nth-of-type(1) {
+            font-size: 20px;
+            margin-left: auto;
+            position: relative;
+
+            span {
+                @include absoluteCenterTLXY($top: 80%, $left: 50%, $X: -50%, $Y: 0);
+                font-size: 12px;
+                text-wrap: nowrap;
+            }
+        }
+
+        &>span:nth-of-type(2) {
+            display: flex;
+            width: 40px;
             font-size: 12px;
             margin-left: 8px;
-            margin-right: calc(5rem - 48px);
+            margin-right: 20px;
+            position: relative;
+            overflow: hidden;
+
+            .selectSize {
+                display: flex;
+                flex-direction: column;
+                margin-left: 6px;
+                font-size: 12px;
+                position: absolute;
+                left: 6px;
+                transition: transform .3s ease;
+            }
+
+            span:last-of-type {
+                margin-left: auto;
+                font-size: 12px;
+            }
         }
+
     }
 
     .addCart {
@@ -683,9 +812,14 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    margin-bottom: 6rem;
 
     h1 {
         font-size: 36px;
+    }
+
+    h2 {
+        font-size: 24px;
     }
 
     &>div {
@@ -699,12 +833,10 @@ onMounted(() => {
         }
     }
 
-    .hot {
-
-        .itemWrapper {
-            display: flex;
-            flex-direction: row;
-        }
+    .itemWrapper {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
     }
 }
 </style>

@@ -171,6 +171,7 @@ function routerPush(name: string, id?: string) {
         border-radius: 8px;
         overflow: hidden;
         margin-top: 0.5rem;
+        // position: relative;
 
 
         span {
@@ -192,16 +193,27 @@ function routerPush(name: string, id?: string) {
                 border-radius: 0 0.5rem 0 0;
             }
 
-            &:nth-last-of-type(3) {
-                border-radius: 0 0 0 0.5rem;
+            &:nth-of-type(4) {
+                border-radius: 0 0 0 .5rem;
             }
 
-            &:last-of-type {
-                border-radius: 0 0 0.5rem 0;
+            &:nth-of-type(6) {
+                border-radius: 0 0 .5rem 0;
             }
         }
 
+        &::after {
+            @include WnH(100%);
+            content: '';
+            background-color: $btnBacColor_light;
+            border-radius: 0 0 .5rem 0;
+            grid-column: span 1;
+            grid-row: span 1;
+        }
 
+        &>span:nth-child(6)~ ::after {
+            display: none;
+        }
     }
 
     .btnWrapper {

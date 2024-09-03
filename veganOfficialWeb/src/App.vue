@@ -7,7 +7,8 @@
                 <VeganHeader></VeganHeader>
             </header>
             <main>
-                <router-view></router-view>
+                <router-view
+                    :key="$route.params.name"></router-view>
             </main>
             <footer>
                 <VeganFooter></VeganFooter>

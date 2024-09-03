@@ -269,14 +269,18 @@ function gotoProductPage(name: string) {
 }
 
 //  數據請求
+const { fetchHotList, fetchNewList } = useMenuStore();
+// const { hotList } = storeToRefs(useMenuStore());
+
 async function fetchMenuList() {
     try {
-        [menu[0].list, menu[1].list] = await Promise.all([reqGetNewMenu(), reqGetHotMenu()]);
+        [menu[0].list, menu[1].list] = await Promise.all([fetchHotList(), fetchNewList()]);
         isLoaded.value = true;
     } catch (error) {
         console.log(fetchMenuList.name, error);
     }
 }
+
 
 onMounted(() => {
     fetchMenuList();

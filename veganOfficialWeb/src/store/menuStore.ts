@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, readonly, watch, computed } from "vue";
 import type { Ref } from "vue";
-import { reqMenu } from '@/api/menu';
+import { reqGetNewMenu, reqGetHotMenu, reqMenu } from '@/api/menu';
 import type { MenuItem } from '@/api/menu/type'
 import { nanoid } from "nanoid";
 import getTopFiveMostSimilarity from "@/utils/findMostSimilar";
@@ -14,12 +14,7 @@ interface Menu {
 interface ingredientsList {
     ingredients: string[] | null
 }
-// export type {
-// ingredientsList
-// }
-
-export const useMenuStore = defineStore('menu', (() => {
-    const GET_MENU = `
+const GET_MENU = `
         query {
             menu {
                 name
@@ -36,7 +31,7 @@ export const useMenuStore = defineStore('menu', (() => {
             }
         }
     `
-    const GET_ingredients = `
+const GET_ingredients = `
         query {
             menu {
                 items {
@@ -45,6 +40,9 @@ export const useMenuStore = defineStore('menu', (() => {
             }
         }
     `
+
+export const useMenuStore = defineStore('menu', (() => {
+
     let fullMenu: Ref<Menu[]> = ref([
         {
             items: [],
@@ -79,8 +77,10 @@ export const useMenuStore = defineStore('menu', (() => {
         { ingredients: null }
     ])
     let isLoaded = ref(false);
+    const hotList = ref<MenuItem[]>([]);
+    const newList = ref<MenuItem[]>([]);
 
-    let fetchMenu = async () => {
+    async function fetchMenu() {
         try {
             let { data: { menu } } = await reqMenu({ query: GET_MENU });
 
@@ -89,18 +89,11 @@ export const useMenuStore = defineStore('menu', (() => {
                 el.fileName = '/api' + el.fileName + '.png';
                 // 新增ID
                 el.id = nanoid(4);
-                // 補足數量6個
-                // while (el.ingredients.length < 6) {
-                //     el.ingredients.push('');
-                // }
             });
 
             menu[1].items.forEach((el) => {
                 el.fileName = '/api' + el.fileName + '.jpg';
                 el.id = nanoid(4);
-                // while (el.ingredients.length < 6) {
-                //     el.ingredients.push('');
-                // }
             });
 
             fullMenu.value = menu;
@@ -116,7 +109,7 @@ export const useMenuStore = defineStore('menu', (() => {
         }
     }
 
-    let fetchIngredients = async () => {
+    async function fetchIngredients() {
         try {
             let { data: { menu: [{ items: salad }, { items: smoothie }] } } = await reqMenu({ query: GET_ingredients });
             ingredientsList.value = [...salad, ...smoothie];
@@ -127,15 +120,34 @@ export const useMenuStore = defineStore('menu', (() => {
         }
     }
 
-    let getInfoByName = (name: string) => {
+    async function fetchHotList() {
+        try {
+            const data = await reqGetHotMenu();
+            return hotList.value = [...data];
+        } catch (error) {
+            console.log(fetchHotList.name, error);
+            return []
+        }
+    }
+    async function fetchNewList() {
+        try {
+            const data = await reqGetHotMenu();
+            return newList.value = [...data];
+        } catch (error) {
+            console.log(fetchHotList.name, error);
+            return []
+        }
+    }
+
+    function getInfoByName(name: string) {
         let result
         for (let i in fullMenu.value) {
             result = fullMenu.value[i].items.find((item) => {
                 return item.name === name
             })
-            if (result) break
+            if (result) return { ...result }
         }
-        return result
+        // return result
     }
 
     function getSameStyleItem(targetArr: string[]) {
@@ -165,9 +177,13 @@ export const useMenuStore = defineStore('menu', (() => {
         fullMenu,
         saladList,
         smoothieList,
+        hotList,
+        newList,
         ingredientsList,
         isLoaded,
         fetchMenu,
+        fetchHotList,
+        fetchNewList,
         getInfoByName,
         getSameStyleItem
     }
