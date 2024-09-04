@@ -1,17 +1,24 @@
+// import { getCurrentInstance } from 'vue';
+
 interface EventInfo<T extends Event> {
     event: string;
     handler: (e: T) => void;
 }
 
-export default function useListener<T extends Event>(element: Window | Document | HTMLElement, action: 'add' | 'remove', events: EventInfo<T>[]) {
+export default function useListener<T extends Event>(
+    element: Window | Document | HTMLElement,
+    action: 'add' | 'remove',
+    events: EventInfo<T>[],
+    options?: boolean | EventListenerOptions) {
+    // console.log(getCurrentInstance()?.type);
     if (action == 'add') {
         events.forEach(({ event, handler }) => {
-            element.addEventListener(event, handler as (e: Event) => void);
+            element.addEventListener(event, handler as (e: Event) => void, options);
         });
     } else {
         events.forEach(({ event, handler }) => {
             if (element) {
-                element.removeEventListener(event, handler as (e: Event) => void);
+                element.removeEventListener(event, handler as (e: Event) => void, options);
             }
         });
     }

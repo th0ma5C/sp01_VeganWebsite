@@ -3,6 +3,15 @@
         <div class="breadCrumb">麵包屑/麵包屑/麵包屑</div>
         <div class="productWrapper">
             <div class="imgWrapper">
+                <img @click="setShowPopUpImg"
+                    v-if="productInfo && productInfo.fileName"
+                    :src="productInfo.fileName" alt="大圖">
+            </div>
+            <div class="popUpImg" v-show="showPopUpImg"
+                @click="setShowPopUpImg">
+                <SvgIcon class="popUpImgCancelIcon"
+                    name="cancel" width="32px"
+                    height="32px"></SvgIcon>
                 <img v-if="productInfo && productInfo.fileName"
                     :src="productInfo.fileName" alt="大圖">
             </div>
@@ -47,7 +56,7 @@
                                         :id="`selectOption-${icon}`">
                                     <span
                                         class="marker"></span>
-                                    <div class="mount">
+                                    <div class="amount">
                                         <span>
                                             {{ size }}
                                         </span>
@@ -84,10 +93,24 @@
                     <div class="price">
                         <h2>價格</h2>
                         <span>
-                            {{ productInfo?.price }}
+                            <!-- {{ unitPrice }} -->
+                            <!-- <span
+                                v-for="(num, index) in showPlaces"
+                                :key="index">
+                                {{ num }}
+                            </span> -->
                             <span>
-                                9折
+                                {{ showPrice }}
                             </span>
+
+                            <div class="discountWrapper">
+                                <span
+                                    :style="selectSizeStyle"
+                                    v-for="(item, index) in priceDiscount"
+                                    :key="index">
+                                    {{ item }}
+                                </span>
+                            </div>
                         </span>
                         <span>
                             /
@@ -197,8 +220,8 @@
 
 <script setup lang="ts">
 /**
- * todo:  單位價格隨尺寸改變
- * doing: 數量 字體寬度 樣式完成
+ * todo: 字體寬度 樣式完成
+ * doing: 大圖出現轉場
  * --------------------
  * *
  * --------------------
@@ -210,9 +233,10 @@
  * 
  * --------------------
  * 推薦菜單架構
- * 點擊圖片跳出放大圖
  * 骨架屏
  * 麵包屑
+ * //點擊圖片跳出放大圖
+ * //單位價格隨尺寸改變
  * //推薦菜單架構
  * //大圖JPG
  * //尺寸選擇
@@ -228,12 +252,14 @@
  */
 
 import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect } from 'vue';
-import Product_template from '@/components/Product/Product_template.vue';
-import { useRoute } from 'vue-router';
+import type { Ref } from 'vue';
 import { useMenuStore } from '@/store/menuStore';
 import type { MenuItem } from '@/api/menu/type';
 import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 import { LoremIpsum } from "lorem-ipsum";
+import Product_template from '@/components/Product/Product_template.vue';
+import useListener from '@/hooks/useListener';
 
 // store數據
 const menuStore = useMenuStore();
@@ -284,6 +310,7 @@ const selectOptions = [
 const selectedIndex = ref(0);
 
 function setSelectAmount(index: number) {
+    if (counterAnimating) return
     selectedIndex.value = index
 }
 
@@ -323,18 +350,99 @@ watch(counterVal, (nVal) => {
 
 }, { immediate: true });
 
-// 價格單位過度
-const sizeChanges = ref('biggerSize');
-let currSizeIndex = 0;
+// size切換響應
 const selectSizeStyle = computed(() => ({
     transform: `translateY(-${selectedIndex.value * 30}px)`,
-}))
+}));
 
-// watchEffect(() => {
-//     if (selectedIndex.value < currSizeIndex) {
-//         return
+const priceDiscount = ['10折', '89折', '81折'];
+
+const showPrice = ref(0);
+const currPrice = ref(0);
+const targetPrice = ref(0);
+let counterAnimating = false;
+
+watchEffect(() => {
+    if (!productInfo.value || !productInfo.value.price) return
+
+    if (currPrice.value == 0) {
+        showPrice.value = productInfo.value.price;
+        currPrice.value = productInfo.value.price;
+        targetPrice.value = productInfo.value.price;
+    }
+
+    switch (selectedIndex.value) {
+        case 1:
+            targetPrice.value = Math.floor(productInfo.value.price * 7 * 0.892);
+            animateCounter(currPrice, targetPrice.value, showPrice, 200);
+            break;
+        case 2:
+            targetPrice.value = Math.floor(productInfo.value.price * 14 * 0.815);
+            animateCounter(currPrice, targetPrice.value, showPrice, 200);
+            break;
+
+        default:
+            targetPrice.value = productInfo.value.price;
+            animateCounter(currPrice, targetPrice.value, showPrice, 200);
+            break;
+    }
+})
+
+// function animateCounter(curr: Ref<number>, target: number, show: Ref<number>, duration: number) {
+//     const start = performance.now();
+//     const gap = target - curr.value;
+//     const easeOutFn = (t: number) => t * (2 - t);
+
+//     const update = () => {
+//         counterAnimating = true;
+//         const now = performance.now();
+//         const passedTime = now - start;
+//         const progress = Math.min(passedTime / duration, 1);
+
+//         const easeOut = easeOutFn(progress);
+//         const currNum = curr.value + gap * easeOut;
+
+//         show.value = Math.floor(currNum);
+
+//         if (show.value == target) {
+//             counterAnimating = false;
+//             curr.value = target;
+//             return
+//         };
+
+//         if (progress < 1) return requestAnimationFrame(update);
 //     }
-// })
+
+//     requestAnimationFrame(update);
+// }
+function animateCounter(curr: Ref<number>, target: number, show: Ref<number>, duration: number) {
+    counterAnimating = true;
+
+    const gap = target - curr.value;
+    const stepTime = 10;
+    const steps = duration / stepTime;
+    // const stepSize = gap / steps;
+    const timingFn = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+
+    let stepCount = 0;
+
+    const timer = setInterval(() => {
+        stepCount++;
+        const progress = Math.min(stepCount / steps, 1);
+        const easeInOut = timingFn(progress);
+
+        show.value = Math.floor(curr.value + gap * easeInOut)
+
+        // show.value += Math.floor(stepSize);
+
+        if (stepCount >= steps || show.value == target) {
+            clearInterval(timer);
+            counterAnimating = false;
+            show.value = target;
+            curr.value = target;
+        }
+    }, stepTime);
+}
 
 
 // info摺疊
@@ -389,6 +497,38 @@ function replaceImgFileName(info: MenuItem) {
     info.fileName = info.fileName!.replace(reg, '.jpg');
 }
 
+// 跳出圖片
+const showPopUpImg = ref(false);
+
+function setShowPopUpImg() {
+    showPopUpImg.value = !showPopUpImg.value;
+}
+
+// function preventScroll(e: Event) {
+//     console.log('object');
+//     e.preventDefault()
+// }
+
+// const banScroll = {
+//     target: window,
+//     method: 'add' as 'add' | 'remove',
+//     events: [
+//         { event: 'wheel', handler: preventScroll },
+//         { event: 'touchMove', handler: preventScroll },
+//         { event: 'scroll', handler: preventScroll },
+//     ],
+//     options: {
+//         passive: false
+//     } as EventListenerOptions
+// }
+
+watchEffect(() => {
+    if (showPopUpImg.value) {
+        document.documentElement.style.overflow = 'hidden';
+        return
+    }
+    document.documentElement.style.overflow = '';
+})
 
 // 生命週期
 onMounted(() => {
@@ -411,7 +551,7 @@ onUnmounted(() => {
     width: 100%;
 
     * {
-        outline: 1px solid black;
+        // outline: 1px solid black;
     }
 
     &>div,
@@ -441,6 +581,8 @@ onUnmounted(() => {
         flex: 1;
         padding: 1.5rem;
     }
+
+
 }
 
 .imgWrapper {
@@ -449,6 +591,7 @@ onUnmounted(() => {
 
     &>img {
         // @include WnH(50%);
+        cursor: pointer;
         position: sticky;
         top: 188px;
         // width: 80%;
@@ -463,6 +606,27 @@ onUnmounted(() => {
         &>img {
             @include WnH(100%);
         }
+    }
+}
+
+.popUpImg {
+    @include WnH(100%, 100vh);
+    @include absoluteCenterTLXY($top: 0px, $Y: 0);
+    @include flex-center-center;
+    cursor: zoom-out;
+    padding: 0;
+    z-index: 100;
+    background-color: $primaryBacColor;
+
+    .popUpImgCancelIcon {
+        cursor: pointer;
+        position: absolute;
+        right: 16px;
+        top: 16px;
+    }
+
+    img {
+        height: 100%;
     }
 }
 
@@ -581,9 +745,10 @@ onUnmounted(() => {
                         position: relative;
                     }
 
-                    .mount {
+                    .amount {
                         display: flex;
                         flex-direction: column;
+                        user-select: none;
 
                         span {
                             flex: 1;
@@ -661,20 +826,38 @@ onUnmounted(() => {
         flex-direction: row;
         line-height: 30px;
         margin-top: .5rem;
+        position: relative;
+        z-index: 0;
 
         span {
             line-height: 30px;
         }
 
         &>span:nth-of-type(1) {
+            background-color: #FFE8C0;
             font-size: 20px;
             margin-left: auto;
             position: relative;
 
-            span {
+            .discountWrapper {
                 @include absoluteCenterTLXY($top: 80%, $left: 50%, $X: -50%, $Y: 0);
+                display: flex;
+                align-items: center;
+                height: 100%;
+                flex-direction: column;
                 font-size: 12px;
-                text-wrap: nowrap;
+                overflow: hidden;
+                z-index: -1;
+
+                span {
+                    text-wrap: nowrap;
+                    transition: transform .3s ease;
+                    color: red;
+                }
+
+                span:nth-of-type(1) {
+                    color: transparent;
+                }
             }
         }
 
@@ -798,13 +981,18 @@ onUnmounted(() => {
     display: flex;
     flex-direction: row;
     // gap: 4rem;
+    overflow: hidden;
 
     .wrapper {
         @include WnH(300px, 430px);
         box-shadow: 3px 3px 6px gray;
         flex: 1 0 auto;
 
-        img {}
+
+
+        img {
+            // height: 100%;
+        }
     }
 }
 
