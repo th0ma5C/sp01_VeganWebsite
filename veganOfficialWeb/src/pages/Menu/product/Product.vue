@@ -220,7 +220,7 @@
 
 <script setup lang="ts">
 /**
- * todo: 字體寬度 樣式完成
+ * todo: 字體寬度 樣式完成 商品組件點圖片跳路由
  * doing: 大圖出現轉場
  * --------------------
  * *
@@ -355,7 +355,7 @@ const selectSizeStyle = computed(() => ({
     transform: `translateY(-${selectedIndex.value * 30}px)`,
 }));
 
-const priceDiscount = ['10折', '89折', '81折'];
+const priceDiscount = ['10折', '9折', '85折'];
 
 const showPrice = ref(0);
 const currPrice = ref(0);
@@ -373,11 +373,11 @@ watchEffect(() => {
 
     switch (selectedIndex.value) {
         case 1:
-            targetPrice.value = Math.floor(productInfo.value.price * 7 * 0.892);
+            targetPrice.value = Math.floor(productInfo.value.price * 7 * 0.9);
             animateCounter(currPrice, targetPrice.value, showPrice, 200);
             break;
         case 2:
-            targetPrice.value = Math.floor(productInfo.value.price * 14 * 0.815);
+            targetPrice.value = Math.floor(productInfo.value.price * 14 * 0.85);
             animateCounter(currPrice, targetPrice.value, showPrice, 200);
             break;
 
@@ -634,6 +634,7 @@ onUnmounted(() => {
     h2 {
         margin-left: 0.75rem;
         font-size: 20px;
+        font-weight: 450;
     }
 }
 
@@ -643,6 +644,7 @@ onUnmounted(() => {
     h1 {
         font-size: 2.5rem;
         margin-bottom: 1rem;
+        font-weight: 450;
     }
 
     .ingredientWrapper {
@@ -691,6 +693,7 @@ onUnmounted(() => {
         font-size: 1.25rem;
         text-indent: 2rem;
         text-align: justify;
+        font-variation-settings: 'wght' 450;
     }
 }
 
@@ -741,7 +744,7 @@ onUnmounted(() => {
                         background-color: $primaryBacColor;
                         border: 1px solid black;
                         border-radius: 8px;
-                        margin: 9px 5px 4px 4px;
+                        margin: 12px 6px 12px 6px;
                         position: relative;
                     }
 
@@ -753,10 +756,12 @@ onUnmounted(() => {
                         span {
                             flex: 1;
                             display: block;
-                            font-size: 0.75rem;
+                            font-size: 1rem;
+                            font-variation-settings: 'wght' 400;
 
                             &:first-of-type {
-                                font-size: 1.25rem;
+                                font-size: 1.5rem;
+                                font-variation-settings: 'wght' 450;
                             }
                         }
                     }
@@ -794,6 +799,8 @@ onUnmounted(() => {
         span {
             @include absoluteCenterTLXY($left: 0.75rem, $X: 0);
             font-size: 20px;
+            // font-weight: 900;
+            font-variation-settings: 'wght' 450;
         }
 
         .counterControl {
@@ -813,6 +820,8 @@ onUnmounted(() => {
                 text-align: center;
                 line-height: 24px;
                 width: 80px;
+                font-variation-settings: 'wght' 450;
+                font-size: 1.25rem;
             }
 
             .unclickable {
@@ -838,6 +847,7 @@ onUnmounted(() => {
             font-size: 20px;
             margin-left: auto;
             position: relative;
+            font-variation-settings: 'wght' 450;
 
             .discountWrapper {
                 @include absoluteCenterTLXY($top: 80%, $left: 50%, $X: -50%, $Y: 0);
@@ -870,6 +880,10 @@ onUnmounted(() => {
             position: relative;
             overflow: hidden;
 
+            span {
+                font-variation-settings: 'wght' 450;
+            }
+
             .selectSize {
                 display: flex;
                 flex-direction: column;
@@ -878,6 +892,8 @@ onUnmounted(() => {
                 position: absolute;
                 left: 6px;
                 transition: transform .3s ease;
+
+
             }
 
             span:last-of-type {
@@ -1004,10 +1020,12 @@ onUnmounted(() => {
 
     h1 {
         font-size: 36px;
+        font-weight: 450;
     }
 
     h2 {
         font-size: 24px;
+        font-weight: 450;
     }
 
     &>div {
