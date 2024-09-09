@@ -3,18 +3,36 @@
         <div class="breadCrumb">麵包屑/麵包屑/麵包屑</div>
         <div class="productWrapper">
             <div class="imgWrapper">
-                <img @click="setShowPopUpImg"
-                    v-if="productInfo && productInfo.fileName"
-                    :src="productInfo.fileName" alt="大圖">
+                <transition name="mainImg">
+                    <img v-show="showMainImg"
+                        @click="setShowPopUpImg"
+                        ref="mainImg" @load="mainImgLoaded"
+                        :class="{ unLoaded: !showMainImg }"
+                        v-if="productInfo && productInfo.fileName"
+                        :src="productInfo.fileName"
+                        alt="大圖">
+                </transition>
+
+                <transition name="mainImg">
+                    <SvgIcon v-show="showSkeleton"
+                        name="skeletonSalad"
+                        class="skeleton" width="80%"
+                        height="80%" color="#00430b">
+                    </SvgIcon>
+                </transition>
             </div>
-            <div class="popUpImg" v-show="showPopUpImg"
-                @click="setShowPopUpImg">
-                <SvgIcon class="popUpImgCancelIcon"
-                    name="cancel" width="32px"
-                    height="32px"></SvgIcon>
-                <img v-if="productInfo && productInfo.fileName"
-                    :src="productInfo.fileName" alt="大圖">
-            </div>
+            <transition name="popUpImg">
+                <div class="popUpImg" v-show="showPopUpImg"
+                    @click="setShowPopUpImg">
+                    <SvgIcon class="popUpImgCancelIcon"
+                        name="cancel" width="32px"
+                        height="32px"></SvgIcon>
+                    <img v-if="productInfo && productInfo.fileName"
+                        :src="productInfo.fileName"
+                        alt="大圖">
+                </div>
+            </transition>
+
 
             <div class="contentWrapper">
                 <div class="topContent">
@@ -73,8 +91,9 @@
                         <div class="counterControl">
                             <button
                                 :class="{ unclickable: limitAlert && counterVal <= min }"
-                                v-on:click="counter('-')">
+                                @click="counter('-')">
                                 <SvgIcon name="productMinus"
+                                    class="countIcon"
                                     width="24" height="24">
                                 </SvgIcon>
                             </button>
@@ -83,8 +102,9 @@
                                 v-model.lazy="counterVal">
                             <button
                                 :class="{ unclickable: limitAlert && counterVal >= max }"
-                                v-on:click="counter('+')">
+                                @click="counter('+')">
                                 <SvgIcon name="productPlus"
+                                    class="countIcon"
                                     width="24" height="24">
                                 </SvgIcon>
                             </button>
@@ -220,13 +240,14 @@
 
 <script setup lang="ts">
 /**
- * todo: 字體寬度 樣式完成 商品組件點圖片跳路由
- * doing: 大圖出現轉場
+ * todo: 果昔商品頁 麵包屑 問卷 會員 購物車 關於
+ * doing: 果昔同款熱門樣式 果昔熱門新品api建構 menuStore getSameStyleItem方法重構
  * --------------------
  * *
  * --------------------
- * !取消大圓圈，overflow會使圖片sticky失效
+ * //!取消大圓圈，overflow會使圖片sticky失效
  * --------------------
+ * ?建立果昔組件
  * ?價格試算移到結帳頁面
  * ?麵包屑組件
  * //?小圖去掉，改只放一張大圖就好
@@ -235,6 +256,9 @@
  * 推薦菜單架構
  * 骨架屏
  * 麵包屑
+ * //大圖出現轉場
+ * //骨架屏
+ * //字體寬度
  * //點擊圖片跳出放大圖
  * //單位價格隨尺寸改變
  * //推薦菜單架構
@@ -251,7 +275,7 @@
  * //進路由去頁首
  */
 
-import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick } from 'vue';
 import type { Ref } from 'vue';
 import { useMenuStore } from '@/store/menuStore';
 import type { MenuItem } from '@/api/menu/type';
@@ -260,6 +284,7 @@ import { useRoute } from 'vue-router';
 import { LoremIpsum } from "lorem-ipsum";
 import Product_template from '@/components/Product/Product_template.vue';
 import useListener from '@/hooks/useListener';
+import useImgChecker from '@/hooks/useImgChecker';
 
 // store數據
 const menuStore = useMenuStore();
@@ -284,6 +309,9 @@ async function initProductInfo(isInit: boolean) {
     }
     productInfo.value = getInfoByName(name);
     replaceImgFileName(productInfo.value!);
+    // nextTick(() => {
+    //     console.log(mainImg);
+    // })
 }
 
 // 選擇尺寸
@@ -471,14 +499,14 @@ function setInfoOpen(index: number) {
 
 // 推薦
 // 同款熱門
-const similarList = ref<MenuItem[]>([]);
+const similarList = ref<MenuItem[] | undefined>([]);
 
 async function getSimilarList() {
     if (!isLoaded.value) {
         await fetchMenu();
     }
-
-    similarList.value = getSameStyleItem(productInfo.value!.ingredients);
+    if (!productInfo.value) return
+    similarList.value = getSameStyleItem(productInfo.value.ingredients, productInfo.value.category!);
 }
 
 // 熱門新品
@@ -530,14 +558,48 @@ watchEffect(() => {
     document.documentElement.style.overflow = '';
 })
 
+// 大圖骨架
+const showMainImg = ref(false);
+const showSkeleton = ref(false);
+const mainImg = ref();
+
+function mainImgLoaded() {
+    showMainImg.value = true;
+}
+
+// function checkImgLoaded(ref: Ref<HTMLImageElement>) {
+
+//     const timer = setTimeout(() => {
+//         if (!ref.value.complete) {
+//             showSkeleton.value = true;
+//         }
+//     }, 1000);
+
+//     const watcher = setInterval(() => {
+//         if (ref.value.complete) {
+//             showSkeleton.value = false;
+//             mainImgIsLoad.value = true;
+//             clearTimeout(timer);
+//             clearInterval(watcher);
+//         }
+//     }, 500)
+// }
+const imgChecker = useImgChecker(mainImg, showSkeleton, showMainImg);
+
+watch(mainImg, (nVal) => {
+    if (!nVal) return
+    imgChecker();
+})
+
 // 生命週期
 onMounted(() => {
     initProductInfo(isLoaded.value);
     getSimilarList();
     getHotList();
+    console.log('mounted');
 })
-
 onUnmounted(() => {
+    console.log('unmounted');
 })
 
 </script>
@@ -585,47 +647,122 @@ onUnmounted(() => {
 
 }
 
+.mainImg-enter-active,
+.mainImg-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.mainImg-enter-from,
+.mainImg-leave-to {
+    opacity: 0;
+}
+
+.mainImg-enter-to,
+.mainImg-leave-from {
+    opacity: 1;
+}
+
 .imgWrapper {
     display: flex;
     flex-direction: column;
+    position: relative;
+    z-index: 0;
 
     &>img {
         // @include WnH(50%);
+        border-radius: 1rem;
         cursor: pointer;
         position: sticky;
         top: 188px;
+        z-index: 1;
         // width: 80%;
         // margin: auto;
     }
 
-    .thumbnail {
-        height: 15%;
-        display: flex;
-        flex-direction: row;
+    .unLoaded {
+        opacity: 0;
+    }
 
-        &>img {
-            @include WnH(100%);
+    @keyframes skeletonScan {
+        from {
+            transform: translateX(-75%);
+        }
+
+        to {
+            transform: translateX(15%);
         }
     }
+
+    .skeleton {
+        background-color: $primaryBacColor;
+        border-radius: 1.5rem;
+        width: calc(100% - 3rem);
+        aspect-ratio: 1/1;
+        margin: 1.5rem;
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 2;
+        overflow: hidden;
+
+        &::after {
+            @include WnH(200%);
+            background: linear-gradient(115deg, transparent 40%, #FCFAF2 50%, transparent 52%);
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            transform: translateX(-75%);
+            animation: skeletonScan 2s linear infinite;
+        }
+    }
+
+    // .thumbnail {
+    //     height: 15%;
+    //     display: flex;
+    //     flex-direction: row;
+
+    //     &>img {
+    //         @include WnH(100%);
+    //     }
+    // }
+}
+
+.popUpImg-enter-active,
+.popUpImg-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.popUpImg-enter-from,
+.popUpImg-leave-to {
+    opacity: 0;
+}
+
+.popUpImg-enter-to,
+.popUpImg-leave-from {
+    opacity: 1;
 }
 
 .popUpImg {
     @include WnH(100%, 100vh);
-    @include absoluteCenterTLXY($top: 0px, $Y: 0);
+    // @include absoluteCenterTLXY($top: 0px, $Y: 0);
     @include flex-center-center;
     cursor: zoom-out;
     padding: 0;
+    position: fixed;
+    top: 0;
     z-index: 100;
     background-color: $primaryBacColor;
 
     .popUpImgCancelIcon {
         cursor: pointer;
-        position: absolute;
+        position: fixed;
         right: 16px;
         top: 16px;
     }
 
     img {
+        border-radius: 1rem;
         height: 100%;
     }
 }
@@ -807,12 +944,27 @@ onUnmounted(() => {
             @include absoluteCenterTLXY($left: calc(100% - 1rem), $X: -100%);
             display: flex;
             align-items: center;
+            gap: 6px;
 
             button {
                 @include WnH(24px, 20px);
                 @include flex-center-center;
                 // border: 1px solid black;
                 border-radius: 6px;
+                transition: box-shadow .3s ease;
+
+                &:not(.unclickable) {
+                    &:hover {
+                        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+
+                    }
+
+                    &:active {
+                        transform: translate(1px, 1px);
+                    }
+                }
+
+
             }
 
             input {
@@ -875,7 +1027,7 @@ onUnmounted(() => {
             display: flex;
             width: 40px;
             font-size: 12px;
-            margin-left: 8px;
+            margin-left: 10px;
             margin-right: 20px;
             position: relative;
             overflow: hidden;

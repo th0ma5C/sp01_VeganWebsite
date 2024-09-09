@@ -5,6 +5,7 @@ import About from '@pages/About/index.vue'
 import Cart from '@pages/Cart/index.vue'
 import Profile from '@pages/Profile/index.vue'
 import Product from "@/pages/Menu/product/Product.vue";
+import type { RouteLocationNormalized } from 'vue-router'
 
 
 export default [
@@ -30,8 +31,13 @@ export default [
     {
         name: 'Product',
         component: Product,
-        path: '/product/:name',
-        props: true
+        path: '/product',
+        props(route: RouteLocationNormalized) {
+            return route.query
+        },
+        meta: {
+            keepAlive: true
+        }
 
     },
     {

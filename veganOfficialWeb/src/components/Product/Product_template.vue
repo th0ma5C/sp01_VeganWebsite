@@ -1,6 +1,7 @@
 <template>
     <div class="item" ref="productEl">
-        <div class="menuImg">
+        <div class="menuImg"
+            @click="routerPush(item.name!)">
             <img :src="item.fileName!" alt="商品">
             <p>{{ item.price }}元</p>
             <div class="description">
@@ -77,7 +78,7 @@ const router = useRouter();
 function routerPush(name: string, id?: string) {
     router.push({
         name: 'Product',
-        params: {
+        query: {
             name,
         },
     })

@@ -95,7 +95,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                    }}</span>
+                                                }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -308,13 +308,14 @@
                             v-for="(items, index) in sortedSmoothies"
                             v-show="filteredSmoothie.includes(items)"
                             :key="index">
-                            <div class="imgWrapper">
+                            <div class="imgWrapper"
+                                @click="routerPush(items.name)">
                                 <img :src="items.fileName!"
                                     alt="商品">
                                 <div class="description">
                                     <span>{{
                                         items.description
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
                             <h3>{{ items.name }}</h3>
@@ -330,6 +331,7 @@
                                 <button
                                     class="cart-btn">加入購物車</button>
                                 <button
+                                    @click="routerPush(items.name)"
                                     class="info-btn">詳細資訊</button>
                                 <div class="btnBackground">
                                     <svg width="260"
@@ -434,6 +436,7 @@ import gsap from 'gsap';
 import Flip from 'gsap/Flip';
 import { useRouter } from 'vue-router';
 import { async } from 'fast-glob';
+import { it } from 'node:test';
 
 
 //DOING salad圖ps改成一致
@@ -934,10 +937,11 @@ let docData = [
 // 路由跳轉
 const router = useRouter();
 
-function routerPush(name: string, id: string) {
+function routerPush(name: string, id?: string) {
+    console.log('object');
     router.push({
         name: 'Product',
-        params: {
+        query: {
             name,
         },
     })
@@ -949,10 +953,12 @@ onBeforeMount(() => {
 onMounted(() => {
     window.addEventListener('resize', handleResize);
     // console.log(sortedSalad.value);
+    // console.log('menu mounted');
 })
 
 onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
+    // console.log('menu unmounted');
 })
 
 </script>

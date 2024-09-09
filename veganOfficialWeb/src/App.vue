@@ -8,7 +8,16 @@
             </header>
             <main>
                 <router-view
-                    :key="$route.params.name"></router-view>
+                    v-if="!$route.meta?.keepAlive"></router-view>
+
+                <router-view v-slot="{ Component }">
+                    <keep-alive :max="3">
+                        <component :key="$route.query.name"
+                            v-if="$route.meta?.keepAlive"
+                            :is="Component">
+                        </component>
+                    </keep-alive>
+                </router-view>
             </main>
             <footer>
                 <VeganFooter></VeganFooter>

@@ -150,18 +150,46 @@ export const useMenuStore = defineStore('menu', (() => {
         // return result
     }
 
-    function getSameStyleItem(targetArr: string[]) {
-        const arrays = saladList.value.map((salad) => {
-            return [...salad.ingredients]
-        });
+    function getSameStyleItem(targetArr: string[], category: string) {
+        let arrays;
+        switch (category) {
+            case 'salad': {
+                arrays = saladList.value.map((salad) => {
+                    return [...salad.ingredients]
+                });
+                const indexList = getTopFiveMostSimilarity(arrays!, targetArr);
 
-        const indexList = getTopFiveMostSimilarity(arrays, targetArr);
+                const result = indexList.map((index) => {
+                    return saladList.value[index]
+                })
+                return result;
+            }
 
-        const result = indexList.map((index) => {
-            return saladList.value[index]
-        })
+            case 'smoothies': {
+                arrays = smoothieList.value.map((smoothies) => {
+                    return [...smoothies.ingredients]
+                });
+                const indexList = getTopFiveMostSimilarity(arrays!, targetArr);
 
-        return result
+                const result = indexList.map((index) => {
+                    return smoothieList.value[index]
+                })
+                return result;
+            }
+            default:
+                break;
+        }
+        // const arrays = saladList.value.map((salad) => {
+        //     return [...salad.ingredients]
+        // });
+
+        // const indexList = getTopFiveMostSimilarity(arrays!, targetArr);
+
+        // const result = indexList.map((index) => {
+        //     return saladList.value[index]
+        // })
+
+        // return result
     }
 
     function init() {

@@ -1,6 +1,4 @@
-# TODO: 建置路由，圖片縮放比例不正確
-# 路由: 進出位置不在最上方
-
+# TODO: 建置路由，首頁圖片在頁面縮放後比例不正確
 # DOING: 菜單建置
 
 # pages--home 
@@ -38,8 +36,10 @@
 # pages--product
     TODO: IG API
 
+    ## 頁面縮放造成骨架屏樣式塌陷
+
 # components
-    TODO: 右側會員popover區塊
+    TODO: 右側會員popover區塊 麵包屑
 
     ## header
     * marquee btn hover
