@@ -24,8 +24,6 @@ $large-screen: 1440px;
     transform: translate($X, $Y);
 }
 
-
-
 @mixin flex-center-center {
     display: flex;
     justify-content: center;

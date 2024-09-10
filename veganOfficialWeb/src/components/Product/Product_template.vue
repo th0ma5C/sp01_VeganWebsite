@@ -1,7 +1,7 @@
 <template>
     <div class="item" ref="productEl">
-        <div class="menuImg"
-            @click="routerPush(item.name!)">
+        <div :class="item.category == 'salad' ? 'menuImg' : 'smoothiesImg'
+            " @click="routerPush(item.name!)">
             <img :src="item.fileName!" alt="商品">
             <p>{{ item.price }}元</p>
             <div class="description">
@@ -152,6 +152,19 @@ function routerPush(name: string, id?: string) {
             .description {
                 opacity: 1;
             }
+        }
+    }
+
+    .smoothiesImg {
+        @extend .menuImg;
+        background: none;
+        overflow: hidden;
+        border-radius: 2.5rem 2.5rem 0 2.5rem;
+        // filter: drop-shadow(4px 4px 4px black);
+
+        img {
+            @include WnH(100%);
+            filter: none;
         }
     }
 

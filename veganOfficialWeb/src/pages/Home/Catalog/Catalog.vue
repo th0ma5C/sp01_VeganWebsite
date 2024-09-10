@@ -262,7 +262,7 @@ const router = useRouter();
 function gotoProductPage(name: string) {
     router.push({
         name: 'Product',
-        params: {
+        query: {
             name
         }
     })
@@ -274,7 +274,7 @@ const { fetchHotList, fetchNewList } = useMenuStore();
 
 async function fetchMenuList() {
     try {
-        [menu[0].list, menu[1].list] = await Promise.all([fetchHotList(), fetchNewList()]);
+        [menu[0].list, menu[1].list] = await Promise.all([fetchNewList(), fetchHotList()]);
         isLoaded.value = true;
     } catch (error) {
         console.log(fetchMenuList.name, error);

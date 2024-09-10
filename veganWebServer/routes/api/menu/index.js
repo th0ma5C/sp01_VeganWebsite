@@ -16,6 +16,7 @@ const MenuModel = require('@models/MenuModel');
 let getMenuList = async (name) => {
     try {
         const result = await MenuModel.find({ name });
+        // console.log(result);
 
         return result[0].items
 
@@ -26,16 +27,29 @@ let getMenuList = async (name) => {
 }
 
 
-async function findSalad(sortField) {
+async function findSalad(sortField, category) {
     try {
-        let data = await getMenuList('salad');
+        let data = await getMenuList(category);
         data.sort((a, b) => {
             return new Date(b[sortField]) - new Date(a[sortField])
         });
 
+        const extension = category == 'salad' ? '.png' : '.jpg';
+        const path = `/api/images/menu/${category}/`
+
+        // if (category == 'salad') {
+        //     data.forEach((item) => {
+        //         item.fileName = `/api/images/menu/${category}/${item.fileName}.png`
+        //     })
+        // } else {
+        //     data.forEach((item) => {
+        //         item.fileName = `/api/images/menu/${category}/${item.fileName}.jpg`
+        //     })
+        // }
         data.forEach((item) => {
-            item.fileName = `/api/images/menu/salad/${item.fileName}.png`
+            item.fileName = `${path}${item.fileName}${extension}`
         })
+
         // console.log(data);
 
         let list = data.slice(0, 5);
@@ -49,8 +63,8 @@ async function findSalad(sortField) {
 /* GET home new catalog */
 router.get('/newCatalog', async (req, res) => {
     try {
-
-        let data = await findSalad('date');
+        const { name } = req.query;
+        let data = await findSalad('date', name);
         return res.json(data);
 
     } catch (error) {
@@ -60,7 +74,8 @@ router.get('/newCatalog', async (req, res) => {
 /* GET home hot catalog */
 router.get('/hotCatalog', async (req, res) => {
     try {
-        let data = await findSalad('rating');
+        const { name } = req.query;
+        let data = await findSalad('rating', name);
         return res.json(data);
 
     } catch (error) {

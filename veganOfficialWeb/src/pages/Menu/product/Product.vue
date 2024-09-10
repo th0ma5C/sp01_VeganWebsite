@@ -1,6 +1,9 @@
 <template>
     <div class="container">
-        <div class="breadCrumb">麵包屑/麵包屑/麵包屑</div>
+        <div class="breadCrumb">
+            <Breadcrumbs :currentPage="breadcrumbProps">
+            </Breadcrumbs>
+        </div>
         <div class="productWrapper">
             <div class="imgWrapper">
                 <transition name="mainImg">
@@ -240,7 +243,7 @@
 
 <script setup lang="ts">
 /**
- * todo: 果昔商品頁 麵包屑 問卷 會員 購物車 關於
+ * todo: 問卷 會員 購物車 關於
  * doing: 果昔同款熱門樣式 果昔熱門新品api建構 menuStore getSameStyleItem方法重構
  * --------------------
  * *
@@ -254,8 +257,7 @@
  * 
  * --------------------
  * 推薦菜單架構
- * 骨架屏
- * 麵包屑
+ * //麵包屑
  * //大圖出現轉場
  * //骨架屏
  * //字體寬度
@@ -275,16 +277,17 @@
  * //進路由去頁首
  */
 
-import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, onBeforeMount } from 'vue';
 import type { Ref } from 'vue';
 import { useMenuStore } from '@/store/menuStore';
 import type { MenuItem } from '@/api/menu/type';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
+import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 import { LoremIpsum } from "lorem-ipsum";
 import Product_template from '@/components/Product/Product_template.vue';
 import useListener from '@/hooks/useListener';
 import useImgChecker from '@/hooks/useImgChecker';
+import Breadcrumbs from '@/components/Breadcrumbs/Breadcrumbs.vue';
 
 // store數據
 const menuStore = useMenuStore();
@@ -308,7 +311,11 @@ async function initProductInfo(isInit: boolean) {
         await fetchMenu();
     }
     productInfo.value = getInfoByName(name);
-    replaceImgFileName(productInfo.value!);
+    if (productInfo.value?.category == 'salad') {
+        replaceImgFileName(productInfo.value!);
+    }
+    getSimilarList();
+    getHotList();
     // nextTick(() => {
     //     console.log(mainImg);
     // })
@@ -511,11 +518,21 @@ async function getSimilarList() {
 
 // 熱門新品
 const showHotList = ref<MenuItem[]>([]);
+const apiParams = computed(() => {
+    let params;
+    if (productInfo.value) {
+        params = productInfo.value.category === 'salad' ?
+            { name: 'salad' } :
+            { name: 'smoothies' }
+    }
+    return params
+})
 
 async function getHotList() {
-    if (hotList.value.length == 0) {
-        await fetchHotList()
-    }
+    // if (hotList.value.length == 0) {
+    // console.log(apiParams.value);
+    await fetchHotList(apiParams.value)
+    // }
     showHotList.value = [...hotList.value];
 }
 
@@ -531,24 +548,6 @@ const showPopUpImg = ref(false);
 function setShowPopUpImg() {
     showPopUpImg.value = !showPopUpImg.value;
 }
-
-// function preventScroll(e: Event) {
-//     console.log('object');
-//     e.preventDefault()
-// }
-
-// const banScroll = {
-//     target: window,
-//     method: 'add' as 'add' | 'remove',
-//     events: [
-//         { event: 'wheel', handler: preventScroll },
-//         { event: 'touchMove', handler: preventScroll },
-//         { event: 'scroll', handler: preventScroll },
-//     ],
-//     options: {
-//         passive: false
-//     } as EventListenerOptions
-// }
 
 watchEffect(() => {
     if (showPopUpImg.value) {
@@ -591,15 +590,28 @@ watch(mainImg, (nVal) => {
     imgChecker();
 })
 
+// 麵包屑路由
+const breadcrumbProps = ref();
+const route = useRoute();
+
+
+function setBreadcrumb() {
+    breadcrumbProps.value = route.query.name
+}
+
+
 // 生命週期
+onBeforeMount(() => {
+    setBreadcrumb();
+})
+
 onMounted(() => {
     initProductInfo(isLoaded.value);
-    getSimilarList();
-    getHotList();
-    console.log('mounted');
+
+    // console.log('mounted');
 })
 onUnmounted(() => {
-    console.log('unmounted');
+    // console.log('unmounted');
 })
 
 </script>
@@ -642,6 +654,7 @@ onUnmounted(() => {
     &>div {
         flex: 1;
         padding: 1.5rem;
+        padding-top: 0;
     }
 
 
@@ -818,7 +831,7 @@ onUnmounted(() => {
 
             &::before {
                 @include WnH(3px);
-                @include absoluteCenterTLXY($left: -6px, $X: 0);
+                @include absoluteCenterTLXY($left: -5px, $X: 0);
                 content: '';
                 border-radius: 100%;
                 background-color: white;

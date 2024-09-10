@@ -1,4 +1,5 @@
 # TODO: 建置路由，首頁圖片在頁面縮放後比例不正確
+        改SCSS
 # DOING: 菜單建置
 
 # pages--home 

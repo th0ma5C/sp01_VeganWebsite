@@ -120,18 +120,28 @@ export const useMenuStore = defineStore('menu', (() => {
         }
     }
 
-    async function fetchHotList() {
+    async function fetchHotList(params = {}) {
         try {
-            const data = await reqGetHotMenu();
+            if (Object.keys(params).length == 0) {
+                params = {
+                    name: 'salad'
+                }
+            }
+            const data = await reqGetHotMenu({ params });
             return hotList.value = [...data];
         } catch (error) {
             console.log(fetchHotList.name, error);
             return []
         }
     }
-    async function fetchNewList() {
+    async function fetchNewList(params = {}) {
         try {
-            const data = await reqGetHotMenu();
+            if (Object.keys(params).length == 0) {
+                params = {
+                    name: 'salad'
+                }
+            }
+            const data = await reqGetNewMenu({ params });
             return newList.value = [...data];
         } catch (error) {
             console.log(fetchHotList.name, error);
@@ -153,43 +163,25 @@ export const useMenuStore = defineStore('menu', (() => {
     function getSameStyleItem(targetArr: string[], category: string) {
         let arrays;
         switch (category) {
-            case 'salad': {
+            case 'salad':
                 arrays = saladList.value.map((salad) => {
                     return [...salad.ingredients]
                 });
-                const indexList = getTopFiveMostSimilarity(arrays!, targetArr);
 
-                const result = indexList.map((index) => {
-                    return saladList.value[index]
-                })
-                return result;
-            }
-
-            case 'smoothies': {
+            case 'smoothies':
                 arrays = smoothieList.value.map((smoothies) => {
                     return [...smoothies.ingredients]
                 });
-                const indexList = getTopFiveMostSimilarity(arrays!, targetArr);
-
-                const result = indexList.map((index) => {
-                    return smoothieList.value[index]
-                })
-                return result;
-            }
             default:
                 break;
         }
-        // const arrays = saladList.value.map((salad) => {
-        //     return [...salad.ingredients]
-        // });
+        const indexList = getTopFiveMostSimilarity(arrays!, targetArr);
 
-        // const indexList = getTopFiveMostSimilarity(arrays!, targetArr);
+        const result = indexList.map((index) => {
+            return category == 'salad' ? saladList.value[index] : smoothieList.value[index]
+        })
 
-        // const result = indexList.map((index) => {
-        //     return saladList.value[index]
-        // })
-
-        // return result
+        return result
     }
 
     function init() {

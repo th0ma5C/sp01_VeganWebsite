@@ -15,6 +15,15 @@ export default [
         // redirect: '/home',
         component: Home,
         name: 'Home',
+        // meta: {
+        //     breadcrumbs: [
+        //         {
+        //             title: '首頁',
+        //             link: 'Home'
+        //         }
+        //     ]
+        // }
+
     },
     // {
     //     path: '/home',
@@ -27,6 +36,19 @@ export default [
     {
         path: '/menu',
         component: Menu,
+        name: 'Menu',
+        meta: {
+            breadcrumbs: [
+                {
+                    title: '首頁',
+                    link: 'Home'
+                },
+                {
+                    title: '菜單',
+                    link: 'Menu'
+                }
+            ]
+        }
     },
     {
         name: 'Product',
@@ -36,8 +58,25 @@ export default [
             return route.query
         },
         meta: {
-            keepAlive: true
-        }
+            keepAlive: true,
+            breadcrumbs: [
+                {
+                    title: '首頁',
+                    link: 'Home'
+                },
+                {
+                    title: '菜單',
+                    link: 'Menu'
+                }
+            ]
+        },
+        // beforeEnter(to: RouteLocationNormalized) {
+        //     // console.log(to);
+        //     to.meta.breadcrumbs.push({
+        //         title: to.query.name,
+        //         link: to.name
+        //     })
+        // }
 
     },
     {

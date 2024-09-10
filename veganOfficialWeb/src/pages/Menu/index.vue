@@ -31,7 +31,9 @@
         <div class="menuWrapper">
             <div class="title">
                 <div class="breadCrumb">
-                    麵包屑/麵包屑/麵包屑
+                    <!-- 麵包屑/麵包屑/麵包屑 -->
+                    <Breadcrumbs>
+                    </Breadcrumbs>
                 </div>
                 <div class="titleText">
                     SALADS and SIDES
@@ -434,9 +436,8 @@ import type { MenuItem } from '@/api/menu/type'
 import { storeToRefs } from 'pinia';
 import gsap from 'gsap';
 import Flip from 'gsap/Flip';
-import { useRouter } from 'vue-router';
-import { async } from 'fast-glob';
-import { it } from 'node:test';
+import { useRoute, useRouter } from 'vue-router';
+import Breadcrumbs from '@/components/Breadcrumbs/Breadcrumbs.vue';
 
 
 //DOING salad圖ps改成一致
@@ -936,6 +937,7 @@ let docData = [
 
 // 路由跳轉
 const router = useRouter();
+const route = useRoute();
 
 function routerPush(name: string, id?: string) {
     console.log('object');
