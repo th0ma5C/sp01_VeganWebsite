@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="container" v-if="!QNR_IsLoaded">
         <div class="top">
             <div class="sub">
                 <h2>訂閱第一手消息！</h2>
@@ -103,6 +103,9 @@
 import { computed, reactive, ref, watch, watchEffect, onMounted, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
 import useArrowFly from '@/hooks/useArrowFly';
+import { useQuestionnaireStore } from '@/store/questionnaireStore';
+import { storeToRefs } from 'pinia';
+
 
 
 let footerList = reactive([
@@ -190,6 +193,9 @@ let arrowState = ref('')
 function setArrowState(state: string) {
     arrowState.value = state;
 }
+
+// QNR_store
+const { QNR_IsLoaded } = storeToRefs(useQuestionnaireStore());
 
 
 onMounted(() => {

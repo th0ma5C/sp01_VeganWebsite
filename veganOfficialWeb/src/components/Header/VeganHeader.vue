@@ -1,10 +1,11 @@
 <template>
-    <div class="container" :class="{ 'hideNav': hideNav }">
+    <div class="container" :class="{ 'hideNav': hideNav }"
+        v-if="!QNR_IsLoaded">
         <header class="header" ref="header">
-            <a href="">
+            <router-link to="Home">
                 <SvgIcon name="Logo" height="65px">
                 </SvgIcon>
-            </a>
+            </router-link>
             <div>
                 <ul class="navLink">
                     <li v-for="{ title, url } in navLink "
@@ -29,12 +30,28 @@
             </div>
         </header>
     </div>
+
+    <div v-else>
+        <header class="QNR_header" ref="header">
+            <router-link to="Home">
+                <SvgIcon name="Logo" height="65px">
+                </SvgIcon>
+            </router-link>
+            <SvgIcon name="cancel" width="32px"
+                class="cancelIcon" height="32px"
+                @click="prevPage">
+            </SvgIcon>
+        </header>
+    </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import throttle from 'lodash/throttle';
 import { useRouter } from 'vue-router';
+import { useQuestionnaireStore } from '@/store/questionnaireStore';
+import { storeToRefs } from 'pinia';
+
 
 let navLink = [
     {
@@ -75,6 +92,17 @@ function onScroll() {
     position = window.scrollY;
 }
 const throttledOnScroll = throttle(onScroll, 100);
+
+// QNR_store
+const { QNR_IsLoaded } = storeToRefs(useQuestionnaireStore());
+
+const Router = useRouter();
+
+function prevPage() {
+    Router.back();
+}
+
+
 onMounted(() => {
     window.addEventListener('scroll', throttledOnScroll)
 })
@@ -85,7 +113,9 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
-.container {
+%container {
+    @extend %fixContainer;
+
     background-color: $primaryBacColor;
     border-bottom: 1px solid rgba(128, 128, 128, 0.5);
     width: 100%;
@@ -94,15 +124,15 @@ onBeforeUnmount(() => {
     top: -0.1%;
     transition: all 0.2s linear;
     z-index: 99;
+}
 
-    @extend %fixContainer;
+.container {
+    @extend %container;
 
     .header {
         @include flex-center-center;
         @include main-part;
         width: 100%;
-
-
 
         div {
             @include flex-center-center;
@@ -124,13 +154,13 @@ onBeforeUnmount(() => {
             }
 
             .navIcon {
+                cursor: pointer;
                 display: flex;
 
                 li {
                     margin-right: 1rem;
                 }
             }
-
         }
     }
 
@@ -141,5 +171,28 @@ onBeforeUnmount(() => {
     transition: all 0.2s linear;
     transform: translate(0, -100%);
     visibility: hidden;
+}
+
+
+.QNR_header {
+    @extend %container;
+    border-bottom: none;
+    width: 100%;
+
+    a {
+        display: block;
+    }
+
+    .cancelIcon {
+        cursor: pointer;
+        transition: opacity .2s ease;
+        opacity: 0.3;
+        position: absolute;
+        right: 2rem;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
 }
 </style>
