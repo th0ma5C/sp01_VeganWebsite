@@ -23,81 +23,111 @@
             </div>
 
             <div class="QNR_content">
-                <h2>
-                    您的基本資訊
-                </h2>
-
                 <div class="page1">
-                    <form action="">
-                        <!-- <fieldset> -->
-                        <!-- <legend></legend> -->
+                    <h2>
+                        您的基本資訊
+                    </h2>
 
-                        <div>
+                    <form action="">
+                        <fieldset>
                             <h3>稱呼</h3>
-                            <div>
+                            <div class="userName">
                                 <label
-                                    for="userName"></label>
+                                    for="userName">姓名</label>
                                 <input type="text"
                                     autocomplete="off"
+                                    spellcheck="false"
                                     id="userName">
                             </div>
-                        </div>
-                        <div>
+                        </fieldset>
+
+                        <fieldset>
                             <h3>生理性別</h3>
-                            <div>
-                                <input type="radio"
-                                    name="gender" id="male">
-                                <label for="male">男</label>
-                                <input type="radio"
-                                    name="gender"
-                                    id="female">
-                                <label
-                                    for="female">女</label>
+                            <div class="gender">
+                                <select name="gender" id="">
+                                    <option value="">
+                                    </option>
+                                    <option value="1">男
+                                    </option>
+                                    <option value="2">女
+                                    </option>
+                                </select>
                             </div>
-                        </div>
-                        <div>
+                        </fieldset>
+
+                        <fieldset>
                             <h3>生日</h3>
-                            <div>
-                                <label
-                                    for="birthday"></label>
-                                <input type="date"
-                                    min="1923-09-01"
-                                    max="2023-09-01"
-                                    id="birthday">
+                            <div class="birthday">
+                                <div class="birthInput">
+                                    <input id="birthYear"
+                                        type="tel"
+                                        spellcheck="false"
+                                        autocomplete="off"
+                                        maxlength="4">
+                                    <label
+                                        for="birthYear">年</label>
+                                </div>
+
+                                <div class="birthInput">
+                                    <label
+                                        for="birthMonth">月</label>
+                                    <select name=""
+                                        id="birthMonth">
+                                        <option value="">
+                                        </option>
+                                        <option
+                                            :value="index + 1"
+                                            v-for="(item, index) in 12"
+                                            :key="index">
+                                            {{ index + 1
+                                            }}月
+                                        </option>
+                                    </select>
+                                </div>
+
+
+                                <div class="birthInput">
+                                    <input id="birthDate"
+                                        type="tel"
+                                        spellcheck="false"
+                                        autocomplete="off"
+                                        maxlength="2">
+                                    <label
+                                        for="birthDate">日</label>
+                                </div>
+
                             </div>
-                        </div>
-                        <div>
+                        </fieldset>
+
+                        <fieldset>
                             <h3>飲食習慣</h3>
-                            <div>
-                                <input type="radio"
-                                    name="habit" id="vegan">
-                                <label
-                                    for="vegan">完全素食</label>
-                                <input type="radio"
-                                    name="habit"
-                                    id="halfVegan">
-                                <label
-                                    for="halfVegan">蛋奶素</label>
-                                <input type="radio"
-                                    name="habit"
-                                    id="healthy">
-                                <label
-                                    for="healthy">健康飲食但非素食</label>
-                                <input type="radio"
-                                    name="habit"
-                                    id="normal">
-                                <label
-                                    for="normal">無特別偏好</label>
+                            <div class="habit">
+                                <select name="habit" id="">
+                                    <option value="">
+                                    </option>
+                                    <option value="">
+                                        全素
+                                    </option>
+                                    <option value="">
+                                        蛋奶素
+                                    </option>
+                                    <option value="">
+                                        健康飲食但非素食
+                                    </option>
+                                    <option value="">
+                                        無特別偏好
+                                    </option>
+                                </select>
                             </div>
-                        </div>
-                        <!-- </fieldset> -->
+                        </fieldset>
+
 
                     </form>
-                </div>
 
-                <button>
-                    NEXT
-                </button>
+                    <button>
+                        NEXT
+                    </button>
+                </div>
             </div>
             <Questions></Questions>
         </div>
@@ -153,6 +183,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+* {
+    // outline: 1px solid black;
+}
+
 .container {
     @extend %headerPseudo;
     @extend %fixContainer;
@@ -211,32 +245,87 @@ onUnmounted(() => {
     }
 }
 
+%inputTextLabel {
+    position: relative;
+
+    label {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}
+
 .QNR_content {
     @include flex-center-center;
 
-    flex-direction: column;
     margin-top: 2rem;
 
-    &>h2 {
-        font-size: 2.5rem;
-        margin-bottom: 2rem;
+    .page1 {
+        display: flex;
+        flex-direction: column;
+
+        h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        button {
+            @include WnH(90px, 48px);
+            border: 1px solid gray;
+            border-radius: 24px;
+            margin: 0 auto;
+        }
     }
 
     .page1>form {
         margin-bottom: 3rem;
 
-        // display: flex;
-        // flex-direction: column;
-        h3 {
-            font-size: 1.5rem;
-            margin-bottom: .5rem;
+        fieldset {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+
+            &>div {
+                margin-left: 2rem;
+            }
+
+            h3 {
+                font-size: 1.5rem;
+                width: 100px;
+                text-align: center;
+            }
         }
 
-        &>div {
+        select,
+        input {
+            @include WnH(110px, 45px);
+            border: 1px solid gray;
+            border-radius: .5rem;
+            padding-left: 1rem;
+        }
+
+        .userName {
+            @extend %inputTextLabel;
+            position: relative;
+
+            input {
+                width: 189px;
+            }
+        }
+
+        .birthday {
             display: flex;
-            flex-direction: column;
-            // gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 1.5rem;
+
+            .birthInput {
+                @extend %inputTextLabel;
+            }
+        }
+
+        .habit>select {
+            width: 189px;
         }
     }
 }

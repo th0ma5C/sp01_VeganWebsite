@@ -17,11 +17,13 @@ const menuSchema = new Schema({
             name: { type: String, required: true },
             description: String,
             ingredients: [String],
+            main: String,
             price: Number,
             category: String,
             fileName: String,
             date: String,
-            rating: Number
+            rating: Number,
+            tags: [String]
         }
     ]
 }, { collection: 'menu' });

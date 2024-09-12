@@ -7,11 +7,13 @@ const MenuItemType = new GraphQLObjectType({
         name: { type: GraphQLString },
         description: { type: GraphQLString },
         ingredients: { type: new GraphQLList(GraphQLString) },
+        main: { type: GraphQLString },
         price: { type: GraphQLFloat },
         category: { type: GraphQLString },
         fileName: { type: GraphQLString },
         rating: { type: GraphQLFloat },
-        date: { type: GraphQLString }
+        date: { type: GraphQLString },
+        tags: { type: new GraphQLList(GraphQLString) },
     }
 });
 

@@ -21,4 +21,9 @@ router.use('/graphql', createHandler({
     // graphiql: true
 }));
 
+// 問卷api
+const { getQuestionnaire } = require('./questionnaire');
+router.get('/questionnaire', getQuestionnaire);
+
+
 module.exports = router;

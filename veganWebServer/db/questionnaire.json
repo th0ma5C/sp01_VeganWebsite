@@ -1,176 +1,73 @@
-{
-    "survey": [
-        {
-            "questionId": 1,
-            "questionText": "您的基本資訊",
-            "subQuestions": [
-                {
-                    "subQuestionId": 1,
-                    "subQuestionText": "年齡",
-                    "options": [
-                        {
-                            "optionId": "A",
-                            "text": "18歲以下"
-                        },
-                        {
-                            "optionId": "B",
-                            "text": "18-30歲"
-                        },
-                        {
-                            "optionId": "C",
-                            "text": "31-50歲"
-                        },
-                        {
-                            "optionId": "D",
-                            "text": "50歲以上"
-                        }
-                    ]
-                },
-                {
-                    "subQuestionId": 2,
-                    "subQuestionText": "性別",
-                    "options": [
-                        {
-                            "optionId": "A",
-                            "text": "男性"
-                        },
-                        {
-                            "optionId": "B",
-                            "text": "女性"
-                        },
-                        {
-                            "optionId": "C",
-                            "text": "其他"
-                        }
-                    ]
-                },
-                {
-                    "subQuestionId": 3,
-                    "subQuestionText": "飲食習慣",
-                    "options": [
-                        {
-                            "optionId": "A",
-                            "text": "完全素食"
-                        },
-                        {
-                            "optionId": "B",
-                            "text": "奶蛋素"
-                        },
-                        {
-                            "optionId": "C",
-                            "text": "健康飲食但非素食"
-                        },
-                        {
-                            "optionId": "D",
-                            "text": "無特別限制"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "questionId": 2,
-            "questionText": "您偏好的口味是什麼？",
-            "options": [
-                {
-                    "optionId": "A",
-                    "text": "清爽",
-                    "weight": 1.0
-                },
-                {
-                    "optionId": "B",
-                    "text": "濃郁",
-                    "weight": 0.8
-                },
-                {
-                    "optionId": "C",
-                    "text": "酸甜",
-                    "weight": 0.7
-                },
-                {
-                    "optionId": "D",
-                    "text": "其他",
-                    "weight": 0.5
-                }
-            ]
-        },
-        {
-            "questionId": 3,
-            "questionText": "哪些營養成分對您來說最重要？（可複選）",
-            "options": [
-                {
-                    "optionId": "A",
-                    "text": "高纖維",
-                    "weight": 0.9
-                },
-                {
-                    "optionId": "B",
-                    "text": "高蛋白",
-                    "weight": 0.8
-                },
-                {
-                    "optionId": "C",
-                    "text": "低糖",
-                    "weight": 0.7
-                },
-                {
-                    "optionId": "D",
-                    "text": "維生素豐富",
-                    "weight": 1.0
-                }
-            ]
-        },
-        {
-            "questionId": 4,
-            "questionText": "您對沙拉或果昔的口感偏好是？",
-            "options": [
-                {
-                    "optionId": "A",
-                    "text": "脆口",
-                    "weight": 1.0
-                },
-                {
-                    "optionId": "B",
-                    "text": "軟嫩",
-                    "weight": 0.8
-                },
-                {
-                    "optionId": "C",
-                    "text": "濃稠",
-                    "weight": 0.9
-                },
-                {
-                    "optionId": "D",
-                    "text": "清淡",
-                    "weight": 0.7
-                }
-            ]
-        },
-        {
-            "questionId": 5,
-            "questionText": "您希望每日攝取的卡路里範圍？",
-            "options": [
-                {
-                    "optionId": "A",
-                    "text": "1200以下",
-                    "weight": 0.6
-                },
-                {
-                    "optionId": "B",
-                    "text": "1200-1500",
-                    "weight": 0.8
-                },
-                {
-                    "optionId": "C",
-                    "text": "1500-1800",
-                    "weight": 0.9
-                },
-                {
-                    "optionId": "D",
-                    "text": "1800以上",
-                    "weight": 1.0
-                }
-            ]
-        }
-    ]
-}
+[
+    {
+        "question": "您的飲食習慣是什麼？",
+        "options": [
+            "健康飲食但非素食",
+            "蛋奶",
+            "沒偏好",
+            "全素"
+        ]
+    },
+    {
+        "question": "您偏好的口味是什麼？",
+        "options": [
+            "清爽",
+            "濃郁",
+            "甜",
+            "酸甜"
+        ]
+    },
+    {
+        "question": "哪些營養成分對您來說最重要？",
+        "options": [
+            "Omega-3",
+            "抗氧化物",
+            "維生素",
+            "維生素C",
+            "膳食纖維",
+            "葉酸",
+            "蛋白質",
+            "鈣",
+            "鈣質",
+            "鋅",
+            "鐵",
+            "高纖維"
+        ]
+    },
+    {
+        "question": "您喜歡的食材有哪些？",
+        "options": [
+            "三文魚",
+            "南瓜籽",
+            "堅果",
+            "奇異果",
+            "巧克力",
+            "未來雞肉",
+            "柳橙",
+            "椰子水",
+            "橄欖",
+            "櫻桃",
+            "玉米",
+            "生菜",
+            "番茄",
+            "素雞肉",
+            "芒果",
+            "草莓",
+            "莓果",
+            "菠菜",
+            "藍莓",
+            "酪梨",
+            "香蕉",
+            "黑豆"
+        ]
+    },
+    {
+        "question": "您希望每日攝取的卡路里範圍是？",
+        "options": [
+            "1500卡以下",
+            "1600卡",
+            "1800卡",
+            "2000卡"
+        ]
+    }
+]
