@@ -523,8 +523,8 @@ const { fullMenu, saladList, smoothieList, ingredientsList, isLoaded } = storeTo
 // 排序
 // 排序箭頭、內容
 let sortList = ref(['精選', '名稱', '價格', '人氣', '日期']),
-    sorting: Ref<null | string> = ref('精選'),
-    sortOrder = ref(0); //0 降序 -180升序
+    sorting: Ref<string> = ref('精選'),
+    sortOrder = ref(0); //0 升序 -180降序
 
 function setSortDirection(n: string) {
     setFullMenu();
@@ -537,66 +537,88 @@ function setSortDirection(n: string) {
 }
 
 let sortDirIcon = computed(() => ({
-    transform: `rotateZ(${sortOrder.value}deg)`
+    transform: `rotateZ(${180 + sortOrder.value}deg)`
 }))
 
 // 排序功能
 // 比較函數
 type CompareFn<T> = (a: T, b: T) => number;
 
-const compareFn = <T>(key: (item: T) => any, order: number): CompareFn<T> => {
-    let isDESC = order !== 0;
-    return (a: T, b: T): number => {
-        const aValue = key(a);
-        const bValue = key(b);
+// const compareFn = <T>(key: (item: T) => any, order: number): CompareFn<T> => {
+//     let isDESC = order !== 0;
+//     return (a: T, b: T): number => {
+//         const aValue = key(a);
+//         const bValue = key(b);
 
-        if (aValue < bValue) {
-            return isDESC ? -1 : 1;
-        } else if (aValue > bValue) {
-            return isDESC ? 1 : -1;
-        } else {
-            return 0;
-        }
+//         if (aValue < bValue) {
+//             return isDESC ? -1 : 1;
+//         } else if (aValue > bValue) {
+//             return isDESC ? 1 : -1;
+//         } else {
+//             return 0;
+//         }
+//     }
+// }
+
+const compareFn = <T>(key: (item: T) => any, isAsc: boolean): CompareFn<T> => {
+    return (a, b) => {
+        const aVal = key(a), bVal = key(b);
+        if (aVal === bVal) return 0;
+        return isAsc ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1)
     }
 }
 // 排序
+// function sort(el: Ref<MenuItem[]>) {
+//     let list = [...el.value];
+
+//     switch (sorting.value) {
+//         case '名稱':
+//             sortOrder.value == 0 ?
+//                 list.sort(compareFn(item => item.name, 0)) :
+//                 list.sort(compareFn(item => item.name, 1))
+//             return list
+//         case '價格':
+//             sortOrder.value == 0 ?
+//                 list.sort(compareFn(item => item.price, 0)) :
+//                 list.sort(compareFn(item => item.price, 1))
+//             return list
+//         case '人氣':
+//             sortOrder.value == 0 ?
+//                 list.sort(compareFn(item => item.rating, 0)) :
+//                 list.sort(compareFn(item => item.rating, 1))
+//             return list
+//         case '日期':
+//             sortOrder.value == 0 ?
+//                 list.sort(compareFn(item => item.date, 0)) :
+//                 list.sort(compareFn(item => item.date, 1))
+//             return list
+//         default:
+//             return list
+//     }
+// }
+type SortKey = '名稱' | '價格' | '人氣' | '日期';
+
 function sort(el: Ref<MenuItem[]>) {
-    let list = [...el.value];
+    const isAsc = sortOrder.value === 0;
+    const keyMap = {
+        '名稱': (item: MenuItem) => item.name,
+        '價格': (item: MenuItem) => item.price,
+        '人氣': (item: MenuItem) => item.rating,
+        '日期': (item: MenuItem) => item.date,
+    };
+    const key = keyMap[sorting.value as SortKey] ?? (() => 0);
 
-    switch (sorting.value) {
-        case '名稱':
-            sortOrder.value == 0 ?
-                list.sort(compareFn(item => item.name, 0)) :
-                list.sort(compareFn(item => item.name, 1))
-            return list
-        case '價格':
-            sortOrder.value == 0 ?
-                list.sort(compareFn(item => item.price, 0)) :
-                list.sort(compareFn(item => item.price, 1))
-            return list
-        case '人氣':
-            sortOrder.value == 0 ?
-                list.sort(compareFn(item => item.rating, 0)) :
-                list.sort(compareFn(item => item.rating, 1))
-            return list
-        case '日期':
-            sortOrder.value == 0 ?
-                list.sort(compareFn(item => item.date, 0)) :
-                list.sort(compareFn(item => item.date, 1))
-            return list
-        default:
-            return list
-    }
+    return [...el.value].sort(compareFn(key, isAsc));
 }
 
-// ingredients補足6個
-function fillListToSix(list: MenuItem[]) {
-    list.forEach((item) => {
-        while (item.ingredients.length < 6) {
-            item.ingredients.push('');
-        }
-    })
-}
+// ingredients補足6個 => CSS解決
+// function fillListToSix(list: MenuItem[]) {
+//     list.forEach((item) => {
+//         while (item.ingredients.length < 6) {
+//             item.ingredients.push('');
+//         }
+//     })
+// }
 
 // 篩選資料去重
 // interface ingredientsList {
@@ -651,7 +673,8 @@ function handleFilterSelect(n: string) {
 function selectAll() {
     if (selectIngredient.value.length == 0) {
         for (let i of showIngredientList.value) {
-            handleFilterSelect(i)
+            // handleFilterSelect(i)
+            selectIngredient.value.push(i)
         }
         return
     }
@@ -686,17 +709,23 @@ function resetFilterSelect() {
 function filter(el: Ref<MenuItem[]>) {
     if (selectIngredient.value.length === 0) return [...el.value]
 
-    let list = el.value.filter((item) => {
-        for (let factor of selectIngredient.value) {
-            if (item.ingredients.some(el => el == factor)) {
-                return true
-            }
-        }
-        return false
-    })
-
-    return list
+    const selectedSet = new Set(selectIngredient.value);
+    return el.value.filter(item => item.ingredients.some(ing => selectedSet.has(ing)))
 }
+// function filter(el: Ref<MenuItem[]>) {
+//     if (selectIngredient.value.length === 0) return [...el.value]
+
+//     let list = el.value.filter((item) => {
+//         for (let factor of selectIngredient.value) {
+//             if (item.ingredients.some(el => el == factor)) {
+//                 return true
+//             }
+//         }
+//         return false
+//     })
+
+//     return list
+// }
 
 // -----menu 摺疊-----
 let isShowFullMenu = computed(() => showMenuLimit.value == filteredSalad.value.length);
@@ -801,14 +830,15 @@ let saladContainer = ref();
 
 const COMList = ref<InstanceType<typeof Product_template>[]>();
 function getProductElState() {
-    let list: HTMLElement[] = [];
-    if (isLoaded.value && COMList.value) {
-        COMList.value.forEach((component) => {
-            list.push(component.productEl)
-            // console.log(component.productEl);
-        })
-    }
-    return list
+    // let list: HTMLElement[] = [];
+    // if (isLoaded.value && COMList.value) {
+    //     COMList.value.forEach((component) => {
+    //         list.push(component.productEl)
+    //         // console.log(component.productEl);
+    //     })
+    // }
+    // return list
+    return isLoaded.value && COMList.value ? COMList.value.map(component => component.productEl) : []
 }
 
 function setSaladGSAP(state: Flip.FlipState) {

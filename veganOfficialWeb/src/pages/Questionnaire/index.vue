@@ -17,13 +17,13 @@
                     </div>
 
                     <div class="state">
-                        1/5
+                        1/6
                     </div>
                 </div>
             </div>
 
             <div class="QNR_content">
-                <div class="page1">
+                <div class="page_info">
                     <h2>
                         您的基本資訊
                     </h2>
@@ -37,19 +37,21 @@
                                 <input type="text"
                                     autocomplete="off"
                                     spellcheck="false"
-                                    id="userName">
+                                    id="userName"
+                                    v-model="QNR_form.userName">
                             </div>
                         </fieldset>
 
                         <fieldset>
                             <h3>生理性別</h3>
                             <div class="gender">
-                                <select name="gender" id="">
+                                <select name="gender" id=""
+                                    v-model="QNR_form.gender">
                                     <option value="">
                                     </option>
-                                    <option value="1">男
+                                    <option value="male">男
                                     </option>
-                                    <option value="2">女
+                                    <option value="female">女
                                     </option>
                                 </select>
                             </div>
@@ -63,7 +65,8 @@
                                         type="tel"
                                         spellcheck="false"
                                         autocomplete="off"
-                                        maxlength="4">
+                                        maxlength="4"
+                                        v-model="QNR_form.birth[0]">
                                     <label
                                         for="birthYear">年</label>
                                 </div>
@@ -72,7 +75,8 @@
                                     <label
                                         for="birthMonth">月</label>
                                     <select name=""
-                                        id="birthMonth">
+                                        id="birthMonth"
+                                        v-model="QNR_form.birth[1]">
                                         <option value="">
                                         </option>
                                         <option
@@ -91,7 +95,8 @@
                                         type="tel"
                                         spellcheck="false"
                                         autocomplete="off"
-                                        maxlength="2">
+                                        maxlength="2"
+                                        v-model="QNR_form.birth[2]">
                                     <label
                                         for="birthDate">日</label>
                                 </div>
@@ -102,31 +107,45 @@
                         <fieldset>
                             <h3>飲食習慣</h3>
                             <div class="habit">
-                                <select name="habit" id="">
+                                <select name="habit" id=""
+                                    v-model="QNR_form.habit">
                                     <option value="">
                                     </option>
-                                    <option value="">
+                                    <option value="full">
                                         全素
                                     </option>
-                                    <option value="">
+                                    <option value="half">
                                         蛋奶素
                                     </option>
-                                    <option value="">
+                                    <option value="like">
                                         健康飲食但非素食
                                     </option>
-                                    <option value="">
+                                    <option value="normal">
                                         無特別偏好
                                     </option>
                                 </select>
                             </div>
                         </fieldset>
-
-
                     </form>
 
                     <button>
                         NEXT
                     </button>
+                </div>
+
+                <div class="page_Q"
+                    v-for="({ question, options }, index) in showQuestionnaire"
+                    :key="index" :class="`Q${index + 1}`">
+                    <h2>{{ question }}</h2>
+
+                    <div class="questionWrapper">
+                        <div v-for="(option, index) in options"
+                            :key="index">
+                            {{ option }}
+                        </div>
+                    </div>
+
+                    <button>NEXT</button>
                 </div>
             </div>
             <Questions></Questions>
@@ -136,7 +155,7 @@
 
 <script setup lang="ts">
 import Questions from './questions/Questions.vue';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { storeToRefs } from 'pinia';
 
@@ -166,15 +185,42 @@ function loadingTimer() {
 
 
 // QNR_store
-const { QNR_FinishLoading } = useQuestionnaireStore();
-const { QNR_IsLoaded } = storeToRefs(useQuestionnaireStore());
+const QuestionnaireStore = useQuestionnaireStore();
+const { QNR_IsLoaded, questionnaire } = storeToRefs(QuestionnaireStore);
+const { QNR_FinishLoading, fetchQuestionnaire } = QuestionnaireStore;
 
 function leaveQNR_page() {
     QNR_IsLoaded.value = false;
 }
 
+QuestionnaireStore.$subscribe((mutation, state) => {
+    if (state.QNR_IsLoaded) {
+        console.log(showQuestionnaire.value);
+    }
+})
+
+const showQuestionnaire = computed(() => {
+    return questionnaire.value
+})
+
+// 表單數據
+const QNR_form = reactive(
+    {
+        userName: null,
+        gender: null,
+        birth: [null, null, null],
+        habit: null
+    }
+)
+
+watch(QNR_form, (nVal) => {
+    console.log(nVal);
+})
+
+// 生命週期
 onMounted(() => {
-    QNR_FinishLoading();
+    fetchQuestionnaire();
+    console.log(window.innerHeight);
 })
 
 onUnmounted(() => {
@@ -184,7 +230,7 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 * {
-    // outline: 1px solid black;
+    outline: 1px solid black;
 }
 
 .container {
@@ -214,6 +260,8 @@ onUnmounted(() => {
     // display: flex;
     // flex-direction: column;
     width: 100%;
+    height: calc(100vh - 100px);
+    overflow: scroll;
 }
 
 .processBar {
@@ -256,13 +304,37 @@ onUnmounted(() => {
     }
 }
 
+%QNR_nextButton {
+    @include WnH(90px, 48px);
+    position: absolute;
+    bottom: 15%;
+    border: 1px solid gray;
+    border-radius: 24px;
+    margin: 0 auto;
+}
+
 .QNR_content {
-    @include flex-center-center;
-
+    // @include flex-center-center;
+    display: flex;
     margin-top: 2rem;
+    height: calc(100% - 70px);
+    // transform: translateX(-100%);
 
-    .page1 {
-        display: flex;
+    &>div {
+        @include flex-center-center;
+        justify-content: normal;
+        // height: 100%;
+        min-width: 100vw;
+        position: relative;
+
+        h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2.5rem;
+        }
+    }
+
+    .page_info {
         flex-direction: column;
 
         h2 {
@@ -272,14 +344,11 @@ onUnmounted(() => {
         }
 
         button {
-            @include WnH(90px, 48px);
-            border: 1px solid gray;
-            border-radius: 24px;
-            margin: 0 auto;
+            @extend %QNR_nextButton;
         }
     }
 
-    .page1>form {
+    .page_info>form {
         margin-bottom: 3rem;
 
         fieldset {
@@ -328,5 +397,17 @@ onUnmounted(() => {
             width: 189px;
         }
     }
+
+    .page_Q {
+        flex-direction: column;
+        position: relative;
+        z-index: 0;
+
+        button {
+            @extend %QNR_nextButton;
+        }
+    }
+
+    .Q1 {}
 }
 </style>
