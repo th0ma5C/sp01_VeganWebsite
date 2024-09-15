@@ -32,12 +32,13 @@
                         <fieldset>
                             <h3>稱呼</h3>
                             <div class="userName">
-                                <label
-                                    for="userName">姓名</label>
+                                <label for="userName">
+                                    姓名 / 暱稱
+                                </label>
                                 <input type="text"
                                     autocomplete="off"
                                     spellcheck="false"
-                                    id="userName"
+                                    id="userName" required
                                     v-model="QNR_form.userName">
                             </div>
                         </fieldset>
@@ -66,6 +67,7 @@
                                         spellcheck="false"
                                         autocomplete="off"
                                         maxlength="4"
+                                        required
                                         v-model="QNR_form.birth[0]">
                                     <label
                                         for="birthYear">年</label>
@@ -76,6 +78,7 @@
                                         for="birthMonth">月</label>
                                     <select name=""
                                         id="birthMonth"
+                                        required
                                         v-model="QNR_form.birth[1]">
                                         <option value="">
                                         </option>
@@ -96,6 +99,7 @@
                                         spellcheck="false"
                                         autocomplete="off"
                                         maxlength="2"
+                                        required
                                         v-model="QNR_form.birth[2]">
                                     <label
                                         for="birthDate">日</label>
@@ -139,7 +143,8 @@
                     <h2>{{ question }}</h2>
 
                     <div class="questionWrapper">
-                        <div v-for="(option, index) in options"
+                        <div class="question"
+                            v-for="(option, index) in options"
                             :key="index">
                             {{ option }}
                         </div>
@@ -154,6 +159,11 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * todo: 表單點選後label移至左上角
+ * doing: 驗證輸入
+ */
+
 import Questions from './questions/Questions.vue';
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
@@ -230,7 +240,7 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 * {
-    outline: 1px solid black;
+    // outline: 1px solid black;
 }
 
 .container {
@@ -261,7 +271,11 @@ onUnmounted(() => {
     // flex-direction: column;
     width: 100%;
     height: calc(100vh - 100px);
-    overflow: scroll;
+    overflow-x: scroll;
+
+    // &::-webkit-scrollbar {
+    //     width: 0;
+    // }
 }
 
 .processBar {
@@ -301,16 +315,39 @@ onUnmounted(() => {
         left: 1rem;
         top: 50%;
         transform: translateY(-50%);
+        transition: transform .3s ease;
+        transform-origin: left;
     }
 }
 
+@mixin btn_rwd {
+    @media (max-width:1440px) {
+        @content
+    }
+}
+
+$btn_position: 15%;
+
 %QNR_nextButton {
     @include WnH(90px, 48px);
-    position: absolute;
-    bottom: 15%;
-    border: 1px solid gray;
-    border-radius: 24px;
+    background-color: $primaryBacColor;
+    border: 1px solid rgba(128, 128, 128, 0.5);
+    border-radius: 23rem;
+    box-shadow: 1px 1px 2px gray;
     margin: 0 auto;
+    position: sticky;
+    bottom: calc($btn_position / 2);
+    min-height: 48px;
+    transition: border-color .2s ease, box-shadow .2s ease;
+
+    @include btn_rwd {
+        bottom: calc($btn_position / 4);
+    }
+
+    &:hover {
+        border: 1px solid black;
+        box-shadow: 1px 1px 2px black;
+    }
 }
 
 .QNR_content {
@@ -349,7 +386,10 @@ onUnmounted(() => {
     }
 
     .page_info>form {
+        height: 100%;
         margin-bottom: 3rem;
+
+
 
         fieldset {
             display: flex;
@@ -363,7 +403,7 @@ onUnmounted(() => {
             h3 {
                 font-size: 1.5rem;
                 width: 100px;
-                text-align: center;
+                // text-align: center;
             }
         }
 
@@ -373,6 +413,11 @@ onUnmounted(() => {
             border: 1px solid gray;
             border-radius: .5rem;
             padding-left: 1rem;
+            background-color: $primaryBacColor;
+
+            option:empty {
+                display: none;
+            }
         }
 
         .userName {
@@ -382,6 +427,7 @@ onUnmounted(() => {
             input {
                 width: 189px;
             }
+
         }
 
         .birthday {
@@ -396,18 +442,78 @@ onUnmounted(() => {
         .habit>select {
             width: 189px;
         }
+
+        // :is(.userName, .birthInput):focus-within>label,
+        // :is(.userName, .birthInput):has(input:valid)>label {
+        //     transform: translateY(calc(-100% - 10px)) scale(0.8);
+        //     background-color: $primaryBacColor;
+        // }
+
+        :is(.userName, .birthInput):is(:focus-within, :has(input:valid, select:valid))>label {
+            transform: translateY(calc(-100% - 10px)) scale(0.8);
+            background-color: $primaryBacColor;
+        }
     }
+
+
 
     .page_Q {
         flex-direction: column;
         position: relative;
         z-index: 0;
+        overflow-y: scroll;
+
+        &::-webkit-scrollbar {
+            width: 0;
+        }
 
         button {
             @extend %QNR_nextButton;
         }
     }
 
-    .Q1 {}
+    :not(.Q3, .Q4)>.questionWrapper {
+        height: 100%;
+    }
+
+    .questionWrapper {
+        width: 15%;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-bottom: 6rem;
+
+        @include btn_rwd {
+            // margin-bottom: 50px;
+        }
+
+        .question {
+            $height: 50px;
+
+            height: $height;
+            text-align: center;
+            line-height: $height;
+
+            border: 1px solid gray;
+            border-radius: 10px;
+            transition: box-shadow .2s ease
+        }
+
+        .question:hover {
+            cursor: pointer;
+            box-shadow: 1px 1px 3px black;
+        }
+
+        .question:active {
+            box-shadow: 1px 1px 3px black inset;
+        }
+
+
+        .question:first-of-type {
+            box-shadow: 1px 1px 3px black inset;
+            background-color: $btnBacColor_light;
+            color: $primaryBacColor;
+        }
+    }
 }
 </style>

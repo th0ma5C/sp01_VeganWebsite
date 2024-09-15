@@ -505,8 +505,6 @@ onUnmounted(() => {
         display: flex;
 
         li {
-            @include pseudoLine(0.3s);
-
             cursor: pointer;
             font-size: 1.5rem;
             margin-left: 2rem;
@@ -514,6 +512,8 @@ onUnmounted(() => {
             position: relative;
             overflow: hidden;
             transition: opacity 0.3s ease;
+
+            @include pseudoLine(0.3s);
         }
     }
 }

@@ -1007,9 +1007,6 @@ $menuItemContainer_height: 405px;
     position: relative;
     overflow: hidden;
 
-    * {
-        // outline: 1px solid black;
-    }
 
     &>div {
         max-width: 100%;
@@ -1057,9 +1054,6 @@ $menuItemContainer_height: 405px;
     // box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
     position: relative;
 
-    & * {
-        // outline: 1px solid black;
-    }
 
     &::after {
         @include WnH(calc(100% - 12rem), 100%);
@@ -1171,9 +1165,6 @@ $menuItemContainer_height: 405px;
             font-size: 14px;
             position: relative;
 
-            * {
-                // outline: 1px solid black;
-            }
 
             &>div {
                 display: flex;
@@ -1181,9 +1172,6 @@ $menuItemContainer_height: 405px;
             }
 
             .filter {
-                * {
-                    // outline: 1px solid black;
-                }
 
                 .details {
                     margin-left: 1rem;
@@ -1628,9 +1616,6 @@ $menuItemContainer_height: 405px;
             margin-top: 1rem;
             min-height: 28px;
 
-            & * {
-                // outline: 1px solid black;
-            }
 
             .tag {
                 border: 1px solid gray;
@@ -1938,9 +1923,6 @@ $menuItemContainer_height: 405px;
         position: relative;
         // opacity: 1;
 
-        * {
-            // outline: 1px solid black;
-        }
 
         .item {
             // @extend %menuItem;
@@ -2265,9 +2247,6 @@ $menuItemContainer_height: 405px;
         }
 
         .content {
-            * {
-                // outline: 1px solid black;
-            }
 
             // padding: 3rem 8rem 0 8rem;
             margin: auto 5rem;
