@@ -39,7 +39,7 @@
                                     autocomplete="off"
                                     spellcheck="false"
                                     id="userName" required
-                                    v-model="QNR_form.userName">
+                                    v-model.trim.lazy="QNR_form.info.userName">
                             </div>
                         </fieldset>
 
@@ -47,7 +47,7 @@
                             <h3>生理性別</h3>
                             <div class="gender">
                                 <select name="gender" id=""
-                                    v-model="QNR_form.gender">
+                                    v-model.lazy="QNR_form.info.gender">
                                     <option value="">
                                     </option>
                                     <option value="male">男
@@ -68,9 +68,10 @@
                                         autocomplete="off"
                                         maxlength="4"
                                         required
-                                        v-model="QNR_form.birth[0]">
-                                    <label
-                                        for="birthYear">年</label>
+                                        v-model.trim.number.lazy="QNR_form.info.birth[0]">
+                                    <label for="birthYear">
+                                        年<small>(西元)</small>
+                                    </label>
                                 </div>
 
                                 <div class="birthInput">
@@ -79,7 +80,7 @@
                                     <select name=""
                                         id="birthMonth"
                                         required
-                                        v-model="QNR_form.birth[1]">
+                                        v-model.number.lazy="QNR_form.info.birth[1]">
                                         <option value="">
                                         </option>
                                         <option
@@ -100,7 +101,7 @@
                                         autocomplete="off"
                                         maxlength="2"
                                         required
-                                        v-model="QNR_form.birth[2]">
+                                        v-model.number.lazy="QNR_form.info.birth[2]">
                                     <label
                                         for="birthDate">日</label>
                                 </div>
@@ -108,11 +109,11 @@
                             </div>
                         </fieldset>
 
-                        <fieldset>
+                        <!-- <fieldset>
                             <h3>飲食習慣</h3>
                             <div class="habit">
                                 <select name="habit" id=""
-                                    v-model="QNR_form.habit">
+                                    v-model.lazy="QNR_form.info.habit">
                                     <option value="">
                                     </option>
                                     <option value="full">
@@ -129,28 +130,33 @@
                                     </option>
                                 </select>
                             </div>
-                        </fieldset>
+                        </fieldset> -->
                     </form>
 
-                    <button>
+                    <button
+                        @click="verifyInfoForm(QNR_form)">
                         NEXT
                     </button>
                 </div>
 
                 <div class="page_Q"
-                    v-for="({ question, options }, index) in showQuestionnaire"
+                    v-for="({ question, options, tag }, index) in showQuestionnaire"
                     :key="index" :class="`Q${index + 1}`">
                     <h2>{{ question }}</h2>
 
                     <div class="questionWrapper">
                         <div class="question"
                             v-for="(option, index) in options"
-                            :key="index">
+                            :key="index"
+                            :class="{ answer: false }"
+                            @click="sentQNR_Ans(tag as QNRFormKeys, option)">
                             {{ option }}
                         </div>
                     </div>
 
-                    <button>NEXT</button>
+                    <button>
+                        NEXT
+                    </button>
                 </div>
             </div>
             <Questions></Questions>
@@ -160,7 +166,7 @@
 
 <script setup lang="ts">
 /**
- * todo: 表單點選後label移至左上角
+ * todo: 單選多選樣式
  * doing: 驗證輸入
  */
 
@@ -205,7 +211,7 @@ function leaveQNR_page() {
 
 QuestionnaireStore.$subscribe((mutation, state) => {
     if (state.QNR_IsLoaded) {
-        console.log(showQuestionnaire.value);
+        // console.log(showQuestionnaire.value);
     }
 })
 
@@ -214,23 +220,120 @@ const showQuestionnaire = computed(() => {
 })
 
 // 表單數據
-const QNR_form = reactive(
-    {
-        userName: null,
-        gender: null,
+// userInfo
+type Birth = [number | null, number | null, number | null];
+interface Info {
+    userName: string;
+    gender: string;
+    birth: Birth;
+}
+interface Form {
+    info: Info,
+    habit: null | string,
+    flavor: null | string,
+    ingredients: string[],
+    food: string[],
+    calories: null | string
+}
+
+const QNR_form = reactive<Form>({
+    info: {
+        userName: '',
+        gender: '',
         birth: [null, null, null],
-        habit: null
-    }
-)
+    },
+    habit: null,
+    flavor: null,
+    ingredients: [],
+    food: [],
+    calories: null
+});
 
 watch(QNR_form, (nVal) => {
-    console.log(nVal);
+    // console.log(nVal);
 })
+
+// 問卷答案蒐集
+type QNRFormKeys = keyof Omit<Form, 'info'>;
+const ansMap: QNRFormKeys[] = ['habit', 'flavor', 'ingredients', 'food', 'calories'];
+
+function sentQNR_Ans(tag: QNRFormKeys, ans: string) {
+    if (tag == 'ingredients' || tag == 'food') {
+        if (QNR_form[tag].includes(ans)) {
+            QNR_form[tag] = [...QNR_form[tag].filter(item => item !== ans)];
+
+        } else {
+            QNR_form[tag].push(ans);
+        }
+    } else {
+        QNR_form[tag] = ans;
+    }
+    console.log(QNR_form[tag]);
+    // setSelectedClass(ans);
+}
+
+// const selectedOptions = ref(new Set());
+// function setSelectedClass(option: string) {
+//     if (selectedOptions.value.has(option)) {
+//         selectedOptions.value.delete(option);
+//         return
+//     }
+//     selectedOptions.value.add(option);
+// }
+function foo() {
+    const map = {
+
+    }
+    return
+}
+
+// 表單驗證
+const isFormVerified = ref(false);
+
+function verifyUserName(userName: string) {
+    if (userName) return true
+}
+function verifyGender(gender: string) {
+    if (gender) return true
+}
+function verifyBirth(birth: Birth) {
+    const [year, month, date] = birth;
+
+    if (!year || !month || !date) return
+
+    const validDay = new Date(year, month - 1, date);
+    const yearScope = new Date().getFullYear();
+
+    if (year !== validDay.getFullYear() ||
+        year < yearScope - 100 ||
+        year > yearScope ||
+        month !== validDay.getMonth() + 1 ||
+        date !== validDay.getDate()) {
+        return
+    }
+
+    return true
+}
+
+function verifyInfoForm(form: typeof QNR_form) {
+    const { userName, gender, birth } = form.info;
+    // if (!userName || !gender || !birth || birth.length != 3) return
+
+    if (verifyUserName(userName) &&
+        verifyGender(gender) &&
+        verifyBirth(birth)
+    ) {
+        console.log('passed');
+    } else {
+        console.log('failed');
+    }
+
+}
+
 
 // 生命週期
 onMounted(() => {
     fetchQuestionnaire();
-    console.log(window.innerHeight);
 })
 
 onUnmounted(() => {
@@ -428,6 +531,10 @@ $btn_position: 15%;
                 width: 189px;
             }
 
+            label {
+                user-select: none;
+            }
+
         }
 
         .birthday {
@@ -436,6 +543,10 @@ $btn_position: 15%;
 
             .birthInput {
                 @extend %inputTextLabel;
+
+                label {
+                    user-select: none;
+                }
             }
         }
 
@@ -509,7 +620,7 @@ $btn_position: 15%;
         }
 
 
-        .question:first-of-type {
+        .answer {
             box-shadow: 1px 1px 3px black inset;
             background-color: $btnBacColor_light;
             color: $primaryBacColor;
