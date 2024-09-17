@@ -40,7 +40,7 @@
     ## 頁面縮放造成骨架屏樣式塌陷
 
 # components
-    TODO: 右側會員popover區塊 麵包屑
+    TODO: 右側會員popover區塊
 
     ## header
     * marquee btn hover

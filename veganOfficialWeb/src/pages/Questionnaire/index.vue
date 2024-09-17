@@ -148,7 +148,7 @@
                         <div class="question"
                             v-for="(option, index) in options"
                             :key="index"
-                            :class="{ answer: false }"
+                            :class="{ answer: setSelectedClass(tag as QNRFormKeys, option) }"
                             @click="sentQNR_Ans(tag as QNRFormKeys, option)">
                             {{ option }}
                         </div>
@@ -166,8 +166,11 @@
 
 <script setup lang="ts">
 /**
- * todo: 單選多選樣式
+ * todo: NEXT功能 表單結果頁面 會員 購物車 關於
  * doing: 驗證輸入
+ * --------------------
+ * *
+ * //單選多選樣式
  */
 
 import Questions from './questions/Questions.vue';
@@ -269,22 +272,12 @@ function sentQNR_Ans(tag: QNRFormKeys, ans: string) {
         QNR_form[tag] = ans;
     }
     console.log(QNR_form[tag]);
-    // setSelectedClass(ans);
 }
 
-// const selectedOptions = ref(new Set());
-// function setSelectedClass(option: string) {
-//     if (selectedOptions.value.has(option)) {
-//         selectedOptions.value.delete(option);
-//         return
-//     }
-//     selectedOptions.value.add(option);
-// }
-function foo() {
-    const map = {
-
-    }
-    return
+function setSelectedClass(tag: QNRFormKeys, option: string) {
+    return (tag === 'ingredients' || tag === 'food')
+        ? QNR_form[tag].includes(option)
+        : QNR_form[tag] === option;
 }
 
 // 表單驗證
@@ -607,23 +600,26 @@ $btn_position: 15%;
 
             border: 1px solid gray;
             border-radius: 10px;
+            cursor: pointer;
             transition: box-shadow .2s ease
         }
 
-        .question:hover {
-            cursor: pointer;
+        .question:not(.answer):hover {
             box-shadow: 1px 1px 3px black;
         }
 
-        .question:active {
+        .question:hover:active {
+            transform: translate(1px, 1px);
             box-shadow: 1px 1px 3px black inset;
         }
 
 
         .answer {
+            cursor: pointer;
             box-shadow: 1px 1px 3px black inset;
             background-color: $btnBacColor_light;
             color: $primaryBacColor;
+            transform: translate(1px, 1px);
         }
     }
 }

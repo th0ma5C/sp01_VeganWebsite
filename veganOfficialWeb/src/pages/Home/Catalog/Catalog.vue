@@ -537,8 +537,11 @@ onMounted(() => {
 
 
             .imgSkeleton {
+                width: 135px !important;
+                height: 135px !important;
                 @include skeleton;
-                @include WnH(135px);
+                // @include WnH(135px);
+
 
                 img {
                     @include WnH(110px);

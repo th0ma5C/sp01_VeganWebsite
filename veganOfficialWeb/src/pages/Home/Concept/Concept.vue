@@ -590,12 +590,12 @@ onUnmounted(() => {
             z-index: 1;
 
             span {
-                @include pseudoLine(0.5s);
 
                 display: inline-block;
                 position: relative;
                 overflow: hidden;
                 transform: translateY(5px);
+                @include pseudoLine(0.5s);
             }
         }
 
