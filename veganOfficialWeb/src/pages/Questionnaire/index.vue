@@ -8,22 +8,29 @@
         <div class="questionnaire">
             <div class="processBar">
                 <div class="bar">
-                    <div class="progressPercent"></div>
+                    <div class="progressPercent"
+                        :style="progressPercent"></div>
                 </div>
 
                 <div class="content">
-                    <div class="prev">
+                    <div class="prev"
+                        @click=" turnPage('-')">
                         上一頁
                     </div>
 
                     <div class="state">
-                        1/6
+                        {{ currPage }}
+                        / {{ QNR_pagesCount }}
                     </div>
                 </div>
             </div>
 
-            <div class="QNR_content">
-                <div class="page_info">
+            <div class="QNR_content" :style="formPagesStyle"
+                ref="QNR_container">
+                <div class="page_info" :class="{
+                    pageFadeIn: true,
+                    pageFadeOut: false
+                }">
                     <h2>
                         您的基本資訊
                     </h2>
@@ -31,7 +38,8 @@
                     <form action="">
                         <fieldset>
                             <h3>稱呼</h3>
-                            <div class="userName">
+                            <div class="userName"
+                                :class="{ alertInput: setAlertClass(QNR_form.info.userName) }">
                                 <label for="userName">
                                     姓名 / 暱稱
                                 </label>
@@ -40,12 +48,23 @@
                                     spellcheck="false"
                                     id="userName" required
                                     v-model.trim.lazy="QNR_form.info.userName">
+                                <span class="alertText"
+                                    v-show="setAlertClass(QNR_form.info.userName)">
+                                    <SvgIcon
+                                        name="QNR_alert"
+                                        width="18"
+                                        height="18"
+                                        color="#b3261e">
+                                    </SvgIcon>
+                                    請輸入名稱
+                                </span>
                             </div>
                         </fieldset>
 
                         <fieldset>
                             <h3>生理性別</h3>
-                            <div class="gender">
+                            <div class="gender"
+                                :class="{ alertInput: setAlertClass(QNR_form.info.gender) }">
                                 <select name="gender" id=""
                                     v-model.lazy="QNR_form.info.gender">
                                     <option value="">
@@ -55,12 +74,24 @@
                                     <option value="female">女
                                     </option>
                                 </select>
+                                <span class="alertText"
+                                    v-show="setAlertClass(QNR_form.info.gender)">
+                                    <SvgIcon
+                                        name="QNR_alert"
+                                        width="18"
+                                        height="18"
+                                        color="#b3261e">
+                                    </SvgIcon>
+                                    請選擇性別
+                                </span>
                             </div>
                         </fieldset>
 
                         <fieldset>
                             <h3>生日</h3>
-                            <div class="birthday">
+                            <div class="birthday" :class="{
+                                alertInput: setAlertClass(verifyBirth(QNR_form.info.birth))
+                            }">
                                 <div class="birthInput">
                                     <input id="birthYear"
                                         type="tel"
@@ -106,6 +137,16 @@
                                         for="birthDate">日</label>
                                 </div>
 
+                                <span class="alertText"
+                                    v-show="setAlertClass(verifyBirth(QNR_form.info.birth))">
+                                    <SvgIcon
+                                        name="QNR_alert"
+                                        width="18"
+                                        height="18"
+                                        color="#b3261e">
+                                    </SvgIcon>
+                                    請輸入正確生日
+                                </span>
                             </div>
                         </fieldset>
 
@@ -138,11 +179,19 @@
                         NEXT
                     </button>
                 </div>
-
                 <div class="page_Q"
                     v-for="({ question, options, tag }, index) in showQuestionnaire"
-                    :key="index" :class="`Q${index + 1}`">
-                    <h2>{{ question }}</h2>
+                    :key="index" :class="{
+                        //`Q${index + 1}`
+                        pageFadeIn: (index + 2) == currPage,
+                        pageFadeOut: (index + 2) !== currPage
+                    }">
+                    <h2>{{ question }}
+                        <small
+                            v-if="index == 2 || index == 3">
+                            (多選)
+                        </small>
+                    </h2>
 
                     <div class="questionWrapper">
                         <div class="question"
@@ -154,7 +203,7 @@
                         </div>
                     </div>
 
-                    <button>
+                    <button @click="turnPage('+')">
                         NEXT
                     </button>
                 </div>
@@ -169,12 +218,14 @@
  * todo: NEXT功能 表單結果頁面 會員 購物車 關於
  * doing: 驗證輸入
  * --------------------
- * *
+ * * 刷新後問卷會丟失
+ * --------------------
+ * 換頁轉場改淡入淡出
  * //單選多選樣式
  */
 
 import Questions from './questions/Questions.vue';
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, nextTick } from 'vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { storeToRefs } from 'pinia';
 
@@ -212,12 +263,6 @@ function leaveQNR_page() {
     QNR_IsLoaded.value = false;
 }
 
-QuestionnaireStore.$subscribe((mutation, state) => {
-    if (state.QNR_IsLoaded) {
-        // console.log(showQuestionnaire.value);
-    }
-})
-
 const showQuestionnaire = computed(() => {
     return questionnaire.value
 })
@@ -253,7 +298,7 @@ const QNR_form = reactive<Form>({
 });
 
 watch(QNR_form, (nVal) => {
-    // console.log(nVal);
+    console.log(nVal);
 })
 
 // 問卷答案蒐集
@@ -271,7 +316,7 @@ function sentQNR_Ans(tag: QNRFormKeys, ans: string) {
     } else {
         QNR_form[tag] = ans;
     }
-    console.log(QNR_form[tag]);
+    // console.log(QNR_form[tag]);
 }
 
 function setSelectedClass(tag: QNRFormKeys, option: string) {
@@ -281,7 +326,11 @@ function setSelectedClass(tag: QNRFormKeys, option: string) {
 }
 
 // 表單驗證
-const isFormVerified = ref(false);
+const isFormVerified = ref<null | boolean>(null);
+const formPageTranslateX = ref(0);
+const formPagesStyle = computed(() => ({
+    transform: `translateX(${formPageTranslateX.value}%)`
+}))
 
 function verifyUserName(userName: string) {
     if (userName) return true
@@ -292,7 +341,7 @@ function verifyGender(gender: string) {
 function verifyBirth(birth: Birth) {
     const [year, month, date] = birth;
 
-    if (!year || !month || !date) return
+    if (!year || !month || !date) return false
 
     const validDay = new Date(year, month - 1, date);
     const yearScope = new Date().getFullYear();
@@ -302,7 +351,7 @@ function verifyBirth(birth: Birth) {
         year > yearScope ||
         month !== validDay.getMonth() + 1 ||
         date !== validDay.getDate()) {
-        return
+        return false
     }
 
     return true
@@ -316,13 +365,38 @@ function verifyInfoForm(form: typeof QNR_form) {
         verifyGender(gender) &&
         verifyBirth(birth)
     ) {
+        turnPage('+');
         console.log('passed');
     } else {
+        turnPage('+');
+        isFormVerified.value = false;
         console.log('failed');
     }
-
 }
 
+function setAlertClass(formVal: string | boolean) {
+    return (isFormVerified.value === false && !formVal)
+}
+
+// 翻頁
+const QNR_container = ref();
+const QNR_pagesCount = computed(() => showQuestionnaire.value.length + 1)
+const currPage = ref(1);
+
+function turnPage(signs: '+' | '-') {
+    const border = (QNR_pagesCount.value - 1) * 100;
+    if ((formPageTranslateX.value == 0 && signs == '-') ||
+        (-formPageTranslateX.value == border && signs == '+')) return;
+
+    formPageTranslateX.value += signs == '+' ? -100 : +100;
+    currPage.value += signs == '+' ? 1 : -1;
+}
+
+
+// progress bar
+const progressPercent = computed(() => ({
+    width: `${(currPage.value / QNR_pagesCount.value) * 100}%`
+}))
 
 // 生命週期
 onMounted(() => {
@@ -367,7 +441,8 @@ onUnmounted(() => {
     // flex-direction: column;
     width: 100%;
     height: calc(100vh - 100px);
-    overflow-x: scroll;
+    overflow: hidden;
+    // overflow-x: scroll;
 
     // &::-webkit-scrollbar {
     //     width: 0;
@@ -385,13 +460,14 @@ onUnmounted(() => {
         position: relative;
 
         .progressPercent {
-            @include WnH(10%, 6px);
-
+            height: 6px;
             background-color: $btnBacColor_light;
             border-radius: 6px;
             position: absolute;
             top: 0;
             left: 0;
+
+            transition: width .75s ease;
         }
     }
 
@@ -400,6 +476,21 @@ onUnmounted(() => {
         justify-content: space-between;
         margin-top: .5rem;
         padding: 0 1rem;
+
+        .prev {
+            @include WnH(4rem, 24px);
+            // border-radius: 12px;
+            user-select: none;
+            cursor: pointer;
+            text-align: center;
+            opacity: .5;
+            transition: opacity .2s ease;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
     }
 }
 
@@ -411,7 +502,7 @@ onUnmounted(() => {
         left: 1rem;
         top: 50%;
         transform: translateY(-50%);
-        transition: transform .3s ease;
+        transition: transform .3s ease-in-out;
         transform-origin: left;
     }
 }
@@ -423,6 +514,7 @@ onUnmounted(() => {
 }
 
 $btn_position: 15%;
+$alertColor: #b3261e;
 
 %QNR_nextButton {
     @include WnH(90px, 48px);
@@ -446,12 +538,59 @@ $btn_position: 15%;
     }
 }
 
+@keyframes pageIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+
+
+@keyframes pageOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+.pageFadeIn {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out, visibility 0s 0s;
+}
+
+.pageFadeOut {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, visibility 0s .3s;
+}
+
+// .pageFadeIn {
+//     opacity: 0;
+//     animation: pageIn .3s .75s ease-in-out forwards;
+// }
+
+// .pageFadeOut {
+//     opacity: 1;
+//     animation: pageIn .3s ease-in-out forwards;
+//     animation-direction: reverse;
+// }
+
 .QNR_content {
     // @include flex-center-center;
     display: flex;
     margin-top: 2rem;
     height: calc(100% - 70px);
     // transform: translateX(-100%);
+    transition: transform .75s ease-in-out;
+    position: relative;
 
     &>div {
         @include flex-center-center;
@@ -464,6 +603,10 @@ $btn_position: 15%;
             text-align: center;
             font-size: 2.5rem;
             margin-bottom: 2.5rem;
+
+            small {
+                font-size: 60%;
+            }
         }
     }
 
@@ -485,8 +628,6 @@ $btn_position: 15%;
         height: 100%;
         margin-bottom: 3rem;
 
-
-
         fieldset {
             display: flex;
             align-items: center;
@@ -494,6 +635,15 @@ $btn_position: 15%;
 
             &>div {
                 margin-left: 2rem;
+                position: relative;
+
+                select {
+                    cursor: pointer;
+                }
+
+                select:focus {
+                    border: 2px solid black;
+                }
             }
 
             h3 {
@@ -508,7 +658,7 @@ $btn_position: 15%;
             @include WnH(110px, 45px);
             border: 1px solid gray;
             border-radius: .5rem;
-            padding-left: 1rem;
+            padding: 0 1rem;
             background-color: $primaryBacColor;
 
             option:empty {
@@ -516,9 +666,27 @@ $btn_position: 15%;
             }
         }
 
+        .alertText {
+            font-variation-settings: 'wght' 450;
+            color: $alertColor;
+            display: flex;
+            gap: 2px;
+            font-size: 14px;
+            position: absolute;
+            left: 4px;
+            bottom: -23px;
+        }
+
+        .alertInput :is(input, select) {
+            border: 1px solid $alertColor;
+        }
+
+        .gender {
+            cursor: pointer;
+        }
+
         .userName {
             @extend %inputTextLabel;
-            position: relative;
 
             input {
                 width: 189px;
@@ -526,8 +694,8 @@ $btn_position: 15%;
 
             label {
                 user-select: none;
+                cursor: text;
             }
-
         }
 
         .birthday {
@@ -539,6 +707,11 @@ $btn_position: 15%;
 
                 label {
                     user-select: none;
+                    cursor: pointer;
+
+                    &:is([for="birthYear"], [for="birthDate"]) {
+                        cursor: text;
+                    }
                 }
             }
         }
@@ -566,6 +739,9 @@ $btn_position: 15%;
         position: relative;
         z-index: 0;
         overflow-y: scroll;
+        // opacity: 0;
+        // visibility: hidden;
+        transition: opacity 0.3s ease-in-out, visibility 0s 0.3s;
 
         &::-webkit-scrollbar {
             width: 0;
@@ -579,6 +755,21 @@ $btn_position: 15%;
     :not(.Q3, .Q4)>.questionWrapper {
         height: 100%;
     }
+
+    // .page_Q-enter-active,
+    // .page_Q-leave-active {
+    //     transition: opacity .75s ease-in-out;
+    // }
+
+    // .page_Q-enter-from,
+    // .page_Q-leave-to {
+    //     opacity: 0;
+    // }
+
+    // .page_Q-enter-to,
+    // .page_Q-leave-from {
+    //     opacity: 1;
+    // }
 
     .questionWrapper {
         width: 15%;
@@ -601,7 +792,8 @@ $btn_position: 15%;
             border: 1px solid gray;
             border-radius: 10px;
             cursor: pointer;
-            transition: box-shadow .2s ease
+            transition: box-shadow .2s ease;
+            user-select: none;
         }
 
         .question:not(.answer):hover {
