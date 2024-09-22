@@ -2,8 +2,9 @@
     <div class="container" :class="{ 'hideNav': hideNav }"
         v-if="!QNR_IsLoaded">
         <header class="header" ref="header">
-            <router-link to="Home">
-                <SvgIcon name="Logo" height="65px">
+            <router-link :to="{ name: 'Home' }">
+                <SvgIcon name="Logo" height="65px"
+                    color="black">
                 </SvgIcon>
             </router-link>
             <div>
@@ -33,8 +34,9 @@
 
     <div v-else>
         <header class="QNR_header" ref="header">
-            <router-link to="Home">
-                <SvgIcon name="Logo" height="65px">
+            <router-link :to="{ name: 'Home' }">
+                <SvgIcon name="Logo" height="65px"
+                    color="black">
                 </SvgIcon>
             </router-link>
             <SvgIcon name="cancel" width="32px"

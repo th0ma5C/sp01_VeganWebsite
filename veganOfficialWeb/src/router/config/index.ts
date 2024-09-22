@@ -1,5 +1,6 @@
 import Home from '@pages/Home/index.vue'
 import Questionnaire from '@pages/Questionnaire/index.vue'
+import QNR_result from '@/pages/Questionnaire/result/QNR_result.vue'
 import Menu from '@pages/Menu/index.vue'
 import About from '@pages/About/index.vue'
 import Cart from '@pages/Cart/index.vue'
@@ -11,8 +12,11 @@ import type { RouteLocationNormalized } from 'vue-router'
 export default [
     {
         path: '/',
-        alias: ['/home'],
-        // redirect: '/home',
+        redirect: '/home',
+    },
+    {
+        path: '/home',
+        // alias: ['/home'],
         component: Home,
         name: 'Home',
         // meta: {
@@ -23,15 +27,17 @@ export default [
         //         }
         //     ]
         // }
-
     },
-    // {
-    //     path: '/home',
-    //     component: Home
-    // },
     {
         path: '/questionnaire',
-        component: Questionnaire
+        component: () => import('@pages/Questionnaire/index.vue'),
+        children: [
+            {
+                path: 'result',
+                component: () => import('@/pages/Questionnaire/result/QNR_result.vue'),
+                // component: QNR_result,
+            }
+        ]
     },
     {
         path: '/menu',

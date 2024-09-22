@@ -5,7 +5,7 @@
             </div>
         </div>
 
-        <div class="questionnaire">
+        <div class="questionnaire" v-show="!isFormVerified">
             <div class="processBar">
                 <div class="bar">
                     <div class="progressPercent"
@@ -14,11 +14,14 @@
 
                 <div class="content">
                     <div class="prev"
-                        @click=" turnPage('-')">
+                        @click=" turnPage('-')" :class="{
+                            hidePrev: currPage == 1
+                        }">
                         上一頁
                     </div>
 
-                    <div class="state">
+                    <div class="state"
+                        @click="showResult()">
                         {{ currPage }}
                         / {{ QNR_pagesCount }}
                     </div>
@@ -27,10 +30,8 @@
 
             <div class="QNR_content" :style="formPagesStyle"
                 ref="QNR_container">
-                <div class="page_info" :class="{
-                    pageFadeIn: true,
-                    pageFadeOut: false
-                }">
+                <div class="page_info"
+                    :class="currPage == 1 ? 'pageFadeIn' : 'pageFadeOut'">
                     <h2>
                         您的基本資訊
                     </h2>
@@ -181,11 +182,8 @@
                 </div>
                 <div class="page_Q"
                     v-for="({ question, options, tag }, index) in showQuestionnaire"
-                    :key="index" :class="{
-                        //`Q${index + 1}`
-                        pageFadeIn: (index + 2) == currPage,
-                        pageFadeOut: (index + 2) !== currPage
-                    }">
+                    :key="index"
+                    :class="page_QClass(index)">
                     <h2>{{ question }}
                         <small
                             v-if="index == 2 || index == 3">
@@ -204,19 +202,27 @@
                     </div>
 
                     <button @click="turnPage('+')">
-                        NEXT
+                        {{
+                            currPage !== QNR_pagesCount ?
+                                'NEXT' :
+                                '結果'
+                        }}
                     </button>
                 </div>
             </div>
-            <Questions></Questions>
         </div>
+
+        <router-view v-show="isFormVerified"></router-view>
+        <!-- <QNR_result></QNR_result> -->
     </div>
 </template>
 
 <script setup lang="ts">
 /**
  * todo: NEXT功能 表單結果頁面 會員 購物車 關於
- * doing: 驗證輸入
+ * doing: 驗證輸入 未輸入不能下一頁
+ * --------------------
+ * ! 1440 1 2 題會滾動
  * --------------------
  * * 刷新後問卷會丟失
  * --------------------
@@ -224,10 +230,11 @@
  * //單選多選樣式
  */
 
-import Questions from './questions/Questions.vue';
 import { computed, onMounted, onUnmounted, reactive, ref, watch, nextTick } from 'vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
+import QNR_result from './result/QNR_result.vue';
 
 // loading overlay
 const loadingProgress = computed(() => ({
@@ -384,9 +391,11 @@ const QNR_pagesCount = computed(() => showQuestionnaire.value.length + 1)
 const currPage = ref(1);
 
 function turnPage(signs: '+' | '-') {
-    const border = (QNR_pagesCount.value - 1) * 100;
-    if ((formPageTranslateX.value == 0 && signs == '-') ||
-        (-formPageTranslateX.value == border && signs == '+')) return;
+    if ((currPage.value == 1 && signs == '-') ||
+        (currPage.value == QNR_pagesCount.value && signs == '+')) {
+        showResult();
+        return
+    };
 
     formPageTranslateX.value += signs == '+' ? -100 : +100;
     currPage.value += signs == '+' ? 1 : -1;
@@ -395,8 +404,38 @@ function turnPage(signs: '+' | '-') {
 
 // progress bar
 const progressPercent = computed(() => ({
-    width: `${(currPage.value / QNR_pagesCount.value) * 100}%`
+    width: QNR_IsLoaded.value ? `${(currPage.value / QNR_pagesCount.value) * 100}%` : '0'
 }))
+
+// page_Q class
+function page_QClass(index: number) {
+    let fadeClass = (index + 2) == currPage.value ? 'pageFadeIn' : 'pageFadeOut';
+    let serial = `Q${index + 1}`
+    return [
+        fadeClass,
+        serial
+    ]
+}
+
+// 結果路由
+const router = useRouter();
+function showResult() {
+    // if (currPage.value !== QNR_pagesCount.value) return;
+    isFormVerified.value = true;
+    router.push('/questionnaire/result')
+}
+const mockData = reactive({
+    info: {
+        userName: '鷹村',
+        gender: 'male',
+        birth: [1969, 7, 7],
+    },
+    habit: '完全素食',
+    flavor: '清爽',
+    ingredients: ['Omega-3', '抗氧化物', '維生素'],
+    food: ['香蕉', '生菜', '巧克力'],
+    calories: '1800卡'
+})
 
 // 生命週期
 onMounted(() => {
@@ -491,6 +530,11 @@ onUnmounted(() => {
             }
         }
 
+        .hidePrev {
+            pointer-events: none;
+            opacity: 0;
+        }
+
     }
 }
 
@@ -529,7 +573,7 @@ $alertColor: #b3261e;
     transition: border-color .2s ease, box-shadow .2s ease;
 
     @include btn_rwd {
-        bottom: calc($btn_position / 4);
+        // bottom: calc($btn_position / 3);
     }
 
     &:hover {
@@ -537,51 +581,6 @@ $alertColor: #b3261e;
         box-shadow: 1px 1px 2px black;
     }
 }
-
-@keyframes pageIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-
-
-@keyframes pageOut {
-    from {
-        opacity: 1;
-    }
-
-    to {
-        opacity: 0;
-    }
-}
-
-.pageFadeIn {
-    visibility: visible;
-    opacity: 1;
-    transition: opacity 0.3s ease-in-out, visibility 0s 0s;
-}
-
-.pageFadeOut {
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out, visibility 0s .3s;
-}
-
-// .pageFadeIn {
-//     opacity: 0;
-//     animation: pageIn .3s .75s ease-in-out forwards;
-// }
-
-// .pageFadeOut {
-//     opacity: 1;
-//     animation: pageIn .3s ease-in-out forwards;
-//     animation-direction: reverse;
-// }
 
 .QNR_content {
     // @include flex-center-center;
@@ -612,6 +611,7 @@ $alertColor: #b3261e;
 
     .page_info {
         flex-direction: column;
+        opacity: 0;
 
         h2 {
             text-align: center;
@@ -739,9 +739,7 @@ $alertColor: #b3261e;
         position: relative;
         z-index: 0;
         overflow-y: scroll;
-        // opacity: 0;
-        // visibility: hidden;
-        transition: opacity 0.3s ease-in-out, visibility 0s 0.3s;
+        opacity: 0;
 
         &::-webkit-scrollbar {
             width: 0;
@@ -752,24 +750,19 @@ $alertColor: #b3261e;
         }
     }
 
+    .pageFadeIn {
+        opacity: 1;
+        transition: opacity .5s .5s ease-in-out;
+    }
+
+    .pageFadeOut {
+        opacity: 0;
+        transition: opacity .5s ease-in-out;
+    }
+
     :not(.Q3, .Q4)>.questionWrapper {
         height: 100%;
     }
-
-    // .page_Q-enter-active,
-    // .page_Q-leave-active {
-    //     transition: opacity .75s ease-in-out;
-    // }
-
-    // .page_Q-enter-from,
-    // .page_Q-leave-to {
-    //     opacity: 0;
-    // }
-
-    // .page_Q-enter-to,
-    // .page_Q-leave-from {
-    //     opacity: 1;
-    // }
 
     .questionWrapper {
         width: 15%;
