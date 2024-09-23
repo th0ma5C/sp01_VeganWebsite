@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import throttle from 'lodash/throttle';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { storeToRefs } from 'pinia';
 
@@ -99,9 +99,14 @@ const throttledOnScroll = throttle(onScroll, 100);
 const { QNR_IsLoaded } = storeToRefs(useQuestionnaireStore());
 
 const Router = useRouter();
+const Route = useRoute()
 
 function prevPage() {
-    Router.back();
+    // console.log(Router);
+    // console.log(Route);
+    // Router.back();
+    const steps = Route.matched.length;
+    Router.go(-steps)
 }
 
 

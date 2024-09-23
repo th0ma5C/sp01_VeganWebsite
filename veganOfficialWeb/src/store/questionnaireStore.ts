@@ -1,7 +1,9 @@
 import { defineStore } from "pinia";
-import { onMounted, ref } from "vue";
-import { reqGetQuestionnaire } from "@/api/questionnaire";
+import { onMounted, reactive, ref, watch } from "vue";
+import { reqGetQuestionnaire } from "@/api/questionnaire"
 import type { Questionnaire } from '@/api/questionnaire/type'
+import type { Birth, Info, Form } from '@/store/type/QNR_type'
+
 
 export const useQuestionnaireStore = defineStore('questionnaire', () => {
     const QNR_IsLoaded = ref(false);
@@ -11,7 +13,6 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
     }
 
     const questionnaire = ref<Questionnaire[]>([]);
-
     async function fetchQuestionnaire() {
         try {
             const data = await reqGetQuestionnaire();
@@ -23,16 +24,40 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         }
     }
 
-    // onMounted(() => {
-    //     if (!QNR_IsLoaded.value) {
-    //         fetchQuestionnaire();
-    //     }
-    // })
+    const QNR_isDone = ref(false)
+    const QNR_result = reactive<Form>({
+        info: {
+            userName: '',
+            gender: '',
+            birth: [null, null, null],
+        },
+        habit: null,
+        flavor: null,
+        ingredients: [],
+        food: [],
+        calories: null
+    })
+
+    function setQNR_result(obj: Form) {
+        // QNR_result = {...QNR_result, ...obj}
+        Object.assign(QNR_result, obj);
+        // console.log(QNR_result);
+    }
+
+    // 進度存放webStorage
+    function setQNRtoStorage(form: Form) {
+
+    }
+
+
 
     return {
         QNR_IsLoaded,
         QNR_FinishLoading,
         questionnaire,
-        fetchQuestionnaire
+        fetchQuestionnaire,
+        QNR_isDone,
+        QNR_result,
+        setQNR_result
     }
 })

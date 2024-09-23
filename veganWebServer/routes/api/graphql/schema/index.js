@@ -56,7 +56,9 @@ const QueryType = new GraphQLObjectType({
                                         category: "$$item.category",
                                         date: "$$item.date",
                                         rating: "$$item.rating",
-                                        fileName: { $concat: ["/images/menu/", "$$item.category", "/", "$$item.fileName"] }
+                                        fileName: { $concat: ["/images/menu/", "$$item.category", "/", "$$item.fileName"] },
+                                        tags: "$$item.tags",
+                                        main: "$$item.main"
                                     }
                                 }
                             }

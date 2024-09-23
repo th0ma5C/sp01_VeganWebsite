@@ -5,7 +5,7 @@
             </div>
         </div>
 
-        <div class="questionnaire" v-show="!isFormVerified">
+        <div class="questionnaire">
             <div class="processBar">
                 <div class="bar">
                     <div class="progressPercent"
@@ -212,8 +212,7 @@
             </div>
         </div>
 
-        <router-view v-show="isFormVerified"></router-view>
-        <!-- <QNR_result></QNR_result> -->
+        <router-view v-show="QNR_isDone"></router-view>
     </div>
 </template>
 
@@ -222,19 +221,24 @@
  * todo: NEXT功能 表單結果頁面 會員 購物車 關於
  * doing: 驗證輸入 未輸入不能下一頁
  * --------------------
+ * * 刷新後問卷會丟失 初步完成刷新不丟失
+ * --------------------
  * ! 1440 1 2 題會滾動
  * --------------------
- * * 刷新後問卷會丟失
+ * ?是否需要儲存問題作答裝況
+ * ?刷新不丟失放入store
+ * ?問卷蒐集移入store
  * --------------------
  * 換頁轉場改淡入淡出
  * //單選多選樣式
  */
 
-import { computed, onMounted, onUnmounted, reactive, ref, watch, nextTick } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, nextTick, onBeforeUnmount } from 'vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
-import QNR_result from './result/QNR_result.vue';
+import type { Birth, Info, Form } from '@/store/type/QNR_type'
+import { useMenuStore } from '@/store/menuStore';
 
 // loading overlay
 const loadingProgress = computed(() => ({
@@ -263,8 +267,8 @@ function loadingTimer() {
 
 // QNR_store
 const QuestionnaireStore = useQuestionnaireStore();
-const { QNR_IsLoaded, questionnaire } = storeToRefs(QuestionnaireStore);
-const { QNR_FinishLoading, fetchQuestionnaire } = QuestionnaireStore;
+const { QNR_IsLoaded, questionnaire, QNR_isDone, QNR_result } = storeToRefs(QuestionnaireStore);
+const { QNR_FinishLoading, fetchQuestionnaire, setQNR_result } = QuestionnaireStore;
 
 function leaveQNR_page() {
     QNR_IsLoaded.value = false;
@@ -276,20 +280,20 @@ const showQuestionnaire = computed(() => {
 
 // 表單數據
 // userInfo
-type Birth = [number | null, number | null, number | null];
-interface Info {
-    userName: string;
-    gender: string;
-    birth: Birth;
-}
-interface Form {
-    info: Info,
-    habit: null | string,
-    flavor: null | string,
-    ingredients: string[],
-    food: string[],
-    calories: null | string
-}
+// type Birth = [number | null, number | null, number | null];
+// interface Info {
+//     userName: string;
+//     gender: string;
+//     birth: Birth;
+// }
+// interface Form {
+//     info: Info,
+//     habit: null | string,
+//     flavor: null | string,
+//     ingredients: string[],
+//     food: string[],
+//     calories: null | string
+// }
 
 const QNR_form = reactive<Form>({
     info: {
@@ -416,19 +420,33 @@ function page_QClass(index: number) {
         serial
     ]
 }
+const foo = computed(() => {
 
-// 結果路由
+    return [
+
+    ]
+})
+
+// menu 預載
+const { isLoaded, fetchMenu } = useMenuStore();
+
+// 路由
 const router = useRouter();
-function showResult() {
+async function showResult() {
     // if (currPage.value !== QNR_pagesCount.value) return;
-    isFormVerified.value = true;
-    router.push('/questionnaire/result')
+    if (!isLoaded) await fetchMenu();
+    console.log('@@@');
+    setQNR_result(mockData);
+    QNR_isDone.value = true;
+    setDataToStorage();
+
+    router.push('/questionnaire/result');
 }
 const mockData = reactive({
     info: {
         userName: '鷹村',
         gender: 'male',
-        birth: [1969, 7, 7],
+        birth: [1969, 7, 7] as Birth,
     },
     habit: '完全素食',
     flavor: '清爽',
@@ -437,12 +455,63 @@ const mockData = reactive({
     calories: '1800卡'
 })
 
+// 保存進度
+const storageKey = 'mockResult';
+const stamp = ref();
+const QNR_state = computed(() => {
+    return {
+        currPage: currPage.value,
+        result: QNR_form,
+        timeStamp: stamp.value,
+        completed: QNR_isDone.value
+    }
+})
+
+function setDataToStorage() {
+    stamp.value = Date.now() + 1000 * 60 * 60;
+    const data = JSON.stringify(QNR_state.value);
+    localStorage.setItem(storageKey, data);
+}
+
+function getDataFromStorage() {
+    const now = Date.now();
+    const raw = (localStorage.getItem(storageKey));
+    if (!raw) return
+    const data = JSON.parse(raw);
+    if (now > data.timeStamp) return localStorage.removeItem(storageKey);
+    return data
+}
+
+function initQNR() {
+    const data = getDataFromStorage() as typeof QNR_state.value;
+    if (!data) return
+    let result;
+    ({
+        currPage: currPage.value,
+        result: result,
+        completed: QNR_isDone.value,
+    } = data);
+    formPageTranslateX.value = (currPage.value - 1) * -100;
+    setQNR_result(result);
+}
+
+watch(currPage, (nVal) => {
+    if (nVal) {
+        setDataToStorage();
+    }
+})
+
 // 生命週期
 onMounted(() => {
     fetchQuestionnaire();
+    initQNR()
+})
+
+onBeforeUnmount(() => {
 })
 
 onUnmounted(() => {
+    setDataToStorage();
     leaveQNR_page();
 })
 </script>

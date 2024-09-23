@@ -22,11 +22,13 @@ const GET_MENU = `
                     name
                     description
                     ingredients
+                    main
                     price
                     category
                     fileName
                     rating
                     date
+                    tags
                 }
             }
         }
