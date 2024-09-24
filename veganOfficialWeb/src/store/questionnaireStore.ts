@@ -45,6 +45,7 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
     }
 
     // 進度存放webStorage
+    const localStorageKey = ref('mockResult');
     function setQNRtoStorage(form: Form) {
 
     }
@@ -58,6 +59,7 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         fetchQuestionnaire,
         QNR_isDone,
         QNR_result,
-        setQNR_result
+        setQNR_result,
+        localStorageKey
     }
 })

@@ -6,7 +6,9 @@
 
         <div class="topText">
             <h1>
-                {{ userName }}，您的專屬分析完成了！
+                {{
+                    QNR_result.info.userName
+                }}，您的專屬分析完成了！
             </h1>
 
             <div class="content">
@@ -53,19 +55,128 @@
 import Product_template from '@/components/Product/Product_template.vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { useMenuStore } from '@/store/menuStore';
-import { isReactive, isRef, onMounted } from 'vue';
+import { isReactive, isRef, onMounted, watch, toRefs, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
 // questionnaireStore
 const questionnaireStore = useQuestionnaireStore();
-const { QNR_result, QNR_isDone } = storeToRefs(questionnaireStore);
-const { info: { userName, gender, birth }, habit, flavor, ingredients, food, calories } = QNR_result.value;
-console.log(QNR_result.value);
+const { QNR_result, QNR_isDone, localStorageKey } = storeToRefs(questionnaireStore);
+// const { info: { userName, gender, birth }, habit, flavor, ingredients, food, calories } = QNR_result.value;
+
 
 // menuStore
 const menuStore = useMenuStore();
-const { saladList, smoothieList } = menuStore;
+const { saladList, smoothieList } = storeToRefs(menuStore);
+
+// 顯示推薦
+const genderRank = computed(() => {
+    const gender = new RegExp(`^${QNR_result.value.info.gender}`, 'g');
+
+    const saladRank = saladList.value.filter((item) => {
+        return item.tags.some((item) => gender.test(item))
+    })
+
+    const smoothiesRank = smoothieList.value.filter((item) => {
+        return item.tags.some((item) => gender.test(item))
+    })
+
+    return [saladRank, smoothiesRank]
+});
+const ageRank = computed(() => {
+    if (saladList.value.length == 1 || smoothieList.value.length == 1) return;
+
+    const age = new Date().getFullYear() - QNR_result.value.info.birth[0]!;
+
+    const saladRank = saladList.value.filter((item) => {
+        const scope = item.tags[1].split('-');
+        return age >= Number(scope[0]) && age <= Number(scope[1])
+    })
+
+    const smoothiesRank = smoothieList.value.filter((item) => {
+        const scope = item.tags[1].split('-');
+        return age >= Number(scope[0]) && age <= Number(scope[1])
+    })
+
+    return [saladRank, smoothiesRank]
+});
+const habitRank = computed(() => {
+    if (!QNR_result.value.habit) return;
+
+    const habit = QNR_result.value.habit;
+
+    const saladRank = saladList.value.filter((item) => {
+        return item.tags.includes(habit)
+    })
+
+    const smoothiesRank = smoothieList.value.filter((item) => {
+        return item.tags.includes(habit)
+    })
+
+    return [saladRank, smoothiesRank]
+});
+const flavorRank = computed(() => {
+    if (!QNR_result.value.flavor) return;
+
+    const flavor = QNR_result.value.flavor;
+
+    const saladRank = saladList.value.filter((item) => {
+        return item.tags.includes(flavor)
+    })
+
+    const smoothiesRank = smoothieList.value.filter((item) => {
+        return item.tags.includes(flavor)
+    })
+
+    return [saladRank, smoothiesRank]
+});
+function cal_Similarity(targetArr: string[], DBarr: string[]) {
+    const targetArrSet = new Set(targetArr);
+    const DBarrSet = new Set(DBarr);
+    let similarity = 0;
+    targetArrSet.forEach((item) => {
+        if (DBarrSet.has(item)) {
+            similarity++
+        }
+    })
+    return similarity
+}
+function sortSimilarity(targetArr: string[], DBarr: string[]) {
+    return targetArr.map((item) => {
+        return {
+            item,
+            score: cal_Similarity(targetArr, DBarr)
+        }
+    }).sort((a, b) => a.score - b.score).map((item) => item.item)
+}
+
+// const ingredientsRank = computed(() => {
+//     if (!QNR_result.value.ingredients) return;
+
+//     const ingredients = QNR_result.value.ingredients;
+
+//     const saladRank = saladList.value.filter((item) => {
+//         ingredients.forEach((params) => {
+
+//         })
+//     })
+
+//     const smoothiesRank = smoothieList.value.filter((item) => {
+//     })
+
+//     return [saladRank, smoothiesRank]
+// });
+
+
+
+const showSalad = computed(() => {
+    return habitRank.value
+})
+
+watch(showSalad, (nv) => {
+    console.log(nv);
+}, { deep: true })
+
 
 
 // 重新測驗
@@ -77,6 +188,7 @@ function retest() {
 
 // 生命週期
 onMounted(() => {
+    // console.log(questionnaireStore.QNR_result.info);
 })
 
 

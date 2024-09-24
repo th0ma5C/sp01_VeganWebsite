@@ -267,7 +267,7 @@ function loadingTimer() {
 
 // QNR_store
 const QuestionnaireStore = useQuestionnaireStore();
-const { QNR_IsLoaded, questionnaire, QNR_isDone, QNR_result } = storeToRefs(QuestionnaireStore);
+const { QNR_IsLoaded, questionnaire, QNR_isDone, QNR_result, localStorageKey } = storeToRefs(QuestionnaireStore);
 const { QNR_FinishLoading, fetchQuestionnaire, setQNR_result } = QuestionnaireStore;
 
 function leaveQNR_page() {
@@ -456,12 +456,11 @@ const mockData = reactive({
 })
 
 // 保存進度
-const storageKey = 'mockResult';
 const stamp = ref();
 const QNR_state = computed(() => {
     return {
         currPage: currPage.value,
-        result: QNR_form,
+        result: mockData,
         timeStamp: stamp.value,
         completed: QNR_isDone.value
     }
@@ -470,15 +469,15 @@ const QNR_state = computed(() => {
 function setDataToStorage() {
     stamp.value = Date.now() + 1000 * 60 * 60;
     const data = JSON.stringify(QNR_state.value);
-    localStorage.setItem(storageKey, data);
+    localStorage.setItem(localStorageKey.value, data);
 }
 
 function getDataFromStorage() {
     const now = Date.now();
-    const raw = (localStorage.getItem(storageKey));
+    const raw = (localStorage.getItem(localStorageKey.value));
     if (!raw) return
     const data = JSON.parse(raw);
-    if (now > data.timeStamp) return localStorage.removeItem(storageKey);
+    if (now > data.timeStamp) return localStorage.removeItem(localStorageKey.value);
     return data
 }
 

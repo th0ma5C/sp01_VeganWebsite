@@ -60,7 +60,9 @@ export const useMenuStore = defineStore('menu', (() => {
             category: null,
             fileName: null,
             rating: null,
-            date: null
+            date: null,
+            tags: [],
+            main: null
         }
     ]);
     let smoothieList: Ref<MenuItem[]> = ref([
@@ -72,7 +74,9 @@ export const useMenuStore = defineStore('menu', (() => {
             category: null,
             fileName: null,
             rating: null,
-            date: null
+            date: null,
+            tags: [],
+            main: null
         }
     ]);
     let ingredientsList: Ref<ingredientsList[]> = ref([

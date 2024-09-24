@@ -11,6 +11,8 @@ interface MenuItem {
     fileName: string | null;
     rating: number | null;
     date: string | null;
+    tags: string[];
+    main: string | null
     [key: string]: any;
 }
 
