@@ -5,7 +5,7 @@ const defaultDB = {
     DBNAME: 'veganWebDB'
 }
 const backupDB = {
-    DBHOST: '192.168.0.106',
+    DBHOST: '192.168.0.101',
     DBPORT: 27017,
     DBNAME: 'veganWebDB'
 }

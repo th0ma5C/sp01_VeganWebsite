@@ -1,7 +1,7 @@
 <template>
     <div class="resultContainer">
         <div class="restart">
-            <button>重新測驗</button>
+            <button @click="retest">重新測驗</button>
         </div>
 
         <div class="topText">
@@ -54,18 +54,28 @@ import Product_template from '@/components/Product/Product_template.vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { useMenuStore } from '@/store/menuStore';
 import { isReactive, isRef, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 
 // questionnaireStore
 const questionnaireStore = useQuestionnaireStore();
-const { QNR_result } = questionnaireStore;
-const { info: { userName, gender, birth }, habit, flavor, ingredients, food, calories } = QNR_result;
-
+const { QNR_result, QNR_isDone } = storeToRefs(questionnaireStore);
+const { info: { userName, gender, birth }, habit, flavor, ingredients, food, calories } = QNR_result.value;
+console.log(QNR_result.value);
 
 // menuStore
 const menuStore = useMenuStore();
 const { saladList, smoothieList } = menuStore;
-console.log(isRef(menuStore.saladList));
 
+
+// 重新測驗
+const Router = useRouter();
+function retest() {
+    QNR_isDone.value = false;
+    Router.back();
+}
+
+// 生命週期
 onMounted(() => {
 })
 

@@ -447,7 +447,7 @@ onMounted(() => {
     }
 
     @mixin skeleton {
-        @include WnH(300px);
+        // @include WnH(300px);
         @include flex-center-center;
         position: relative;
         overflow: hidden;
@@ -485,6 +485,7 @@ onMounted(() => {
                 position: relative;
 
                 .imgSkeleton {
+                    @include WnH(300px);
                     @include skeleton;
                 }
             }
@@ -537,10 +538,10 @@ onMounted(() => {
 
 
             .imgSkeleton {
-                width: 135px !important;
-                height: 135px !important;
+                // width: 135px !important;
+                // height: 135px !important;
+                @include WnH(135px);
                 @include skeleton;
-                // @include WnH(135px);
 
 
                 img {

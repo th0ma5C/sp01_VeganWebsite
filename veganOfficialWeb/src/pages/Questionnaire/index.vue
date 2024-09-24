@@ -420,12 +420,13 @@ function page_QClass(index: number) {
         serial
     ]
 }
-const foo = computed(() => {
-
-    return [
-
-    ]
-})
+// const foo = (index: number) => {
+//     return computed(() => {
+//         const fadeClass = (index + 2) === currPage.value ? 'pageFadeIn' : 'pageFadeOut';
+//         const serial = `Q${index + 1}`;
+//         return [fadeClass, serial];
+//     }).value;
+// }
 
 // menu 預載
 const { isLoaded, fetchMenu } = useMenuStore();
@@ -435,7 +436,6 @@ const router = useRouter();
 async function showResult() {
     // if (currPage.value !== QNR_pagesCount.value) return;
     if (!isLoaded) await fetchMenu();
-    console.log('@@@');
     setQNR_result(mockData);
     QNR_isDone.value = true;
     setDataToStorage();

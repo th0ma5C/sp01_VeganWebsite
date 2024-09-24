@@ -438,6 +438,7 @@ import gsap from 'gsap';
 import Flip from 'gsap/Flip';
 import { useRoute, useRouter } from 'vue-router';
 import Breadcrumbs from '@/components/Breadcrumbs/Breadcrumbs.vue';
+import { log } from 'console';
 
 
 //DOING salad圖ps改成一致
@@ -638,8 +639,12 @@ function sort(el: Ref<MenuItem[]>) {
 //     return [...set]
 // }
 
+menuStore.$subscribe((_, state) => {
+    console.log(state.ingredientsList);
+})
+
 let ingredientSet = computed<Set<string>>(() => {
-    if (!isLoaded.value) return new Set();
+    if (!isLoaded.value || !ingredientList.value || ingredientList.value.length <= 1) return new Set();
 
     let set = new Set<string>();
     for (let i of ingredientsList.value) {
