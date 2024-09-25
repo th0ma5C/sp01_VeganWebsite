@@ -55,9 +55,11 @@
 import Product_template from '@/components/Product/Product_template.vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { useMenuStore } from '@/store/menuStore';
-import { isReactive, isRef, onMounted, watch, toRefs, computed } from 'vue';
+import { isReactive, isRef, onMounted, watch, toRefs, computed, reactive } from 'vue';
+import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import type { MenuItem } from '@/api/menu/type';
 
 // questionnaireStore
 const questionnaireStore = useQuestionnaireStore();
@@ -67,113 +69,161 @@ const { QNR_result, QNR_isDone, localStorageKey } = storeToRefs(questionnaireSto
 
 // menuStore
 const menuStore = useMenuStore();
-const { saladList, smoothieList } = storeToRefs(menuStore);
+const { saladList, smoothieList, isLoaded } = storeToRefs(menuStore);
 
 // 顯示推薦
+function filterByTag(
+    catalog: 'salad' | 'smoothies',
+    tagIndex: number | null,
+    condition: (tag: string | string[]) => boolean) {
+    const list = catalog == 'salad' ? saladList.value : smoothieList.value;
+    if (tagIndex) {
+        return list.filter(item => condition(item.tags[tagIndex]));
+    }
+    return list.filter(item => condition(item.tags));
+}
+
+function calc_similarity(target: string[], origin: string[]): number {
+    let count = 0;
+    origin.forEach((item) => {
+        if (target.includes(item)) {
+            count++
+        }
+    })
+    return count
+}
+
+function rank_similarity(target: string[],
+    originObj: Ref<MenuItem[]>
+): MenuItem[] {
+    return originObj.value.map((item) => {
+        return {
+            array: item,
+            rank: calc_similarity(target, item.ingredients)
+        }
+    }).sort((a, b) => {
+        return b.rank - a.rank
+    }).map((item) => item.array)
+}
+
 const genderRank = computed(() => {
     const gender = new RegExp(`^${QNR_result.value.info.gender}`, 'g');
 
-    const saladRank = saladList.value.filter((item) => {
-        return item.tags.some((item) => gender.test(item))
-    })
-
-    const smoothiesRank = smoothieList.value.filter((item) => {
-        return item.tags.some((item) => gender.test(item))
-    })
+    const saladRank = filterByTag('salad', 0, tag => gender.test(tag as string));
+    const smoothiesRank = filterByTag('smoothies', 0, tag => gender.test(tag as string));
 
     return [saladRank, smoothiesRank]
 });
+
 const ageRank = computed(() => {
-    if (saladList.value.length == 1 || smoothieList.value.length == 1) return;
+    if (!isLoaded.value) return [];
 
     const age = new Date().getFullYear() - QNR_result.value.info.birth[0]!;
 
-    const saladRank = saladList.value.filter((item) => {
-        const scope = item.tags[1].split('-');
-        return age >= Number(scope[0]) && age <= Number(scope[1])
-    })
-
-    const smoothiesRank = smoothieList.value.filter((item) => {
-        const scope = item.tags[1].split('-');
-        return age >= Number(scope[0]) && age <= Number(scope[1])
-    })
+    const saladRank = filterByTag('salad', 1, tag => {
+        const scope = (tag as string).split('-');
+        return age >= Number(scope[0]) && age <= Number(scope[1]);
+    });
+    const smoothiesRank = filterByTag('smoothies', 1, tag => {
+        const scope = (tag as string).split('-');
+        return age >= Number(scope[0]) && age <= Number(scope[1]);
+    });
 
     return [saladRank, smoothiesRank]
 });
+
 const habitRank = computed(() => {
-    if (!QNR_result.value.habit) return;
+    if (!QNR_result.value.habit) return []
 
     const habit = QNR_result.value.habit;
 
-    const saladRank = saladList.value.filter((item) => {
-        return item.tags.includes(habit)
-    })
-
-    const smoothiesRank = smoothieList.value.filter((item) => {
-        return item.tags.includes(habit)
-    })
+    const saladRank = filterByTag('salad', null, tag => tag.includes(habit));
+    const smoothiesRank = filterByTag('smoothies', null, tag => tag.includes(habit));
 
     return [saladRank, smoothiesRank]
 });
+
 const flavorRank = computed(() => {
-    if (!QNR_result.value.flavor) return;
+    if (!QNR_result.value.flavor) return []
 
     const flavor = QNR_result.value.flavor;
 
-    const saladRank = saladList.value.filter((item) => {
-        return item.tags.includes(flavor)
-    })
+    const saladRank = filterByTag('salad', null, tag => tag.includes(flavor));
+    const smoothiesRank = filterByTag('smoothies', null, tag => tag.includes(flavor));
 
+    return [saladRank, smoothiesRank]
+});
+
+
+const ingredientsRank = computed(() => {
+    if (!QNR_result.value.ingredients) return []
+
+    const ingredients = QNR_result.value.ingredients;
+
+    const saladRank = rank_similarity(ingredients, saladList).slice(0, 5);
+    const smoothiesRank = rank_similarity(ingredients, smoothieList).slice(0, 5);
+
+    return [saladRank, smoothiesRank]
+});
+
+const foodRank = computed(() => {
+    if (!QNR_result.value.food) return []
+
+    const food = QNR_result.value.food;
+
+    const saladRank = saladList.value.filter((item) => {
+        if (item.main) return food.includes(item.main)
+    })
     const smoothiesRank = smoothieList.value.filter((item) => {
-        return item.tags.includes(flavor)
+        if (item.main) return food.includes(item.main)
     })
 
     return [saladRank, smoothiesRank]
 });
-function cal_Similarity(targetArr: string[], DBarr: string[]) {
-    const targetArrSet = new Set(targetArr);
-    const DBarrSet = new Set(DBarr);
-    let similarity = 0;
-    targetArrSet.forEach((item) => {
-        if (DBarrSet.has(item)) {
-            similarity++
-        }
+
+const caloriesRank = computed(() => {
+    if (!QNR_result.value.calories || !isLoaded.value) return []
+
+    const numReg = /\D/g;
+    const calories = QNR_result.value.calories?.replace(numReg, '');
+
+    const saladRank = filterByTag('salad', 4, tag => {
+        const funnel = (tag as string).replace(numReg, '');
+        return calories >= funnel
     })
-    return similarity
+    const smoothiesRank = filterByTag('smoothies', 4, tag => {
+        const funnel = (tag as string).replace(numReg, '');
+        return calories >= funnel
+    })
+
+    return [saladRank, smoothiesRank]
+});
+
+function filterByRepetition(arrays: MenuItem[][]): MenuItem[] {
+    const countMap = new Map<MenuItem, number>();
+
+    arrays.flat().forEach(item => {
+        countMap.set(item, (countMap.get(item) || 0) + 1);
+    });
+
+    return Array.from(countMap).filter(([item, count]) => count > 2).map(([item]) => item);
 }
-function sortSimilarity(targetArr: string[], DBarr: string[]) {
-    return targetArr.map((item) => {
-        return {
-            item,
-            score: cal_Similarity(targetArr, DBarr)
-        }
-    }).sort((a, b) => a.score - b.score).map((item) => item.item)
-}
 
-// const ingredientsRank = computed(() => {
-//     if (!QNR_result.value.ingredients) return;
+const finalSaladRank = computed(() => {
+    const allSaladRanks = [
+        genderRank.value[0] || [],
+        ageRank.value?.[0] || [],
+        habitRank.value?.[0] || [],
+        flavorRank.value?.[0] || [],
+        ingredientsRank.value?.[0] || [],
+        foodRank.value?.[0] || [],
+        caloriesRank.value?.[0] || [],
+    ];
 
-//     const ingredients = QNR_result.value.ingredients;
+    return filterByRepetition(allSaladRanks);
+});
 
-//     const saladRank = saladList.value.filter((item) => {
-//         ingredients.forEach((params) => {
-
-//         })
-//     })
-
-//     const smoothiesRank = smoothieList.value.filter((item) => {
-//     })
-
-//     return [saladRank, smoothiesRank]
-// });
-
-
-
-const showSalad = computed(() => {
-    return habitRank.value
-})
-
-watch(showSalad, (nv) => {
+watch(finalSaladRank, (nv) => {
     console.log(nv);
 }, { deep: true })
 
