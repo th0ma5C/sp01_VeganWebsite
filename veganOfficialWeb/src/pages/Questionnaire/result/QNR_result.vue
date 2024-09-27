@@ -12,14 +12,10 @@
             </h1>
 
             <div class="gptRes">
-                <div>
-                    <!-- <h2>營養建議</h2> -->
-                    <!-- <p>鷹村先生，根據您選擇的完全素食飲食習慣、清爽的口味偏好，以及Omega-3、抗氧化物、維生素的需求，我們為您提供以下建議： -->
-                    <!-- </p> -->
-                    <div v-for="(line, index) in displayedText"
-                        :key="index">
-                        <p v-html="line"></p>
-                    </div>
+                <div class="content">
+                    <h2>營養建議</h2>
+                    <p>鷹村先生，根據您選擇的完全素食飲食習慣、清爽的口味偏好，以及Omega-3、抗氧化物、維生素的需求，我們為您提供以下建議：
+                    </p>
                     <h2>營養分析</h2>
                     <ul>
                         <li><strong>Omega-3：</strong>由於完全素食者無法從魚類中攝取Omega-3，建議您多攝取亞麻籽、奇亞籽和南瓜籽這類植物來源的Omega-3脂肪酸，對心血管健康非常有益。
@@ -44,24 +40,39 @@
                 </div>
             </div>
 
-            <div class="content">
+            <div class="guideContent">
                 根據分析結果，推薦以下搭配給您~
             </div>
         </div>
 
-        <div class="recommendList" v-if="rankComplete">
-            <div class="salad">
-                <Product_template
-                    v-for="(item, index) in saladRank"
-                    :key="index" :item="item">
-                </Product_template>
+        <div class="recommendList">
+            <div class="salad" ref="saladContainer" :style="{
+                opacity: showSaladContainer ? 1 : 0
+            }">
+                <transition-group name="listSlideUp">
+                    <Product_template
+                        v-for="(item, index) in saladRank"
+                        :key="index" :item="item" :style="{
+                            transitionDelay: index * 150 + 'ms',
+                        }"
+                        v-show="rankComplete && showSaladContainer">
+                    </Product_template>
+                </transition-group>
             </div>
 
-            <div class="smoothies">
-                <Product_template
-                    v-for="(item, index) in smoothiesRank"
-                    :key="index" :item="item">
-                </Product_template>
+            <div class="smoothies" ref="smoothiesContainer"
+                :style="{
+                    opacity: showSmoothiesContainer ? 1 : 0
+                }">
+                <transition-group name="listSlideUp">
+                    <Product_template
+                        v-for="(item, index) in smoothiesRank"
+                        :key="index" :item="item" :style="{
+                            transitionDelay: index * 150 + 'ms',
+                        }"
+                        v-show="rankComplete && showSmoothiesContainer">
+                    </Product_template>
+                </transition-group>
             </div>
         </div>
 
@@ -82,7 +93,7 @@
 import Product_template from '@/components/Product/Product_template.vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { useMenuStore } from '@/store/menuStore';
-import { ref, onMounted, watch, computed, reactive } from 'vue';
+import { ref, onMounted, watch, computed, reactive, nextTick } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
@@ -231,10 +242,18 @@ const caloriesRank = computed(() => {
 
 function findRecommend(arrays: MenuItem[][]): MenuItem[] {
     const countMap = new Map<MenuItem, number>();
+    const threshold = 1;
 
     arrays.flat().forEach(item => {
         countMap.set(item, (countMap.get(item) || 0) + 1);
     });
+
+    function getResult() {
+        return Array.from(countMap).filter(([item, count]) => count > threshold);
+    }
+
+    const result = getResult();
+    // console.log(result.length);
 
     return Array.from(countMap).filter(([item, count]) => count > 3).map(([item]) => item);
 }
@@ -278,6 +297,60 @@ watch([saladRank, smoothiesRank], (nVal) => {
     }
 }, { immediate: true })
 
+// 顯示動畫
+const saladContainer = ref<null | HTMLDivElement>(null);
+const smoothiesContainer = ref<null | HTMLDivElement>(null);
+const showSaladContainer = ref(false);
+const showSmoothiesContainer = ref(false);
+
+function observer(target: HTMLElement, options?: IntersectionObserverInit) {
+    function observerCb(entries: IntersectionObserverEntry[], observer: IntersectionObserver) {
+        console.log(entries);
+        entries.forEach((item) => {
+            // console.dir(window.getComputedStyle(item.target).transitionDelay);
+            if (item.boundingClientRect.height == 0 || !item.isIntersecting) return
+            if (item.target.classList.contains('salad')) {
+                showSaladContainer.value = true;
+            } else if (item.target.classList.contains('smoothies')) {
+                showSmoothiesContainer.value = true;
+            }
+        })
+    }
+
+    const observer = new IntersectionObserver(observerCb, options);
+
+    observer.observe(target)
+}
+
+// function setObserver() {
+//     if (!saladContainer.value || !smoothiesContainer.value) return
+
+//     const options = (position?: number) => ({
+//         root: null,
+//         rootMargin: "0px 0px 0px 0px",
+//         threshold: 0.3,
+//     })
+//     observer(saladContainer.value, options());
+
+//     observer(smoothiesContainer.value, options());
+// }
+
+watch([saladContainer, smoothiesContainer], ([nVal1, nVal2]) => {
+    if (!nVal1 || !nVal2) return
+    const options = (position?: number) => ({
+        root: null,
+        rootMargin: "0px 0px 0px 0px",
+        threshold: 0.3,
+    })
+    observer(nVal1, options());
+
+    observer(nVal2, options());
+})
+// watch([saladRank, foo], (nVal) => {
+//     console.log(rankComplete.value);
+//     console.log(nVal);
+// }, { immediate: true })
+
 
 // 重新測驗
 const Router = useRouter();
@@ -287,29 +360,12 @@ function retest() {
 }
 
 // 打字效果
-const gptRes = ref([
-    '<h2>營養建議</h2>',
-    '<p>鷹村先生，根據您選擇的完全素食飲食習慣、清爽的口味偏好，以及Omega-3、抗氧化物、維生素的需求，我們為您提供以下建議：</p>',
-])
-
-const displayedText = ref<string[]>([]); // 用來逐行顯示的文字
-
-// 模擬逐行顯示的效果
-const displayLines = async () => {
-    for (let i = 0; i < gptRes.value.length; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // 每行延遲1秒
-        const text = gptRes.value[i].split('')
-        for (let j = 0; j < text.length; j++) {
-            displayedText.value.push(text[j]); // 推入已顯示的行
-        }
-    }
-};
 
 
 // 生命週期
 onMounted(() => {
-    displayLines();
     // console.log(questionnaireStore.QNR_result.info);
+    // setObserver();
 })
 
 
@@ -317,7 +373,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 * {
-    // outline: 1px solid black;
+    outline: 1px solid black;
 }
 
 .resultContainer {
@@ -344,6 +400,7 @@ onMounted(() => {
     }
 }
 
+
 .topText {
     margin-top: 3rem;
     text-align: center;
@@ -352,8 +409,6 @@ onMounted(() => {
         font-size: 2rem;
         font-weight: 600;
     }
-
-
 
     .gptRes {
         border: 1px solid black;
@@ -364,7 +419,7 @@ onMounted(() => {
         padding: 1rem;
     }
 
-    .gptRes>div {
+    .content {
         display: flex;
         justify-content: center;
         flex-direction: column;
@@ -387,18 +442,32 @@ onMounted(() => {
         }
     }
 
-    .content {
+    .guideContent {
         margin-top: 1rem;
         font-size: 1.5rem;
         font-variation-settings: 'wght' 500;
     }
 }
 
+@keyframes slideUp {
+    from {
+        opacity: .5;
+        transform: translateY(10%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .recommendList {
     &>div {
+        min-height: 400px;
         display: flex;
         justify-content: center;
         align-items: center;
+        flex-wrap: wrap;
         gap: 1.5rem;
         margin-top: 3rem;
     }
@@ -407,4 +476,21 @@ onMounted(() => {
 .salad {}
 
 .viewCart {}
+
+.listSlideUp-enter-active,
+.listSlideUp-leave-active {
+    transition: transform .3s ease, opacity .3s ease;
+}
+
+.listSlideUp-enter-from,
+.listSlideUp-leave-to {
+    opacity: 0;
+    transform: translateY(10%);
+}
+
+.listSlideUp-enter-to,
+.listSlideUp-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+}
 </style>
