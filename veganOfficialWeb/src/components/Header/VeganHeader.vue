@@ -33,7 +33,8 @@
     </div>
 
     <div v-else>
-        <header class="QNR_header" ref="header">
+        <header class="QNR_header" ref="header"
+            :class="{ 'hideNav': hideNav }">
             <router-link :to="{ name: 'Home' }">
                 <SvgIcon name="Logo" height="65px"
                     color="black">
@@ -185,6 +186,7 @@ onBeforeUnmount(() => {
     @extend %container;
     border-bottom: none;
     width: 100%;
+    transition: all 0.2s linear;
 
     a {
         display: block;

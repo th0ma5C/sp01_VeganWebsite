@@ -41,11 +41,61 @@
             </div>
 
             <div class="guideContent">
-                根據分析結果，推薦以下搭配給您~
+                根據分析結果，推薦以下最佳搭配給您~
             </div>
         </div>
 
+        <!-- <div class="recommendList">
+            <div class="salad" ref="saladContainer">
+                <swiper-container effect="cards"
+                    grab-cursor="true">
+                    <swiper-slide
+                        v-for="(item, index) in saladRank"
+                        :key="index">
+                        <Product_template :item="item"
+                            v-show="rankComplete">
+                        </Product_template>
+                    </swiper-slide>
+                </swiper-container>
+            </div>
+
+            <div class="smoothies" ref="smoothiesContainer">
+                <swiper-container effect="cards"
+                    grab-cursor="true">
+                    <swiper-slide
+                        v-for="(item, index) in smoothiesRank"
+                        :key="index">
+                        <Product_template :item="item"
+                            v-show="rankComplete">
+                        </Product_template>
+                    </swiper-slide>
+                </swiper-container>
+            </div>
+        </div> -->
         <div class="recommendList">
+            <div class="bestComb">
+                <Product_template :item="saladRank[0]"
+                    :style="{
+                        // transitionDelay: index * 50 + 'ms',
+                    }"
+                    v-show="rankComplete && showSaladContainer">
+                </Product_template>
+
+                <Product_template :item="smoothiesRank[0]"
+                    :style="{
+                        // transitionDelay: index * 50 + 'ms',
+                    }"
+                    v-show="rankComplete && showSaladContainer">
+                </Product_template>
+            </div>
+
+            <div class="divider">
+                <h2>
+                    你可能也會喜歡
+                </h2>
+            </div>
+
+
             <div class="salad" ref="saladContainer" :style="{
                 opacity: showSaladContainer ? 1 : 0
             }">
@@ -53,7 +103,7 @@
                     <Product_template
                         v-for="(item, index) in saladRank"
                         :key="index" :item="item" :style="{
-                            transitionDelay: index * 150 + 'ms',
+                            transitionDelay: index * 50 + 'ms',
                         }"
                         v-show="rankComplete && showSaladContainer">
                     </Product_template>
@@ -68,7 +118,7 @@
                     <Product_template
                         v-for="(item, index) in smoothiesRank"
                         :key="index" :item="item" :style="{
-                            transitionDelay: index * 150 + 'ms',
+                            transitionDelay: index * 50 + 'ms',
                         }"
                         v-show="rankComplete && showSmoothiesContainer">
                     </Product_template>
@@ -76,17 +126,34 @@
             </div>
         </div>
 
-        <button class="viewCart">
-            查看購物車
-        </button>
+        <div class="viewBtnWrapper" ref="viewBtnWrapper">
+            <button @click="Foo"
+                style="opacity: 1;">FOO</button>
+            <button class="viewCart" ref="mainViewCart"
+                :style="{
+                    // opacity: showMainCart ? 1 : 0
+                }">
+                查看購物車
+            </button>
+
+            <button class="sideViewCart" ref="sideViewCart"
+                :style="{
+                    // opacity: showMainCart ? 0 : 1
+                }">
+                <SvgIcon name="Cart" width="40px"
+                    height="40px">
+                </SvgIcon>
+            </button>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
 /**
  * todo: 結果頁面樣式 完成表單功能 會員 購物車 關於
- * doing 數據太多或太少的情況
- * ?重新整理頁面、數據會消失
+ * doing 數據太多或太少的情況 
+ * 改用swiper card?
+ * //?重新整理頁面、數據會消失 
  * ?結果本地儲存
  */
 
@@ -98,6 +165,7 @@ import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import type { MenuItem } from '@/api/menu/type';
+import gsap from 'gsap';
 
 // questionnaireStore
 const questionnaireStore = useQuestionnaireStore();
@@ -242,20 +310,30 @@ const caloriesRank = computed(() => {
 
 function findRecommend(arrays: MenuItem[][]): MenuItem[] {
     const countMap = new Map<MenuItem, number>();
-    const threshold = 1;
+    let threshold = 1;
 
     arrays.flat().forEach(item => {
         countMap.set(item, (countMap.get(item) || 0) + 1);
     });
 
     function getResult() {
-        return Array.from(countMap).filter(([item, count]) => count > threshold);
+        const list = Array.from(countMap)
+            .filter(([item, count]) => count > threshold)
+            .sort((a, b) => b[1] - a[1]);
+
+        if (list.length > 6) {
+            threshold++;
+            return getResult();
+        }
+
+        return list;
     }
 
-    const result = getResult();
-    // console.log(result.length);
 
-    return Array.from(countMap).filter(([item, count]) => count > 3).map(([item]) => item);
+    let result = getResult();
+    console.log(result);
+
+    return result.map(([item]) => item);
 }
 
 const saladRank = computed(() => {
@@ -361,9 +439,69 @@ function retest() {
 
 // 打字效果
 
+// 按鈕變形
+const mainViewCart = ref();
+const sideViewCart = ref();
+const viewBtnWrapper = ref();
+const showMainCart = ref(false);
 
+function Foo() {
+    switch (showMainCart.value) {
+        case true:
+            // nextTick(() => {
+            switchToSide()
+            // })
+            break;
+
+        case false:
+            // nextTick(() => {
+            switchToMain()
+            // })
+            break;
+
+        default:
+            break;
+    }
+    showMainCart.value = !showMainCart.value;
+}
+
+// 切換到側邊小按鈕
+const switchToSide = () => {
+
+    const tl = gsap.timeline();
+    tl.to(mainViewCart.value, {
+        duration: .3,
+        xPercent: 300,
+        scale: 0,
+        opacity: 0,
+        onComplete: () => {
+            tl.fromTo(sideViewCart.value,
+                { scale: 0, opacity: 0 },
+                { scale: 1, opacity: 1, duration: .3 }
+            );
+        }
+    });
+};
+
+// 切換回大按鈕
+const switchToMain = () => {
+    const tl = gsap.timeline();
+    tl.to(sideViewCart.value, {
+        duration: .3,
+        scale: 0,
+        opacity: 0,
+        onComplete: () => {
+            // showMainCart.value = true;
+            tl.fromTo(mainViewCart.value,
+                { scale: 0, opacity: 0, xPercent: 300 },
+                { scale: 1, opacity: 1, xPercent: 0, duration: .3 }
+            );
+        }
+    });
+};
 // 生命週期
 onMounted(() => {
+    switchToSide()
     // console.log(questionnaireStore.QNR_result.info);
     // setObserver();
 })
@@ -373,7 +511,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 * {
-    outline: 1px solid black;
+    // outline: 1px solid black;
 }
 
 .resultContainer {
@@ -462,20 +600,116 @@ onMounted(() => {
 }
 
 .recommendList {
+    margin-bottom: calc(5% + 40px + 4rem);
+    // display: flex;
+    // justify-content: center;
+    // gap: 6rem;
+
+    // swiper-slide {
+    //     background-color: $primaryBacColor;
+    //     border-radius: 2.5rem 2.5rem 1rem 1rem;
+    //     border: 2px solid green;
+
+    //     .item div:has(button) {
+    //         background-color: red;
+
+    //     }
+
+    //     .btnWrapper {
+    //         background-color: red;
+    //     }
+    // }
+
     &>div {
-        min-height: 400px;
+        margin-top: 3rem;
+        // width: 250px;
+
+
+        // & :deep(.btnWrapper) {
+        //     box-shadow: none;
+        // }
+    }
+
+    .bestComb {
+        @include flex-center-center;
+        gap: 2rem;
+    }
+
+    .divider {
         display: flex;
         justify-content: center;
         align-items: center;
+        overflow: hidden;
+
+        h2 {
+            font-size: 1.25rem;
+            // transform: translateX(-5%);
+            background-color: $primaryBacColor;
+            position: relative;
+        }
+
+        & ::after,
+        & ::before {
+            content: '';
+            width: 40vw;
+            height: 2px;
+            background-color: green;
+            position: absolute;
+            left: calc(-40vw - 2rem);
+            top: 50%;
+            margin: 0 1rem;
+        }
+
+        & ::after {
+            left: 100%;
+        }
+    }
+
+    .salad,
+    .smoothies {
+        @include flex-center-center;
+        min-height: 400px;
         flex-wrap: wrap;
-        gap: 1.5rem;
-        margin-top: 3rem;
+        gap: 2rem;
+        padding: 0 3rem;
     }
 }
 
-.salad {}
+.viewBtnWrapper {
+    width: 100%;
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    bottom: 5%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
 
-.viewCart {}
+    &>button {
+        background-color: $btnBacColor;
+        color: $primaryBacColor;
+        overflow: hidden;
+        opacity: 0;
+        // transform-origin: center center;
+    }
+}
+
+.sideViewCart {
+    border: 1px solid black;
+    border-radius: 40px;
+    padding: .5rem;
+    position: absolute;
+    right: 2%;
+}
+
+.viewCart {
+    @include WnH(300px, 40px);
+    border: 1px solid black;
+    border-radius: 20px;
+    margin: 0 auto;
+}
 
 .listSlideUp-enter-active,
 .listSlideUp-leave-active {
