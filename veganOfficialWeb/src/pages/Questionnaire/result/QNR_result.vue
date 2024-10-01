@@ -128,7 +128,7 @@
 
         <div class="viewBtnWrapper" ref="viewBtnWrapper">
             <button @click="Foo"
-                style="opacity: 1;">FOO</button>
+                style="opacity: 1; position: absolute;left: 0;">FOO</button>
             <button class="viewCart" ref="mainViewCart"
                 :style="{
                     // opacity: showMainCart ? 1 : 0
@@ -166,6 +166,7 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import type { MenuItem } from '@/api/menu/type';
 import gsap from 'gsap';
+import useListener from '@/hooks/useListener';
 
 // questionnaireStore
 const questionnaireStore = useQuestionnaireStore();
@@ -331,7 +332,7 @@ function findRecommend(arrays: MenuItem[][]): MenuItem[] {
 
 
     let result = getResult();
-    console.log(result);
+    // console.log(result);
 
     return result.map(([item]) => item);
 }
@@ -383,7 +384,7 @@ const showSmoothiesContainer = ref(false);
 
 function observer(target: HTMLElement, options?: IntersectionObserverInit) {
     function observerCb(entries: IntersectionObserverEntry[], observer: IntersectionObserver) {
-        console.log(entries);
+        // console.log(entries);
         entries.forEach((item) => {
             // console.dir(window.getComputedStyle(item.target).transitionDelay);
             if (item.boundingClientRect.height == 0 || !item.isIntersecting) return
@@ -442,7 +443,8 @@ function retest() {
 // 按鈕變形
 const mainViewCart = ref();
 const sideViewCart = ref();
-const viewBtnWrapper = ref();
+const viewBtnWrapper = ref<HTMLDivElement>();
+const switchDis = ref(0);
 const showMainCart = ref(false);
 
 function Foo() {
@@ -465,13 +467,32 @@ function Foo() {
     showMainCart.value = !showMainCart.value;
 }
 
+
+function getElRect(target: HTMLElement) {
+    return target.getBoundingClientRect()
+}
+
+function updateSwitchDis() {
+    if (viewBtnWrapper.value) {
+        const rect = getElRect(viewBtnWrapper.value);
+        switchDis.value = Math.floor(rect.width * 0.48) - 180;
+    }
+}
+
+watch(viewBtnWrapper, (nVal) => {
+    if (!nVal) return
+    updateSwitchDis()
+})
+
+// const setListener = useListener()
+
 // 切換到側邊小按鈕
 const switchToSide = () => {
-
     const tl = gsap.timeline();
     tl.to(mainViewCart.value, {
-        duration: .3,
-        xPercent: 300,
+        duration: .5,
+        x: switchDis.value,
+        // xPercent: 300,
         scale: 0,
         opacity: 0,
         onComplete: () => {
@@ -491,17 +512,20 @@ const switchToMain = () => {
         scale: 0,
         opacity: 0,
         onComplete: () => {
-            // showMainCart.value = true;
             tl.fromTo(mainViewCart.value,
-                { scale: 0, opacity: 0, xPercent: 300 },
-                { scale: 1, opacity: 1, xPercent: 0, duration: .3 }
+                { scale: 0, opacity: 0, x: switchDis.value },
+                { scale: 1, opacity: 1, x: 0, duration: .5 }
             );
         }
     });
 };
 // 生命週期
 onMounted(() => {
-    switchToSide()
+    switchToSide();
+    nextTick(() => {
+        //     switchDis.value = getElRect(viewBtnWrapper.value!);
+        console.log(sideViewCart.value.getBoundingClientRect());
+    })
     // console.log(questionnaireStore.QNR_result.info);
     // setObserver();
 })
@@ -692,7 +716,6 @@ onMounted(() => {
         color: $primaryBacColor;
         overflow: hidden;
         opacity: 0;
-        // transform-origin: center center;
     }
 }
 
@@ -705,10 +728,11 @@ onMounted(() => {
 }
 
 .viewCart {
-    @include WnH(300px, 40px);
+    @include WnH(300px, 48px);
     border: 1px solid black;
     border-radius: 20px;
     margin: 0 auto;
+    transform-origin: right;
 }
 
 .listSlideUp-enter-active,
