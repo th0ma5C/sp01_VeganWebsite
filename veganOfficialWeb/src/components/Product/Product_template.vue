@@ -50,15 +50,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, toRefs } from 'vue';
+import { ref, nextTick } from 'vue';
 import type { MenuItem } from '@/api/menu/type';
 import { useRouter } from 'vue-router';
 import { useMenuStore } from '@/store/menuStore';
 import { storeToRefs } from 'pinia';
 
 //接收菜單數據 
-const props = defineProps<{ item: MenuItem }>();
-const { item } = toRefs(props);
+const { item } = defineProps<{ item: MenuItem }>();
 
 // const MenuStore = useMenuStore();
 // MenuStore.$subscribe((_, state) => {

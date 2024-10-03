@@ -1,5 +1,5 @@
 <template>
-    <div class="resultContainer">
+    <div class="resultContainer" ref="resultContainer">
         <div class="restart">
             <button @click="retest">重新測驗</button>
         </div>
@@ -72,8 +72,8 @@
                 </swiper-container>
             </div>
         </div> -->
-        <div class="recommendList">
-            <div class="bestComb">
+        <div class="recommendList" ref="recommendList">
+            <div class="bestComb" ref="bestCombContainer">
                 <Product_template :item="saladRank[0]"
                     :style="{
                         // transitionDelay: index * 50 + 'ms',
@@ -127,6 +127,24 @@
         </div>
 
         <div class="viewBtnWrapper" ref="viewBtnWrapper">
+            <button @click="switchViewCartBtn"
+                style="opacity: 1; position: absolute;left: 0;">FOO</button>
+            <button class="cartBtn" ref="viewCart">
+                <transition-group name="cartBtn">
+                    <span class="main" key="0"
+                        v-show="showMainCart">
+                        查看購物車
+                    </span>
+                    <span class="side" key="1"
+                        v-show="!showMainCart">
+                        <SvgIcon name="Cart" width="36px"
+                            height="36px">
+                        </SvgIcon>
+                    </span>
+                </transition-group>
+            </button>
+        </div>
+        <!-- <div class="viewBtnWrapper" ref="viewBtnWrapper">
             <button @click="Foo"
                 style="opacity: 1; position: absolute;left: 0;">FOO</button>
             <button class="viewCart" ref="mainViewCart"
@@ -144,13 +162,13 @@
                     height="40px">
                 </SvgIcon>
             </button>
-        </div>
+        </div> -->
     </div>
 </template>
 
 <script setup lang="ts">
 /**
- * todo: 結果頁面樣式 完成表單功能 會員 購物車 關於
+ * todo: 結果頁面樣式 完成表單功能 登入 會員 購物車 關於
  * doing 數據太多或太少的情況 
  * 改用swiper card?
  * //?重新整理頁面、數據會消失 
@@ -166,6 +184,7 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import type { MenuItem } from '@/api/menu/type';
 import gsap from 'gsap';
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import useListener from '@/hooks/useListener';
 
 // questionnaireStore
@@ -377,8 +396,10 @@ watch([saladRank, smoothiesRank], (nVal) => {
 }, { immediate: true })
 
 // 顯示動畫
+const bestCombContainer = ref<null | HTMLDivElement>(null);
 const saladContainer = ref<null | HTMLDivElement>(null);
 const smoothiesContainer = ref<null | HTMLDivElement>(null);
+const showBestCombContainer = ref(false);
 const showSaladContainer = ref(false);
 const showSmoothiesContainer = ref(false);
 
@@ -401,19 +422,6 @@ function observer(target: HTMLElement, options?: IntersectionObserverInit) {
     observer.observe(target)
 }
 
-// function setObserver() {
-//     if (!saladContainer.value || !smoothiesContainer.value) return
-
-//     const options = (position?: number) => ({
-//         root: null,
-//         rootMargin: "0px 0px 0px 0px",
-//         threshold: 0.3,
-//     })
-//     observer(saladContainer.value, options());
-
-//     observer(smoothiesContainer.value, options());
-// }
-
 watch([saladContainer, smoothiesContainer], ([nVal1, nVal2]) => {
     if (!nVal1 || !nVal2) return
     const options = (position?: number) => ({
@@ -425,10 +433,13 @@ watch([saladContainer, smoothiesContainer], ([nVal1, nVal2]) => {
 
     observer(nVal2, options());
 })
-// watch([saladRank, foo], (nVal) => {
-//     console.log(rankComplete.value);
-//     console.log(nVal);
-// }, { immediate: true })
+
+/**
+ * 用GSAP stagger製作
+ */
+function createListScrollTrigger() {
+
+}
 
 
 // 重新測驗
@@ -441,92 +452,87 @@ function retest() {
 // 打字效果
 
 // 按鈕變形
-const mainViewCart = ref();
-const sideViewCart = ref();
-const viewBtnWrapper = ref<HTMLDivElement>();
-const switchDis = ref(0);
-const showMainCart = ref(false);
+const viewCart = ref();
+const showMainCart = ref(true);
+const resultContainer = ref<HTMLElement>();
+gsap.registerPlugin(ScrollTrigger);
 
-function Foo() {
-    switch (showMainCart.value) {
-        case true:
-            // nextTick(() => {
-            switchToSide()
-            // })
-            break;
-
-        case false:
-            // nextTick(() => {
-            switchToMain()
-            // })
-            break;
-
-        default:
-            break;
-    }
+function switchViewCartBtn() {
     showMainCart.value = !showMainCart.value;
-}
 
-
-function getElRect(target: HTMLElement) {
-    return target.getBoundingClientRect()
-}
-
-function updateSwitchDis() {
-    if (viewBtnWrapper.value) {
-        const rect = getElRect(viewBtnWrapper.value);
-        switchDis.value = Math.floor(rect.width * 0.48) - 180;
+    if (showMainCart.value) {
+        gsap.to(
+            viewCart.value, {
+            width: 300,
+            height: 48,
+            ease: 'back.inOut',
+            duration: .75,
+            right: "0"
+        }
+        )
+    } else {
+        gsap.to(
+            viewCart.value, {
+            ease: 'back.inOut',
+            duration: .75,
+            width: 48,
+            height: 48,
+            // borderRadius: 30,
+            right: "-40%"
+        }
+        )
     }
 }
 
-watch(viewBtnWrapper, (nVal) => {
-    if (!nVal) return
-    updateSwitchDis()
-})
+function createViewCartScrollTrigger() {
+    ScrollTrigger.create({
+        trigger: resultContainer.value,
+        start: "bottom bottom",
+        onEnter: () => {
+            console.log('object');
+            showMainCart.value = !showMainCart.value;
 
-// const setListener = useListener()
+            if (showMainCart.value) {
+                gsap.to(
+                    viewCart.value, {
+                    width: 300,
+                    height: 48,
+                    ease: 'back.inOut',
+                    duration: .75,
+                    right: "0"
+                }
+                )
+            } else {
+                gsap.to(
+                    viewCart.value, {
+                    ease: 'back.inOut',
+                    duration: .75,
+                    width: 48,
+                    height: 48,
+                    // borderRadius: 30,
+                    right: "-40%"
+                }
+                )
+            }
+        },
+        onLeaveBack: () => {
+            switchViewCartBtn()
+        },
+        scrub: false,
+    })
+}
 
-// 切換到側邊小按鈕
-const switchToSide = () => {
-    const tl = gsap.timeline();
-    tl.to(mainViewCart.value, {
-        duration: .5,
-        x: switchDis.value,
-        // xPercent: 300,
-        scale: 0,
-        opacity: 0,
-        onComplete: () => {
-            tl.fromTo(sideViewCart.value,
-                { scale: 0, opacity: 0 },
-                { scale: 1, opacity: 1, duration: .3 }
-            );
-        }
-    });
-};
 
-// 切換回大按鈕
-const switchToMain = () => {
-    const tl = gsap.timeline();
-    tl.to(sideViewCart.value, {
-        duration: .3,
-        scale: 0,
-        opacity: 0,
-        onComplete: () => {
-            tl.fromTo(mainViewCart.value,
-                { scale: 0, opacity: 0, x: switchDis.value },
-                { scale: 1, opacity: 1, x: 0, duration: .5 }
-            );
-        }
-    });
-};
 // 生命週期
 onMounted(() => {
-    switchToSide();
+    setTimeout(() => {
+        switchViewCartBtn()
+    }, 1000);
+
     nextTick(() => {
-        //     switchDis.value = getElRect(viewBtnWrapper.value!);
-        console.log(sideViewCart.value.getBoundingClientRect());
-    })
-    // console.log(questionnaireStore.QNR_result.info);
+        createViewCartScrollTrigger();
+    });
+
     // setObserver();
 })
 
@@ -624,7 +630,7 @@ onMounted(() => {
 }
 
 .recommendList {
-    margin-bottom: calc(5% + 40px + 4rem);
+    margin-bottom: calc(5% + 48px + 3rem);
     // display: flex;
     // justify-content: center;
     // gap: 6rem;
@@ -656,6 +662,7 @@ onMounted(() => {
 
     .bestComb {
         @include flex-center-center;
+        min-height: 400px;
         gap: 2rem;
     }
 
@@ -703,37 +710,90 @@ onMounted(() => {
     width: 100%;
     font-size: 1.5rem;
     display: flex;
-    justify-content: space-between;
+    // justify-content: space-between;
     align-items: center;
     position: fixed;
-    bottom: 5%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    bottom: 7%;
+    // left: 50%;
+    // transform: translate(-50%, -50%);
     z-index: 10;
+    animation: initCart .3s ease forwards;
 
     &>button {
         background-color: $btnBacColor;
         color: $primaryBacColor;
         overflow: hidden;
-        opacity: 0;
+        // opacity: 0;
     }
 }
 
-.sideViewCart {
-    border: 1px solid black;
-    border-radius: 40px;
-    padding: .5rem;
-    position: absolute;
-    right: 2%;
+@keyframes initCart {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
-.viewCart {
-    @include WnH(300px, 48px);
-    border: 1px solid black;
-    border-radius: 20px;
+.cartBtn {
+    border-radius: 24px;
     margin: 0 auto;
+    position: relative;
     transform-origin: right;
+    box-shadow: 2px 2px 4px black;
+
+    span {
+        display: inline-block;
+    }
+
+    .main {
+        @include WnH(300px, 48px);
+        line-height: 48px;
+        text-wrap: nowrap;
+    }
+
+    .side {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
 }
+
+.cartBtn-enter-active,
+.cartBtn-leave-active {
+    transition: opacity .5s ease;
+}
+
+.cartBtn-enter-from,
+.cartBtn-leave-to {
+    opacity: 0;
+}
+
+.cartBtn-enter-to,
+.cartBtn-leave-from {
+    opacity: 1;
+}
+
+
+
+// .sideViewCart {
+//     border: 1px solid black;
+//     border-radius: 40px;
+//     padding: .5rem;
+//     position: absolute;
+//     right: 2%;
+// }
+
+// .viewCart {
+//     @include WnH(300px, 48px);
+//     border: 1px solid black;
+//     border-radius: 20px;
+//     margin: 0 auto;
+//     transform-origin: right;
+// }
 
 .listSlideUp-enter-active,
 .listSlideUp-leave-active {
