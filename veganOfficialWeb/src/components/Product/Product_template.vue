@@ -1,8 +1,8 @@
 <template>
-    <div class="item" ref="productEl">
-        <div :class="item.category == 'salad' ? 'menuImg' : 'smoothiesImg'
-            " @click="routerPush(item.name!)">
-            <img :src="item.fileName!" alt="商品">
+    <div class="item" ref="productEl" v-if="item">
+        <div :class="imgClass"
+            @click="routerPush(item.name ?? '')">
+            <img :src="item.fileName ?? ''" alt="商品">
             <p>{{ item.price }}元</p>
             <div class="description">
                 <span>{{ item.description }}</span>
@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, computed, watch } from 'vue';
 import type { MenuItem } from '@/api/menu/type';
 import { useRouter } from 'vue-router';
 import { useMenuStore } from '@/store/menuStore';
@@ -66,6 +66,9 @@ const { item } = defineProps<{ item: MenuItem }>();
 //         // console.log(name);
 //     }
 // })
+// watch(() => item, (nVal) => {
+//     console.log(nVal);
+// }, { immediate: true })
 
 // 提供DOM狀態
 let productEl = ref();
@@ -82,6 +85,11 @@ function routerPush(name: string, id?: string) {
         },
     })
 }
+
+// img class
+const imgClass = computed(() => {
+    return item.category == 'salad' ? 'menuImg' : 'smoothiesImg'
+})
 
 </script>
 

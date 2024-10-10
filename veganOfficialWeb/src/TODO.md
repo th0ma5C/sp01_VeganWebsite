@@ -34,10 +34,12 @@
     * 大視口時滑鼠高亮位置不對
     * 數據未返回時的骨架屏
 
-# pages--product
+# pages--menu
     TODO: IG API
 
-    ## 頁面縮放造成骨架屏樣式塌陷
+    ## product頁面縮放造成骨架屏樣式塌陷
+    ## product img hover圖示改放大鏡
+    ## menu頁篩選先顯示全部
 
 # components
     TODO: 右側會員popover區塊

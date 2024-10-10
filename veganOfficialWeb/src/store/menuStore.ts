@@ -108,7 +108,6 @@ export const useMenuStore = defineStore('menu', (() => {
 
             // console.log(fullMenu.value);
             isLoaded.value = true;
-
         } catch (error) {
             console.log(fetchMenu.name, 'failed');
             console.log(error);
@@ -190,13 +189,13 @@ export const useMenuStore = defineStore('menu', (() => {
         return result
     }
 
-    function init() {
-        if (isLoaded.value == false) {
-            fetchIngredients()
-            fetchMenu()
-        }
-    }
-    init();
+    // function init() {
+    //     if (isLoaded.value == false) {
+    //         fetchIngredients()
+    //         fetchMenu()
+    //     }
+    // }
+    // init();
 
 
     return {

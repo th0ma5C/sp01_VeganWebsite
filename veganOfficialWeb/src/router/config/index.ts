@@ -6,7 +6,7 @@ import About from '@pages/About/index.vue'
 import Cart from '@pages/Cart/index.vue'
 import Profile from '@pages/Profile/index.vue'
 import Product from "@/pages/Menu/product/Product.vue";
-import type { RouteLocationNormalized } from 'vue-router'
+import type { RouteLocationNormalized, NavigationGuardNext, NavigationGuardReturn } from 'vue-router'
 
 
 export default [
@@ -35,7 +35,11 @@ export default [
             {
                 path: 'result',
                 component: () => import('@/pages/Questionnaire/result/QNR_result.vue'),
-                // component: QNR_result,
+                // beforeEnter: () => {
+                //     if (!isLoaded.value) {
+                //         return { path: '/questionnaire' }
+                //     }
+                // }
             }
         ]
     },

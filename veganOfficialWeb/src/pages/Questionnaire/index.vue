@@ -223,7 +223,7 @@
  * --------------------
  * * 刷新後問卷會丟失 初步完成刷新不丟失
  * --------------------
- * ! 1440 1 2 題會滾動
+ * //! 1440 1 2 題會滾動 ==> 3 4題以外取消questionWrapper margin bottom
  * --------------------
  * ?是否需要儲存問題作答裝況
  * ?刷新不丟失放入store
@@ -233,7 +233,7 @@
  * //單選多選樣式
  */
 
-import { computed, onMounted, onUnmounted, reactive, ref, watch, nextTick, onBeforeUnmount } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, nextTick, onBeforeUnmount, shallowReactive, onBeforeMount } from 'vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
@@ -244,26 +244,39 @@ import { useMenuStore } from '@/store/menuStore';
 const loadingProgress = computed(() => ({
     background: `linear-gradient(to top, #00430b 0 ${loadingPercent.value}%, transparent ${loadingPercent.value + 1}%)`
 }));
-const loadingPercent = ref(50);
+const loadingPercent = ref(1);
 
 function loadingTimer() {
-    const looper = () => {
+    return new Promise<void>((resolve) => {
         const timer = setInterval(() => {
-            if (loadingPercent.value >= 100) {
+            if (loadingPercent.value < 30) {
+                loadingPercent.value += 0.1;
+            } else {
                 clearInterval(timer);
-                loadingPercent.value = 0;
-                looper();
+                resolve()
             }
-
-            loadingPercent.value += 0.1;
-            // console.log(loadingPercent.value);
         }, 10)
-    }
-    looper();
+    })
 };
 
-// loadingTimer();
+async function initQuestionnaire() {
+    // await loadingTimer();
+    await fetchQuestionnaire();
+    // loadingPercent.value = 50;
+    await initQNR();
+    // loadingPercent.value = 99;
+    if (QNR_isDone.value) {
+        // loadingPercent.value = 100;
+        // showResult();
+        // setTimeout(() => showResult(), 500);
+    }
+    // loadingPercent.value = 100;
 
+}
+
+// watch(loadingPercent, (nVal) => {
+//     console.log(nVal);
+// })
 
 // QNR_store
 const QuestionnaireStore = useQuestionnaireStore();
@@ -309,7 +322,7 @@ const QNR_form = reactive<Form>({
 });
 
 watch(QNR_form, (nVal) => {
-    console.log(nVal);
+    // console.log(nVal);
 })
 
 // 問卷答案蒐集
@@ -429,17 +442,19 @@ function page_QClass(index: number) {
 // }
 
 // menu 預載
-const { isLoaded, fetchMenu } = useMenuStore();
+const { isLoaded } = storeToRefs(useMenuStore());
+const { fetchMenu } = useMenuStore();
 
 // 路由
 const router = useRouter();
 async function showResult() {
     // if (currPage.value !== QNR_pagesCount.value) return;
-    if (!isLoaded) await fetchMenu();
+    if (!isLoaded.value) {
+        await fetchMenu();
+    }
     setQNR_result(mockData);
     QNR_isDone.value = true;
     setDataToStorage();
-
     router.push('/questionnaire/result');
 }
 const mockData = reactive({
@@ -481,17 +496,23 @@ function getDataFromStorage() {
     return data
 }
 
-function initQNR() {
-    const data = getDataFromStorage() as typeof QNR_state.value;
-    if (!data) return
-    let result;
-    ({
-        currPage: currPage.value,
-        result: result,
-        completed: QNR_isDone.value,
-    } = data);
-    formPageTranslateX.value = (currPage.value - 1) * -100;
-    setQNR_result(result);
+async function initQNR() {
+    return new Promise<void>((resolve) => {
+        const data = getDataFromStorage() as typeof QNR_state.value;
+        if (!data) return
+        let result;
+        ({
+            currPage: currPage.value,
+            result: result,
+            completed: QNR_isDone.value,
+        } = data);
+        formPageTranslateX.value = (currPage.value - 1) * -100;
+        setQNR_result(result);
+        Object.assign(QNR_form, { ...result });
+        resolve();
+    }).catch((err) => {
+        console.log(err);
+    })
 }
 
 watch(currPage, (nVal) => {
@@ -500,10 +521,13 @@ watch(currPage, (nVal) => {
     }
 })
 
+
 // 生命週期
 onMounted(() => {
-    fetchQuestionnaire();
-    initQNR()
+    // fetchQuestionnaire();
+    // initQNR();
+    initQuestionnaire();
+    // showResult()
 })
 
 onBeforeUnmount(() => {
@@ -830,6 +854,7 @@ $alertColor: #b3261e;
 
     :not(.Q3, .Q4)>.questionWrapper {
         height: 100%;
+        margin-bottom: 0;
     }
 
     .questionWrapper {

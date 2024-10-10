@@ -45,48 +45,19 @@
             </div>
         </div>
 
-        <!-- <div class="recommendList">
-            <div class="salad" ref="saladContainer">
-                <swiper-container effect="cards"
-                    grab-cursor="true">
-                    <swiper-slide
-                        v-for="(item, index) in saladRank"
-                        :key="index">
-                        <Product_template :item="item"
-                            v-show="rankComplete">
-                        </Product_template>
-                    </swiper-slide>
-                </swiper-container>
-            </div>
-
-            <div class="smoothies" ref="smoothiesContainer">
-                <swiper-container effect="cards"
-                    grab-cursor="true">
-                    <swiper-slide
-                        v-for="(item, index) in smoothiesRank"
-                        :key="index">
-                        <Product_template :item="item"
-                            v-show="rankComplete">
-                        </Product_template>
-                    </swiper-slide>
-                </swiper-container>
-            </div>
-        </div> -->
-        <div class="recommendList" ref="recommendList">
+        <div class="recommendList" ref="recommendList"
+            v-if="isLoaded">
             <div class="bestComb" ref="bestCombContainer">
-                <Product_template :item="saladRank[0]"
-                    :style="{
-                        // transitionDelay: index * 50 + 'ms',
-                    }"
-                    v-show="rankComplete && showSaladContainer">
-                </Product_template>
+                <transition-group name="bestComb">
+                    <Product_template :item="saladRank[0]"
+                        key="0" v-show="rankComplete">
+                    </Product_template>
 
-                <Product_template :item="smoothiesRank[0]"
-                    :style="{
-                        // transitionDelay: index * 50 + 'ms',
-                    }"
-                    v-show="rankComplete && showSaladContainer">
-                </Product_template>
+                    <Product_template
+                        :item="smoothiesRank[0]" key="1"
+                        v-show="rankComplete">
+                    </Product_template>
+                </transition-group>
             </div>
 
             <div class="divider">
@@ -96,39 +67,85 @@
             </div>
 
 
+            <!-- <div class="otherRecommend"
+                ref="otherRecommend">
+                <Product_template
+                    v-for="(item, index) in saladRank"
+                    :key="index" :item="item"
+                    v-show="rankComplete && index != 0">
+                </Product_template>
+                <Product_template
+                    v-for="(item, index) in smoothiesRank"
+                    :key="index" :item="item"
+                    v-show="rankComplete && index != 0">
+                </Product_template>
+            </div> -->
             <div class="salad" ref="saladContainer" :style="{
-                opacity: showSaladContainer ? 1 : 0
+                opacity: showRecommendList ? '1' : '0'
             }">
-                <transition-group name="listSlideUp">
-                    <Product_template
-                        v-for="(item, index) in saladRank"
-                        :key="index" :item="item" :style="{
-                            transitionDelay: index * 50 + 'ms',
-                        }"
-                        v-show="rankComplete && showSaladContainer">
-                    </Product_template>
-                </transition-group>
+                <Product_template
+                    v-for="(item, index) in saladRank"
+                    :key="index" :item="item"
+                    v-show="rankComplete && index != 0">
+                </Product_template>
             </div>
 
             <div class="smoothies" ref="smoothiesContainer"
                 :style="{
-                    opacity: showSmoothiesContainer ? 1 : 0
+                    opacity: showRecommendList ? '1' : '0'
                 }">
-                <transition-group name="listSlideUp">
-                    <Product_template
-                        v-for="(item, index) in smoothiesRank"
-                        :key="index" :item="item" :style="{
-                            transitionDelay: index * 50 + 'ms',
-                        }"
-                        v-show="rankComplete && showSmoothiesContainer">
-                    </Product_template>
-                </transition-group>
+                <Product_template
+                    v-for="(item, index) in smoothiesRank"
+                    :key="index" :item="item"
+                    v-show="rankComplete && index != 0">
+                </Product_template>
             </div>
+
+            <!-- <swiper-container class="foo" loop="true"
+                :breakpoints="{
+                    850: {
+                        slidesPerView: 1,
+                    },
+                    900: {
+                        slidesPerView: 2,
+                    },
+                    1300: {
+                        slidesPerView: 3,
+                    }
+                }">
+                <swiper-slide
+                    v-for="(item, index) in saladRank.slice(1)"
+                    :key="index"
+                    v-show="rankComplete && index != 0">
+                    <Product_template :item="item">
+                    </Product_template>
+                </swiper-slide>
+            </swiper-container>
+            <swiper-container class="foo" loop="true"
+                :breakpoints="{
+                    850: {
+                        slidesPerView: 1,
+                    },
+                    900: {
+                        slidesPerView: 2,
+                    },
+                    1300: {
+                        slidesPerView: 3,
+                    }
+                }">
+                <swiper-slide
+                    v-for="(item, index) in smoothiesRank"
+                    :key="index"
+                    v-show="rankComplete && index != 0">
+                    <Product_template :item="item">
+                    </Product_template>
+                </swiper-slide>
+            </swiper-container> -->
+
+
         </div>
 
         <div class="viewBtnWrapper" ref="viewBtnWrapper">
-            <button @click="switchViewCartBtn"
-                style="opacity: 1; position: absolute;left: 0;">FOO</button>
             <button class="cartBtn" ref="viewCart">
                 <transition-group name="cartBtn">
                     <span class="main" key="0"
@@ -144,41 +161,23 @@
                 </transition-group>
             </button>
         </div>
-        <!-- <div class="viewBtnWrapper" ref="viewBtnWrapper">
-            <button @click="Foo"
-                style="opacity: 1; position: absolute;left: 0;">FOO</button>
-            <button class="viewCart" ref="mainViewCart"
-                :style="{
-                    // opacity: showMainCart ? 1 : 0
-                }">
-                查看購物車
-            </button>
-
-            <button class="sideViewCart" ref="sideViewCart"
-                :style="{
-                    // opacity: showMainCart ? 0 : 1
-                }">
-                <SvgIcon name="Cart" width="40px"
-                    height="40px">
-                </SvgIcon>
-            </button>
-        </div> -->
     </div>
 </template>
 
 <script setup lang="ts">
 /**
- * todo: 結果頁面樣式 完成表單功能 登入 會員 購物車 關於
- * doing 數據太多或太少的情況 
- * 改用swiper card?
- * //?重新整理頁面、數據會消失 
+ * todo: 結果頁面樣式 加入購物車動畫 完成表單功能 登入 會員 購物車 關於
+ * doing 數據太多或太少的情況 and 樣式
+ * ----------------------------------
  * ?結果本地儲存
+ * ----------------------------------
+ * //?重新整理頁面、數據會消失 
  */
 
 import Product_template from '@/components/Product/Product_template.vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { useMenuStore } from '@/store/menuStore';
-import { ref, onMounted, watch, computed, reactive, nextTick } from 'vue';
+import { ref, onMounted, watch, computed, reactive, nextTick, onBeforeMount, watchEffect } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
@@ -341,17 +340,17 @@ function findRecommend(arrays: MenuItem[][]): MenuItem[] {
             .filter(([item, count]) => count > threshold)
             .sort((a, b) => b[1] - a[1]);
 
-        if (list.length > 6) {
-            threshold++;
-            return getResult();
-        }
+        // if (list.length > 6) {
+        //     threshold++;
+        //     return getResult();
+        // }
 
-        return list;
+        return list.slice(0, 6);
     }
 
 
     let result = getResult();
-    // console.log(result);
+    console.log(result);
 
     return result.map(([item]) => item);
 }
@@ -389,9 +388,11 @@ const smoothiesRank = computed(() => {
 
 const rankComplete = ref(false);
 watch([saladRank, smoothiesRank], (nVal) => {
-    // console.log(nVal);
     if (nVal.every(item => item.length > 1)) {
         rankComplete.value = true;
+        nextTick(() => {
+            ScrollTrigger.refresh();
+        })
     }
 }, { immediate: true })
 
@@ -402,43 +403,86 @@ const smoothiesContainer = ref<null | HTMLDivElement>(null);
 const showBestCombContainer = ref(false);
 const showSaladContainer = ref(false);
 const showSmoothiesContainer = ref(false);
+const showRecommendList = ref(false);
 
-function observer(target: HTMLElement, options?: IntersectionObserverInit) {
-    function observerCb(entries: IntersectionObserverEntry[], observer: IntersectionObserver) {
-        // console.log(entries);
-        entries.forEach((item) => {
-            // console.dir(window.getComputedStyle(item.target).transitionDelay);
-            if (item.boundingClientRect.height == 0 || !item.isIntersecting) return
-            if (item.target.classList.contains('salad')) {
-                showSaladContainer.value = true;
-            } else if (item.target.classList.contains('smoothies')) {
-                showSmoothiesContainer.value = true;
-            }
-        })
-    }
+//#region 
+// function observer(target: HTMLElement, options?: IntersectionObserverInit) {
+//     function observerCb(entries: IntersectionObserverEntry[], observer: IntersectionObserver) {
+//         // console.log(entries);
+//         entries.forEach((item) => {
+//             // console.dir(window.getComputedStyle(item.target).transitionDelay);
+//             if (item.boundingClientRect.height == 0 || !item.isIntersecting) return
+//             if (item.target.classList.contains('salad')) {
+//                 showSaladContainer.value = true;
+//             } else if (item.target.classList.contains('smoothies')) {
+//                 showSmoothiesContainer.value = true;
+//             }
+//         })
+//     }
 
-    const observer = new IntersectionObserver(observerCb, options);
+//     const observer = new IntersectionObserver(observerCb, options);
 
-    observer.observe(target)
-}
+//     observer.observe(target)
+// }
 
-watch([saladContainer, smoothiesContainer], ([nVal1, nVal2]) => {
-    if (!nVal1 || !nVal2) return
-    const options = (position?: number) => ({
-        root: null,
-        rootMargin: "0px 0px 0px 0px",
-        threshold: 0.3,
-    })
-    observer(nVal1, options());
+// watch([saladContainer, smoothiesContainer], ([nVal1, nVal2]) => {
+//     if (!nVal1 || !nVal2) return
+//     const options = (position?: number) => ({
+//         root: null,
+//         rootMargin: "0px 0px 0px 0px",
+//         threshold: 0.3,
+//     })
+//     observer(nVal1, options());
 
-    observer(nVal2, options());
-})
-
+//     observer(nVal2, options());
+// })
+//#endregion
 /**
  * 用GSAP stagger製作
  */
-function createListScrollTrigger() {
 
+function showListAnimate() {
+    if (!saladContainer.value || !smoothiesContainer.value) return
+    const tl = gsap.timeline();
+
+    tl.fromTo(saladContainer.value.children,
+        { opacity: 0, y: 50 },
+        { opacity: 1, y: 0, duration: 0.5, stagger: 0.1 }
+    );
+
+    tl.fromTo(smoothiesContainer.value.children,
+        { opacity: 0, y: 50 },
+        { opacity: 1, y: 0, duration: 0.5, stagger: 0.1 },
+        "+=0"  // 表示直接接續前面的動畫
+    );
+    // gsap.fromTo(saladContainer.value.children,
+    //     { opacity: 0, y: 50 },
+    //     {
+    //         opacity: 1, y: 0, duration: 0.5, stagger: 0.1,
+    //         onComplete: () => {
+    //             gsap.fromTo(smoothiesContainer.value!.children,
+    //                 { opacity: 0, y: 50 },
+    //                 { opacity: 1, y: 0, duration: 0.5, stagger: 0.1 }
+    //             )
+    //         }
+    //     }
+    // )
+    // gsap.set(smoothiesContainer.value!.children,
+    //     { opacity: 0, y: 50 }
+    // )
+}
+
+function createListScrollTrigger() {
+    ScrollTrigger.create({
+        trigger: saladContainer.value,
+        start: 'top bottom-=150px',
+        onEnter: () => {
+            showRecommendList.value = true;
+            showListAnimate();
+        },
+        // markers: true,
+        once: true
+    })
 }
 
 
@@ -449,9 +493,7 @@ function retest() {
     Router.back();
 }
 
-// 打字效果
-
-// 按鈕變形
+// 按鈕切換
 const viewCart = ref();
 const showMainCart = ref(true);
 const resultContainer = ref<HTMLElement>();
@@ -459,81 +501,81 @@ gsap.registerPlugin(ScrollTrigger);
 
 function switchViewCartBtn() {
     showMainCart.value = !showMainCart.value;
+    gsap.to(viewCart.value, {
+        opacity: 0,
+        duration: .3,
+        onComplete() {
+            if (!viewCart.value) return
+            if (showMainCart.value) {
+                gsap.set(viewCart.value, {
+                    width: 300,
+                    height: 48,
+                    right: "0"
+                });
+            } else {
+                gsap.set(viewCart.value, {
+                    width: 48,
+                    height: 48,
+                    right: "-40%"
+                });
+            }
 
-    if (showMainCart.value) {
-        gsap.to(
-            viewCart.value, {
-            width: 300,
-            height: 48,
-            ease: 'back.inOut',
-            duration: .75,
-            right: "0"
+            gsap.to(viewCart.value, {
+                opacity: 1,
+                duration: .3,
+                ease: 'power4.out'
+            });
         }
-        )
-    } else {
-        gsap.to(
-            viewCart.value, {
-            ease: 'back.inOut',
-            duration: .75,
-            width: 48,
-            height: 48,
-            // borderRadius: 30,
-            right: "-40%"
-        }
-        )
-    }
+    });
 }
 
 function createViewCartScrollTrigger() {
     ScrollTrigger.create({
         trigger: resultContainer.value,
-        start: "bottom bottom",
-        onEnter: () => {
-            console.log('object');
-            showMainCart.value = !showMainCart.value;
-
-            if (showMainCart.value) {
-                gsap.to(
-                    viewCart.value, {
-                    width: 300,
-                    height: 48,
-                    ease: 'back.inOut',
-                    duration: .75,
-                    right: "0"
-                }
-                )
-            } else {
-                gsap.to(
-                    viewCart.value, {
-                    ease: 'back.inOut',
-                    duration: .75,
-                    width: 48,
-                    height: 48,
-                    // borderRadius: 30,
-                    right: "-40%"
-                }
-                )
-            }
-        },
-        onLeaveBack: () => {
-            switchViewCartBtn()
+        start: "bottom-=100px bottom",
+        onToggle: () => {
+            switchViewCartBtn();
         },
         scrub: false,
     })
 }
 
+// const unwatch = watchEffect(() => {
+//     console.log(viewCart.value);
+//     if (viewCart.value) {
+//         switchViewCartBtn();
+//         unwatch();
+//     }
+// })
+
+
+// 打字效果
+
+
+// 檢查result state
+function checkResultState() {
+    if (!isLoaded.value) {
+        // Router.push('/questionnaire');
+        Router.back()
+    }
+}
+
 
 // 生命週期
+onBeforeMount(() => {
+    checkResultState();
+})
+
 onMounted(() => {
     setTimeout(() => {
-        switchViewCartBtn()
+        if (!viewCart.value) return
+        switchViewCartBtn();
     }, 1000);
 
-    nextTick(() => {
-        createViewCartScrollTrigger();
-    });
-
-    // setObserver();
+    // nextTick(() => {
+    createViewCartScrollTrigger();
+    createListScrollTrigger();
+    // });
 })
 
 
@@ -629,39 +671,33 @@ onMounted(() => {
     }
 }
 
+.bestComb-enter-active,
+.bestComb-leave-active {
+    transition: transform .3s ease, opacity .3s ease;
+}
+
+.bestComb-enter-from,
+.bestComb-leave-to {
+    transform: translateY(5%);
+    opacity: 0;
+}
+
+.bestComb-enter-to,
+.bestComb-leave-from {
+    transform: translateY(0%);
+    opacity: 1;
+}
+
 .recommendList {
     margin-bottom: calc(5% + 48px + 3rem);
-    // display: flex;
-    // justify-content: center;
-    // gap: 6rem;
-
-    // swiper-slide {
-    //     background-color: $primaryBacColor;
-    //     border-radius: 2.5rem 2.5rem 1rem 1rem;
-    //     border: 2px solid green;
-
-    //     .item div:has(button) {
-    //         background-color: red;
-
-    //     }
-
-    //     .btnWrapper {
-    //         background-color: red;
-    //     }
-    // }
 
     &>div {
         margin-top: 3rem;
-        // width: 250px;
-
-
-        // & :deep(.btnWrapper) {
-        //     box-shadow: none;
-        // }
     }
 
     .bestComb {
         @include flex-center-center;
+        flex-wrap: wrap;
         min-height: 400px;
         gap: 2rem;
     }
@@ -696,13 +732,73 @@ onMounted(() => {
         }
     }
 
+    @mixin recList_rwd768 {
+        @media (max-width: 768px) {
+            @content;
+        }
+    }
+
+    @mixin recList_rwd1000 {
+        @media (min-width:768px) and (max-width: 1440px) {
+            @content;
+        }
+    }
+
     .salad,
     .smoothies {
+        // display: grid;
+        // grid-template-columns: repeat(3, minmax(100px, max-content));
+        // grid-auto-flow: dense;
+        // justify-content: center;
+        // justify-items: center;
+        // gap: 2rem 4rem;
+        // padding: 0 6rem;
+
+        // @include recList_rwd768() {
+        //     grid-template-columns: repeat(2, minmax(100px, max-content));
+        // }
+
+        @include recList_rwd1000() {
+            display: none
+        }
+
         @include flex-center-center;
-        min-height: 400px;
-        flex-wrap: wrap;
+        // justify-content: start;
+        margin-left: auto;
+        margin-right: auto;
+        width: 60%;
         gap: 2rem;
         padding: 0 3rem;
+        // overflow-x: scroll;
+
+
+        .item {
+            // flex: 0 0 calc(33% - 8rem);
+        }
+    }
+
+    .foo {
+        @include recList_rwd768() {
+            // width: 80%;
+            display: block
+        }
+
+        @include recList_rwd1000() {
+            // width: 80%;
+            display: block;
+        }
+
+        display: none;
+        width: 60%;
+        // width: 1440px;
+
+        swiper-slide {
+            padding: 1rem 0;
+        }
+
+        .item {
+            margin: 0 auto;
+        }
     }
 }
 
@@ -710,30 +806,15 @@ onMounted(() => {
     width: 100%;
     font-size: 1.5rem;
     display: flex;
-    // justify-content: space-between;
     align-items: center;
     position: fixed;
     bottom: 7%;
-    // left: 50%;
-    // transform: translate(-50%, -50%);
     z-index: 10;
-    animation: initCart .3s ease forwards;
 
     &>button {
         background-color: $btnBacColor;
         color: $primaryBacColor;
         overflow: hidden;
-        // opacity: 0;
-    }
-}
-
-@keyframes initCart {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
     }
 }
 
@@ -764,7 +845,7 @@ onMounted(() => {
 
 .cartBtn-enter-active,
 .cartBtn-leave-active {
-    transition: opacity .5s ease;
+    transition: opacity .3s ease;
 }
 
 .cartBtn-enter-from,
@@ -777,38 +858,19 @@ onMounted(() => {
     opacity: 1;
 }
 
-
-
-// .sideViewCart {
-//     border: 1px solid black;
-//     border-radius: 40px;
-//     padding: .5rem;
-//     position: absolute;
-//     right: 2%;
+// .listSlideUp-enter-active,
+// .listSlideUp-leave-active {
+//     transition: transform .3s ease, opacity .3s ease;
 // }
 
-// .viewCart {
-//     @include WnH(300px, 48px);
-//     border: 1px solid black;
-//     border-radius: 20px;
-//     margin: 0 auto;
-//     transform-origin: right;
+// .listSlideUp-enter-from,
+// .listSlideUp-leave-to {
+//     opacity: 0;
+//     transform: translateY(10%);
 // }
 
-.listSlideUp-enter-active,
-.listSlideUp-leave-active {
-    transition: transform .3s ease, opacity .3s ease;
-}
-
-.listSlideUp-enter-from,
-.listSlideUp-leave-to {
-    opacity: 0;
-    transform: translateY(10%);
-}
-
-.listSlideUp-enter-to,
-.listSlideUp-leave-from {
-    opacity: 1;
-    transform: translateY(0);
-}
-</style>
+// .listSlideUp-enter-to,
+// .listSlideUp-leave-from {
+//     opacity: 1;
+//     transform: translateY(0);
+// }</style>
