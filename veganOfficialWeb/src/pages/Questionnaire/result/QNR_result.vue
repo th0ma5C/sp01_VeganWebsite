@@ -45,8 +45,7 @@
             </div>
         </div>
 
-        <div class="recommendList" ref="recommendList"
-            v-if="isLoaded">
+        <div class="recommendList" ref="recommendList">
             <div class="bestComb" ref="bestCombContainer">
                 <transition-group name="bestComb">
                     <Product_template :item="saladRank[0]"
@@ -86,8 +85,12 @@
                 <Product_template
                     v-for="(item, index) in saladRank"
                     :key="index" :item="item"
+                    @cartBtn-click="addCart"
                     v-show="rankComplete && index != 0">
                 </Product_template>
+                <div class="flyToCart" ref="flyToCartEl">
+                    <img :src="flyToCartImg" alt="">
+                </div>
             </div>
 
             <div class="smoothies" ref="smoothiesContainer"
@@ -145,8 +148,8 @@
 
         </div>
 
-        <div class="viewBtnWrapper" ref="viewBtnWrapper">
-            <button class="cartBtn" ref="viewCart">
+        <div class="viewBtnWrapper" ref="viewCart">
+            <button class="cartBtn">
                 <transition-group name="cartBtn">
                     <span class="main" key="0"
                         v-show="showMainCart">
@@ -184,6 +187,7 @@ import { storeToRefs } from 'pinia';
 import type { MenuItem } from '@/api/menu/type';
 import gsap from 'gsap';
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import useListener from '@/hooks/useListener';
 
 // questionnaireStore
@@ -350,7 +354,6 @@ function findRecommend(arrays: MenuItem[][]): MenuItem[] {
 
 
     let result = getResult();
-    console.log(result);
 
     return result.map(([item]) => item);
 }
@@ -453,7 +456,7 @@ function showListAnimate() {
     tl.fromTo(smoothiesContainer.value.children,
         { opacity: 0, y: 50 },
         { opacity: 1, y: 0, duration: 0.5, stagger: 0.1 },
-        "+=0"  // 表示直接接續前面的動畫
+        "+=0"
     );
     // gsap.fromTo(saladContainer.value.children,
     //     { opacity: 0, y: 50 },
@@ -494,12 +497,13 @@ function retest() {
 }
 
 // 按鈕切換
-const viewCart = ref();
+const viewCart = ref<HTMLElement>();
 const showMainCart = ref(true);
 const resultContainer = ref<HTMLElement>();
 gsap.registerPlugin(ScrollTrigger);
 
 function switchViewCartBtn() {
+    if (!viewCart.value) return
     showMainCart.value = !showMainCart.value;
     gsap.to(viewCart.value, {
         opacity: 0,
@@ -510,13 +514,13 @@ function switchViewCartBtn() {
                 gsap.set(viewCart.value, {
                     width: 300,
                     height: 48,
-                    right: "0"
+                    right: "50%"
                 });
             } else {
                 gsap.set(viewCart.value, {
                     width: 48,
                     height: 48,
-                    right: "-40%"
+                    right: "5%"
                 });
             }
 
@@ -552,6 +556,70 @@ function createViewCartScrollTrigger() {
 // 打字效果
 
 
+// 飛入購物車
+interface EmitData {
+    el: HTMLElement,
+    item: MenuItem
+}
+
+interface Coord {
+    x: number,
+    y: number
+}
+
+const flyToCartEl = ref<HTMLElement | null>(null);
+const flyToCartImg = ref('');
+gsap.registerPlugin(MotionPathPlugin);
+
+function flyToCart(originCoord: Coord) {
+    if (!viewCart.value) return
+    const { left, top, width, height } = viewCart.value.getBoundingClientRect();
+    // gsap.to(flyToCartEl.value, {
+    //     duration: .75,
+    //     // delay: .25,
+    //     x: left + (width / 2) - (48 + 25), //padding + width/2
+    //     y: window.scrollY + top - 100,
+    //     ease: "power1.inOut"
+    // })
+    // 目標座標
+    const targetCoord = {
+        x: left + (width / 2) - (48 + 25), //padding + width/2,
+        y: window.scrollY + top - 100,
+    }
+
+    gsap.to(flyToCartEl.value, {
+        duration: 1,
+        motionPath: {
+            path: [
+                { x: originCoord.x, y: originCoord.y },
+                { x: Math.floor((originCoord.x + targetCoord.x) / 3), y: originCoord.y - 150 },
+                { x: targetCoord.x, y: targetCoord.y }
+            ], // 拋物線的三個關鍵點
+            curviness: 2, // 調整路徑的彎曲度
+        },
+        // ease: "power1.inOut"
+    });
+
+}
+
+function addCart(data: EmitData) {
+    const { el, item } = data;
+    const { left, top, width, height } = el.getBoundingClientRect();
+    const originCoord = {
+        x: (left + Math.floor(width / 2)) - 73,
+        y: (window.scrollY + top) - 19
+    }
+    gsap.set(flyToCartEl.value, {
+        x: originCoord.x,
+        y: originCoord.y,
+        onComplete: () => {
+            flyToCartImg.value = item.fileName ?? '';
+            flyToCart(originCoord);
+        }
+    });
+}
+
+
 // 檢查result state
 function checkResultState() {
     if (!isLoaded.value) {
@@ -570,7 +638,7 @@ onMounted(() => {
     setTimeout(() => {
         if (!viewCart.value) return
         switchViewCartBtn();
-    }, 1000);
+    }, 2000);
 
     // nextTick(() => {
     createViewCartScrollTrigger();
@@ -759,14 +827,15 @@ onMounted(() => {
         // }
 
         @include recList_rwd1000() {
-            display: none
+            // display: none
         }
 
         @include flex-center-center;
         // justify-content: start;
         margin-left: auto;
         margin-right: auto;
-        width: 60%;
+        // width: fit-content;
+        // width: 60%;
         gap: 2rem;
         padding: 0 3rem;
         // overflow-x: scroll;
@@ -775,17 +844,28 @@ onMounted(() => {
         .item {
             // flex: 0 0 calc(33% - 8rem);
         }
+
+        .flyToCart {
+            @include WnH(50px);
+            opacity: 1;
+            position: absolute;
+            left: 3rem;
+            top: 0;
+            z-index: 10;
+            // background-color: red;
+
+        }
     }
 
     .foo {
         @include recList_rwd768() {
             // width: 80%;
-            display: block
+            // display: block
         }
 
         @include recList_rwd1000() {
             // width: 80%;
-            display: block;
+            // display: block;
         }
 
         display: none;
@@ -803,12 +883,14 @@ onMounted(() => {
 }
 
 .viewBtnWrapper {
-    width: 100%;
+    // width: 100%;
     font-size: 1.5rem;
     display: flex;
     align-items: center;
     position: fixed;
+    right: 50%;
     bottom: 7%;
+    transform: translate(50%, -50%);
     z-index: 10;
 
     &>button {
@@ -819,6 +901,7 @@ onMounted(() => {
 }
 
 .cartBtn {
+    @include WnH(100%);
     border-radius: 24px;
     margin: 0 auto;
     position: relative;

@@ -2,7 +2,8 @@
     <div class="item" ref="productEl" v-if="item">
         <div :class="imgClass"
             @click="routerPush(item.name ?? '')">
-            <img :src="item.fileName ?? ''" alt="商品">
+            <img :src="item.fileName ?? ''" alt="商品"
+                ref="itemImg">
             <p>{{ item.price }}元</p>
             <div class="description">
                 <span>{{ item.description }}</span>
@@ -16,7 +17,8 @@
             </span>
         </div>
         <div class="btnWrapper">
-            <button class="cart-btn">加入購物車</button>
+            <button class="cart-btn" ref="cartBtnEl"
+                @click="addCart">加入購物車</button>
             <button class="info-btn"
                 @click="routerPush(item.name!)">詳細資訊</button>
             <div class="btnBackground">
@@ -71,7 +73,7 @@ const { item } = defineProps<{ item: MenuItem }>();
 // }, { immediate: true })
 
 // 提供DOM狀態
-let productEl = ref();
+const productEl = ref();
 defineExpose({ productEl });
 
 // 路由跳轉
@@ -90,6 +92,18 @@ function routerPush(name: string, id?: string) {
 const imgClass = computed(() => {
     return item.category == 'salad' ? 'menuImg' : 'smoothiesImg'
 })
+
+// 加入購物車
+const itemImg = ref();
+const emit = defineEmits(['cartBtn-click']);
+
+function addCart() {
+    const data = {
+        el: itemImg.value,
+        item
+    }
+    emit('cartBtn-click', data);
+}
 
 </script>
 

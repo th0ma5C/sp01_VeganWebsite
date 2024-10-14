@@ -97,7 +97,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                }}</span>
+                                                    }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -317,7 +317,7 @@
                                 <div class="description">
                                     <span>{{
                                         items.description
-                                    }}</span>
+                                        }}</span>
                                 </div>
                             </div>
                             <h3>{{ items.name }}</h3>
@@ -988,6 +988,7 @@ function routerPush(name: string, id?: string) {
 onBeforeMount(() => {
 })
 onMounted(() => {
+    if (!isLoaded.value) menuStore.fetchMenu();
     window.addEventListener('resize', handleResize);
     // console.log(sortedSalad.value);
     // console.log('menu mounted');

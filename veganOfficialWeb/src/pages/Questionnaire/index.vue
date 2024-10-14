@@ -1,9 +1,14 @@
 <template>
     <div class="container">
-        <div class="loading" v-if="false">
-            <div class="iconMask" :style="loadingProgress">
+        <transition name="loading">
+            <div class="loading"
+                v-if="loadingPercent < 100">
+                <div class="iconMask"
+                    :style="loadingProgress">
+                </div>
             </div>
-        </div>
+        </transition>
+
 
         <div class="questionnaire">
             <div class="processBar">
@@ -246,32 +251,45 @@ const loadingProgress = computed(() => ({
 }));
 const loadingPercent = ref(1);
 
-function loadingTimer() {
+function loadingTimer(target: number) {
+    let step = 1;
+
     return new Promise<void>((resolve) => {
         const timer = setInterval(() => {
-            if (loadingPercent.value < 30) {
-                loadingPercent.value += 0.1;
-            } else {
+            if (loadingPercent.value >= target) {
                 clearInterval(timer);
-                resolve()
+                resolve();
+                return
             }
+            loadingPercent.value += step;
         }, 10)
     })
 };
 
-async function initQuestionnaire() {
-    // await loadingTimer();
-    await fetchQuestionnaire();
-    // loadingPercent.value = 50;
-    await initQNR();
-    // loadingPercent.value = 99;
-    if (QNR_isDone.value) {
-        // loadingPercent.value = 100;
-        // showResult();
-        // setTimeout(() => showResult(), 500);
-    }
-    // loadingPercent.value = 100;
+async function updateProgress(target: number, task: Promise<any>) {
+    await task;
+    await loadingTimer(target);
+}
 
+async function initQuestionnaire() {
+    try {
+        await updateProgress(25, fetchQuestionnaire());
+        await updateProgress(50, initQNR());
+        if (QNR_isDone.value) await updateProgress(75, showResult());
+        await loadingTimer(100);
+    } catch (error) {
+        console.log(error);
+    }
+
+    // await loadingTimer(25);
+    // await fetchQuestionnaire();
+    // await loadingTimer(50);
+    // await initQNR();
+    // await loadingTimer(75)
+    // // if (QNR_isDone.value) {
+    // await showResult();
+    // // }
+    // await loadingTimer(100);
 }
 
 // watch(loadingPercent, (nVal) => {
@@ -499,7 +517,11 @@ function getDataFromStorage() {
 async function initQNR() {
     return new Promise<void>((resolve) => {
         const data = getDataFromStorage() as typeof QNR_state.value;
-        if (!data) return
+        console.log('object');
+        if (!data) {
+            throw Error(`${getDataFromStorage.name}failed`)
+            return
+        }
         let result;
         ({
             currPage: currPage.value,
@@ -520,6 +542,7 @@ watch(currPage, (nVal) => {
         setDataToStorage();
     }
 })
+
 
 
 // 生命週期
@@ -553,18 +576,56 @@ onUnmounted(() => {
     min-height: 100vh;
 }
 
+@keyframes iconMaskScan {
+    from {
+        transform: translate(-50%, -50%);
+    }
+
+    to {
+        transform: translate(25%, 25%);
+    }
+}
+
 .loading {
-    @include WnH(100%, calc(100vh - 100px));
-    position: relative;
+    // @include absoluteCenterTLXY($top: 0px, $Y: 0%);
+    @include WnH(100%);
+    @include flex-center-center;
+    position: absolute;
+    z-index: 100;
     background-color: $primaryBacColor;
 
     .iconMask {
-        @include absoluteCenterTLXY($top: 0, $Y: 0px);
-        @include WnH(600px);
+        @include WnH(200px);
         mask-image: url('@assets/icons/Logo.svg');
         // background: linear-gradient(to top, blue 0 49%, transparent 50%);
-        // background-color: red;
+        position: relative;
+        overflow: hidden;
+
+        &::after {
+            @include WnH(200%);
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: linear-gradient(120deg, transparent 45%, $primaryBacColor 50%, transparent 55%);
+            animation: iconMaskScan 3s ease-in infinite;
+        }
     }
+}
+
+.loading-enter-active,
+.loading-leave-active {
+    transition: opacity .5s .5s ease;
+}
+
+.loading-enter-from,
+.loading-leave-to {
+    opacity: 0;
+}
+
+.loading-enter-to,
+.loading-leave-from {
+    opacity: 1;
 }
 
 .questionnaire {
