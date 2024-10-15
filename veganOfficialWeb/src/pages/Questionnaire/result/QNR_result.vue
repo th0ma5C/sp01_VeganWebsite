@@ -47,16 +47,17 @@
 
         <div class="recommendList" ref="recommendList">
             <div class="bestComb" ref="bestCombContainer">
-                <transition-group name="bestComb">
-                    <Product_template :item="saladRank[0]"
-                        key="0" v-show="rankComplete">
-                    </Product_template>
+                <!-- <transition-group name="bestComb"> -->
+                <Product_template :item="saladRank[0]"
+                    :cartEl="viewCart" key="0"
+                    v-show="rankComplete">
+                </Product_template>
 
-                    <Product_template
-                        :item="smoothiesRank[0]" key="1"
-                        v-show="rankComplete">
-                    </Product_template>
-                </transition-group>
+                <Product_template :item="smoothiesRank[0]"
+                    :cartEl="viewCart" key="1"
+                    v-show="rankComplete">
+                </Product_template>
+                <!-- </transition-group> -->
             </div>
 
             <div class="divider">
@@ -85,12 +86,10 @@
                 <Product_template
                     v-for="(item, index) in saladRank"
                     :key="index" :item="item"
-                    @cartBtn-click="addCart"
+                    :cartEl="viewCart"
                     v-show="rankComplete && index != 0">
                 </Product_template>
-                <div class="flyToCart" ref="flyToCartEl">
-                    <img :src="flyToCartImg" alt="">
-                </div>
+
             </div>
 
             <div class="smoothies" ref="smoothiesContainer"
@@ -100,6 +99,7 @@
                 <Product_template
                     v-for="(item, index) in smoothiesRank"
                     :key="index" :item="item"
+                    :cartEl="viewCart"
                     v-show="rankComplete && index != 0">
                 </Product_template>
             </div>
@@ -169,10 +169,14 @@
 
 <script setup lang="ts">
 /**
- * todo: 結果頁面樣式 加入購物車動畫 完成表單功能 登入 會員 購物車 關於
- * doing 數據太多或太少的情況 and 樣式
+ * todo: 完成表單功能 登入 會員 購物車 關於
+ * doing: menu頁面添加飛入購物車 
+ * //數據太多或太少的情況 and 樣式 => 控制固定輸出量
  * ----------------------------------
- * ?結果本地儲存
+ * * 飛入購物車動畫初步完成
+ * ----------------------------------
+ * ? 購物車side bar
+ * ? 結果本地儲存
  * ----------------------------------
  * //?重新整理頁面、數據會消失 
  */
@@ -536,7 +540,7 @@ function switchViewCartBtn() {
 function createViewCartScrollTrigger() {
     ScrollTrigger.create({
         trigger: resultContainer.value,
-        start: "bottom-=100px bottom",
+        start: "bottom-=3.5% bottom",
         onToggle: () => {
             switchViewCartBtn();
         },
@@ -557,67 +561,6 @@ function createViewCartScrollTrigger() {
 
 
 // 飛入購物車
-interface EmitData {
-    el: HTMLElement,
-    item: MenuItem
-}
-
-interface Coord {
-    x: number,
-    y: number
-}
-
-const flyToCartEl = ref<HTMLElement | null>(null);
-const flyToCartImg = ref('');
-gsap.registerPlugin(MotionPathPlugin);
-
-function flyToCart(originCoord: Coord) {
-    if (!viewCart.value) return
-    const { left, top, width, height } = viewCart.value.getBoundingClientRect();
-    // gsap.to(flyToCartEl.value, {
-    //     duration: .75,
-    //     // delay: .25,
-    //     x: left + (width / 2) - (48 + 25), //padding + width/2
-    //     y: window.scrollY + top - 100,
-    //     ease: "power1.inOut"
-    // })
-    // 目標座標
-    const targetCoord = {
-        x: left + (width / 2) - (48 + 25), //padding + width/2,
-        y: window.scrollY + top - 100,
-    }
-
-    gsap.to(flyToCartEl.value, {
-        duration: 1,
-        motionPath: {
-            path: [
-                { x: originCoord.x, y: originCoord.y },
-                { x: Math.floor((originCoord.x + targetCoord.x) / 3), y: originCoord.y - 150 },
-                { x: targetCoord.x, y: targetCoord.y }
-            ], // 拋物線的三個關鍵點
-            curviness: 2, // 調整路徑的彎曲度
-        },
-        // ease: "power1.inOut"
-    });
-
-}
-
-function addCart(data: EmitData) {
-    const { el, item } = data;
-    const { left, top, width, height } = el.getBoundingClientRect();
-    const originCoord = {
-        x: (left + Math.floor(width / 2)) - 73,
-        y: (window.scrollY + top) - 19
-    }
-    gsap.set(flyToCartEl.value, {
-        x: originCoord.x,
-        y: originCoord.y,
-        onComplete: () => {
-            flyToCartImg.value = item.fileName ?? '';
-            flyToCart(originCoord);
-        }
-    });
-}
 
 
 // 檢查result state
@@ -845,16 +788,7 @@ onMounted(() => {
             // flex: 0 0 calc(33% - 8rem);
         }
 
-        .flyToCart {
-            @include WnH(50px);
-            opacity: 1;
-            position: absolute;
-            left: 3rem;
-            top: 0;
-            z-index: 10;
-            // background-color: red;
 
-        }
     }
 
     .foo {

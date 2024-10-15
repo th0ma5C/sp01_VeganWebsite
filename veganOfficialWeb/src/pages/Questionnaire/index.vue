@@ -263,12 +263,18 @@ function loadingTimer(target: number) {
             }
             loadingPercent.value += step;
         }, 10)
+    }).catch((err) => {
+        console.log(err);
     })
 };
 
 async function updateProgress(target: number, task: Promise<any>) {
-    await task;
-    await loadingTimer(target);
+    try {
+        await task;
+        await loadingTimer(target);
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 async function initQuestionnaire() {
@@ -467,13 +473,17 @@ const { fetchMenu } = useMenuStore();
 const router = useRouter();
 async function showResult() {
     // if (currPage.value !== QNR_pagesCount.value) return;
-    if (!isLoaded.value) {
-        await fetchMenu();
+    try {
+        if (!isLoaded.value) {
+            await fetchMenu();
+        }
+        setQNR_result(mockData);
+        QNR_isDone.value = true;
+        setDataToStorage();
+        router.push('/questionnaire/result');
+    } catch (error) {
+        console.log(error);
     }
-    setQNR_result(mockData);
-    QNR_isDone.value = true;
-    setDataToStorage();
-    router.push('/questionnaire/result');
 }
 const mockData = reactive({
     info: {
@@ -515,12 +525,10 @@ function getDataFromStorage() {
 }
 
 async function initQNR() {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
         const data = getDataFromStorage() as typeof QNR_state.value;
-        console.log('object');
         if (!data) {
-            throw Error(`${getDataFromStorage.name}failed`)
-            return
+            return reject(`${getDataFromStorage.name}failed`);
         }
         let result;
         ({

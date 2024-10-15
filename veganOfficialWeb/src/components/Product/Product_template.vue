@@ -48,18 +48,32 @@
                 </svg>
             </div>
         </div>
+        <Teleport :to="'main'">
+            <div class="flyToCart" ref="flyToCartEl"
+                v-if="cartEl">
+                <img :src="flyToCartImg" alt="">
+            </div>
+        </Teleport>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, nextTick, computed, watch } from 'vue';
+import type { Ref } from 'vue';
 import type { MenuItem } from '@/api/menu/type';
 import { useRouter } from 'vue-router';
 import { useMenuStore } from '@/store/menuStore';
 import { storeToRefs } from 'pinia';
+import gsap from 'gsap';
+import { MotionPathPlugin } from "gsap/MotionPathPlugin";
+
 
 //接收菜單數據 
-const { item } = defineProps<{ item: MenuItem }>();
+interface Props {
+    item: MenuItem,
+    cartEl?: HTMLElement | undefined
+}
+const { item, cartEl } = defineProps<Props>();
 
 // const MenuStore = useMenuStore();
 // MenuStore.$subscribe((_, state) => {
@@ -93,16 +107,93 @@ const imgClass = computed(() => {
     return item.category == 'salad' ? 'menuImg' : 'smoothiesImg'
 })
 
-// 加入購物車
-const itemImg = ref();
-const emit = defineEmits(['cartBtn-click']);
+// 飛入購物車
+// const itemImg = ref();
+const cartBtnEl = ref<HTMLElement | null>(null);
+// const emit = defineEmits(['cartBtn-click']);
+
+// function addCart() {
+//     // const data = {
+//     //     el: cartBtnEl.value,
+//     //     item
+//     // }
+//     // emit('cartBtn-click', data);
+//     console.log(cartEl);
+
+// }
+interface EmitData {
+    el: HTMLElement,
+    item: MenuItem
+}
+
+interface Coord {
+    x: number,
+    y: number
+}
+
+const flyToCartEl = ref<HTMLElement | null>(null);
+const flyToCartImg = ref('');
+const isFlying = ref(false);
+gsap.registerPlugin(MotionPathPlugin);
+
+function flyToCart(originCoord: Coord) {
+    if (!cartEl) return
+    const { left, top, width, height } = cartEl.getBoundingClientRect();
+    // gsap.to(flyToCartEl.value, {
+    //     duration: .75,
+    //     // delay: .25,
+    //     x: left + (width / 2) - (48 + 25), //padding + width/2
+    //     y: window.scrollY + top - 100,
+    //     ease: "power1.inOut"
+    // })
+
+    const targetCoord = {
+        x: left + (width / 2) - (48 + 25), //padding + width/2,
+        y: window.scrollY + top,
+    }
+    const inflectX = originCoord.x < targetCoord.x ? 50 : -50
+
+    gsap.to(flyToCartEl.value, {
+        duration: .5,
+        opacity: 0,
+        motionPath: {
+            path: [
+                { x: originCoord.x, y: originCoord.y },
+                {
+                    x: originCoord.x + inflectX,
+                    y: originCoord.y - 50
+                },
+                { x: targetCoord.x, y: targetCoord.y }
+            ],
+            curviness: 1,
+        },
+        ease: "power1.inOut",
+        onComplete: () => {
+            isFlying.value = false;
+        }
+    });
+
+}
 
 function addCart() {
-    const data = {
-        el: itemImg.value,
-        item
+    if (!cartBtnEl.value) return
+    // if (isFlying.value) return;
+    isFlying.value = true;
+    const { left, top, width, height } = cartBtnEl.value.getBoundingClientRect();
+    const originCoord = {
+        x: (left + width / 2) - 73,
+        y: (window.scrollY + top + height / 2) - 25
     }
-    emit('cartBtn-click', data);
+
+    gsap.set(flyToCartEl.value, {
+        x: originCoord.x,
+        y: originCoord.y,
+        opacity: 1,
+        onComplete: () => {
+            flyToCartImg.value = item.fileName ?? '';
+            flyToCart(originCoord);
+        }
+    });
 }
 
 </script>
@@ -333,5 +424,17 @@ function addCart() {
 
         }
     }
+}
+
+.flyToCart {
+    @include WnH(50px);
+    opacity: 0;
+    position: absolute;
+    left: 3rem;
+    top: 0;
+    z-index: 10;
+    border-radius: 25px;
+    overflow: hidden;
+    // background-color: red;
 }
 </style>
