@@ -45,7 +45,7 @@
                         <fieldset>
                             <h3>稱呼</h3>
                             <div class="userName"
-                                :class="{ alertInput: setAlertClass(QNR_form.info.userName) }">
+                                :class="{ alertInput: setAlertClass(QNR_result.info.userName) }">
                                 <label for="userName">
                                     姓名 / 暱稱
                                 </label>
@@ -53,9 +53,9 @@
                                     autocomplete="off"
                                     spellcheck="false"
                                     id="userName" required
-                                    v-model.trim.lazy="QNR_form.info.userName">
+                                    v-model.trim.lazy="QNR_result.info.userName">
                                 <span class="alertText"
-                                    v-show="setAlertClass(QNR_form.info.userName)">
+                                    v-show="setAlertClass(QNR_result.info.userName)">
                                     <SvgIcon
                                         name="QNR_alert"
                                         width="18"
@@ -70,9 +70,9 @@
                         <fieldset>
                             <h3>生理性別</h3>
                             <div class="gender"
-                                :class="{ alertInput: setAlertClass(QNR_form.info.gender) }">
+                                :class="{ alertInput: setAlertClass(QNR_result.info.gender) }">
                                 <select name="gender" id=""
-                                    v-model.lazy="QNR_form.info.gender">
+                                    v-model.lazy="QNR_result.info.gender">
                                     <option value="">
                                     </option>
                                     <option value="male">男
@@ -81,7 +81,7 @@
                                     </option>
                                 </select>
                                 <span class="alertText"
-                                    v-show="setAlertClass(QNR_form.info.gender)">
+                                    v-show="setAlertClass(QNR_result.info.gender)">
                                     <SvgIcon
                                         name="QNR_alert"
                                         width="18"
@@ -96,7 +96,7 @@
                         <fieldset>
                             <h3>生日</h3>
                             <div class="birthday" :class="{
-                                alertInput: setAlertClass(verifyBirth(QNR_form.info.birth))
+                                alertInput: setAlertClass(verifyBirth(QNR_result.info.birth))
                             }">
                                 <div class="birthInput">
                                     <input id="birthYear"
@@ -105,7 +105,7 @@
                                         autocomplete="off"
                                         maxlength="4"
                                         required
-                                        v-model.trim.number.lazy="QNR_form.info.birth[0]">
+                                        v-model.trim.number.lazy="QNR_result.info.birth[0]">
                                     <label for="birthYear">
                                         年<small>(西元)</small>
                                     </label>
@@ -117,7 +117,7 @@
                                     <select name=""
                                         id="birthMonth"
                                         required
-                                        v-model.number.lazy="QNR_form.info.birth[1]">
+                                        v-model.number.lazy="QNR_result.info.birth[1]">
                                         <option value="">
                                         </option>
                                         <option
@@ -138,13 +138,13 @@
                                         autocomplete="off"
                                         maxlength="2"
                                         required
-                                        v-model.number.lazy="QNR_form.info.birth[2]">
+                                        v-model.number.lazy="QNR_result.info.birth[2]">
                                     <label
                                         for="birthDate">日</label>
                                 </div>
 
                                 <span class="alertText"
-                                    v-show="setAlertClass(verifyBirth(QNR_form.info.birth))">
+                                    v-show="setAlertClass(verifyBirth(QNR_result.info.birth))">
                                     <SvgIcon
                                         name="QNR_alert"
                                         width="18"
@@ -181,7 +181,7 @@
                     </form>
 
                     <button
-                        @click="verifyInfoForm(QNR_form)">
+                        @click="verifyInfoForm(QNR_result)">
                         NEXT
                     </button>
                 </div>
@@ -286,26 +286,28 @@ async function initQuestionnaire() {
     } catch (error) {
         console.log(error);
     }
-
-    // await loadingTimer(25);
-    // await fetchQuestionnaire();
-    // await loadingTimer(50);
-    // await initQNR();
-    // await loadingTimer(75)
-    // // if (QNR_isDone.value) {
-    // await showResult();
-    // // }
-    // await loadingTimer(100);
 }
 
-// watch(loadingPercent, (nVal) => {
-//     console.log(nVal);
-// })
 
 // QNR_store
 const QuestionnaireStore = useQuestionnaireStore();
-const { QNR_IsLoaded, questionnaire, QNR_isDone, QNR_result, localStorageKey } = storeToRefs(QuestionnaireStore);
-const { QNR_FinishLoading, fetchQuestionnaire, setQNR_result } = QuestionnaireStore;
+
+const {
+    QNR_IsLoaded,
+    questionnaire,
+    QNR_isDone,
+    QNR_result,
+    currPage,
+    formPageTranslateX
+} = storeToRefs(QuestionnaireStore);
+
+const {
+    QNR_FinishLoading,
+    fetchQuestionnaire,
+    setQNR_result,
+    initQNR,
+    setQNRtoStorage,
+} = QuestionnaireStore;
 
 function leaveQNR_page() {
     QNR_IsLoaded.value = false;
@@ -332,22 +334,18 @@ const showQuestionnaire = computed(() => {
 //     calories: null | string
 // }
 
-const QNR_form = reactive<Form>({
-    info: {
-        userName: '',
-        gender: '',
-        birth: [null, null, null],
-    },
-    habit: null,
-    flavor: null,
-    ingredients: [],
-    food: [],
-    calories: null
-});
-
-watch(QNR_form, (nVal) => {
-    // console.log(nVal);
-})
+// const QNR_form = reactive<Form>({
+//     info: {
+//         userName: '',
+//         gender: '',
+//         birth: [null, null, null],
+//     },
+//     habit: null,
+//     flavor: null,
+//     ingredients: [],
+//     food: [],
+//     calories: null
+// });
 
 // 問卷答案蒐集
 type QNRFormKeys = keyof Omit<Form, 'info'>;
@@ -355,27 +353,26 @@ const ansMap: QNRFormKeys[] = ['habit', 'flavor', 'ingredients', 'food', 'calori
 
 function sentQNR_Ans(tag: QNRFormKeys, ans: string) {
     if (tag == 'ingredients' || tag == 'food') {
-        if (QNR_form[tag].includes(ans)) {
-            QNR_form[tag] = [...QNR_form[tag].filter(item => item !== ans)];
+        if (QNR_result.value[tag].includes(ans)) {
+            QNR_result.value[tag] = [...QNR_result.value[tag].filter(item => item !== ans)];
 
         } else {
-            QNR_form[tag].push(ans);
+            QNR_result.value[tag].push(ans);
         }
     } else {
-        QNR_form[tag] = ans;
+        QNR_result.value[tag] = ans;
     }
-    // console.log(QNR_form[tag]);
+    // console.log(QNR_result.value[tag]);
 }
 
 function setSelectedClass(tag: QNRFormKeys, option: string) {
     return (tag === 'ingredients' || tag === 'food')
-        ? QNR_form[tag].includes(option)
-        : QNR_form[tag] === option;
+        ? QNR_result.value[tag].includes(option)
+        : QNR_result.value[tag] === option;
 }
 
 // 表單驗證
 const isFormVerified = ref<null | boolean>(null);
-const formPageTranslateX = ref(0);
 const formPagesStyle = computed(() => ({
     transform: `translateX(${formPageTranslateX.value}%)`
 }))
@@ -405,7 +402,7 @@ function verifyBirth(birth: Birth) {
     return true
 }
 
-function verifyInfoForm(form: typeof QNR_form) {
+function verifyInfoForm(form: typeof QNR_result.value) {
     const { userName, gender, birth } = form.info;
     // if (!userName || !gender || !birth || birth.length != 3) return
 
@@ -429,7 +426,6 @@ function setAlertClass(formVal: string | boolean) {
 // 翻頁
 const QNR_container = ref();
 const QNR_pagesCount = computed(() => showQuestionnaire.value.length + 1)
-const currPage = ref(1);
 
 function turnPage(signs: '+' | '-') {
     if ((currPage.value == 1 && signs == '-') ||
@@ -457,13 +453,6 @@ function page_QClass(index: number) {
         serial
     ]
 }
-// const foo = (index: number) => {
-//     return computed(() => {
-//         const fadeClass = (index + 2) === currPage.value ? 'pageFadeIn' : 'pageFadeOut';
-//         const serial = `Q${index + 1}`;
-//         return [fadeClass, serial];
-//     }).value;
-// }
 
 // menu 預載
 const { isLoaded } = storeToRefs(useMenuStore());
@@ -472,14 +461,13 @@ const { fetchMenu } = useMenuStore();
 // 路由
 const router = useRouter();
 async function showResult() {
-    // if (currPage.value !== QNR_pagesCount.value) return;
     try {
         if (!isLoaded.value) {
             await fetchMenu();
         }
         setQNR_result(mockData);
         QNR_isDone.value = true;
-        setDataToStorage();
+        setQNRtoStorage();
         router.push('/questionnaire/result');
     } catch (error) {
         console.log(error);
@@ -499,73 +487,64 @@ const mockData = reactive({
 })
 
 // 保存進度
-const stamp = ref();
-const QNR_state = computed(() => {
-    return {
-        currPage: currPage.value,
-        result: mockData,
-        timeStamp: stamp.value,
-        completed: QNR_isDone.value
-    }
-})
+// const stamp = ref();
+// const expiredTime = 1000 * 60 * 60 * 24 * 2; // 2天
+// const QNR_state = computed(() => {
+//     return {
+//         currPage: currPage.value,
+//         result: mockData,
+//         timeStamp: stamp.value,
+//         completed: QNR_isDone.value
+//     }
+// })
 
-function setDataToStorage() {
-    stamp.value = Date.now() + 1000 * 60 * 60;
-    const data = JSON.stringify(QNR_state.value);
-    localStorage.setItem(localStorageKey.value, data);
-}
+// function setDataToStorage() {
+//     stamp.value = Date.now() + expiredTime;
+//     const data = JSON.stringify(QNR_state.value);
+//     localStorage.setItem(localStorageKey.value, data);
+// }
 
-function getDataFromStorage() {
-    const now = Date.now();
-    const raw = (localStorage.getItem(localStorageKey.value));
-    if (!raw) return
-    const data = JSON.parse(raw);
-    if (now > data.timeStamp) return localStorage.removeItem(localStorageKey.value);
-    return data
-}
+// function getDataFromStorage() {
+//     const now = Date.now();
+//     const raw = (localStorage.getItem(localStorageKey.value));
+//     if (!raw) return
+//     const data = JSON.parse(raw);
+//     if (now > data.timeStamp) return localStorage.removeItem(localStorageKey.value);
+//     return data
+// }
 
-async function initQNR() {
-    return new Promise<void>((resolve, reject) => {
-        const data = getDataFromStorage() as typeof QNR_state.value;
-        if (!data) {
-            return reject(`${getDataFromStorage.name}failed`);
-        }
-        let result;
-        ({
-            currPage: currPage.value,
-            result: result,
-            completed: QNR_isDone.value,
-        } = data);
-        formPageTranslateX.value = (currPage.value - 1) * -100;
-        setQNR_result(result);
-        Object.assign(QNR_form, { ...result });
-        resolve();
-    }).catch((err) => {
-        console.log(err);
-    })
-}
-
-watch(currPage, (nVal) => {
-    if (nVal) {
-        setDataToStorage();
-    }
-})
-
+// async function initQNR() {
+//     return new Promise<void>((resolve, reject) => {
+//         const data = getDataFromStorage() as typeof QNR_state.value;
+//         if (!data) {
+//             return reject(`${getDataFromStorage.name}failed`);
+//         }
+//         let result;
+//         ({
+//             currPage: currPage.value,
+//             result: result,
+//             completed: QNR_isDone.value,
+//         } = data);
+//         formPageTranslateX.value = (currPage.value - 1) * -100;
+//         setQNR_result(result);
+//         Object.assign(QNR_result.value, { ...result });
+//         resolve();
+//     }).catch((err) => {
+//         console.log(err);
+//     })
+// }
 
 
 // 生命週期
 onMounted(() => {
-    // fetchQuestionnaire();
-    // initQNR();
     initQuestionnaire();
-    // showResult()
 })
 
 onBeforeUnmount(() => {
 })
 
 onUnmounted(() => {
-    setDataToStorage();
+    setQNRtoStorage();
     leaveQNR_page();
 })
 </script>

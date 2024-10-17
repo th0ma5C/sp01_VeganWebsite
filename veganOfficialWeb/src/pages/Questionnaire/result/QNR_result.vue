@@ -148,7 +148,8 @@
 
         </div>
 
-        <div class="viewBtnWrapper" ref="viewCart">
+        <div class="viewBtnWrapper" ref="viewCart"
+            @click="toggleCartCardOpen">
             <button class="cartBtn">
                 <transition-group name="cartBtn">
                     <span class="main" key="0"
@@ -163,6 +164,17 @@
                     </span>
                 </transition-group>
             </button>
+
+            <div class="counter" :style="{
+                opacity: cartCounter ? '1' : '0'
+            }">
+                <span v-if="cartCounter < 99">
+                    {{ cartCounter }}
+                </span>
+                <span v-else>
+                    {{ 99 }}+
+                </span>
+            </div>
         </div>
     </div>
 </template>
@@ -193,19 +205,18 @@ import gsap from 'gsap';
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import useListener from '@/hooks/useListener';
+import { useCartStore } from '@/store/cartStore';
 
 // questionnaireStore
 const questionnaireStore = useQuestionnaireStore();
-const { QNR_result, QNR_isDone, localStorageKey } = storeToRefs(questionnaireStore);
+const { QNR_result, QNR_isDone } = storeToRefs(questionnaireStore);
 // const { info: { userName, gender, birth }, habit, flavor, ingredients, food, calories } = QNR_result.value;
 
 
 // menuStore
 const menuStore = useMenuStore();
 const { saladList, smoothieList, isLoaded } = storeToRefs(menuStore);
-// watch(saladList, (nVal) => {
-//     console.log(nVal);
-// }, { immediate: true, deep: true })
+
 // 顯示推薦
 function filterByTag(
     catalog: 'salad' | 'smoothies',
@@ -558,9 +569,14 @@ function createViewCartScrollTrigger() {
 
 
 // 打字效果
+// onMounted(() => {
+//     console.dir(viewCart.value);
+// })
 
-
-// 飛入購物車
+// 購物車state
+const cartStore = useCartStore();
+const { cartCounter } = storeToRefs(cartStore);
+const { toggleCartCardOpen } = cartStore;
 
 
 // 檢查result state
@@ -832,6 +848,26 @@ onMounted(() => {
         color: $primaryBacColor;
         overflow: hidden;
     }
+
+    .counter {
+        @include flex-center-center;
+        @include absoluteCenterTLXY($top: 0%, $left: 100%);
+        @include WnH(24px);
+        padding: 2px;
+        position: absolute;
+        transform: translate(-75%, -25%);
+        background-color: red;
+        border-radius: 50%;
+        transition: opacity .3s ease;
+
+        span {
+            aspect-ratio: 1/1;
+            color: $primaryBacColor;
+            font-variation-settings: 'wght' 500;
+            font-size: 12px;
+            line-height: 24px;
+        }
+    }
 }
 
 .cartBtn {
@@ -874,20 +910,4 @@ onMounted(() => {
 .cartBtn-leave-from {
     opacity: 1;
 }
-
-// .listSlideUp-enter-active,
-// .listSlideUp-leave-active {
-//     transition: transform .3s ease, opacity .3s ease;
-// }
-
-// .listSlideUp-enter-from,
-// .listSlideUp-leave-to {
-//     opacity: 0;
-//     transform: translateY(10%);
-// }
-
-// .listSlideUp-enter-to,
-// .listSlideUp-leave-from {
-//     opacity: 1;
-//     transform: translateY(0);
-// }</style>
+</style>

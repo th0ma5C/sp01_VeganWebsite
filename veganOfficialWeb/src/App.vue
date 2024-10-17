@@ -18,6 +18,9 @@
                         </component>
                     </keep-alive>
                 </router-view>
+
+                <CartCard></CartCard>
+                <div class="flyToCartContainer"></div>
             </main>
             <footer>
                 <VeganFooter></VeganFooter>
@@ -30,6 +33,7 @@
 import VeganHeader from './components/Header/VeganHeader.vue'
 import VeganFooter from './components/Footer/VeganFooter.vue';
 import Loader from './components/Loader/Loader.vue';
+import CartCard from './components/popover/CartCard.vue';
 import { onMounted, watch, toRefs, onUnmounted } from 'vue';
 import { useLoader } from '@/store/loader';
 import preloadImgList from './utils/preloadImgList';
@@ -76,6 +80,8 @@ body {
         // outline: 1px solid black;
     }
 }
+
+// .flyToCartContainer {}
 
 #app {
     background-color: $primaryBacColor;

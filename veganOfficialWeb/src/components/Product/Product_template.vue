@@ -16,9 +16,11 @@
                 {{ el }}
             </span>
         </div>
-        <div class="btnWrapper">
+        <div class="btnWrapper" ref="btnWrapper">
             <button class="cart-btn" ref="cartBtnEl"
-                @click="addCart">加入購物車</button>
+                @click="addCart">
+                加入購物車
+            </button>
             <button class="info-btn"
                 @click="routerPush(item.name!)">詳細資訊</button>
             <div class="btnBackground">
@@ -48,7 +50,7 @@
                 </svg>
             </div>
         </div>
-        <Teleport :to="'main'">
+        <Teleport :to="'.flyToCartContainer'">
             <div class="flyToCart" ref="flyToCartEl"
                 v-if="cartEl">
                 <img :src="flyToCartImg" alt="">
@@ -66,6 +68,7 @@ import { useMenuStore } from '@/store/menuStore';
 import { storeToRefs } from 'pinia';
 import gsap from 'gsap';
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
+import { useCartStore } from '@/store/cartStore';
 
 
 //接收菜單數據 
@@ -107,94 +110,88 @@ const imgClass = computed(() => {
     return item.category == 'salad' ? 'menuImg' : 'smoothiesImg'
 })
 
+// 購物車state
+const cartStore = useCartStore();
+const { counterIncrease, addItemToCart } = cartStore;
+
+
 // 飛入購物車
-// const itemImg = ref();
 const cartBtnEl = ref<HTMLElement | null>(null);
-// const emit = defineEmits(['cartBtn-click']);
-
-// function addCart() {
-//     // const data = {
-//     //     el: cartBtnEl.value,
-//     //     item
-//     // }
-//     // emit('cartBtn-click', data);
-//     console.log(cartEl);
-
-// }
-interface EmitData {
-    el: HTMLElement,
-    item: MenuItem
-}
-
-interface Coord {
-    x: number,
-    y: number
-}
-
 const flyToCartEl = ref<HTMLElement | null>(null);
 const flyToCartImg = ref('');
 const isFlying = ref(false);
 gsap.registerPlugin(MotionPathPlugin);
 
-function flyToCart(originCoord: Coord) {
+const cartBtnElCoord = computed(() => {
+    if (!cartBtnEl.value) return
+    const { left, top, width, height } = cartBtnEl.value.getBoundingClientRect();
+    const originCoord = {
+        x: (left + width / 2) - 73,
+        y: (window.scrollY + top + height / 2) - 25
+    }
+    return originCoord
+})
+
+function getCartElCoord() {
     if (!cartEl) return
-    const { left, top, width, height } = cartEl.getBoundingClientRect();
-    // gsap.to(flyToCartEl.value, {
-    //     duration: .75,
-    //     // delay: .25,
-    //     x: left + (width / 2) - (48 + 25), //padding + width/2
-    //     y: window.scrollY + top - 100,
-    //     ease: "power1.inOut"
-    // })
+    const { left, top, width } = cartEl.getBoundingClientRect();
 
     const targetCoord = {
         x: left + (width / 2) - (48 + 25), //padding + width/2,
         y: window.scrollY + top,
     }
-    const inflectX = originCoord.x < targetCoord.x ? 50 : -50
+    return targetCoord
+}
+
+function initTakeoffPoint() {
+    const { x = 0, y = 0 } = cartBtnElCoord.value ?? {}
+
+    gsap.set(flyToCartEl.value, {
+        x: x,
+        y: y,
+        opacity: 1,
+    });
+    flyToCartImg.value = item.fileName ?? '';
+}
+
+function flyToCart() {
+    if (!cartBtnElCoord.value) return
+    if (isFlying.value) return;
+    isFlying.value = true;
+    initTakeoffPoint();
+    const { x: originX = 0, y: originY = 0 } = cartBtnElCoord.value ?? {}
+    const { x: targetX = 0, y: targetY = 0 } = getCartElCoord() ?? {};
+
+    const inflectX = originX < targetX ? 50 : -50;
 
     gsap.to(flyToCartEl.value, {
         duration: .5,
         opacity: 0,
         motionPath: {
             path: [
-                { x: originCoord.x, y: originCoord.y },
+                { x: originX, y: originY },
                 {
-                    x: originCoord.x + inflectX,
-                    y: originCoord.y - 50
+                    x: originX + inflectX,
+                    y: originY - 50
                 },
-                { x: targetCoord.x, y: targetCoord.y }
+                { x: targetX, y: targetY }
             ],
             curviness: 1,
         },
         ease: "power1.inOut",
         onComplete: () => {
+            counterIncrease();
             isFlying.value = false;
         }
     });
-
 }
 
 function addCart() {
-    if (!cartBtnEl.value) return
-    // if (isFlying.value) return;
-    isFlying.value = true;
-    const { left, top, width, height } = cartBtnEl.value.getBoundingClientRect();
-    const originCoord = {
-        x: (left + width / 2) - 73,
-        y: (window.scrollY + top + height / 2) - 25
-    }
-
-    gsap.set(flyToCartEl.value, {
-        x: originCoord.x,
-        y: originCoord.y,
-        opacity: 1,
-        onComplete: () => {
-            flyToCartImg.value = item.fileName ?? '';
-            flyToCart(originCoord);
-        }
-    });
+    flyToCart();
+    addItemToCart(item);
 }
+
+
 
 </script>
 
@@ -428,6 +425,7 @@ function addCart() {
 
 .flyToCart {
     @include WnH(50px);
+    pointer-events: none;
     opacity: 0;
     position: absolute;
     left: 3rem;
