@@ -17,14 +17,32 @@
             </div>
 
             <div class="itemWrapper">
-                <div class="item">
-                    1
+                <div class="emptyList" v-if="false">
+                    空
                 </div>
-                <div class="item">
-                    1
-                </div>
-                <div class="item">
-                    1
+                <div class="item" v-for="(item, index) in 3"
+                    :key="index">
+                    <div>
+                        <img src="" alt="">
+                    </div>
+
+                    <div>
+                        <h3>名稱</h3>
+                        <p>價錢</p>
+                    </div>
+
+                    <div>
+                        <div>
+                            <OrderCounter></OrderCounter>
+                            <!-- <button>-</button>
+                            <input type="text">
+                            <button>+</button> -->
+                        </div>
+
+                        <div>
+                            小計
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -62,19 +80,23 @@
 <script setup lang="ts">
 /**
  * todo: 加入會員、社群分享超連結
- * doing: 樣式完成 點空白關閉 導入數據
+ * doing: 樣式完成 點空白關閉 導入數據 封裝加減數量組件
  * ----------------------------------
  * *item list scrollbar 用icon代替
  * ----------------------------------
  * ?小計分隔線樣式
  */
+import OrderCounter from '../OrderCounter/OrderCounter.vue';
 import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 
 
 const cartStore = useCartStore();
-const { isCartCardOpen } = storeToRefs(cartStore);
+const { isCartCardOpen, cartItems } = storeToRefs(cartStore);
 const { toggleCartCardOpen } = cartStore;
+
+const showCartItemList = computed(() => cartItems.value);
 
 </script>
 

@@ -100,9 +100,11 @@
                                     width="24" height="24">
                                 </SvgIcon>
                             </button>
-                            <input type="text"
+                            <input autocomplete="off"
+                                type="text"
                                 name="orderAmount"
-                                v-model.lazy="counterVal">
+                                @input="formattedInput($event as InputEvent)"
+                                v-model.number.lazy="counterVal">
                             <button
                                 :class="{ unclickable: limitAlert && counterVal >= max }"
                                 @click="counter('+')">
@@ -355,33 +357,53 @@ let prevCounterVal = 1;
 const limitAlert = ref(false);
 const max = 99, min = 1;
 
-function counter(actions: '+' | '-') {
-    switch (actions) {
-        case '+':
-            if (counterVal.value >= max) break
-            counterVal.value += 1;
-            break;
-
-        case '-':
-            if (counterVal.value <= min) break
-            counterVal.value -= 1;
-            break;
-
-        default:
-            break;
-    }
+function formattedInput(e: InputEvent) {
+    const reg = /\D|^0+/g;
+    const target = e.target as HTMLInputElement;
+    target.value = target.value.replace(reg, '');
 }
 
-watch(counterVal, (nVal) => {
-    counterVal.value = Number(counterVal.value);
-
-    if (nVal > max || nVal < min || isNaN(nVal)) {
-        counterVal.value = prevCounterVal;
+function counter(actions: '+' | '-') {
+    if (actions === '+' && counterVal.value < max) {
+        counterVal.value += 1;
+    } else if (actions === '-' && counterVal.value > min) {
+        counterVal.value -= 1;
     }
-    if (nVal >= max || nVal <= min) return limitAlert.value = true;
+    // switch (actions) {
+    //     case '+':
+    //         if (counterVal.value >= max) break
+    //         counterVal.value += 1;
+    //         break;
 
-    limitAlert.value = false;
-    prevCounterVal = nVal;
+    //     case '-':
+    //         if (counterVal.value <= min) break
+    //         counterVal.value -= 1;
+    //         break;
+
+    //     default:
+    //         break;
+    // }
+}
+
+watch(counterVal, (nVal, oVal) => {
+
+    if (Number.isNaN(nVal)) {
+        counterVal.value = prevCounterVal;
+    } else if (nVal > max) {
+        counterVal.value = max;
+    } else if (nVal < min) {
+        counterVal.value = min;
+    }
+
+    // if (nVal >= max || nVal <= min) {
+    //     limitAlert.value = true;
+    //     return
+    // }
+
+    limitAlert.value = nVal >= max || nVal <= min;
+    prevCounterVal = counterVal.value;
+    // prevCounterVal = oVal ?? 1;
+    // limitAlert.value = false;
 
 }, { immediate: true });
 

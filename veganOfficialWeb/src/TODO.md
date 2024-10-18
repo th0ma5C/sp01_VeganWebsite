@@ -50,6 +50,9 @@
     ## header, footer
     * 在大解析度位置不正確
 
+    ## menu product
+    * 初次進入頁面會跳動，需骨架屏
+
 # style
     ##font
     ~~*改用google font api，可以用preConnect~~

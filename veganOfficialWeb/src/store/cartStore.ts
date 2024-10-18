@@ -25,12 +25,17 @@ export const useCartStore = defineStore('cart', () => {
         console.log(cartItems);
     }
 
+    function DELItemFromCart() {
+
+    }
+
     return {
         isCartCardOpen,
         cartCounter,
         cartItems,
         counterIncrease,
         toggleCartCardOpen,
-        addItemToCart
+        addItemToCart,
+        DELItemFromCart
     }
 })
