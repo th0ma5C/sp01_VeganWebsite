@@ -53,6 +53,9 @@
     ## menu product
     * 初次進入頁面會跳動，需骨架屏
 
+    ## order counter
+!!! * 組件 v model 組件內ref 則一(問卷使用v model，其他地方未確認)
+
 # style
     ##font
     ~~*改用google font api，可以用preConnect~~

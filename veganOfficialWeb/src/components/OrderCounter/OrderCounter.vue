@@ -1,7 +1,7 @@
 <template>
     <div class="counterControl">
         <button
-            :class="{ unclickable: limitAlert && counterVal <= min }"
+            :class="{ unclickable: limitAlert && amountModel <= min }"
             @click="counter('-')">
             <SvgIcon name="productMinus" class="countIcon"
                 width="24" height="24">
@@ -10,9 +10,9 @@
         <input autocomplete="off" type="text"
             name="orderAmount"
             @input="formattedInput($event as InputEvent)"
-            v-model.number.lazy="counterVal">
+            v-model.number.lazy="amountModel">
         <button
-            :class="{ unclickable: limitAlert && counterVal >= max }"
+            :class="{ unclickable: limitAlert && amountModel >= max }"
             @click="counter('+')">
             <SvgIcon name="productPlus" class="countIcon"
                 width="24" height="24">
@@ -22,9 +22,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 
-const counterVal = ref(1);
+// 計數器預設
+const amountModel = defineModel('amount', { default: 1 });
+
+// 輸入驗證
+// const counterVal = ref(1);
 let prevCounterVal = 1;
 const limitAlert = ref(false);
 const max = 99, min = 1;
@@ -36,48 +40,58 @@ function formattedInput(e: InputEvent) {
 }
 
 function counter(actions: '+' | '-') {
-    if (actions === '+' && counterVal.value < max) {
-        counterVal.value += 1;
-    } else if (actions === '-' && counterVal.value > min) {
-        counterVal.value -= 1;
+    if (actions === '+' && amountModel.value < max) {
+        amountModel.value += 1;
+    } else if (actions === '-' && amountModel.value > min) {
+        amountModel.value -= 1;
     }
 }
 
-watch(counterVal, (nVal, oVal) => {
+watch(amountModel, (nVal, oVal) => {
 
     if (Number.isNaN(nVal)) {
-        counterVal.value = prevCounterVal;
+        amountModel.value = prevCounterVal;
     } else if (nVal > max) {
-        counterVal.value = max;
+        amountModel.value = max;
     } else if (nVal < min) {
-        counterVal.value = min;
+        amountModel.value = min;
     }
 
     limitAlert.value = nVal >= max || nVal <= min;
-    prevCounterVal = counterVal.value;
+    prevCounterVal = amountModel.value;
+    amountModel.value = amountModel.value;
 
 }, { immediate: true });
+// function counter(actions: '+' | '-') {
+//     if (actions === '+' && counterVal.value < max) {
+//         counterVal.value += 1;
+//     } else if (actions === '-' && counterVal.value > min) {
+//         counterVal.value -= 1;
+//     }
+// }
+
+// watch(counterVal, (nVal, oVal) => {
+
+//     if (Number.isNaN(nVal)) {
+//         counterVal.value = prevCounterVal;
+//     } else if (nVal > max) {
+//         counterVal.value = max;
+//     } else if (nVal < min) {
+//         counterVal.value = min;
+//     }
+
+//     limitAlert.value = nVal >= max || nVal <= min;
+//     prevCounterVal = counterVal.value;
+//     amountModel.value = counterVal.value;
+
+// }, { immediate: true });
+
+
 
 </script>
 
 <style scoped lang="scss">
-// .orderCounter {
-//     @include WnH(100%, 42px);
-//     background-color: $primaryBacColor;
-//     border-radius: 0.5rem;
-//     flex-direction: row;
-//     position: relative;
-//     margin-top: 1rem;
-
-//     span {
-//         @include absoluteCenterTLXY($left: 0.75rem, $X: 0);
-//         font-size: 20px;
-//         // font-weight: 900;
-//         font-variation-settings: 'wght' 450;
-//     }
-
 .counterControl {
-    // @include absoluteCenterTLXY($left: calc(100% - 1rem), $X: -100%);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -117,5 +131,4 @@ watch(counterVal, (nVal, oVal) => {
         cursor: not-allowed;
     }
 }
-
-// }</style>
+</style>

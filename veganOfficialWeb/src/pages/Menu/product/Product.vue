@@ -91,39 +91,11 @@
                     </div>
                     <div class="orderCounter">
                         <span>數量</span>
-                        <div class="counterControl">
-                            <button
-                                :class="{ unclickable: limitAlert && counterVal <= min }"
-                                @click="counter('-')">
-                                <SvgIcon name="productMinus"
-                                    class="countIcon"
-                                    width="24" height="24">
-                                </SvgIcon>
-                            </button>
-                            <input autocomplete="off"
-                                type="text"
-                                name="orderAmount"
-                                @input="formattedInput($event as InputEvent)"
-                                v-model.number.lazy="counterVal">
-                            <button
-                                :class="{ unclickable: limitAlert && counterVal >= max }"
-                                @click="counter('+')">
-                                <SvgIcon name="productPlus"
-                                    class="countIcon"
-                                    width="24" height="24">
-                                </SvgIcon>
-                            </button>
-                        </div>
+                        <OrderCounter></OrderCounter>
                     </div>
                     <div class="price">
                         <h2>價格</h2>
                         <span>
-                            <!-- {{ unitPrice }} -->
-                            <!-- <span
-                                v-for="(num, index) in showPlaces"
-                                :key="index">
-                                {{ num }}
-                            </span> -->
                             <span>
                                 {{ showPrice }}
                             </span>
@@ -290,6 +262,7 @@ import Product_template from '@/components/Product/Product_template.vue';
 import useListener from '@/hooks/useListener';
 import useImgChecker from '@/hooks/useImgChecker';
 import Breadcrumbs from '@/components/Breadcrumbs/Breadcrumbs.vue';
+import OrderCounter from '@/components/OrderCounter/OrderCounter.vue';
 
 // store數據
 const menuStore = useMenuStore();
@@ -870,7 +843,7 @@ onUnmounted(() => {
 }
 
 .detailWrapper {
-    background-color: #FFE8C0;
+    background-color: $primaryBacColor_dark;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -1030,7 +1003,7 @@ onUnmounted(() => {
         }
 
         &>span:nth-of-type(1) {
-            background-color: #FFE8C0;
+            background-color: $primaryBacColor_dark;
             font-size: 20px;
             margin-left: auto;
             position: relative;

@@ -112,7 +112,7 @@ const imgClass = computed(() => {
 
 // 購物車state
 const cartStore = useCartStore();
-const { counterIncrease, addItemToCart } = cartStore;
+const { addItemToCart } = cartStore;
 
 
 // 飛入購物車
@@ -180,7 +180,6 @@ function flyToCart() {
         },
         ease: "power1.inOut",
         onComplete: () => {
-            counterIncrease();
             isFlying.value = false;
         }
     });
