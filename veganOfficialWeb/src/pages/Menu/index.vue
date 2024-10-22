@@ -26,7 +26,7 @@
                         class="text">Relation-Ship</span>團隊的專業分析，為您打造專屬菜單
                 </h1>
             </div>
-            <button>開始診斷</button>
+            <button @click="routerToQNR">開始診斷</button>
         </div>
         <div class="menuWrapper">
             <div class="title">
@@ -311,7 +311,7 @@
                             v-show="filteredSmoothie.includes(items)"
                             :key="index">
                             <div class="imgWrapper"
-                                @click="routerPush(items.name)">
+                                @click="routerToProduct(items.name)">
                                 <img :src="items.fileName!"
                                     alt="商品">
                                 <div class="description">
@@ -333,7 +333,7 @@
                                 <button
                                     class="cart-btn">加入購物車</button>
                                 <button
-                                    @click="routerPush(items.name)"
+                                    @click="routerToProduct(items.name)"
                                     class="info-btn">詳細資訊</button>
                                 <div class="btnBackground">
                                     <svg width="260"
@@ -396,7 +396,7 @@
                             <p>
                                 {{ intro }}
                             </p>
-                            <button>
+                            <button @click="routerToQNR">
                                 開始診斷
                             </button>
                         </div>
@@ -415,7 +415,8 @@
                     <p>
                         {{ docData[0].intro }}
                     </p>
-                    <button class="target">
+                    <button class="target"
+                        @click="routerToQNR">
                         開始診斷
                     </button>
                 </div>
@@ -640,7 +641,7 @@ function sort(el: Ref<MenuItem[]>) {
 // }
 
 menuStore.$subscribe((_, state) => {
-    console.log(state.ingredientsList);
+    // console.log(state.ingredientsList);
 })
 
 let ingredientSet = computed<Set<string>>(() => {
@@ -974,13 +975,18 @@ let docData = [
 const router = useRouter();
 const route = useRoute();
 
-function routerPush(name: string, id?: string) {
-    console.log('object');
+function routerToProduct(name: string, id?: string) {
     router.push({
         name: 'Product',
         query: {
             name,
         },
+    })
+}
+
+function routerToQNR() {
+    router.push({
+        path: '/questionnaire',
     })
 }
 

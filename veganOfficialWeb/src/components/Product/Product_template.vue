@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, computed, watch } from 'vue';
+import { ref, nextTick, computed, watch, inject, onMounted } from 'vue';
 import type { Ref } from 'vue';
 import type { MenuItem } from '@/api/menu/type';
 import { useRouter } from 'vue-router';
@@ -77,6 +77,10 @@ interface Props {
     cartEl?: HTMLElement | undefined
 }
 const { item, cartEl } = defineProps<Props>();
+
+const destinationPoint = computed(() => {
+    return cartEl ?? cartEl
+})
 
 // const MenuStore = useMenuStore();
 // MenuStore.$subscribe((_, state) => {
@@ -155,8 +159,7 @@ function initTakeoffPoint() {
 }
 
 function flyToCart() {
-    if (!cartBtnElCoord.value) return
-    if (isFlying.value) return;
+    if (!cartBtnElCoord.value) return;
     isFlying.value = true;
     initTakeoffPoint();
     const { x: originX = 0, y: originY = 0 } = cartBtnElCoord.value ?? {}
@@ -186,6 +189,7 @@ function flyToCart() {
 }
 
 function addCart() {
+    if (isFlying.value) return;
     flyToCart();
     addItemToCart(item);
 }

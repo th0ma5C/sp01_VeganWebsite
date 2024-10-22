@@ -165,16 +165,18 @@
                 </transition-group>
             </button>
 
-            <div class="counter" :style="{
+            <CartCounter></CartCounter>
+            <!-- <div class="counter" :style="{
                 opacity: cartCounter ? '1' : '0'
             }">
-                <span v-if="cartCounter < 99">
+                <span
+                    v-if="cartCounter && cartCounter < 99">
                     {{ cartCounter }}
                 </span>
                 <span v-else>
                     {{ 99 }}+
                 </span>
-            </div>
+            </div> -->
         </div>
     </div>
 </template>
@@ -203,9 +205,9 @@ import { storeToRefs } from 'pinia';
 import type { MenuItem } from '@/api/menu/type';
 import gsap from 'gsap';
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import useListener from '@/hooks/useListener';
 import { useCartStore } from '@/store/cartStore';
+import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
 
 // questionnaireStore
 const questionnaireStore = useQuestionnaireStore();
@@ -849,25 +851,25 @@ onMounted(() => {
         overflow: hidden;
     }
 
-    .counter {
-        @include flex-center-center;
-        @include absoluteCenterTLXY($top: 0%, $left: 100%);
-        @include WnH(24px);
-        padding: 2px;
-        position: absolute;
-        transform: translate(-75%, -25%);
-        background-color: red;
-        border-radius: 50%;
-        transition: opacity .3s ease;
+    // .counter {
+    //     @include flex-center-center;
+    //     @include absoluteCenterTLXY($top: 0%, $left: 100%);
+    //     @include WnH(24px);
+    //     padding: 2px;
+    //     position: absolute;
+    //     transform: translate(-75%, -25%);
+    //     background-color: red;
+    //     border-radius: 50%;
+    //     transition: opacity .3s ease;
 
-        span {
-            aspect-ratio: 1/1;
-            color: $primaryBacColor;
-            font-variation-settings: 'wght' 500;
-            font-size: 12px;
-            line-height: 24px;
-        }
-    }
+    //     span {
+    //         aspect-ratio: 1/1;
+    //         color: $primaryBacColor;
+    //         font-variation-settings: 'wght' 500;
+    //         font-size: 12px;
+    //         line-height: 24px;
+    //     }
+    // }
 }
 
 .cartBtn {

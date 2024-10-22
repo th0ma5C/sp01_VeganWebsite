@@ -1,7 +1,7 @@
 <template>
-    <transition name="CartCard">
+    <transition name="CartCard" @after-leave="allowClick">
         <div v-show="isCartCardOpen" class="cartContainer"
-            @click="clickOuter">
+            @click="closeDrawer">
             <div class="drawer" @click.stop>
                 <div class="topTitle">
                     <h1>
@@ -9,8 +9,7 @@
                     </h1>
                     <SvgIcon class="cancelBtn" name="cancel"
                         width="24px" height="24px"
-                        color="black"
-                        @click="toggleCartCardOpen">
+                        color="black" @click="closeDrawer">
                     </SvgIcon>
                 </div>
 
@@ -21,46 +20,55 @@
                 </div>
 
                 <div class="itemWrapper">
-                    <div class="emptyList"
-                        v-if="!cartCounter">
-                        購物車是空的
-                    </div>
-                    <div class="item"
-                        v-for="(item, key) in showCartItemList"
-                        :key="key">
-                        <div class="imgWrapper">
-                            <img :src="item.imgUrl"
-                                alt="商品">
+                    <transition name="emptyList">
+                        <div class="emptyList"
+                            v-if="!cartCounter">
+                            購物車是空的
                         </div>
+                    </transition>
 
-                        <div class="details">
-                            <h3>{{ key }}</h3>
-                            <small>${{ item.price }}</small>
-                        </div>
-
-                        <div class="itemSubtotal">
-                            <div class="counterWrapper">
-                                <OrderCounter
-                                    v-model:amount="item.amount">
-                                </OrderCounter>
-
-                                <SvgIcon
-                                    @click="DEL_cartItem(key as string)"
-                                    class="DELicon"
-                                    name="Delete"
-                                    height="24px"
-                                    width="24px"
-                                    color="black">
-                                </SvgIcon>
+                    <transition-group name="item">
+                        <div class="item"
+                            v-for="(item, key) in showCartItemList"
+                            :key="key">
+                            <div class="imgWrapper" :class="{
+                                saladBg: item.category == 'salad'
+                            }">
+                                <img :src="item.imgUrl"
+                                    alt="商品">
                             </div>
 
-                            <div class="price">
-                                <small>小計</small>
-                                <span>${{ item.amount *
-                                    item.price }}</span>
+                            <div class="details">
+                                <h3>{{ key }}</h3>
+                                <small>${{ item.price
+                                    }}</small>
+                            </div>
+
+                            <div class="itemSubtotal">
+                                <div class="counterWrapper">
+                                    <OrderCounter
+                                        v-model:amount="item.amount">
+                                    </OrderCounter>
+
+                                    <SvgIcon
+                                        @click="DEL_cartItem(key as string)"
+                                        class="DELicon"
+                                        name="Delete"
+                                        height="24px"
+                                        width="24px"
+                                        color="black">
+                                    </SvgIcon>
+                                </div>
+
+                                <div class="price">
+                                    <small>小計</small>
+                                    <span>${{ item.amount *
+                                        item.price }}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </transition-group>
+
                 </div>
 
                 <div class="botWrapper">
@@ -101,38 +109,54 @@
 <script setup lang="ts">
 /**
  * todo: 加入會員、社群分享超連結
- * doing: 樣式完成 導入數據 購物車本地儲存
- * 
+ * doing: 其他分頁購物車、問卷按鈕路由完善
+ * //!組件內修改數量、刪除item需要更新storage
  * ----------------------------------
  * *item list scrollbar 用icon提示
  * ----------------------------------
- * ?小計分隔線樣式
- * 
+ * //?小計分隔線樣式
  * //封裝加減數量組件
  * //點空白關閉
+ * //導入數據
+ * //樣式完成 
+ * //購物車本地儲存
  */
 import OrderCounter from '../OrderCounter/OrderCounter.vue';
 import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, watch, ref, watchEffect } from 'vue';
 import type { MenuItem } from "@/api/menu/type";
 
 
 
 const cartStore = useCartStore();
 const { isCartCardOpen, cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
-const { toggleCartCardOpen, DELItemFromCart } = cartStore;
+const { toggleCartCardOpen, DELItemFromCart, initCart } = cartStore;
 
 const showCartItemList = computed(() => {
     return cartMap.value
 });
 
-watch(showCartItemList.value, (nVal) => {
-})
+// watch(showCartItemList.value, (nVal) => {
+//     setCartToStorage()
+//     // console.log(nVal);
+// })
+// watchEffect(() => {
+//     if (showCartItemList.value) {
+//         setCartToStorage()
+//     }
+// })
 
 
-// 點擊空白關閉
-function clickOuter(e: MouseEvent) {
+// 點擊關閉
+const isAnimating = ref(false);
+function allowClick() {
+    isAnimating.value = false
+}
+
+function closeDrawer() {
+    if (isAnimating.value) return
+    isAnimating.value = true;
     toggleCartCardOpen()
 }
 
@@ -148,6 +172,7 @@ function clickCheckout() {
 }
 
 onMounted(() => {
+    initCart();
 })
 </script>
 
@@ -209,17 +234,39 @@ onMounted(() => {
     text-align: center;
 }
 
+
+
 .itemWrapper {
     // border: 1px solid black;
     flex: 1;
     overflow-y: scroll;
     padding-right: .5rem;
+    position: relative;
+
 
     .emptyList {
         font-size: .75rem;
         text-align: center;
         opacity: .5;
-        transform: translateX(.5rem);
+        position: absolute;
+        left: 50%;
+        top: 0;
+        transform: translateX(calc(-50%));
+    }
+
+    .emptyList-enter-active,
+    .emptyList-leave-active {
+        transition: opacity .15s .5s ease;
+    }
+
+    .emptyList-enter-from,
+    .emptyList-leave-to {
+        opacity: 0;
+    }
+
+    .emptyList-enter-to,
+    .emptyList-leave-from {
+        opacity: .5;
     }
 
 
@@ -243,11 +290,17 @@ onMounted(() => {
 
         .imgWrapper {
             @include WnH(100px);
+            border-radius: .5rem;
             grid-area: a;
+            overflow: hidden;
 
             img {
                 @include WnH(100%);
             }
+        }
+
+        .saladBg {
+            background: no-repeat url('@assets/img/Menu/bac_wood.jpg') center/contain;
         }
 
         .details {
@@ -321,7 +374,8 @@ onMounted(() => {
         left: 0;
         height: 2px;
         width: 100%;
-        background-color: gray;
+        background-color: $secondBacColor;
+        border-radius: 2px;
     }
 
     .orderSubtotal {
@@ -409,5 +463,27 @@ onMounted(() => {
     .drawer {
         transform: translateX(0%);
     }
+}
+
+.item-move,
+.item-enter-active,
+.item-leave-active {
+    transition: transform .5s ease, opacity .3s ease;
+}
+
+.item-leave-active {
+    position: absolute;
+}
+
+.item-enter-from,
+.item-leave-to {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.item-enter-to,
+.item-leave-from {
+    transform: translateX(0%);
+    opacity: 1;
 }
 </style>

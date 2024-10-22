@@ -20,12 +20,16 @@
                 </ul>
                 <ul class="navIcon">
                     <li v-for="{ icon } in navIcon "
-                        :key="icon">
-                        <a href="">
+                        :key="icon" ref="iconList">
+                        <a href=""
+                            @click.prevent="clickCartIcon(icon)">
                             <SvgIcon :name="icon"
                                 width="35px" height="35px">
                             </SvgIcon>
                         </a>
+                        <CartCounter v-if="icon == 'Cart'"
+                            :size="{ width: 18, height: 18 }">
+                        </CartCounter>
                     </li>
                 </ul>
             </div>
@@ -49,12 +53,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick, provide } from 'vue';
 import throttle from 'lodash/throttle';
 import { useRouter, useRoute } from 'vue-router';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { storeToRefs } from 'pinia';
-
+import { useCartStore } from '@/store/cartStore';
+import CartCounter from '../popover/cartCounter/CartCounter.vue';
 
 let navLink = [
     {
@@ -110,9 +115,20 @@ function prevPage() {
     Router.go(-steps)
 }
 
+// 購物車
+const cartStore = useCartStore();
+const { toggleCartCardOpen } = cartStore;
+
+function clickCartIcon(target: string) {
+    if (target == 'Cart') toggleCartCardOpen()
+}
+
+// 暴露按鈕元素
+const iconList = ref();
+
 
 onMounted(() => {
-    window.addEventListener('scroll', throttledOnScroll)
+    window.addEventListener('scroll', throttledOnScroll);
 })
 
 onBeforeUnmount(() => {
@@ -142,7 +158,7 @@ onBeforeUnmount(() => {
         @include main-part;
         width: 100%;
 
-        div {
+        &>div {
             @include flex-center-center;
             justify-content: space-between;
             width: 100%;
@@ -167,6 +183,7 @@ onBeforeUnmount(() => {
 
                 li {
                     margin-right: 1rem;
+                    position: relative;
                 }
             }
         }

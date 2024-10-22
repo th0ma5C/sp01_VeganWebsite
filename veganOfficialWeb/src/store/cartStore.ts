@@ -1,13 +1,21 @@
 import { defineStore } from "pinia";
-import { computed, reactive, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import type { MenuItem } from "@/api/menu/type";
 
 interface MapState {
     [key: string]: {
         price: number,
         amount: number,
-        imgUrl: string
+        imgUrl: string,
+        category: string
     }
+}
+
+interface StorageData {
+    user: string;
+    id: string;
+    data: MapState;
+    expiration: any;
 }
 
 export const useCartStore = defineStore('cart', () => {
@@ -28,11 +36,13 @@ export const useCartStore = defineStore('cart', () => {
             cartMap[item.name!] = {
                 price: item.price!,
                 amount: 1,
-                imgUrl: item.fileName!
+                imgUrl: item.fileName!,
+                category: item.category!
             }
         } else {
             cartMap[item.name!].amount += 1
         }
+        setCartToStorage();
     }
     // 刪除item
     function DELItemFromCart(target: string) {
@@ -60,9 +70,59 @@ export const useCartStore = defineStore('cart', () => {
 
     // storage 緩存
     const storageKey = 'cart';
-    function getStorageCounter() {
+    const user = 'mock user';
+    const userID = '00000000';
+    const expiredTime = 1000 * 60 * 60 * 24 * 2; // 2天
+    const stamp = ref(Date.now() + expiredTime);
 
+    const cacheData = computed(() => {
+        return {
+            user,
+            id: userID,
+            data: cartMap,
+            expiration: stamp.value
+        }
+    })
+
+    function isExpired(stamp: number) {
+        return Date.now() > stamp
     }
+
+    function setCartToStorage() {
+        if (cacheData.value.user == 'mock user') {
+            stamp.value = Date.now() + expiredTime;
+        }
+        try {
+            const data = JSON.stringify(cacheData.value);
+            localStorage.setItem(storageKey, data);
+        } catch (error) {
+            console.error('failed when stringify cart data to localStorage', error);
+        }
+    }
+
+    function getCartFromStorage() {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return
+        try {
+            const data = JSON.parse(raw) as StorageData;
+            return isExpired(data.expiration) ? localStorage.removeItem(storageKey) : data
+        } catch (error) {
+            console.error('failed when parsing cart data from localStorage', error);
+            localStorage.removeItem(storageKey)
+            return
+        }
+    }
+
+    function initCart() {
+        const cartData = getCartFromStorage();
+        if (!cartData) return
+        const { data } = cartData;
+        Object.assign(cartMap, { ...data });
+    }
+
+    watch(cartMap, () => {
+        setCartToStorage()
+    }, { deep: true })
 
     return {
         isCartCardOpen,
@@ -73,5 +133,8 @@ export const useCartStore = defineStore('cart', () => {
         toggleCartCardOpen,
         addItemToCart,
         DELItemFromCart,
+        setCartToStorage,
+        getCartFromStorage,
+        initCart
     }
 })
