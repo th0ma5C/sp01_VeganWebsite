@@ -4,6 +4,7 @@ import { reqGetQuestionnaire } from "@/api/questionnaire"
 import type { Questionnaire } from '@/api/questionnaire/type'
 import type { Birth, Info, Form } from '@/store/type/QNR_type'
 
+
 const mockData = reactive({
     info: {
         userName: '鷹村',

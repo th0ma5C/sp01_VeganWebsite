@@ -53,13 +53,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick, provide } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick, computed, watch } from 'vue';
 import throttle from 'lodash/throttle';
 import { useRouter, useRoute } from 'vue-router';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/store/cartStore';
 import CartCounter from '../popover/cartCounter/CartCounter.vue';
+import emitter from '@/utils/eventBus';
+
 
 let navLink = [
     {
@@ -117,18 +119,34 @@ function prevPage() {
 
 // 購物車
 const cartStore = useCartStore();
-const { toggleCartCardOpen } = cartStore;
+const { toggleCartCardOpen, getHeaderCartBtn } = cartStore;
 
 function clickCartIcon(target: string) {
     if (target == 'Cart') toggleCartCardOpen()
 }
-
-// 暴露按鈕元素
+// iconList
 const iconList = ref();
 
+watch(QNR_IsLoaded, (nVal) => {
+    if (nVal == false) {
+        nextTick(() => {
+            getHeaderCartBtn(iconList.value[1]);
+        })
+    }
+})
+
+// emit event
+emitter.on('sendIcon', () => {
+    if (QNR_IsLoaded.value == false) hideNav.value = false;
+})
+
+watch(hideNav, (nVal) => {
+    emitter.emit('navEvent', nVal)
+})
 
 onMounted(() => {
     window.addEventListener('scroll', throttledOnScroll);
+    getHeaderCartBtn(iconList.value[1]); // 暴露cart按鈕元素
 })
 
 onBeforeUnmount(() => {

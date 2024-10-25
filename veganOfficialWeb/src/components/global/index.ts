@@ -1,8 +1,9 @@
 import type { App } from 'vue'
 import SvgIcon from '@/components/global/SvgIcon/index.vue'
 import { nanoid } from 'nanoid'
+import mitt from 'mitt'
 
-const globalComponents = { SvgIcon }
+const globalComponents = { SvgIcon };
 
 export default {
     install(app: App) {
@@ -11,5 +12,6 @@ export default {
         });
 
         app.provide('nanoid', nanoid);
+
     }
 }

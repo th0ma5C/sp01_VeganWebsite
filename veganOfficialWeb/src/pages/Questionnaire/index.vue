@@ -245,6 +245,7 @@ import { useRouter } from 'vue-router';
 import type { Birth, Info, Form } from '@/store/type/QNR_type'
 import { useMenuStore } from '@/store/menuStore';
 
+
 // loading overlay
 const loadingProgress = computed(() => ({
     background: `linear-gradient(to top, #00430b 0 ${loadingPercent.value}%, transparent ${loadingPercent.value + 1}%)`
@@ -308,6 +309,8 @@ const {
     initQNR,
     setQNRtoStorage,
 } = QuestionnaireStore;
+
+
 
 function leaveQNR_page() {
     QNR_IsLoaded.value = false;

@@ -124,17 +124,24 @@ export const useCartStore = defineStore('cart', () => {
         setCartToStorage()
     }, { deep: true })
 
+    const headerCartBtn = ref();
+    function getHeaderCartBtn(target: HTMLElement) {
+        headerCartBtn.value = target
+    }
+
     return {
         isCartCardOpen,
         cartItems,
         cartMap,
         cartCounter,
         cartTotalPrice,
+        headerCartBtn,
         toggleCartCardOpen,
         addItemToCart,
         DELItemFromCart,
         setCartToStorage,
         getCartFromStorage,
-        initCart
+        initCart,
+        getHeaderCartBtn
     }
 })

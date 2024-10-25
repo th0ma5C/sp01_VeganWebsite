@@ -52,7 +52,7 @@
         </div>
         <Teleport :to="'.flyToCartContainer'">
             <div class="flyToCart" ref="flyToCartEl"
-                v-if="cartEl">
+                v-if="destinationPoint">
                 <img :src="flyToCartImg" alt="">
             </div>
         </Teleport>
@@ -69,17 +69,24 @@ import { storeToRefs } from 'pinia';
 import gsap from 'gsap';
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import { useCartStore } from '@/store/cartStore';
+import emitter from '@/utils/eventBus';
+
+// 購物車state
+const cartStore = useCartStore();
+const { addItemToCart } = cartStore;
+const { headerCartBtn } = storeToRefs(cartStore)
 
 
 //接收菜單數據 
 interface Props {
     item: MenuItem,
-    cartEl?: HTMLElement | undefined
+    cartEl?: HTMLElement | undefined,
+    flightDelay?: number
 }
-const { item, cartEl } = defineProps<Props>();
+const { item, cartEl, flightDelay } = defineProps<Props>();
 
 const destinationPoint = computed(() => {
-    return cartEl ?? cartEl
+    return cartEl ?? headerCartBtn.value
 })
 
 // const MenuStore = useMenuStore();
@@ -114,9 +121,6 @@ const imgClass = computed(() => {
     return item.category == 'salad' ? 'menuImg' : 'smoothiesImg'
 })
 
-// 購物車state
-const cartStore = useCartStore();
-const { addItemToCart } = cartStore;
 
 
 // 飛入購物車
@@ -137,8 +141,8 @@ const cartBtnElCoord = computed(() => {
 })
 
 function getCartElCoord() {
-    if (!cartEl) return
-    const { left, top, width } = cartEl.getBoundingClientRect();
+    if (!destinationPoint.value) return
+    const { left, top, width } = destinationPoint.value.getBoundingClientRect();
 
     const targetCoord = {
         x: left + (width / 2) - (48 + 25), //padding + width/2,
@@ -153,6 +157,7 @@ function initTakeoffPoint() {
     gsap.set(flyToCartEl.value, {
         x: x,
         y: y,
+        scale: 1,
         opacity: 1,
     });
     flyToCartImg.value = item.fileName ?? '';
@@ -170,6 +175,7 @@ function flyToCart() {
     gsap.to(flyToCartEl.value, {
         duration: .5,
         opacity: 0,
+        scale: .3,
         motionPath: {
             path: [
                 { x: originX, y: originY },
@@ -188,13 +194,32 @@ function flyToCart() {
     });
 }
 
-function addCart() {
-    if (isFlying.value) return;
-    flyToCart();
-    addItemToCart(item);
+async function delayFlying() {
+    return new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+            resolve()
+        }, (flightDelay ?? 0) * 1000)
+    })
 }
 
+async function addCart() {
+    if (isFlying.value) return;
+    try {
+        emitEvent();
+        if (flightDelay) await delayFlying();
+        // nextTick(() => {
+        flyToCart();
+        addItemToCart(item);
+        // })
+    } catch (error) {
+        console.log(error);
+    }
+}
 
+// 展開header
+function emitEvent() {
+    emitter.emit('sendIcon')
+}
 
 </script>
 
@@ -433,7 +458,7 @@ function addCart() {
     position: absolute;
     left: 3rem;
     top: 0;
-    z-index: 10;
+    z-index: 100;
     border-radius: 25px;
     overflow: hidden;
     // background-color: red;

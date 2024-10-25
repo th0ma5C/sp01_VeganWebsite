@@ -97,7 +97,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                    }}</span>
+                                                }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -203,6 +203,7 @@
                 </transition>
 
                 <Product_template :item="item"
+                    :flightDelay="hideNav ? .2 : 0"
                     v-for="(item, index) in sortedSalad"
                     :key="item.id ? item.id : index" :class="{
                         hideItem: index > (showMenuLimit - 1),
@@ -305,7 +306,7 @@
                         grabCursor="true"
                         :space-between="32"
                         :loop="loopProps" speed="5000"
-                        :autoplay="true">
+                        :autoplay="false">
                         <swiper-slide class="item"
                             v-for="(items, index) in sortedSmoothies"
                             v-show="filteredSmoothie.includes(items)"
@@ -317,7 +318,7 @@
                                 <div class="description">
                                     <span>{{
                                         items.description
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
                             <h3>{{ items.name }}</h3>
@@ -331,6 +332,7 @@
                             </div>
                             <div class="btnWrapper">
                                 <button
+                                    @click="clickSmoothiesBtn(items, $event)"
                                     class="cart-btn">加入購物車</button>
                                 <button
                                     @click="routerToProduct(items.name)"
@@ -370,6 +372,15 @@
                                     </svg>
                                 </div>
                             </div>
+                            <Teleport
+                                :to="'.flyToCartContainer'">
+                                <div class="flyToCart"
+                                    ref="flyToCartEl"
+                                    v-if="true">
+                                    <img :src="smoothiesPlane.imgURL.value"
+                                        alt="">
+                                </div>
+                            </Teleport>
                         </swiper-slide>
                     </swiper-container>
                 </div>
@@ -426,7 +437,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick, onBeforeUpdate, onUpdated, toRefs, onUnmounted } from 'vue';
+import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick, onBeforeUpdate, inject, toRefs, onUnmounted } from 'vue';
 import type { ComputedRef, Ref, WritableComputedRef } from 'vue';
 import Skeleton from '@components/skeleton/skeleton.vue';
 import Product_template from '@/components/Product/Product_template.vue';
@@ -440,6 +451,9 @@ import Flip from 'gsap/Flip';
 import { useRoute, useRouter } from 'vue-router';
 import Breadcrumbs from '@/components/Breadcrumbs/Breadcrumbs.vue';
 import { log } from 'console';
+import { useCartStore } from '@/store/cartStore';
+import emitter from '@/utils/eventBus';
+import FlyToCart from '@/hooks/useFlyToCart';
 
 
 //DOING salad圖ps改成一致
@@ -811,18 +825,18 @@ watch(selectIngredient, (nVal) => {
 
 
 function handleSwiperSlide(action: "start" | "stop" | "update") {
-    const actionsMap = {
-        start: () => smoothieSwiper.value.swiper.autoplay.start(),
-        stop: () => smoothieSwiper.value.swiper.autoplay.stop(),
-        update: () => {
-            smoothieSwiper.value.swiper.update();
-            smoothieSwiper.value.swiper.slideToLoop(0, 1000);
-        }
-    };
+    // const actionsMap = {
+    //     start: () => smoothieSwiper.value.swiper.autoplay.start(),
+    //     stop: () => smoothieSwiper.value.swiper.autoplay.stop(),
+    //     update: () => {
+    //         smoothieSwiper.value.swiper.update();
+    //         smoothieSwiper.value.swiper.slideToLoop(0, 1000);
+    //     }
+    // };
 
-    const actionHandler = actionsMap[action];
+    // const actionHandler = actionsMap[action];
 
-    actionHandler();
+    // actionHandler();
 }
 
 async function handleResize() {
@@ -989,6 +1003,70 @@ function routerToQNR() {
         path: '/questionnaire',
     })
 }
+
+// smoothies 加入購物車
+const cartStore = useCartStore();
+const { headerCartBtn } = storeToRefs(cartStore);
+const { addItemToCart } = cartStore;
+
+// smoothies 飛入購物車
+const flyToCartEl = ref();
+const isFlightDelay = ref(false);
+emitter.on('navEvent', (e) => {
+    isFlightDelay.value = e as boolean
+})
+
+const smoothiesCrew = {
+    cartBtn: headerCartBtn,
+    flyingEl: flyToCartEl,
+    coordCompensation: {
+        x: 0,
+        y: 0
+    }
+}
+
+const smoothiesPlane = new FlyToCart(smoothiesCrew);
+const {
+    takeoffPoint,
+    imgURL,
+    isFlying
+} = smoothiesPlane;
+
+const {
+    getActiveItem,
+    getActiveBtn,
+    getLandingPoint,
+    takeoff
+} = smoothiesPlane;
+
+async function delayFlying() {
+    return new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+            resolve()
+        }, isFlightDelay.value ? 200 : 0)
+    })
+}
+
+async function clickSmoothiesBtn(target: MenuItem, e: Event) {
+    if (isFlying.value) return;
+    try {
+        emitter.emit('sendIcon')
+        if (isFlightDelay.value) await delayFlying();
+        getActiveItem(target);
+        getActiveBtn(e);
+        getLandingPoint();
+        takeoff();
+        addItemToCart(target);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// 訂閱nav event
+const hideNav = ref(false);
+emitter.on('navEvent', (e) => {
+    hideNav.value = e as boolean;
+})
 
 // -----生命週期-----
 onBeforeMount(() => {
@@ -2173,8 +2251,9 @@ $menuItemContainer_height: 405px;
                         }
                     }
                 }
-            }
 
+
+            }
         }
 
         .skeletonWrapper {
@@ -2208,6 +2287,19 @@ $menuItemContainer_height: 405px;
             }
         }
     }
+}
+
+.flyToCart {
+    @include WnH(50px);
+    pointer-events: none;
+    opacity: 0;
+    position: absolute;
+    left: 3rem;
+    top: 0;
+    z-index: 100;
+    border-radius: 25px;
+    overflow: hidden;
+    // background-color: red;
 }
 
 .analystBot {
