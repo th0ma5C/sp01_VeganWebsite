@@ -119,10 +119,15 @@ function prevPage() {
 
 // 購物車
 const cartStore = useCartStore();
-const { toggleCartCardOpen, getHeaderCartBtn } = cartStore;
+const { toggleCartCardOpen, getHeaderCart } = cartStore;
 
 function clickCartIcon(target: string) {
-    if (target == 'Cart') toggleCartCardOpen()
+    if (target == 'Cart') {
+        toggleCartCardOpen()
+    } else if (target == 'Person') {
+        Router.push('/profile')
+    }
+
 }
 // iconList
 const iconList = ref();
@@ -130,7 +135,7 @@ const iconList = ref();
 watch(QNR_IsLoaded, (nVal) => {
     if (nVal == false) {
         nextTick(() => {
-            getHeaderCartBtn(iconList.value[1]);
+            getHeaderCart(iconList.value[1]);
         })
     }
 })
@@ -141,12 +146,13 @@ emitter.on('sendIcon', () => {
 })
 
 watch(hideNav, (nVal) => {
+    // console.log('emit nav event');
     emitter.emit('navEvent', nVal)
 })
 
 onMounted(() => {
     window.addEventListener('scroll', throttledOnScroll);
-    getHeaderCartBtn(iconList.value[1]); // 暴露cart按鈕元素
+    getHeaderCart(iconList.value[1]); // 暴露cart按鈕元素
 })
 
 onBeforeUnmount(() => {

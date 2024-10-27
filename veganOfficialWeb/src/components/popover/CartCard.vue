@@ -84,8 +84,12 @@
 
                         <p class="amount">
                             <span>小計</span>
-                            <span>${{ cartTotalPrice
-                                }}</span>
+                            <span>
+                                ${{ cartTotalPrice }}
+                            </span>
+                            <span :class="discountClass">
+                                達折扣門檻！
+                            </span>
                         </p>
 
                         <small class="amountNotice">
@@ -102,6 +106,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </transition>
 </template>
@@ -130,7 +135,7 @@ import type { MenuItem } from "@/api/menu/type";
 
 
 const cartStore = useCartStore();
-const { isCartCardOpen, cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
+const { isCartCardOpen, cartItems, cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
 const { toggleCartCardOpen, DELItemFromCart, initCart } = cartStore;
 
 const showCartItemList = computed(() => {
@@ -170,6 +175,18 @@ function DEL_cartItem(target: string) {
 function clickCheckout() {
     if (!cartCounter.value) return
 }
+
+// 折扣提示
+const discountClass = computed(() => {
+    if (cartCounter.value && cartCounter.value >= 7) {
+        return 'exceed'
+    } else {
+        return 'under'
+    }
+})
+
+// 超過上限提示
+
 
 onMounted(() => {
     initCart();
@@ -282,7 +299,6 @@ onMounted(() => {
         align-items: center;
         gap: .5rem;
         margin-bottom: 1rem;
-        // height: 300px;
 
         &>div {
             display: flex;
@@ -318,6 +334,7 @@ onMounted(() => {
 
             .counterWrapper {
                 display: flex;
+                align-items: center;
                 flex-direction: row;
                 gap: 1rem;
                 // padding: 0 .25rem;
@@ -343,6 +360,7 @@ onMounted(() => {
 
                 small {
                     font-size: 40%;
+                    user-select: none;
                 }
 
                 span {
@@ -396,10 +414,32 @@ onMounted(() => {
     }
 
     .amount {
+        background-color: $primaryBacColor;
+        position: relative;
         display: flex;
         justify-content: space-between;
         font-size: 1.25rem;
         font-variation-settings: 'wght' 500;
+
+        &>span:nth-child(3) {
+            font-size: .8rem;
+            // line-height: 30px;
+            color: red;
+            position: absolute;
+            right: 0;
+            top: -22px;
+            overflow: hidden;
+            // transform: translateY(100%);
+            transition: opacity .3s ease;
+        }
+
+        .exceed {
+            animation: bounceIn .5s;
+        }
+
+        .under {
+            opacity: 0;
+        }
     }
 
     .amountNotice {
@@ -472,6 +512,7 @@ onMounted(() => {
 }
 
 .item-leave-active {
+    width: calc(100% - .5rem);
     position: absolute;
 }
 
@@ -485,5 +526,43 @@ onMounted(() => {
 .item-leave-from {
     transform: translateX(0%);
     opacity: 1;
+}
+
+@keyframes bounceIn {
+
+    0%,
+    20%,
+    40%,
+    60%,
+    80%,
+    100% {
+        animation-timing-function: ease-out;
+    }
+
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+
+    20% {
+        transform: scale(1.1);
+    }
+
+    40% {
+        transform: scale(0.9);
+    }
+
+    60% {
+        opacity: 1;
+        transform: scale(1.03);
+    }
+
+    80% {
+        transform: scale(0.97);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 </style>

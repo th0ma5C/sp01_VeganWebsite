@@ -74,7 +74,7 @@ import emitter from '@/utils/eventBus';
 // 購物車state
 const cartStore = useCartStore();
 const { addItemToCart } = cartStore;
-const { headerCartBtn } = storeToRefs(cartStore)
+const { headerCart } = storeToRefs(cartStore)
 
 
 //接收菜單數據 
@@ -86,7 +86,7 @@ interface Props {
 const { item, cartEl, flightDelay } = defineProps<Props>();
 
 const destinationPoint = computed(() => {
-    return cartEl ?? headerCartBtn.value
+    return cartEl ?? headerCart.value
 })
 
 // const MenuStore = useMenuStore();
@@ -218,7 +218,7 @@ async function addCart() {
 
 // 展開header
 function emitEvent() {
-    emitter.emit('sendIcon')
+    emitter.emit('sendIcon');
 }
 
 </script>

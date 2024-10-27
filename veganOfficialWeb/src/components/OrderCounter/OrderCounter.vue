@@ -59,7 +59,8 @@ watch(amountModel, (nVal, oVal) => {
 
     limitAlert.value = nVal >= max || nVal <= min;
     prevCounterVal = amountModel.value;
-    amountModel.value = amountModel.value;
+    // console.log(amountModel.value);
+    // amountModel.value = amountModel.value;
 
 }, { immediate: true });
 // function counter(actions: '+' | '-') {

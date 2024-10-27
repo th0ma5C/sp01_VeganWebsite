@@ -11,8 +11,8 @@
                         @click="setShowPopUpImg"
                         ref="mainImg" @load="mainImgLoaded"
                         :class="{ unLoaded: !showMainImg }"
-                        v-if="productInfo && productInfo.fileName"
-                        :src="productInfo.fileName"
+                        v-if="productInfo"
+                        :src="replaceImgFileName(productInfo) ?? ''"
                         alt="大圖">
                 </transition>
 
@@ -30,8 +30,8 @@
                     <SvgIcon class="popUpImgCancelIcon"
                         name="cancel" width="32px"
                         height="32px"></SvgIcon>
-                    <img v-if="productInfo && productInfo.fileName"
-                        :src="productInfo.fileName"
+                    <img v-if="productInfo"
+                        :src="replaceImgFileName(productInfo) ?? ''"
                         alt="大圖">
                 </div>
             </transition>
@@ -91,7 +91,9 @@
                     </div>
                     <div class="orderCounter">
                         <span>數量</span>
-                        <OrderCounter></OrderCounter>
+                        <OrderCounter
+                            v-model:amount="orderAmount">
+                        </OrderCounter>
                     </div>
                     <div class="price">
                         <h2>價格</h2>
@@ -125,8 +127,27 @@
                     </div>
 
                     <div class="addCart">
-                        <button>加入購物車</button>
+                        <button ref="addCartBtn"
+                            @click="clickAddCart($event)">加入購物車</button>
+
+                        <transition name="amountAlert">
+                            <div class="amountAlert"
+                                :style="amountAlertStyle"
+                                v-show="showAmountAlert">
+                                <span>
+                                    最高訂購上限99！
+                                </span>
+                            </div>
+                        </transition>
+
                     </div>
+
+                    <Teleport :to="'.flyToCartContainer'">
+                        <div class="flyToCart"
+                            ref="flyToCartEl" v-if="true">
+                            <img :src="imgURL" alt="">
+                        </div>
+                    </Teleport>
 
                     <div class="infoFolder">
                         <div class="Wrapper"
@@ -213,12 +234,12 @@
             </div>
         </section>
     </div>
+
 </template>
 
 <script setup lang="ts">
 /**
- * todo: 問卷 會員 購物車 關於
- * doing: 飛入購物車
+ * todo: 會員 購物車 關於
  * --------------------
  * *
  * --------------------
@@ -251,18 +272,21 @@
  * //進路由去頁首
  */
 
-import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, onBeforeMount } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, onBeforeMount, onDeactivated, onActivated } from 'vue';
 import type { Ref } from 'vue';
 import { useMenuStore } from '@/store/menuStore';
 import type { MenuItem } from '@/api/menu/type';
 import { storeToRefs } from 'pinia';
-import { onBeforeRouteUpdate, useRoute } from 'vue-router';
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from 'vue-router';
 import { LoremIpsum } from "lorem-ipsum";
 import Product_template from '@/components/Product/Product_template.vue';
 import useListener from '@/hooks/useListener';
 import useImgChecker from '@/hooks/useImgChecker';
 import Breadcrumbs from '@/components/Breadcrumbs/Breadcrumbs.vue';
 import OrderCounter from '@/components/OrderCounter/OrderCounter.vue';
+import { useCartStore } from '@/store/cartStore';
+import FlyToCart from '@/hooks/useFlyToCart';
+import emitter from '@/utils/eventBus';
 
 // store數據
 const menuStore = useMenuStore();
@@ -286,9 +310,9 @@ async function initProductInfo(isInit: boolean) {
         await fetchMenu();
     }
     productInfo.value = getInfoByName(name);
-    if (productInfo.value?.category == 'salad') {
-        replaceImgFileName(productInfo.value!);
-    }
+    // if (productInfo.value?.category == 'salad') {
+    //     replaceImgFileName(productInfo.value!);
+    // }
     getSimilarList();
     getHotList();
     // nextTick(() => {
@@ -297,7 +321,6 @@ async function initProductInfo(isInit: boolean) {
 }
 
 // 選擇尺寸
-const selectSize = ref(1)
 const selectOptions = [
     {
         size: 'S"',
@@ -318,6 +341,16 @@ const selectOptions = [
 ];
 
 const selectedIndex = ref(0);
+const selectSize = computed(() => {
+    if (selectedIndex.value == 0) {
+        return 1
+    } else if (selectedIndex.value == 1) {
+        return 7
+    } else {
+        return 14
+    }
+})
+
 
 function setSelectAmount(index: number) {
     if (counterAnimating) return
@@ -534,7 +567,10 @@ async function getHotList() {
 // 大圖檔名
 function replaceImgFileName(info: MenuItem) {
     const reg = /\.png$/;
-    info.fileName = info.fileName!.replace(reg, '.jpg');
+    if (info.category == 'salad') {
+        return info.fileName!.replace(reg, '.jpg');
+    }
+    return info.fileName
 }
 
 // 跳出圖片
@@ -550,6 +586,14 @@ watchEffect(() => {
         return
     }
     document.documentElement.style.overflow = '';
+})
+
+onBeforeRouteLeave((to, from) => {
+    if (showPopUpImg.value) {
+        showPopUpImg.value = !showPopUpImg.value;
+        document.documentElement.style.overflow = '';
+        return false
+    }
 })
 
 // 大圖骨架
@@ -594,6 +638,96 @@ function setBreadcrumb() {
     breadcrumbProps.value = route.query.name
 }
 
+// 加入購物車、飛入購物車
+const cartStore = useCartStore();
+const { headerCart } = storeToRefs(cartStore);
+const { addItemToCart, } = cartStore;
+const orderAmount = ref(1);
+const amountSubtotal = computed(() => {
+    return Math.min(orderAmount.value * selectSize.value, 99)
+})
+
+const flyToCartEl = ref();
+const isFlightDelay = ref(false);
+emitter.on('navEvent', (e) => {
+    console.log('on nav event');
+    isFlightDelay.value = e as boolean
+})
+
+const crew = {
+    cartBtn: headerCart,
+    flyingEl: flyToCartEl,
+    coordCompensation: {
+        x: 0,
+        y: 0
+    }
+}
+const flyIcon = new FlyToCart(crew);
+const {
+    imgURL,
+    isFlying
+} = flyIcon;
+
+const {
+    getActiveItem,
+    getActiveBtn,
+    getLandingPoint,
+    takeoff
+} = flyIcon;
+
+async function delayFlying() {
+    // console.log('delay');
+    return new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+            resolve()
+        }, isFlightDelay.value ? 200 : 0)
+    })
+}
+
+async function clickAddCart(e: Event, target?: MenuItem,) {
+    const item = target ?? productInfo.value;
+    const amount = amountSubtotal.value;
+    if (amount == 99) emitAmountAlert(e);
+    if (isFlying.value || !item) return;
+    try {
+        emitter.emit('sendIcon')
+        if (isFlightDelay.value) await delayFlying();
+        getActiveItem(item);
+        getActiveBtn(e);
+        getLandingPoint();
+        takeoff();
+        for (let i = 0; i < amount; i++) {
+            addItemToCart(item);
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// above amount limit
+const showAmountAlert = ref(false);
+const amountAlertX = ref(0);
+let alertTimeout: ReturnType<typeof setTimeout>
+
+function emitAmountAlert(e: Event) {
+    if (alertTimeout) {
+        clearTimeout(alertTimeout);
+    }
+    const event = e as MouseEvent;
+    const x = event.offsetX;
+    amountAlertX.value = x + 16;
+    nextTick(() => {
+        showAmountAlert.value = true;
+        alertTimeout = setTimeout(() => {
+            showAmountAlert.value = false;
+        }, 2000)
+    })
+}
+
+const amountAlertStyle = computed(() => ({
+    transform: `translateX(calc(-50% + ${amountAlertX.value}px))`
+}))
+
 
 // 生命週期
 onBeforeMount(() => {
@@ -601,11 +735,20 @@ onBeforeMount(() => {
 })
 
 onMounted(() => {
+    emitter.on('navEvent', (e) => {
+        isFlightDelay.value = e as boolean
+    })
     initProductInfo(isLoaded.value);
 
     // console.log('mounted');
 })
+onActivated(() => {
+    emitter.on('navEvent', (e) => {
+        isFlightDelay.value = e as boolean
+    })
+})
 onUnmounted(() => {
+    emitter.off('navEvent')
     // console.log('unmounted');
 })
 
@@ -1068,9 +1211,11 @@ onUnmounted(() => {
         margin-top: 1rem;
         justify-content: center;
         align-items: center;
+        position: relative;
+        padding: 0 1rem;
 
         button {
-            @include WnH(95%, 46px);
+            @include WnH(100%, 46px);
             background-color: #3EA350;
             border: 1px solid rgba(0, 0, 0, 0.5);
             border-radius: 23px;
@@ -1088,6 +1233,39 @@ onUnmounted(() => {
                 transform: translate(1px, 1px);
             }
         }
+
+        .amountAlert {
+            outline: 1px solid black;
+            background-color: $primaryBacColor;
+            border-radius: 6px;
+            padding: 0 1rem;
+            position: absolute;
+            top: -1.75rem;
+            left: 0;
+
+            span {
+                text-align: center;
+                line-height: 24px;
+                color: red;
+                font-size: .8rem;
+                font-variation-settings: 'wght' 500;
+            }
+        }
+    }
+
+    .amountAlert-enter-active,
+    .amountAlert-leave-active {
+        transition: opacity .3s ease;
+    }
+
+    .amountAlert-enter-from,
+    .amountAlert-leave-to {
+        opacity: 0;
+    }
+
+    .amountAlert-enter-to,
+    .amountAlert-leave-from {
+        opacity: 1;
     }
 
     %divideLine {
@@ -1150,6 +1328,19 @@ onUnmounted(() => {
             @extend %divideLine;
         }
     }
+}
+
+.flyToCart {
+    @include WnH(50px);
+    pointer-events: none;
+    opacity: 0;
+    position: absolute;
+    left: 3rem;
+    top: 0;
+    z-index: 100;
+    border-radius: 25px;
+    overflow: hidden;
+    // background-color: red;
 }
 
 .socialMedia {

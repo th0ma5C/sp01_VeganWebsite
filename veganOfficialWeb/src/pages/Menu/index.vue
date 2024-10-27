@@ -97,7 +97,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                }}</span>
+                                                    }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -318,7 +318,7 @@
                                 <div class="description">
                                     <span>{{
                                         items.description
-                                    }}</span>
+                                        }}</span>
                                 </div>
                             </div>
                             <h3>{{ items.name }}</h3>
@@ -1006,18 +1006,21 @@ function routerToQNR() {
 
 // smoothies 加入購物車
 const cartStore = useCartStore();
-const { headerCartBtn } = storeToRefs(cartStore);
+const { headerCart } = storeToRefs(cartStore);
 const { addItemToCart } = cartStore;
 
 // smoothies 飛入購物車
 const flyToCartEl = ref();
 const isFlightDelay = ref(false);
+// 訂閱nav event
+const hideNav = ref(false);
 emitter.on('navEvent', (e) => {
     isFlightDelay.value = e as boolean
+    hideNav.value = e as boolean;
 })
 
 const smoothiesCrew = {
-    cartBtn: headerCartBtn,
+    cartBtn: headerCart,
     flyingEl: flyToCartEl,
     coordCompensation: {
         x: 0,
@@ -1027,8 +1030,6 @@ const smoothiesCrew = {
 
 const smoothiesPlane = new FlyToCart(smoothiesCrew);
 const {
-    takeoffPoint,
-    imgURL,
     isFlying
 } = smoothiesPlane;
 
@@ -1062,11 +1063,6 @@ async function clickSmoothiesBtn(target: MenuItem, e: Event) {
     }
 }
 
-// 訂閱nav event
-const hideNav = ref(false);
-emitter.on('navEvent', (e) => {
-    hideNav.value = e as boolean;
-})
 
 // -----生命週期-----
 onBeforeMount(() => {
@@ -1074,12 +1070,14 @@ onBeforeMount(() => {
 onMounted(() => {
     if (!isLoaded.value) menuStore.fetchMenu();
     window.addEventListener('resize', handleResize);
-    // console.log(sortedSalad.value);
     // console.log('menu mounted');
 })
 
 onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
+    emitter.off('navEvent', () => {
+        // console.log('menu off event');
+    })
     // console.log('menu unmounted');
 })
 
