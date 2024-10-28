@@ -1,72 +1,125 @@
 <template>
     <div class="container">
-        <h1>
-            登入
-        </h1>
-
-        <div class="inputWrapper">
-            <form action="">
-                <fieldset>
-                    <div class="username">
-                        <input type="text">
-                        <label for="">帳號</label>
-                    </div>
-
-                    <div class="password">
-                        <input type="text">
-                        <label for="">密碼</label>
-                    </div>
-                </fieldset>
-            </form>
-
-            <div class="forgetPassword">
-                <a href="">
-                    忘記密碼？
-                </a>
-            </div>
-        </div>
-
-        <div class="login_signup">
-            <button>
+        <div class="login" v-if="!$route.meta.hideParent">
+            <h1>
                 登入
-            </button>
+            </h1>
 
-            <div class="signup">
-                <span>
-                    沒有帳號?
-                </span>
-                <a href="">
-                    註冊
-                </a>
+            <div class="inputWrapper">
+                <form action="">
+                    <fieldset>
+                        <div class="username">
+                            <input type="text" required>
+                            <label for="">電子郵件</label>
+                        </div>
+
+                        <div class="password">
+                            <input
+                                :type="showPassword ? 'text' : 'password'"
+                                required>
+                            <label for="">密碼</label>
+                            <div class="passwordIcon" @="{
+                                mousedown: toggleShowPassword,
+                                mouseup: toggleShowPassword
+                            }">
+                                <SvgIcon
+                                    v-show="!showPassword"
+                                    name="Hidepassword"
+                                    width="20px"
+                                    height="20px"
+                                    color="black">
+                                </SvgIcon>
+                                <SvgIcon
+                                    v-show="showPassword"
+                                    name="Showpassword"
+                                    width="20px"
+                                    height="20px"
+                                    color="black">
+                                </SvgIcon>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+
+                <div class="forgetPassword">
+                    <router-link
+                        to="/profile/forgetPassword">
+                        忘記密碼？
+                    </router-link>
+                </div>
+            </div>
+
+            <div class="login_signup">
+                <button>
+                    登入
+                </button>
+
+                <div class="signup">
+                    <span>
+                        沒有帳號？
+                    </span>
+                    <router-link to="/profile/signUp">
+                        註冊
+                    </router-link>
+                </div>
             </div>
         </div>
+
+        <router-view v-slot="{ Component }">
+            <transition name="profileRoute">
+                <component :is="Component"></component>
+            </transition>
+        </router-view>
 
         <div class="divider">
-            --------------------------or--------------------------
+            <span>
+                快速登入
+            </span>
         </div>
 
         <div class="outerAccount">
-            <a href="">FB</a>
-            <a href="">GOOGLE</a>
-            <a href="">LINE</a>
+            <div v-for="(url, index) in showIconImgList"
+                :key="index">
+                <img :src="url" alt="">
+            </div>
         </div>
-
     </div>
 </template>
 
 <script setup lang="ts">
 /**
- * todo: 樣式完成 分隔線 忘記密碼/註冊分頁 社群登入
- * doing: label 轉場 社群icon
+ * todo:  account store、DB建置 社群登入
+ * doing: 忘記密碼/註冊分頁 臨時帳號 帳號驗證 記住登入資訊
  * -----------------------------------------
- * ? 臨時ID
+ * ? 
+ * 
+ * //樣式完成 分隔線
+ * //label 轉場 社群icon
+ * //密碼顯示紐
  */
+
+import { ref } from 'vue';
+import useConcatImgPath from '@/hooks/useConcatImgPath';
+
+// 社群登入圖片路徑
+const loginIcon = ['Fb.png', 'Google.png', 'Line.png'];
+const showIconImgList = useConcatImgPath(loginIcon, 'Login');
+
+// 顯示密碼紐
+const showPassword = ref(false);
+
+function toggleShowPassword() {
+    showPassword.value = !showPassword.value
+}
+
 </script>
 
 <style scoped lang="scss">
 * {
-    outline: 1px solid black
+    // outline: 1px solid black
 }
+
+$container_width: 300px;
 
 .container {
     @extend %headerPseudo;
@@ -89,6 +142,11 @@
     }
 }
 
+.login {
+    text-align: center;
+    flex: 1;
+}
+
 .inputWrapper {
     margin-top: 2rem;
 
@@ -102,18 +160,38 @@
         }
 
         input {
-            width: 300px;
+            width: $container_width;
             height: 48px;
             padding: 0 1rem;
+            border: 1px solid gray;
+            border-radius: .5rem;
+            background-color: $primaryBacColor;
         }
 
         label {
+            background-color: $primaryBacColor;
             position: absolute;
             text-wrap: nowrap;
             left: 1rem;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 1.25rem;
+            font-size: 18px;
+            color: rgba(0, 0, 0, 0.75);
+            transition: transform .3s ease;
+            transform-origin: left;
+            user-select: none;
+        }
+
+        & div:has(input:focus)>label,
+        div:has(input:valid)>label {
+            transform: translateY(calc(-100% - 10px)) scale(0.8);
+        }
+
+        .passwordIcon {
+            @include absoluteCenterTLXY($left: 100%, $X: -150%);
+            cursor: pointer;
+            // right: 0;
+            // top: 50%;
         }
     }
 }
@@ -122,6 +200,14 @@
     margin-top: .5rem;
     font-size: .75rem;
     text-align: end;
+    opacity: .5;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+
+    &:hover {
+        opacity: 1;
+    }
+
 }
 
 .login_signup {
@@ -130,25 +216,108 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: .5rem;
+    gap: .75rem;
 
     button {
+        background-color: $btnBacColor_light;
+        color: $primaryBacColor;
         width: 150px;
-        height: 36px;
+        height: 42px;
         font-size: 1.25rem;
+        border: 1px solid $btnBacColor_light;
+        border-radius: 21px;
+        box-shadow: 1px 1px 2px black;
+        transition: box-shadow .15s ease;
+
+        &:hover {
+            box-shadow: 2px 2px 4px black;
+        }
+
+        &:active {
+            transition: none;
+            box-shadow: 2px 2px 2px black;
+            transform: translate(1px, 1px);
+        }
     }
 
     .signup {
         font-size: .75rem;
+
+        a,
+        span {
+            opacity: .5;
+        }
+
+        a {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
     }
 }
 
+%divider_line {
+    @include WnH(50%, 1px);
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: $secondBacColor;
+}
+
 .divider {
+    width: $container_width;
     margin: 1rem;
+    position: relative;
+    text-align: center;
+
+    &::before {
+        @extend %divider_line;
+        left: -15%;
+    }
+
+    &::after {
+        @extend %divider_line;
+        right: -15%;
+    }
 }
 
 .outerAccount {
+    margin: 1rem 0 3rem 0;
     display: flex;
+    flex-direction: row;
     gap: 1rem;
+
+    &>div {
+        // border: 1px solid green;
+        cursor: pointer;
+        max-width: 36px;
+        border-radius: 18px;
+        overflow: hidden;
+        transition: scale .15s ease;
+
+        &:hover {
+            scale: 1.1;
+        }
+    }
+}
+
+.profileRoute-enter-active {
+    transition: opacity .15s ease;
+}
+
+.profileRoute-leave-active {
+    position: absolute;
+}
+
+.profileRoute-enter-from {
+    opacity: 0;
+}
+
+.profileRoute-enter-to {
+    opacity: 1;
 }
 </style>

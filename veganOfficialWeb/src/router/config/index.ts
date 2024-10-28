@@ -35,11 +35,6 @@ export default [
             {
                 path: 'result',
                 component: () => import('@/pages/Questionnaire/result/QNR_result.vue'),
-                // beforeEnter: () => {
-                //     if (!isLoaded.value) {
-                //         return { path: '/questionnaire' }
-                //     }
-                // }
             }
         ]
     },
@@ -99,7 +94,23 @@ export default [
     },
     {
         path: '/profile',
-        component: Profile
+        component: Profile,
+        children: [
+            {
+                path: 'forgetPassword',
+                component: () => import('@/pages/Profile/forgetPassword/ForgetPassword.vue'),
+                meta: {
+                    hideParent: true
+                }
+            },
+            {
+                path: 'signUp',
+                component: () => import('@/pages/Profile/signup/Signup.vue'),
+                meta: {
+                    hideParent: true
+                }
+            }
+        ]
     },
 
 ]
