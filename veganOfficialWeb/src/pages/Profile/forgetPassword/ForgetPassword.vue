@@ -11,7 +11,7 @@
         </p>
 
         <div class="inputWrapper">
-            <form action="">
+            <!-- <form action="">
                 <fieldset>
                     <div class="username">
                         <input type="email" required
@@ -20,7 +20,34 @@
                             for="resetPasswordMail">電子郵件</label>
                     </div>
                 </fieldset>
-            </form>
+            </form> -->
+            <VForm :validation-schema="loginSchema">
+                <fieldset>
+                    <div>
+                        <VField name="email"
+                            v-slot="{ field, meta }">
+                            <input type="email" id="email"
+                                required placeholder=""
+                                :="field" :class="{
+                                    invalidInput: (meta.validated && !meta.valid)
+                                }">
+                        </VField>
+                        <label for="email">電子信箱</label>
+
+                        <ErrorMessage as="div"
+                            class="errorMsg" name="email"
+                            v-slot="{ message }">
+                            <SvgIcon name="QNR_alert"
+                                width="18" height="18"
+                                color="#b3261e">
+                            </SvgIcon>
+                            <span>
+                                {{ message }}
+                            </span>
+                        </ErrorMessage>
+                    </div>
+                </fieldset>
+            </VForm>
         </div>
 
         <div class="submitContainer">
@@ -39,6 +66,10 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import {
+    Field as VField, Form as VForm, ErrorMessage
+} from 'vee-validate';
+import * as yup from 'yup';
 
 // fix wrong element position when route leaving
 const forgetPasswordContainer = ref<HTMLElement>();
@@ -48,6 +79,23 @@ const containerStyle = computed(() => {
     return { top: `${top}px` }
 })
 
+// 表單驗證
+interface LoginData {
+    email?: string | null;
+}
+const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+
+yup.addMethod(yup.string, 'email', function validateEmail(message) {
+    return this.matches(emailRegex, {
+        message: '請輸入正確信箱格式',
+        name: 'email',
+        excludeEmptyString: true,
+    });
+});
+
+const loginSchema = yup.object({
+    email: yup.string().trim().required('此欄不能空白').email(),
+})
 
 onMounted(() => {
 })
@@ -92,6 +140,10 @@ h1 {
             background-color: $primaryBacColor;
         }
 
+        .invalidInput {
+            border: 1px solid #b3261e;
+        }
+
         label {
             background-color: $primaryBacColor;
             position: absolute;
@@ -104,6 +156,18 @@ h1 {
             transition: transform .3s ease;
             transform-origin: left;
             user-select: none;
+        }
+
+        .errorMsg {
+            @include flex-center-center;
+            flex-direction: row;
+            gap: .5rem;
+            color: #b3261e;
+            text-wrap: nowrap;
+            position: absolute;
+            bottom: -75%;
+            left: 0%;
+            transform: translate(0%, -50%);
         }
 
         & div:has(input:focus)>label,

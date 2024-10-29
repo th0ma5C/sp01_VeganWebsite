@@ -1,12 +1,145 @@
 <template>
-    <div class="signupContainer">
+    <div class="signupContainer" ref="signupContainer"
+        :style="containerStyle">
         <h1>
             註冊
         </h1>
 
         <div class="inputWrapper">
-            <form action="">
-                <fieldset>
+            <VForm :initial-values="{ joinPrivacy: false }"
+                :validation-schema="signupSchema">
+                <fieldset class="inputData">
+                    <div class="username">
+                        <VField id="username"
+                            name="username" type="text"
+                            placeholder=""
+                            autocomplete="off">
+                        </VField>
+                        <label for="username">稱呼</label>
+
+                        <ErrorMessage as="div"
+                            class="errorMsg" name="username"
+                            v-slot="{ message }">
+                            <SvgIcon name="QNR_alert"
+                                width="18" height="18"
+                                color="#b3261e">
+                            </SvgIcon>
+                            <span>{{ message
+                                }}</span>
+                        </ErrorMessage>
+                    </div>
+
+                    <div class="email">
+                        <VField id="email" name="email"
+                            type="email" placeholder=""
+                            autocomplete="off">
+                        </VField>
+                        <label for="email">電子郵件</label>
+
+                        <ErrorMessage as="div"
+                            class="errorMsg" name="email"
+                            v-slot="{ message }">
+                            <SvgIcon name="QNR_alert"
+                                width="18" height="18"
+                                color="#b3261e">
+                            </SvgIcon>
+                            <span>{{ message
+                                }}</span>
+                        </ErrorMessage>
+                    </div>
+
+                    <div class="password">
+                        <VField id="password"
+                            name="password" type="password"
+                            placeholder="">
+                        </VField>
+                        <label for="password">密碼</label>
+
+                        <ErrorMessage as="div"
+                            class="errorMsg" name="password"
+                            v-slot="{ message }">
+                            <SvgIcon name="QNR_alert"
+                                width="18" height="18"
+                                color="#b3261e">
+                            </SvgIcon>
+                            <span>{{ message
+                                }}</span>
+                        </ErrorMessage>
+                    </div>
+
+                    <div class="password">
+                        <VField id="confirmPassword"
+                            name="confirmPassword"
+                            type="password" placeholder="">
+                        </VField>
+                        <label
+                            for="confirmPassword">確認密碼</label>
+
+                        <ErrorMessage as="div"
+                            class="errorMsg"
+                            name="confirmPassword"
+                            v-slot="{ message }">
+                            <SvgIcon name="QNR_alert"
+                                width="18" height="18"
+                                color="#b3261e">
+                            </SvgIcon>
+                            <span>{{ message
+                                }}</span>
+                        </ErrorMessage>
+
+                        <div class="passwordIcon" @="{
+                            mousedown: toggleShowPassword,
+                            mouseup: toggleShowPassword
+                        }">
+                            <SvgIcon v-show="!showPassword"
+                                name="Hidepassword"
+                                width="20px" height="20px"
+                                color="black">
+                            </SvgIcon>
+                            <SvgIcon v-show="showPassword"
+                                name="Showpassword"
+                                width="20px" height="20px"
+                                color="black">
+                            </SvgIcon>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="inputPrivacy">
+                    <div>
+                        <VField v-slot="{ field }"
+                            name="joinPrivacy"
+                            type="checkbox" :value="true"
+                            :unchecked-value="false">
+                            <input id="joinPrivacy"
+                                type="checkbox"
+                                v-bind="field"
+                                :value="true" />
+                        </VField>
+                        <label for="joinPrivacy">
+                            [必要] 我已詳閱並同意顧客隱私權政策
+                        </label>
+
+
+                        <ErrorMessage as="div"
+                            class="errorMsg"
+                            name="joinPrivacy"
+                            v-slot="{ message }">
+                            <SvgIcon name="QNR_alert"
+                                width="18" height="18"
+                                color="#b3261e">
+                            </SvgIcon>
+                            <span>
+                                {{ message }}
+                            </span>
+                        </ErrorMessage>
+                    </div>
+
+                </fieldset>
+            </VForm>
+
+            <!-- <form action="">
+                <fieldset class="inputData">
                     <div class="username">
                         <input type="text" required>
                         <label for="">稱呼</label>
@@ -25,30 +158,100 @@
                     <div class="password">
                         <input required>
                         <label for="">確認密碼</label>
+                        <div class="passwordIcon" @="{
+                            mousedown: toggleShowPassword,
+                            mouseup: toggleShowPassword
+                        }">
+                            <SvgIcon v-show="!showPassword"
+                                name="Hidepassword"
+                                width="20px" height="20px"
+                                color="black">
+                            </SvgIcon>
+                            <SvgIcon v-show="showPassword"
+                                name="Showpassword"
+                                width="20px" height="20px"
+                                color="black">
+                            </SvgIcon>
+                        </div>
                     </div>
                 </fieldset>
 
-                <Fieldset>
-                    勾選
-                </Fieldset>
-            </form>
+                <fieldset class="inputPrivacy">
+                    <div>
+                        <input type="checkbox" name=""
+                            id="joinPrivacy">
+                        <label for="joinPrivacy">
+                            [必要] 我已詳閱並同意顧客隱私權政策
+                        </label>
+                    </div>
+                </fieldset>
+            </form> -->
         </div>
 
         <div class="login_signup">
             <button>
                 送出
             </button>
-            <router-link to="/profile">
-                上一步
-            </router-link>
+
+            <div class="cancel">
+                <router-link to="/profile">
+                    取消
+                </router-link>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue';
+import {
+    Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
+} from 'vee-validate';
+import * as yup from 'yup';
+
+
 /**
- * doing: 同意勾選框
+ * todo: account store、DB建置 社群登入
+ * doing: 改驗證時機 確認驗證值 蒐集數據
+ * -----------------------------------
+ * //同意勾選框
  */
+const signupContainer = ref<HTMLElement>();
+const containerStyle = computed(() => {
+    if (!signupContainer.value) return { top: 0 }
+    const top = signupContainer.value.getBoundingClientRect().top;
+    return { top: `${top}px` }
+})
+
+// 顯示密碼紐
+const showPassword = ref(false);
+
+function toggleShowPassword() {
+    showPassword.value = !showPassword.value
+}
+
+// 表單驗證
+const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+
+yup.addMethod(yup.string, 'email', function validateEmail(message) {
+    return this.matches(emailRegex, {
+        message: '請輸入正確信箱格式',
+        name: 'email',
+        excludeEmptyString: true,
+    });
+});
+
+const signupSchema = yup.object({
+    username: yup.string().trim().required('此欄不能空白'),
+    email: yup.string().trim().required('此欄不能空白').email(),
+    password: yup.string().trim().required('此欄不能空白').matches(/^\S*$/, '格式錯誤'),
+    confirmPassword: yup
+        .string()
+        .oneOf([yup.ref('password')], '密碼不相符')
+        .required('請再次輸入密碼'),
+    joinPrivacy: yup.boolean().oneOf([true], '必須閱讀並接受隱私條款')
+})
+
 
 </script>
 
@@ -69,9 +272,14 @@ $container_width: 300px;
     margin-top: 2rem;
 
     fieldset {
+        // position: relative;
+    }
+
+    .inputData {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 2rem;
+        margin-bottom: 2rem;
 
         &>div {
             position: relative;
@@ -100,8 +308,20 @@ $container_width: 300px;
             user-select: none;
         }
 
+        // .errorMsg {
+        //     @include flex-center-center;
+        //     flex-direction: row;
+        //     gap: .5rem;
+        //     color: #b3261e;
+        //     text-wrap: nowrap;
+        //     position: absolute;
+        //     bottom: -75%;
+        //     left: 0%;
+        //     transform: translate(0%, -50%);
+        // }
+
         & div:has(input:focus)>label,
-        div:has(input:valid)>label {
+        & div:has(input:not(:placeholder-shown))>label {
             transform: translateY(calc(-100% - 10px)) scale(0.8);
         }
 
@@ -112,10 +332,34 @@ $container_width: 300px;
             // top: 50%;
         }
     }
+
+    .errorMsg {
+        @include flex-center-center;
+        flex-direction: row;
+        gap: .5rem;
+        color: #b3261e;
+        text-wrap: nowrap;
+        position: absolute;
+        bottom: -75%;
+        left: 0%;
+        transform: translate(0%, -50%);
+    }
+
+    .inputPrivacy>div {
+        @include flex-center-center;
+        gap: .5rem;
+        position: relative;
+        // margin-top: 1rem;
+
+        .errorMsg {
+            transform: translate(0%, 0%);
+            bottom: -100%;
+        }
+    }
 }
 
 .login_signup {
-    margin-top: 2rem;
+    margin-top: 3rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -145,6 +389,24 @@ $container_width: 300px;
     }
 
     .signup {
+        font-size: .75rem;
+
+        a,
+        span {
+            opacity: .5;
+        }
+
+        a {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
+    .cancel {
         font-size: .75rem;
 
         a,
