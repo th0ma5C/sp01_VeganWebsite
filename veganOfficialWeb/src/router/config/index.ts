@@ -3,7 +3,7 @@ import Questionnaire from '@pages/Questionnaire/index.vue'
 import QNR_result from '@/pages/Questionnaire/result/QNR_result.vue'
 import Menu from '@pages/Menu/index.vue'
 import About from '@pages/About/index.vue'
-import Cart from '@pages/Cart/index.vue'
+import Checkout from '@/pages/Cart/Checkout.vue'
 import Profile from '@pages/Profile/index.vue'
 import Product from "@/pages/Menu/product/Product.vue";
 import type { RouteLocationNormalized, NavigationGuardNext, NavigationGuardReturn } from 'vue-router'
@@ -89,8 +89,8 @@ export default [
         component: About
     },
     {
-        path: '/cart',
-        component: Cart
+        path: '/Checkout',
+        component: Checkout
     },
     {
         path: '/profile',

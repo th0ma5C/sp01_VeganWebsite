@@ -135,7 +135,7 @@
                                 :style="amountAlertStyle"
                                 v-show="showAmountAlert">
                                 <span>
-                                    最高訂購上限99！
+                                    超過最高訂購上限99！
                                 </span>
                             </div>
                         </transition>

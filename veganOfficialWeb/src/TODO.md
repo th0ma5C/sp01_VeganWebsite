@@ -1,6 +1,7 @@
-# TODO: 建置路由，首頁圖片在頁面縮放後比例不正確
+# TODO: 建置路由，首頁圖片在頁面縮放後比例不正確 
         改SCSS
-# DOING: 菜單建置
+    !!! server 配置跨域，前端取消代理伺服器
+# DOING: 會員卡 臨時會員 結帳頁
 
 # pages--home 
     TODO: 是否加入滾動畫面吸附、RWD layout

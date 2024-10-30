@@ -11,60 +11,62 @@
         </p>
 
         <div class="inputWrapper">
-            <!-- <form action="">
-                <fieldset>
-                    <div class="username">
-                        <input type="email" required
-                            id="resetPasswordMail">
-                        <label
-                            for="resetPasswordMail">電子郵件</label>
-                    </div>
-                </fieldset>
-            </form> -->
-            <VForm :validation-schema="loginSchema">
-                <fieldset>
-                    <div>
-                        <VField name="email"
-                            v-slot="{ field, meta }">
-                            <input type="email" id="email"
-                                required placeholder=""
-                                :="field" :class="{
-                                    invalidInput: (meta.validated && !meta.valid)
+            <VForm v-slot="{ handleSubmit, submitCount }"
+                :validation-schema="loginSchema">
+                <form action=""
+                    @submit="handleSubmit($event, onSubmit)">
+                    <fieldset>
+                        <div>
+                            <VField name="email"
+                                v-slot="{ field, meta }">
+                                <input type="email"
+                                    id="email" required
+                                    placeholder="" :="field"
+                                    :class="{
+                                        invalidInput: !meta.valid && submitCount > 0
+                                    }">
+                            </VField>
+                            <label for="email">電子信箱</label>
+
+                            <ErrorMessage as="div"
+                                class="errorMsg"
+                                name="email"
+                                v-slot="{ message }" :style="{
+                                    opacity: submitCount > 0 ? 1 : 0
                                 }">
-                        </VField>
-                        <label for="email">電子信箱</label>
+                                <SvgIcon name="QNR_alert"
+                                    width="18" height="18"
+                                    color="#b3261e">
+                                </SvgIcon>
+                                <span>
+                                    {{ message }}
+                                </span>
+                            </ErrorMessage>
+                        </div>
+                    </fieldset>
+                </form>
 
-                        <ErrorMessage as="div"
-                            class="errorMsg" name="email"
-                            v-slot="{ message }">
-                            <SvgIcon name="QNR_alert"
-                                width="18" height="18"
-                                color="#b3261e">
-                            </SvgIcon>
-                            <span>
-                                {{ message }}
-                            </span>
-                        </ErrorMessage>
+                <div class="submitContainer">
+                    <button>
+                        送出
+                    </button>
+
+                    <div class="cancel">
+                        <router-link to="/profile">
+                            取消
+                        </router-link>
                     </div>
-                </fieldset>
+                </div>
             </VForm>
-        </div>
-
-        <div class="submitContainer">
-            <button>
-                送出
-            </button>
-
-            <div class="cancel">
-                <router-link to="/profile">
-                    取消
-                </router-link>
-            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+/**
+ * todo: 查找資料庫是否有該帳號
+ */
+
 import { computed, onMounted, ref } from 'vue';
 import {
     Field as VField, Form as VForm, ErrorMessage
@@ -96,6 +98,10 @@ yup.addMethod(yup.string, 'email', function validateEmail(message) {
 const loginSchema = yup.object({
     email: yup.string().trim().required('此欄不能空白').email(),
 })
+
+function onSubmit(values?: Record<string, any>) {
+    console.log(JSON.stringify(values, null, 2));
+}
 
 onMounted(() => {
 })

@@ -100,7 +100,7 @@
                     <div class="checkout" :class="{
                         disable: !cartCounter
                     }" @click="clickCheckout">
-                        <button>
+                        <button @click="goCheckoutPage">
                             結帳
                         </button>
                     </div>
@@ -131,12 +131,13 @@ import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, watch, ref, watchEffect } from 'vue';
 import type { MenuItem } from "@/api/menu/type";
+import { useRouter } from 'vue-router';
 
 
 
 const cartStore = useCartStore();
 const { isCartCardOpen, cartItems, cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
-const { toggleCartCardOpen, DELItemFromCart, initCart } = cartStore;
+const { toggleCartCardOpen, DELItemFromCart, initCart, toggleIsCheckout } = cartStore;
 
 const showCartItemList = computed(() => {
     return cartMap.value
@@ -186,6 +187,14 @@ const discountClass = computed(() => {
 })
 
 // 超過上限提示
+
+// 路由
+const router = useRouter();
+function goCheckoutPage() {
+    toggleCartCardOpen()
+    toggleIsCheckout()
+    router.push('/Checkout');
+}
 
 
 onMounted(() => {

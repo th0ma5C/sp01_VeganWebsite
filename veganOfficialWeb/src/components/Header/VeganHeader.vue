@@ -1,6 +1,6 @@
 <template>
     <div class="container" :class="{ 'hideNav': hideNav }"
-        v-if="!QNR_IsLoaded">
+        v-if="!QNR_IsLoaded && !isCheckout">
         <header class="header" ref="header">
             <router-link :to="{ name: 'Home' }">
                 <SvgIcon name="Logo" height="65px"
@@ -28,7 +28,7 @@
                             </SvgIcon>
                         </a>
                         <CartCounter v-if="icon == 'Cart'"
-                            :size="{ width: 18, height: 18 }">
+                            :size="{ width: 20, height: 20 }">
                         </CartCounter>
                     </li>
                 </ul>
@@ -37,7 +37,7 @@
     </div>
 
     <div v-else>
-        <header class="QNR_header" ref="header"
+        <header class="QNR_header"
             :class="{ 'hideNav': hideNav }">
             <router-link :to="{ name: 'Home' }">
                 <SvgIcon name="Logo" height="65px"
@@ -119,6 +119,7 @@ function prevPage() {
 
 // 購物車
 const cartStore = useCartStore();
+const { isCheckout } = storeToRefs(cartStore);
 const { toggleCartCardOpen, getHeaderCart } = cartStore;
 
 function clickCartIcon(target: string) {
@@ -228,6 +229,7 @@ onBeforeUnmount(() => {
     border-bottom: none;
     width: 100%;
     transition: all 0.2s linear;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.5);
 
     a {
         display: block;

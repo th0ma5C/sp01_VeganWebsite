@@ -129,6 +129,12 @@ export const useCartStore = defineStore('cart', () => {
         headerCart.value = target
     }
 
+    // 結帳頁
+    const isCheckout = ref(false);
+    function toggleIsCheckout() {
+        isCheckout.value = !isCheckout.value
+    }
+
     return {
         isCartCardOpen,
         cartItems,
@@ -136,12 +142,14 @@ export const useCartStore = defineStore('cart', () => {
         cartCounter,
         cartTotalPrice,
         headerCart,
+        isCheckout,
         toggleCartCardOpen,
         addItemToCart,
         DELItemFromCart,
         setCartToStorage,
         getCartFromStorage,
         initCart,
-        getHeaderCart
+        getHeaderCart,
+        toggleIsCheckout
     }
 })

@@ -105,6 +105,7 @@ import type { Ref } from 'vue';
 import useArrowFly from '@/hooks/useArrowFly';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { storeToRefs } from 'pinia';
+import { useCartStore } from '@/store/cartStore';
 
 
 
@@ -196,6 +197,8 @@ function setArrowState(state: string) {
 
 // QNR_store
 const { QNR_IsLoaded } = storeToRefs(useQuestionnaireStore());
+
+const { isCheckout } = storeToRefs(useCartStore());
 
 
 onMounted(() => {

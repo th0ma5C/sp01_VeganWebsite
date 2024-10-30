@@ -6,14 +6,20 @@
         </h1>
 
         <div class="inputWrapper">
-            <VForm :initial-values="{ joinPrivacy: false }"
+            <VForm
+                v-slot="{ handleSubmit, submitCount, submitForm, validate }"
+                :initial-values="{ joinPrivacy: false }"
                 :validation-schema="signupSchema">
-                <fieldset class="inputData">
+                <!-- <fieldset class="inputData">
                     <div class="username">
-                        <VField id="username"
-                            name="username" type="text"
-                            placeholder=""
-                            autocomplete="off">
+                        <VField name="username"
+                            v-slot="{ field, meta }">
+                            <input id="username" type="text"
+                                placeholder=""
+                                autocomplete="off" :="field"
+                                :class="{
+                                    invalidInput: (meta.validated && !meta.valid)
+                                }">
                         </VField>
                         <label for="username">稱呼</label>
 
@@ -30,9 +36,14 @@
                     </div>
 
                     <div class="email">
-                        <VField id="email" name="email"
-                            type="email" placeholder=""
-                            autocomplete="off">
+                        <VField name="email"
+                            v-slot="{ field, meta }">
+                            <input id="email" type="email"
+                                placeholder=""
+                                autocomplete="off" :="field"
+                                :class="{
+                                    invalidInput: (meta.validated && !meta.valid)
+                                }">
                         </VField>
                         <label for="email">電子郵件</label>
 
@@ -103,109 +114,126 @@
                             </SvgIcon>
                         </div>
                     </div>
-                </fieldset>
+                </fieldset> -->
+                <form action=""
+                    @submit="handleSubmit($event, onSubmit)">
+                    <fieldset class="inputData">
+                        <div v-for="({ input, type, label }, index) in signupForm"
+                            :class="input" :key="index">
+                            <VField :name="input"
+                                v-slot="{ field, meta }">
+                                <input :id="input"
+                                    :type="type == 'password' ?
+                                        (showPassword ? 'text' : 'password') : type"
+                                    placeholder=""
+                                    autocomplete="off"
+                                    :="field" :class="{
+                                        invalidInput: !meta.valid && submitCount > 0
+                                    }">
 
-                <fieldset class="inputPrivacy">
-                    <div>
-                        <VField v-slot="{ field }"
-                            name="joinPrivacy"
-                            type="checkbox" :value="true"
-                            :unchecked-value="false">
-                            <input id="joinPrivacy"
+                                <label :for="input">
+                                    {{ label }}
+                                </label>
+
+                                <ErrorMessage as="div"
+                                    class="errorMsg"
+                                    :name="input"
+                                    v-slot="{ message }"
+                                    :style="{
+                                        opacity: submitCount > 0 ? 1 : 0
+                                    }">
+                                    <SvgIcon
+                                        name="QNR_alert"
+                                        width="18"
+                                        height="18"
+                                        color="#b3261e">
+                                    </SvgIcon>
+                                    <span>
+                                        {{ message }}
+                                    </span>
+                                </ErrorMessage>
+
+                                <div v-if="input == 'confirmPassword'"
+                                    class="passwordIcon" @="{
+                                        mousedown: toggleShowPassword,
+                                        mouseup: toggleShowPassword,
+                                        mouseleave: () => showPassword = false
+                                    }">
+                                    <SvgIcon
+                                        v-show="!showPassword"
+                                        name="Hidepassword"
+                                        width="20px"
+                                        height="20px"
+                                        color="black">
+                                    </SvgIcon>
+                                    <SvgIcon
+                                        v-show="showPassword"
+                                        name="Showpassword"
+                                        width="20px"
+                                        height="20px"
+                                        color="black">
+                                    </SvgIcon>
+                                </div>
+                            </VField>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="inputPrivacy">
+                        <div>
+                            <VField v-slot="{ field }"
+                                name="joinPrivacy"
                                 type="checkbox"
-                                v-bind="field"
-                                :value="true" />
-                        </VField>
-                        <label for="joinPrivacy">
-                            [必要] 我已詳閱並同意顧客隱私權政策
-                        </label>
+                                :value="true"
+                                :unchecked-value="false">
+                                <input id="joinPrivacy"
+                                    type="checkbox"
+                                    v-bind="field"
+                                    :value="true" />
+                            </VField>
+                            <label for="joinPrivacy">
+                                [必要] 我已詳閱並同意顧客隱私權政策
+                            </label>
 
 
-                        <ErrorMessage as="div"
-                            class="errorMsg"
-                            name="joinPrivacy"
-                            v-slot="{ message }">
-                            <SvgIcon name="QNR_alert"
-                                width="18" height="18"
-                                color="#b3261e">
-                            </SvgIcon>
-                            <span>
-                                {{ message }}
-                            </span>
-                        </ErrorMessage>
-                    </div>
+                            <ErrorMessage as="div"
+                                class="errorMsg"
+                                name="joinPrivacy"
+                                v-slot="{ message }">
+                                <SvgIcon name="QNR_alert"
+                                    width="18" height="18"
+                                    color="#b3261e">
+                                </SvgIcon>
+                                <span>
+                                    {{ message }}
+                                </span>
+                            </ErrorMessage>
+                        </div>
 
-                </fieldset>
-            </VForm>
+                    </fieldset>
 
-            <!-- <form action="">
-                <fieldset class="inputData">
-                    <div class="username">
-                        <input type="text" required>
-                        <label for="">稱呼</label>
-                    </div>
+                    <div class="login_signup">
+                        <button>
+                            送出
+                        </button>
 
-                    <div class="username">
-                        <input type="text" required>
-                        <label for="">電子郵件</label>
-                    </div>
-
-                    <div class="password">
-                        <input required>
-                        <label for="">密碼</label>
-                    </div>
-
-                    <div class="password">
-                        <input required>
-                        <label for="">確認密碼</label>
-                        <div class="passwordIcon" @="{
-                            mousedown: toggleShowPassword,
-                            mouseup: toggleShowPassword
-                        }">
-                            <SvgIcon v-show="!showPassword"
-                                name="Hidepassword"
-                                width="20px" height="20px"
-                                color="black">
-                            </SvgIcon>
-                            <SvgIcon v-show="showPassword"
-                                name="Showpassword"
-                                width="20px" height="20px"
-                                color="black">
-                            </SvgIcon>
+                        <div class="cancel">
+                            <router-link to="/profile">
+                                取消
+                            </router-link>
                         </div>
                     </div>
-                </fieldset>
-
-                <fieldset class="inputPrivacy">
-                    <div>
-                        <input type="checkbox" name=""
-                            id="joinPrivacy">
-                        <label for="joinPrivacy">
-                            [必要] 我已詳閱並同意顧客隱私權政策
-                        </label>
-                    </div>
-                </fieldset>
-            </form> -->
-        </div>
-
-        <div class="login_signup">
-            <button>
-                送出
-            </button>
-
-            <div class="cancel">
-                <router-link to="/profile">
-                    取消
-                </router-link>
-            </div>
+                </form>
+            </VForm>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
+    useField, useForm, type SubmissionHandler,
+    type FormContext
 } from 'vee-validate';
 import * as yup from 'yup';
 
@@ -231,6 +259,29 @@ function toggleShowPassword() {
 }
 
 // 表單驗證
+const signupForm = [
+    {
+        input: 'username',
+        type: 'text',
+        label: '稱呼'
+    },
+    {
+        input: 'email',
+        type: 'email',
+        label: '電子郵件'
+    },
+    {
+        input: 'password',
+        type: 'password',
+        label: '密碼'
+    },
+    {
+        input: 'confirmPassword',
+        type: 'password',
+        label: '確認密碼'
+    },
+]
+
 const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
 
 yup.addMethod(yup.string, 'email', function validateEmail(message) {
@@ -248,10 +299,26 @@ const signupSchema = yup.object({
     confirmPassword: yup
         .string()
         .oneOf([yup.ref('password')], '密碼不相符')
-        .required('請再次輸入密碼'),
+        .required('此欄不能空白'),
     joinPrivacy: yup.boolean().oneOf([true], '必須閱讀並接受隱私條款')
 })
 
+function onSubmit(values?: Record<string, any>) {
+    console.log(JSON.stringify(values, null, 2));
+}
+
+function handleRefreshAlert(e: Event) {
+    e.preventDefault();
+    alert()
+}
+
+onMounted(() => {
+    window.addEventListener('beforeunload', handleRefreshAlert);
+})
+
+onUnmounted(() => {
+    window.removeEventListener('beforeunload', handleRefreshAlert);
+})
 
 </script>
 
@@ -273,6 +340,8 @@ $container_width: 300px;
 
     fieldset {
         // position: relative;
+
+
     }
 
     .inputData {
@@ -292,6 +361,10 @@ $container_width: 300px;
             border: 1px solid gray;
             border-radius: .5rem;
             background-color: $primaryBacColor;
+        }
+
+        .invalidInput {
+            border: 1px solid #b3261e;
         }
 
         label {
