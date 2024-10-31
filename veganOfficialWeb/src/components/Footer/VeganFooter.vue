@@ -293,8 +293,9 @@ onUnmounted(() => {
         position: relative;
 
         &::after {
-            @include WnH(calc(100% + 3rem), 1px);
+            @include WnH(calc(100% + 6rem), 1px);
             content: '';
+            left: -1.5rem;
             bottom: 0;
             background-color: $primaryBacColor;
             position: absolute;
