@@ -15,7 +15,7 @@
                         </fieldset>
 
                         <fieldset>
-                            <h2>配送</h2>
+                            <h2>配送地址</h2>
                             <div class="formWrapper">
                                 <VField name="consigneeName"
                                     type="text">
@@ -38,32 +38,48 @@
                                         <span
                                             class="showCity"
                                             v-show="false">
-                                            {{ '縣市' }}
+                                            {{
+                                                selectedCity.city
+                                            }}
                                         </span>
-                                        <span
-                                            class="switchIcon">></span>
-                                        <!-- <SvgIcon></SvgIcon> -->
+                                        <SvgIcon
+                                            @click="toggleOpenOptions"
+                                            class="switchIcon"
+                                            name="ListArrowDown"
+                                            width="24"
+                                            height="24"
+                                            color="black">
+                                        </SvgIcon>
                                         <div class="optionsWrapper"
-                                            v-show="false">
+                                            v-show="isOptionsOpen">
                                             <div
                                                 class="title">
-                                                <span>城市</span>
-                                                <span>區</span>
+                                                <span
+                                                    @click="switchTab('city')">縣市</span>
+                                                <span
+                                                    @click="switchTab('town')">鄉鎮</span>
                                             </div>
 
                                             <div
                                                 class="tabs">
-                                                <ul>
-                                                    <li v-for="(item, index) in 20"
-                                                        :key="index">
-                                                        桃園
+                                                <ul
+                                                    v-show="currTab == 'city'">
+                                                    <li v-for="({ NAME, CODE }) in showCityList"
+                                                        :key="CODE"
+                                                        @click="pickCity({ city: NAME, code: CODE })">
+                                                        {{
+                                                            NAME
+                                                        }}
                                                     </li>
                                                 </ul>
 
                                                 <ul
-                                                    v-show="false">
-                                                    <li>
-                                                        中壢
+                                                    v-show="currTab == 'town'">
+                                                    <li v-for="(town, index) in townList"
+                                                        :key="index">
+                                                        {{
+                                                            town
+                                                        }}
                                                     </li>
                                                 </ul>
                                             </div>
@@ -135,12 +151,48 @@
 
                                 <div class="radio">
                                     <ul>
-                                        <li>
-                                            超商
+                                        <li
+                                            class="selectLi">
+                                            <div
+                                                class="radioBtn">
+                                                <div></div>
+                                            </div>
+                                            <h3>
+                                                宅配
+                                            </h3>
                                         </li>
                                         <li>
-                                            宅配
+                                            <div
+                                                class="radioBtn">
+                                                <div></div>
+                                            </div>
+                                            <div
+                                                class="storeAddr">
+                                                <h3>
+                                                    超商
+                                                    <span>
+                                                        {{
+                                                            '：XX門市'
+                                                        }}
+                                                    </span>
+                                                </h3>
+                                                <p>
+                                                    <span>
+                                                        {{
+                                                            '桃園市中壢區中平路1號'
+                                                        }}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="chooseStoreBtn">
+                                                <button
+                                                    @click="chooseStore">
+                                                    選擇門市
+                                                </button>
+                                            </div>
                                         </li>
+
                                     </ul>
                                 </div>
                             </div>
@@ -162,13 +214,41 @@
                                 <div class="radio">
                                     <ul>
                                         <li>
-                                            匯款
+                                            <div
+                                                class="radioBtn">
+                                                <div></div>
+                                            </div>
+                                            <h3>
+                                                匯款
+                                            </h3>
+                                        </li>
+                                        <li
+                                            class="selectLi">
+                                            <div
+                                                class="radioBtn">
+                                                <div></div>
+                                            </div>
+                                            <h3>
+                                                信用卡
+                                            </h3>
                                         </li>
                                         <li>
-                                            電子支付
+                                            <div
+                                                class="radioBtn">
+                                                <div></div>
+                                            </div>
+                                            <h3>
+                                                貨到付款
+                                            </h3>
                                         </li>
                                         <li>
-                                            貨到付款
+                                            <div
+                                                class="radioBtn">
+                                                <div></div>
+                                            </div>
+                                            <h3>
+                                                電子支付
+                                            </h3>
                                         </li>
                                     </ul>
                                 </div>
@@ -206,11 +286,14 @@
 <script setup lang="ts">
 import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
-import { onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
 } from 'vee-validate';
 import * as yup from 'yup';
+import { getCityList, getTownList } from '@/api/cityList';
+// import { cityList } from '@/api/cityList/mockList';
+import { city } from '@/hooks/useGetCityList';
 
 // 購物車
 const cartStore = useCartStore();
@@ -244,10 +327,50 @@ function foo(val: string) {
     console.log(val);
 }
 
+// 開啟選擇縣市表單
+const isOptionsOpen = ref(false);
+function toggleOpenOptions() {
+    isOptionsOpen.value = !isOptionsOpen.value
+}
+
+// 引入 city 類
+
+// 縣市列表
+const showCityList = city.cityList;
+
+// selected city
+const selectedCity = reactive({
+    city: '',
+    code: ''
+});
+function pickCity(city: typeof selectedCity) {
+    ({ city: selectedCity.city, code: selectedCity.code } = city);
+    switchTab('town');
+}
+
+// 鄉鎮列表
+const townList = ref<string[]>([]);
+watch(selectedCity, async (nVal) => {
+    if (nVal) {
+        townList.value = []
+        townList.value = await city.getShowTownList(nVal.city)
+    }
+})
+
+
+// 切換城市選取
+const currTab = ref('city');
+function switchTab(tab: string) {
+    currTab.value = tab;
+}
+
+// 開啟選擇門市
+function chooseStore() {
+    window.open('https://emap.pcsc.com.tw/', '_blank', 'popup')
+}
 
 onMounted(() => {
     if (!isCheckout.value) toggleIsCheckout();
-    console.log(cartMap.value);
 })
 
 onUnmounted(() => {
@@ -343,7 +466,7 @@ onUnmounted(() => {
         position: absolute;
         right: 1rem;
         top: 50%;
-        transform: translateY(-50%);
+        transform: translateY(-50%) rotate(-90deg);
     }
 
     .optionsWrapper {
@@ -353,7 +476,7 @@ onUnmounted(() => {
         top: calc(100%);
         left: -1rem;
         z-index: 2;
-        background-color: red;
+        background-color: white;
         border: 1px solid black;
         border-radius: .5rem;
 
@@ -361,7 +484,7 @@ onUnmounted(() => {
         flex-direction: column;
 
         .title {
-            border-bottom: 1px solid gray;
+            border-bottom: 1px solid black;
             width: 100%;
             display: flex;
             // justify-content: center;
@@ -388,9 +511,8 @@ onUnmounted(() => {
             li {
                 @include WnH(100%, 36px);
                 padding-left: 1rem;
-                outline: 1px solid black;
                 line-height: 36px;
-                // margin: .5rem 0;
+                border-bottom: 1px solid gray // margin: .5rem 0;
             }
         }
     }
@@ -429,13 +551,98 @@ onUnmounted(() => {
     ul {
         display: flex;
         flex-direction: column;
+        background-color: white;
+
+        .selectLi {
+            background-color: rgba(62, 163, 80, 0.1);
+            border-color: #3EA350;
+            box-shadow: 0 0 1px 1px #3EA350;
+
+            &:not(:first-of-type) {
+                border-top: 1px solid #3EA350;
+            }
+
+            .radioBtn {
+                background-color: $secondBacColor;
+
+                &>div {
+                    background-color: white;
+                }
+            }
+        }
     }
 
     li {
-        @include WnH(100%, 48px);
+        // @include WnH(100%, 48px);
+        min-height: 48px;
+        padding: .5rem 0;
         padding-left: 1rem;
-        outline: 1px solid black;
+        // outline: 1px solid black;
+        border: 1px solid black;
         line-height: 36px;
+
+        display: flex;
+        // justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        position: relative;
+
+        &:not(:first-of-type) {
+            border-top: none;
+        }
+
+
+        h3 {
+            font-size: 18px;
+        }
+
+        .radioBtn {
+            @include WnH(16px);
+            content: '';
+            border: 1px solid gray;
+            background-color: white;
+
+            border-radius: 100%;
+            position: relative;
+
+            &>div {
+                @include WnH(6px);
+                content: '';
+                position: absolute;
+                left: 50%;
+                top: 50%;
+
+                border-radius: 100%;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .storeAddr {
+
+            p {
+                width: 100%;
+                font-size: 14px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+        }
+
+        .chooseStoreBtn {
+            font-size: .75rem;
+            padding: 0 .25rem;
+            margin-right: 1rem;
+            border: 1px solid green;
+            border-radius: .5rem;
+            background-color: $btnBacColor_light;
+            color: $primaryBacColor;
+            border-radius: .5rem;
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
     }
 }
 
@@ -443,11 +650,14 @@ onUnmounted(() => {
     width: 80%;
     margin: 0 auto;
     margin-top: 2rem;
+    font-size: 1.5rem;
 
     button {
-        @include WnH(100%, 36px);
-        border: 1px solid gray;
+        @include WnH(100%, 48px);
+        border: 1px solid green;
         border-radius: .5rem;
+        background-color: $btnBacColor;
+        color: $primaryBacColor;
     }
 }
 </style>
