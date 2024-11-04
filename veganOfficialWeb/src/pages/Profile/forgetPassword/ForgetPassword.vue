@@ -162,6 +162,7 @@ h1 {
             transition: transform .3s ease;
             transform-origin: left;
             user-select: none;
+            pointer-events: none;
         }
 
         .errorMsg {
