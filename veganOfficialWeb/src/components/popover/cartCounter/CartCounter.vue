@@ -1,7 +1,8 @@
 <template>
     <div class="counter" :style="iconStyle">
-        <span v-if="cartCounter && cartCounter < 99">
-            {{ cartCounter }}
+        <span
+            v-if="amount || (cartCounter && cartCounter < 99)">
+            {{ showNum }}
         </span>
         <span v-else>
             {{ 99 }}+
@@ -21,9 +22,14 @@ interface Props {
     size?: {
         width: number,
         height: number
-    };
+    },
+    amount?: number
 }
-const { size } = defineProps<Props>();
+const { size, amount } = defineProps<Props>();
+
+const showNum = computed(() => {
+    return amount ?? cartCounter.value
+})
 
 const iconStyle = computed(() => {
     if (size) {

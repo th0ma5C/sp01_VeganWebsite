@@ -83,6 +83,41 @@
                                     </span>
                                 </ErrorMessage>
                             </div>
+
+                            <div
+                                class="formWrapper addressWrapper">
+                                <VField name="address"
+                                    v-slot="{ field, meta }">
+                                    <input type="text"
+                                        autocomplete="off"
+                                        placeholder=""
+                                        :="field" :class="{
+                                            invalidInput: !meta.valid && submitCount > 0
+                                        }"
+                                        @blur="updateAddrInput(field.value)">
+                                </VField>
+                                <label for="">地址</label>
+
+                                <ErrorMessage name="address"
+                                    as="div"
+                                    v-slot="{ message }"
+                                    class="errorMsg" :style="{
+                                        opacity: submitCount > 0 ? 1 : 0
+                                    }">
+                                    <SvgIcon
+                                        name="QNR_alert"
+                                        width="18"
+                                        height="18"
+                                        color="#b3261e">
+                                    </SvgIcon>
+                                    <span>
+                                        {{
+                                            message
+                                        }}
+                                    </span>
+                                </ErrorMessage>
+                            </div>
+
                             <div class="city_postal">
                                 <div class="formWrapper"
                                     @click.stop>
@@ -184,9 +219,10 @@
                                     </div>
                                 </div>
 
-
                                 <div class="formWrapper">
-                                    <VField name="postal"
+                                    <VField
+                                        v-model="postalCode"
+                                        name="postal"
                                         v-slot="{ field, meta }">
                                         <input type="text"
                                             placeholder=""
@@ -221,38 +257,7 @@
                                 </div>
 
                             </div>
-                            <div
-                                class="formWrapper addressWrapper">
-                                <VField v-model="addrInput"
-                                    name="address"
-                                    v-slot="{ field, meta }">
-                                    <input type="text"
-                                        placeholder=""
-                                        :="field" :class="{
-                                            invalidInput: !meta.valid && submitCount > 0
-                                        }">
-                                </VField>
-                                <label for="">地址</label>
 
-                                <ErrorMessage name="address"
-                                    as="div"
-                                    v-slot="{ message }"
-                                    class="errorMsg" :style="{
-                                        opacity: submitCount > 0 ? 1 : 0
-                                    }">
-                                    <SvgIcon
-                                        name="QNR_alert"
-                                        width="18"
-                                        height="18"
-                                        color="#b3261e">
-                                    </SvgIcon>
-                                    <span>
-                                        {{
-                                            message
-                                        }}
-                                    </span>
-                                </ErrorMessage>
-                            </div>
                             <div
                                 class="formWrapper contactNoWrapper">
                                 <VField name="contactNo"
@@ -547,22 +552,7 @@
             </div>
 
             <div class="right">
-
-                <div>
-                    消費條
-                </div>
-
-                <div>
-                    列表
-                </div>
-
-                <div>
-                    折扣碼
-                </div>
-
-                <div>
-                    小計
-                </div>
+                <CheckCartList></CheckCartList>
             </div>
         </div>
     </div>
@@ -570,14 +560,17 @@
 
 <script setup lang="ts">
 /**
- * todo:  postal code api, right part list building, 金流api
- * doing: 驗證電話
+ * todo:  郵遞區號驗證, 金流api
+ * doing: right part list building
  * ------------------------------------------
  * //delivery payment bind value
  * //profile
  * //表單驗證(宅配、超取擇一)
+ * //驗證電話
+ * //postal code api
  */
 
+import CheckCartList from './CheckCartList/CheckCartList.vue';
 import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
@@ -586,10 +579,11 @@ import {
 } from 'vee-validate';
 import * as yup from 'yup';
 import { city } from '@/hooks/useGetCityList';
+import { getPostalCode } from '@/api/postal';
 
 // 購物車
 const cartStore = useCartStore();
-const { isCheckout, cartMap } = storeToRefs(cartStore)
+const { isCheckout } = storeToRefs(cartStore);
 const { toggleIsCheckout } = cartStore;
 
 // 表單驗證
@@ -732,8 +726,12 @@ function switchTab(tab: string) {
 
 // 宅配地址
 const addrInput = ref('');
+const updateAddrInput = (value: string) => {
+    addrInput.value = value.trim();
+};
+
 const expressAddr = computed(() => {
-    return selectedCity.city + ' ' + selectedTown.value + ' ' + addrInput.value
+    return selectedCity.city + selectedTown.value + addrInput.value
 })
 
 
@@ -788,6 +786,33 @@ function pickPaymentType(type: string) {
     selectedPayment.value = type
 }
 
+// 郵遞區號請求
+const postalCode = ref('');
+const postalCodeAddr = computed(() => {
+    const adrs = expressAddr.value;
+    return {
+        adrs
+    }
+})
+async function autoFillPostalCode() {
+    try {
+        const { zipcode6 } = await getPostalCode(postalCodeAddr.value);
+        postalCode.value = zipcode6 ?? ''
+    } catch (error) {
+        console.log(autoFillPostalCode.name, error);
+    }
+
+}
+
+watch([() => selectedCity.city, selectedTown, addrInput], async (nVal) => {
+    if (nVal.every(item => item && item !== '')) {
+        try {
+            await autoFillPostalCode();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+})
 
 onMounted(() => {
     if (!isCheckout.value) toggleIsCheckout();
@@ -953,7 +978,7 @@ onUnmounted(() => {
 
     .switchIcon {
         position: absolute;
-        right: .75rem;
+        right: .5rem;
         top: 50%;
         transform: translateY(-50%) rotate(-90deg);
         transition: transform .3s ease;

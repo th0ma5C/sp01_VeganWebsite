@@ -60,7 +60,7 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
     const localStorageKey = ref('mockResult');
     const stamp = ref();
     const expiredTime = 1000 * 60 * 60 * 24 * 2; // 2天
-    const currPage = ref(0);
+    const currPage = ref(1);
     const formPageTranslateX = ref(0);
     const QNR_state = computed(() => {
         return {
@@ -90,6 +90,9 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         return new Promise<void>((resolve, reject) => {
             const data = getDataFromStorage() as typeof QNR_state.value;
             if (!data) {
+                // currPage.value = 1;
+                formPageTranslateX.value = (currPage.value - 1) * -100;
+                setQNR_result(QNR_result);
                 return reject(`${getDataFromStorage.name}failed`);
             }
             let result;
