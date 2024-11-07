@@ -133,13 +133,14 @@ function clickCartIcon(target: string) {
 // iconList
 const iconList = ref();
 
-watch(QNR_IsLoaded, (nVal) => {
-    if (nVal == false) {
+watch([QNR_IsLoaded, isCheckout], (nVal) => {
+    if (nVal.some(val => val == false)) {
         nextTick(() => {
             getHeaderCart(iconList.value[1]);
         })
     }
 })
+
 
 // emit event
 emitter.on('sendIcon', () => {

@@ -2,7 +2,14 @@
     <div class="rightWrapper">
         <div class="barContainer">
             <h4>
-                增加一千包解鎖下個優惠
+                <span
+                    v-if="cartCounter && cartCounter > 14">
+                    恭喜達標
+                </span>
+                <span v-else>
+                    增加{{ 7 - (cartCounter ?? 0) % 7
+                    }}包解鎖下個優惠
+                </span>
             </h4>
 
             <div class="bar">
@@ -13,19 +20,19 @@
                     八五折優惠
                 </div>
 
-                <div class="milestone mileage1">
+                <div v-for="index in 2" :key="index"
+                    class="milestone " :class="{
+                        mileage1: index == 1,
+                        mileage2: index == 2
+                    }">
                     <SvgIcon name="Check" width="1.25rem"
-                        height="1.25rem" :color="'red'">
+                        height="1.25rem"
+                        :color="index == 1 ? milestoneIconColor[0] : milestoneIconColor[1]">
                     </SvgIcon>
                 </div>
 
-                <div class="milestone mileage2">
-                    <SvgIcon name="Check" width="1.25rem"
-                        height="1.25rem" :color="'red'">
-                    </SvgIcon>
-                </div>
-
-                <div class="progress"></div>
+                <div class="progress"
+                    :style="progressLength"></div>
             </div>
         </div>
 
@@ -65,8 +72,8 @@
                 v-slot="{ handleSubmit, submitCount, values }"
                 :validation-schema="schema">
                 <form action="">
-                    <VField name="discount" type=text>
-
+                    <VField name="discount" type=text
+                        required>
                     </VField>
                     <label for="">折扣碼</label>
 
@@ -80,46 +87,151 @@
         </div>
 
         <div class="subContainer">
-            <div>
-                <span>小計</span>
-                <span>一百萬</span>
+            <div class="cost">
+                <span>
+                    小計：
+                    <span class="itemQuantity">
+                        {{ cartCounter }}項
+                    </span>
+                </span>
+                <span>${{ cartTotalPrice }}</span>
             </div>
 
-            <div>
-                <span>運費</span>
-                <span>五十萬</span>
+            <div class="cost">
+                <span>
+                    優惠：
+                    <span v-if="discountPercent == 1"
+                        class="itemQuantity">
+                        {{ '' }}
+                    </span>
+                    <span v-else-if="discountPercent == 0.9"
+                        class="itemQuantity">
+                        {{ '9折' }}
+                    </span>
+                    <span v-else class="itemQuantity">
+                        {{ '85折' }}
+                    </span>
+                </span>
+                <span class="discountAmount">${{
+                    discountAmount
+                    }}
+                </span>
+            </div>
+
+            <div class="cost">
+                <span class="freight">
+                    運費
+                    <SvgIcon class="QuestionMark"
+                        name="QuestionMark" width="16px"
+                        height="16px" color="black" @="{
+                            mouseenter: toggleIsIllustrateShow,
+                            mouseleave: toggleIsIllustrateShow
+                        }">
+                    </SvgIcon>
+                    <transition name="freightIllustrate">
+                        <div v-show="isIllustrateShow"
+                            class="freightIllustrate">
+                            <span>
+                                Lorem ipsum dolor sit amet
+                                consectetur adipisicing
+                                elit.
+                                Modi, itaque.
+                            </span>
+                        </div>
+                    </transition>
+
+                </span>
+                <span>${{ freightFee }}</span>
             </div>
 
             <div>
                 <span>總計</span>
-                <span>一百五十萬</span>
+                <span>${{ cartTotalPrice + freightFee -
+                    discountAmount
+                    }}</span>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+/**
+ * todo: 折扣碼
+ */
+
 import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
 import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
 } from 'vee-validate';
-import { onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import * as yup from 'yup';
 
 
 const cartStore = useCartStore();
-const { cartMap } = storeToRefs(cartStore);
+const { cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
 
 // 表單驗證
 const schema = yup.object({
-
+    discountCode: yup.string().trim()
 })
+
+// 進度條長度
+const progressLength = computed(() => {
+    // const width = ;
+    if (!cartCounter.value) return { width: 0 };
+
+    const width = cartCounter.value < 14 ?
+        `calc(${Math.floor((100 / 14) * cartCounter.value)}% + 10px)` :
+        `100%`
+
+    return {
+        width
+    }
+})
+
+// 達標 icon style
+const milestoneIconColor = computed(() => {
+    if (!cartCounter.value) return ['', '']
+
+    const styleMap = [
+        cartCounter.value >= 7 ? '#FCFAF2' : 'red',
+        cartCounter.value >= 14 ? '#FCFAF2' : 'red'
+    ];
+
+    return styleMap
+})
+
+// 優惠
+const discountPercent = computed(() => {
+    const isExceed = milestoneIconColor.value.filter(item => item == '#FCFAF2').length;
+    if (isExceed == 1) {
+        return 0.9
+    } else if (isExceed == 2) {
+        return 0.85
+    } else {
+        return 1
+    }
+})
+
+const discountAmount = computed(() => Math.floor(cartTotalPrice.value * (1 - discountPercent.value)))
+
+// 運費
+const { selectedDelivery } = defineProps(['selectedDelivery']);
+
+const freightFee = computed(() => {
+    return selectedDelivery == '宅配' ? 120 : 60
+})
+
+// 運費說明
+const isIllustrateShow = ref(false);
+function toggleIsIllustrateShow(e: Event) {
+    isIllustrateShow.value = !isIllustrateShow.value
+}
 
 
 onMounted(() => {
-    console.log(cartMap.value);
 })
 
 </script>
@@ -145,6 +257,7 @@ onMounted(() => {
         width: 100%;
         height: 1.25rem;
         background-color: rgb(229, 229, 229);
+        outline: 1px solid $btnBacColor_light;
         border-radius: 1.25rem;
 
         margin-top: 4rem;
@@ -223,16 +336,21 @@ onMounted(() => {
             border: 1px solid gray;
             border-radius: 1rem;
             width: 100px;
-            flex: 1;
+            // overflow: hidden;
+            // flex: 1;
 
             .counter {
                 transform: translate(-50%, -50%);
                 background-color: $btnBacColor;
             }
+
+            img {
+                border-radius: 1rem;
+            }
         }
 
         .itemContent {
-            padding: 0 .5rem 0 1rem;
+            padding: 0 .5rem 0 2rem;
             flex: 2;
 
             display: flex;
@@ -268,14 +386,20 @@ onMounted(() => {
         width: 100%;
 
         display: flex;
-        gap: 1rem;
+        // gap: 2rem;
 
         input {
-            width: 100%;
-            height: 48px;
+            // width: 100%;
+            flex: 1;
+            height: 34px;
             border: 1px solid gray;
             border-radius: 1rem;
             padding: 0 1rem;
+            font-size: .75rem;
+        }
+
+        &:has(input:focus, input:valid)>label {
+            opacity: 0;
         }
 
         label {
@@ -286,17 +410,19 @@ onMounted(() => {
             left: 1rem;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 18px;
+            font-size: .75rem;
+            // font-size: 18px;
             color: rgba(0, 0, 0, 0.75);
             transition: transform .3s ease;
             transform-origin: left;
             user-select: none;
             pointer-events: none;
-
+            transition: opacity .15s ease;
         }
 
         .formBtn {
-            width: 12%;
+            margin-left: 2rem;
+            width: 10%;
             text-wrap: nowrap;
             display: flex;
             justify-content: center;
@@ -304,12 +430,13 @@ onMounted(() => {
 
             button {
                 width: 100%;
-                height: 75%;
+                height: 100%;
 
                 border: 1px solid green;
-                border-radius: .5rem;
+                border-radius: 1rem;
                 background-color: $btnBacColor;
                 color: $primaryBacColor;
+                font-size: .75rem;
             }
         }
     }
@@ -318,13 +445,93 @@ onMounted(() => {
 .subContainer {
     padding: 0 1rem;
     display: grid;
+    grid-template-rows: 1fr 1fr 1fr 2fr;
+    gap: .5rem;
 
     &>div {
         display: grid;
+        grid-template-columns: repeat(2, 1fr);
+
+        &>span:last-of-type {
+            justify-self: flex-end;
+        }
+
+        &:last-of-type {
+            font-size: 1.2rem;
+
+            position: relative;
+            align-self: flex-end;
+
+            &::before {
+                background-color: rgb(188, 188, 188);
+                content: '';
+                width: calc(100% + 2rem);
+                height: 2px;
+                position: absolute;
+                top: -.5rem;
+                left: -1rem;
+            }
+        }
+    }
+
+    .cost {
+        font-size: .8rem;
+
+        .itemQuantity {
+            margin-left: .5rem;
+        }
+
+        .discountAmount {
+            color: red;
+        }
+
+        .freight {
+            position: relative;
+            display: inline-flex;
+            gap: .25rem;
+            align-items: center;
+
+            .QuestionMark {
+                cursor: pointer;
+                opacity: .5;
+                transform: translateY(-1px);
+                transition: opacity .15s;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+
+            .freightIllustrate {
+                padding: .25rem .5rem;
+                background-color: $primaryBacColor;
+                border: 1px solid black;
+                border-radius: .5rem;
+                text-align: center;
+
+                width: 150px;
+                position: absolute;
+                top: 0%;
+                left: 40%;
+                z-index: 2;
+
+            }
+        }
     }
 }
 
-* {
-    // outline: 1px solid black;
+.freightIllustrate-enter-active,
+.freightIllustrate-leave-active {
+    transition: opacity .15s;
+}
+
+.freightIllustrate-enter-from,
+.freightIllustrate-leave-to {
+    opacity: 0;
+}
+
+.freightIllustrate-enter-to,
+.freightIllustrate-leave-from {
+    opacity: 1;
 }
 </style>

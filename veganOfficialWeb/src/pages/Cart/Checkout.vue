@@ -547,12 +547,14 @@
                         </div>
                     </form>
 
-                    <pre>{{ values }}</pre>
+                    <!-- <pre>{{ values }}</pre> -->
                 </VForm>
             </div>
 
             <div class="right">
-                <CheckCartList></CheckCartList>
+                <CheckCartList
+                    :selectedDelivery="selectedDelivery">
+                </CheckCartList>
             </div>
         </div>
     </div>
@@ -560,14 +562,15 @@
 
 <script setup lang="ts">
 /**
- * todo:  郵遞區號驗證, 金流api
- * doing: right part list building
+ * todo:  郵遞區號驗證, 折扣碼,金流api, member DB
+ * doing: 
  * ------------------------------------------
  * //delivery payment bind value
  * //profile
  * //表單驗證(宅配、超取擇一)
  * //驗證電話
  * //postal code api
+ * //right part list building
  */
 
 import CheckCartList from './CheckCartList/CheckCartList.vue';

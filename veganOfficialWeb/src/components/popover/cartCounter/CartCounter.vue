@@ -58,6 +58,7 @@ const iconStyle = computed(() => {
     background-color: red;
     border-radius: 50%;
     transition: opacity .3s ease;
+    pointer-events: none;
 
     span {
         aspect-ratio: 1/1;
