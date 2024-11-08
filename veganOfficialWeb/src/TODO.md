@@ -42,6 +42,10 @@
     ## product img hover圖示改放大鏡
     ## menu頁篩選先顯示全部
 
+# pages--checkout
+
+    ##視窗小縣市按鈕會被擋住
+
 # components
     TODO: 右側會員popover區塊
 

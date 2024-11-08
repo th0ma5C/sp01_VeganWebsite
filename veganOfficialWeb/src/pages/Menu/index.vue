@@ -97,7 +97,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                    }}</span>
+                                                }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -318,7 +318,7 @@
                                 <div class="description">
                                     <span>{{
                                         items.description
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
                             <h3>{{ items.name }}</h3>
@@ -525,7 +525,8 @@ function closePop() {
 }
 
 // -----menu store 數據-----
-const menuStore = useMenuStore()
+const menuStore = useMenuStore();
+const { fetchIngredients, fetchMenu } = menuStore;
 const { fullMenu, saladList, smoothieList, ingredientsList, isLoaded } = storeToRefs(menuStore);
 
 // menuStore.$subscribe((_, state) => {
@@ -657,10 +658,8 @@ function sort(el: Ref<MenuItem[]>) {
 menuStore.$subscribe((_, state) => {
     // console.log(state.ingredientsList);
 })
-
 let ingredientSet = computed<Set<string>>(() => {
-    if (!isLoaded.value || !ingredientList.value || ingredientList.value.length <= 1) return new Set();
-
+    if (!isLoaded.value || !ingredientsList.value || ingredientsList.value.length <= 1) return new Set();
     let set = new Set<string>();
     for (let i of ingredientsList.value) {
         for (let j of i.ingredients!) {
@@ -1068,7 +1067,10 @@ async function clickSmoothiesBtn(target: MenuItem, e: Event) {
 onBeforeMount(() => {
 })
 onMounted(() => {
-    if (!isLoaded.value) menuStore.fetchMenu();
+    if (!isLoaded.value) {
+        fetchMenu();
+        fetchIngredients();
+    }
     window.addEventListener('resize', handleResize);
     // console.log('menu mounted');
 })

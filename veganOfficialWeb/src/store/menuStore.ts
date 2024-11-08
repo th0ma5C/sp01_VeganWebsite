@@ -209,6 +209,7 @@ export const useMenuStore = defineStore('menu', (() => {
         fetchMenu,
         fetchHotList,
         fetchNewList,
+        fetchIngredients,
         getInfoByName,
         getSameStyleItem
     }

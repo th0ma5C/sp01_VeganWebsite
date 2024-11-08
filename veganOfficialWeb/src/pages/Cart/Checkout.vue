@@ -188,6 +188,9 @@
                                                 <span
                                                     @click="switchTab('city')">縣市</span>
                                                 <span
+                                                    :class="{
+                                                        'not-allowed': !selectedCity.city
+                                                    }"
                                                     @click="switchTab('town')">鄉鎮</span>
                                             </div>
 
@@ -206,8 +209,16 @@
 
                                                 <ul
                                                     v-show="currTab == 'town'">
+                                                    <div class="spinner"
+                                                        v-show="showSpinner">
+                                                    </div>
+
+
                                                     <li v-for="(town, index) in townList"
                                                         :key="index"
+                                                        :style="{
+
+                                                        }"
                                                         @click="pickTown(town)">
                                                         {{
                                                             town
@@ -225,6 +236,7 @@
                                         name="postal"
                                         v-slot="{ field, meta }">
                                         <input type="text"
+                                            autocomplete="off"
                                             placeholder=""
                                             :="field"
                                             :class="{
@@ -233,6 +245,9 @@
                                     </VField>
                                     <label
                                         for="">郵遞區號</label>
+                                    <div class="spinner postalSpinner"
+                                        v-show="postalSpinner">
+                                    </div>
 
                                     <ErrorMessage
                                         name="postal"
@@ -303,31 +318,13 @@
                                     v-slot="{ field, meta }">
                                     <input type="checkbox"
                                         :="field"
-                                        :value="true">
+                                        :value="true"
+                                        id="saveInfo">
                                 </VField>
-                                <label for=""
+                                <label for="saveInfo"
                                     class="staticLabel">
                                     儲存寄送資訊供下次使用
                                 </label>
-
-                                <!-- <ErrorMessage
-                                    name="saveInfo" as="div"
-                                    v-slot="{ message }"
-                                    class="errorMsg" :style="{
-                                        opacity: submitCount > 0 ? 1 : 0
-                                    }">
-                                    <SvgIcon
-                                        name="QNR_alert"
-                                        width="18"
-                                        height="18"
-                                        color="#b3261e">
-                                    </SvgIcon>
-                                    <span>
-                                        {{
-                                        message
-                                        }}
-                                    </span>
-                                </ErrorMessage> -->
                             </div>
 
                             <div
@@ -338,28 +335,12 @@
                                     :unchecked-value="false"
                                     v-slot="{ field }">
                                     <input type="checkbox"
+                                        id="subNews"
                                         :value="true"
                                         :="field">
                                 </VField>
-                                <label for=""
+                                <label for="subNews"
                                     class="staticLabel">收到最新資訊</label>
-
-                                <!-- <ErrorMessage name="subNews"
-                                    as="div"
-                                    v-slot="{ message }"
-                                    class="errorMsg">
-                                    <SvgIcon
-                                        name="QNR_alert"
-                                        width="18"
-                                        height="18"
-                                        color="#b3261e">
-                                    </SvgIcon>
-                                    <span>
-                                        {{
-                                        message
-                                        }}
-                                    </span>
-                                </ErrorMessage> -->
                             </div>
                         </fieldset>
 
@@ -375,25 +356,6 @@
                                         :="field"
                                         v-show="false">
                                 </VField>
-                                <!-- <label for="">配送方式</label> -->
-
-                                <ErrorMessage
-                                    name="deliveryType"
-                                    as="div"
-                                    v-slot="{ message }"
-                                    class="errorMsg">
-                                    <SvgIcon
-                                        name="QNR_alert"
-                                        width="18"
-                                        height="18"
-                                        color="#b3261e">
-                                    </SvgIcon>
-                                    <span>
-                                        {{
-                                            message
-                                        }}
-                                    </span>
-                                </ErrorMessage>
 
                                 <div class="radio">
                                     <ul>
@@ -459,6 +421,41 @@
                                                 </p>
                                             </div>
                                         </li>
+
+                                        <div
+                                            class="storeBranch">
+                                            <VField
+                                                name="storeBranch"
+                                                type="text"
+                                                v-model="selectedStore.branch"
+                                                v-show="false">
+                                            </VField>
+                                            <VField
+                                                name="storeAddr"
+                                                type="text"
+                                                v-model="selectedStore.addr"
+                                                v-show="false">
+                                            </VField>
+
+                                            <ErrorMessage
+                                                name="storeBranch"
+                                                as="div"
+                                                v-slot="{ message }"
+                                                class="errorMsg"
+                                                v-show="selectedDelivery == '超商'">
+                                                <SvgIcon
+                                                    name="QNR_alert"
+                                                    width="18"
+                                                    height="18"
+                                                    color="#b3261e">
+                                                </SvgIcon>
+                                                <span>
+                                                    {{
+                                                        message
+                                                    }}
+                                                </span>
+                                            </ErrorMessage>
+                                        </div>
                                     </ul>
 
                                     <Teleport to='main'>
@@ -501,7 +498,6 @@
                                         :="field"
                                         v-show="false">
                                 </VField>
-                                <!-- <label for="">貨到付款</label> -->
 
                                 <ErrorMessage
                                     name="paymentType"
@@ -547,7 +543,7 @@
                         </div>
                     </form>
 
-                    <!-- <pre>{{ values }}</pre> -->
+                    <pre>{{ values }}</pre>
                 </VForm>
             </div>
 
@@ -562,8 +558,8 @@
 
 <script setup lang="ts">
 /**
- * todo:  郵遞區號驗證, 折扣碼,金流api, member DB
- * doing: 
+ * todo:  金流api, member DB
+ * doing: 折扣碼
  * ------------------------------------------
  * //delivery payment bind value
  * //profile
@@ -571,12 +567,16 @@
  * //驗證電話
  * //postal code api
  * //right part list building
+ * //郵遞區號驗證
+ * //超商分店加入表單
+ * //縣市選擇轉場
+ * //縣市選擇spin 郵遞區號spin
  */
 
 import CheckCartList from './CheckCartList/CheckCartList.vue';
 import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick } from 'vue';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
 } from 'vee-validate';
@@ -590,11 +590,24 @@ const { isCheckout } = storeToRefs(cartStore);
 const { toggleIsCheckout } = cartStore;
 
 // 表單驗證
+const errMsg = {
+    required: '此欄不能空白',
+    email: '請輸入正確信箱格式',
+    contactNo: '請輸入有效的電話號碼',
+    postal: '請輸入有效的郵遞區號',
+
+}
+yup.setLocale({
+    mixed: {
+        required: errMsg.required
+    }
+})
 const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
-yup.addMethod(yup.string, 'email', function validateEmail(message) {
+
+yup.addMethod(yup.string, 'email', function validateEmail() {
     return this.matches(emailRegex, {
-        message: '請輸入正確信箱格式',
         name: 'email',
+        message: errMsg.email,
         excludeEmptyString: true,
     });
 });
@@ -616,12 +629,13 @@ const contactNoVerify = (val: string | undefined) => {
     }
 }
 
+
 let schema = yup.object({
-    email: yup.string().trim().required('此欄不能空白').email(),
-    consigneeName: yup.string().trim().required('此欄不能空白'),
+    email: yup.string().trim().required().email(),
+    consigneeName: yup.string().trim().required(),
     contactNo:
-        yup.string().trim().required('此欄不能空白')
-            .test('phone-test', '請輸入有效的電話號碼', contactNoVerify),
+        yup.string().trim().required()
+            .test('phone-test', errMsg.required, contactNoVerify),
     saveInfo: yup.boolean(),
     subNews: yup.boolean(),
     deliveryType: yup.string(),
@@ -631,12 +645,17 @@ let schema = yup.object({
 const verifiedSchema = computed(() => {
     if (selectedDelivery.value == '宅配') {
         schema = schema.shape({
-            city: yup.string().trim().test('addr-test', '此欄不能空白', addrVerify).required('此欄不能空白'),
-            postal: yup.string().trim().required('此欄不能空白'),
-            address: yup.string().trim().required('此欄不能空白'),
+            city: yup.string().trim().test('addr-test', errMsg.required, addrVerify).required('此欄不能空白'),
+            postal: yup.string().trim().required()
+                .matches(/^[0-9]{3,6}$/, errMsg.postal)
+                .min(3, errMsg.postal)
+                .max(6, errMsg.postal),
+            address: yup.string().trim().required(),
         })
     } else {
         schema = schema.shape({
+            storeBranch: yup.string().nullable().required('請選擇門市'),
+            storeAddr: yup.string().nullable().required('請選擇門市'),
             city: yup.string().trim(),
             postal: yup.string().trim(),
             address: yup.string().trim(),
@@ -703,11 +722,14 @@ function pickCity(city: typeof selectedCity) {
 
 // 鄉鎮列表
 const townList = ref<string[]>([]);
+const showSpinner = ref(true);
 watch(selectedCity, async (nVal) => {
     if (nVal) {
+        showSpinner.value = true;
         townList.value = [];
         townList.value = await city.getShowTownList(nVal.city);
         selectedTown.value = '';
+        showSpinner.value = false;
     }
 })
 // selected town
@@ -724,8 +746,11 @@ const inputCity = computed(() => {
 // 切換城市選取
 const currTab = ref('city');
 function switchTab(tab: string) {
+    if (tab == 'town' && !selectedCity.city) return
     currTab.value = tab;
 }
+
+
 
 // 宅配地址
 const addrInput = ref('');
@@ -737,7 +762,16 @@ const expressAddr = computed(() => {
     return selectedCity.city + selectedTown.value + addrInput.value
 })
 
+// 配送方式 input
+const deliveryTypeList = ref(['宅配', '超商']);
+const selectedDelivery = ref('宅配');
 
+function pickDeliveryType(type: string) {
+    selectedDelivery.value = type;
+    if (type == '宅配') {
+        clearSelectedStore();
+    }
+}
 
 // 開啟選擇門市
 interface Branch {
@@ -773,13 +807,12 @@ function pickSelectedStore(branch: Branch) {
     toggleOpenStoreAddrList();
 }
 
-// 配送方式 input
-const deliveryTypeList = ref(['宅配', '超商']);
-const selectedDelivery = ref('宅配');
-
-function pickDeliveryType(type: string) {
-    selectedDelivery.value = type
+// 清空門市表單
+function clearSelectedStore() {
+    selectedStore.value.branch = null;
+    selectedStore.value.addr = null;
 }
+
 
 // 付款方式 input
 const paymentTypeList = ref(['匯款', '信用卡', '貨到付款', '電子支付']);
@@ -791,6 +824,7 @@ function pickPaymentType(type: string) {
 
 // 郵遞區號請求
 const postalCode = ref('');
+const postalSpinner = ref(false);
 const postalCodeAddr = computed(() => {
     const adrs = expressAddr.value;
     return {
@@ -798,6 +832,7 @@ const postalCodeAddr = computed(() => {
     }
 })
 async function autoFillPostalCode() {
+    postalSpinner.value = true;
     try {
         const { zipcode6 } = await getPostalCode(postalCodeAddr.value);
         postalCode.value = zipcode6 ?? ''
@@ -811,6 +846,7 @@ watch([() => selectedCity.city, selectedTown, addrInput], async (nVal) => {
     if (nVal.every(item => item && item !== '')) {
         try {
             await autoFillPostalCode();
+            postalSpinner.value = false;
         } catch (error) {
             console.log(error);
         }
@@ -932,6 +968,7 @@ onUnmounted(() => {
 
         &:is(.staticLabel) {
             font-size: 1rem;
+            pointer-events: auto;
         }
     }
 
@@ -1004,13 +1041,12 @@ onUnmounted(() => {
 
         display: flex;
         flex-direction: column;
+        overflow: hidden;
 
         .title {
             border-bottom: 1px solid black;
             width: 100%;
             display: flex;
-            // justify-content: center;
-            // align-items: center;
 
             &>span {
                 padding: .5rem;
@@ -1020,23 +1056,84 @@ onUnmounted(() => {
                 &:first-of-type {
                     border-right: 1px solid gray;
                 }
+
+                &:not(.not-allowed):hover {
+                    box-shadow:
+                        inset 0px 0 1px 1px green,
+                        inset 0px 0 1px 1px green;
+                }
             }
+        }
+
+        .not-allowed {
+            cursor: not-allowed;
         }
 
         .tabs {
             overflow-y: scroll;
 
+            &::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            &::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 10px;
+                margin: .25rem 0;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: #888;
+                border-radius: 10px;
+            }
+
             ul {
-                // padding: .5rem 2rem;
+                position: relative;
+                height: 100%;
             }
 
             li {
                 @include WnH(100%, 36px);
                 padding-left: 1rem;
                 line-height: 36px;
-                border-bottom: 1px solid gray // margin: .5rem 0;
+                border-bottom: 1px solid gray;
+
+                &:hover {
+                    box-shadow:
+                        inset -1px 0 1px 1px green,
+                        inset 0px 0 1px 1px green;
+                }
             }
         }
+    }
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+    border-top: 3px solid $secondBacColor;
+    border-right: 3px solid transparent;
+    animation: rotation 1s linear infinite;
+
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.postalSpinner {
+    // transform: translate(-50%, -50%);
+}
+
+@keyframes rotation {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
     }
 }
 
@@ -1052,12 +1149,18 @@ onUnmounted(() => {
 }
 
 .ckboxWrapper {
+    cursor: pointer;
     margin-bottom: .5rem;
     display: flex;
     align-items: center;
 
     input {
         @include WnH(16px);
+    }
+
+    input,
+    label {
+        cursor: pointer;
     }
 }
 
@@ -1096,15 +1199,14 @@ onUnmounted(() => {
 
     li {
         // @include WnH(100%, 48px);
+        cursor: pointer;
         min-height: 48px;
         padding: .5rem 0;
         padding-left: 1rem;
-        // outline: 1px solid black;
         border: 1px solid black;
         line-height: 36px;
 
         display: flex;
-        // justify-content: space-between;
         align-items: center;
         gap: 1rem;
         position: relative;
@@ -1196,12 +1298,12 @@ onUnmounted(() => {
             margin-left: auto;
             margin-right: 1rem;
             text-wrap: nowrap;
-            // position: absolute;
-            // right: 1rem;
-            // top: 50%;
-            // transform: translateY(-50%);
-            // z-index: 2;
         }
+    }
+
+    .storeBranch>.errorMsg {
+        top: calc(100% + .75rem + 1px);
+        bottom: none;
     }
 }
 
@@ -1221,7 +1323,6 @@ onUnmounted(() => {
 }
 
 .storeAddrList {
-    // @include WnH(100%, 200px);
     min-height: 200px;
     min-width: 300px;
     background-color: white;
@@ -1262,12 +1363,7 @@ onUnmounted(() => {
             border: 1px solid black;
             padding: .5rem;
 
-            // &:not(:first-of-type) {
-            //     border-top: none;
-            // }
-
             &:hover {
-                // border-top: 1px solid black;
                 outline: 1px solid black;
             }
         }
