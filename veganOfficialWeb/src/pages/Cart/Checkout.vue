@@ -583,6 +583,7 @@ import {
 import * as yup from 'yup';
 import { city } from '@/hooks/useGetCityList';
 import { getPostalCode } from '@/api/postal';
+import { reqFetchCoupon, type CouponCode } from '@/api/coupon';
 
 // 購物車
 const cartStore = useCartStore();
@@ -853,8 +854,23 @@ watch([() => selectedCity.city, selectedTown, addrInput], async (nVal) => {
     }
 })
 
+// 驗證折扣碼
+const coupon = reactive<CouponCode>({
+    code: 'vegan50'
+})
+
+async function fetchCoupon(param: CouponCode) {
+    try {
+        const data = await reqFetchCoupon(param);
+        console.log(data);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 onMounted(() => {
     if (!isCheckout.value) toggleIsCheckout();
+    fetchCoupon(coupon);
 })
 
 onUnmounted(() => {

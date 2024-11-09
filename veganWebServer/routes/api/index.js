@@ -25,5 +25,8 @@ router.use('/graphql', createHandler({
 const { getQuestionnaire } = require('./questionnaire');
 router.get('/questionnaire', getQuestionnaire);
 
+// coupon api
+const coupon = require('./coupon');
+router.use('/coupon', coupon);
 
 module.exports = router;
