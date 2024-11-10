@@ -60,7 +60,8 @@
 
                     <div class="itemPrice">
                         <span>
-                            ${{ item.price * item.amount }}
+                            ${{ (item.price *
+                                item.amount).toLocaleString() }}
                         </span>
                     </div>
                 </li>
@@ -71,14 +72,33 @@
             <VForm as=""
                 v-slot="{ handleSubmit, submitCount, values }"
                 :validation-schema="schema">
-                <form action="">
-                    <VField name="discount" type=text
-                        required>
+                <form action="" @submit="handleSubmit">
+                    <VField name="discountCode" as=""
+                        v-slot="{ field }">
+                        <input id="discountCode" type=text
+                            autocomplete="off"
+                            placeholder="" :="field"
+                            @blur="coupon.code = (field.value ?? '').trim()"
+                            @keydown.enter="handleEnter(field.value)">
                     </VField>
-                    <label for="">折扣碼</label>
+                    <label for="discountCode">折扣碼</label>
+
+                    <div class="errorMsg" :style="{
+                        opacity: (isCouponPassed == false) && (coupon.code) ? 1 : 0
+                    }">
+                        <SvgIcon name="QNR_alert" width="18"
+                            height="18" color="#b3261e">
+                        </SvgIcon>
+                        <span>
+                            {{
+                                couponErrMsg
+                            }}
+                        </span>
+                    </div>
 
                     <div class="formBtn">
-                        <button>
+                        <button type="button"
+                            @click="fetchCoupon">
                             套用
                         </button>
                     </div>
@@ -88,34 +108,84 @@
 
         <div class="subContainer">
             <div class="cost">
-                <span>
-                    小計：
+                <div>
+                    <h5>
+                        小計：
+                    </h5>
+                </div>
+
+                <div class="discountContent">
                     <span class="itemQuantity">
                         {{ cartCounter }}項
                     </span>
-                </span>
-                <span>${{ cartTotalPrice }}</span>
+                    <span>${{
+                        cartTotalPrice
+                        }}</span>
+                </div>
             </div>
 
-            <div class="cost">
-                <span>
-                    優惠：
-                    <span v-if="discountPercent == 1"
-                        class="itemQuantity">
-                        {{ '' }}
+            <div class="cost discount">
+                <div class="title">
+                    <h5>優惠：</h5>
+                </div>
+                <div class="amountDiscount discountContent">
+                    <span>
+                        <span v-if="discountPercent == 1"
+                            class="itemQuantity">
+                            {{ '' }}
+                        </span>
+                        <span
+                            v-else-if="discountPercent == 0.9"
+                            class="itemQuantity">
+                            {{ '9折' }}
+                        </span>
+                        <span v-else class="itemQuantity">
+                            {{ '85折' }}
+                        </span>
                     </span>
-                    <span v-else-if="discountPercent == 0.9"
-                        class="itemQuantity">
-                        {{ '9折' }}
+                    <span class="discountAmount">
+                        <span>$</span>
+                        <span class="correctionDigit"
+                            v-text="correctionDigit(discountAmount)">
+                        </span>
+                        <span>
+                            {{
+                                discountAmount
+                            }}
+                        </span>
                     </span>
-                    <span v-else class="itemQuantity">
-                        {{ '85折' }}
-                    </span>
-                </span>
-                <span class="discountAmount">${{
-                    discountAmount
-                    }}
-                </span>
+                </div>
+
+                <transition name="discountContent">
+                    <div class="couponDiscount discountContent"
+                        v-show="showCouponContent">
+                        <transition-group
+                            name="discountContent">
+                            <div class="spinner"
+                                v-show="showCouponSpinner"
+                                key="spinner">
+                            </div>
+                            <span :class="{
+                                loadingFilter: showCouponSpinner
+                            }" key="couponCode">
+                                {{ `折扣碼 (${couponCode})` }}
+                            </span>
+
+                            <span class="discountAmount"
+                                :class="{
+                                    loadingFilter: showCouponSpinner
+                                }" key="couponAmount">
+                                <span>$</span>
+                                <span
+                                    class="correctionDigit"
+                                    v-text="correctionDigit(couponAmount)"></span>
+                                <span>{{ couponAmount
+                                    }}</span>
+                            </span>
+                        </transition-group>
+                    </div>
+                </transition>
+
             </div>
 
             <div class="cost">
@@ -141,13 +211,18 @@
                     </transition>
 
                 </span>
-                <span>${{ freightFee }}</span>
+                <span>
+                    <span>$</span>
+                    <span class="correctionDigit"
+                        v-text="correctionDigit(freightFee)"></span>
+                    <span>{{ freightFee }}</span>
+                </span>
             </div>
 
             <div>
                 <span>總計</span>
-                <span>${{ cartTotalPrice + freightFee -
-                    discountAmount
+                <span>${{
+                    orderAmount.toLocaleString()
                     }}</span>
             </div>
         </div>
@@ -156,7 +231,9 @@
 
 <script setup lang="ts">
 /**
- * todo: 折扣碼
+ * todo: 
+ * ------------------------
+ * // 折扣碼
  */
 
 import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
@@ -165,17 +242,15 @@ import { storeToRefs } from 'pinia';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
 } from 'vee-validate';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, reactive, watch } from 'vue';
 import * as yup from 'yup';
+import { reqFetchCoupon, type CouponCode } from '@/api/coupon';
+
 
 
 const cartStore = useCartStore();
 const { cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
 
-// 表單驗證
-const schema = yup.object({
-    discountCode: yup.string().trim()
-})
 
 // 進度條長度
 const progressLength = computed(() => {
@@ -230,6 +305,80 @@ function toggleIsIllustrateShow(e: Event) {
     isIllustrateShow.value = !isIllustrateShow.value
 }
 
+// 驗證折扣碼
+type CouponInput = {
+    code: CouponCode['code'] | null;
+}
+
+const schema = yup.object({
+    discountCode: yup.string().trim()
+})
+
+const isCouponPassed = ref<null | boolean>(null);
+const couponErrMsg = '無此折扣碼';
+const couponCode = ref('')
+const couponAmount = ref(0);
+const couponApplyMsg = ref('');
+
+const coupon = reactive<CouponInput>({
+    code: null
+})
+
+const showCouponContent = computed(() => {
+    return !(couponAmount.value == 0)
+})
+
+const showCouponSpinner = ref(true);
+
+// watch(() => coupon.code, (val) => {
+//     console.log(val);
+// })
+
+function handleEnter(val: string | null) {
+    coupon.code = val ?? ''.trim();
+    fetchCoupon()
+}
+
+async function fetchCoupon() {
+    if (!coupon.code) {
+        isCouponPassed.value = false;
+        return
+    }
+
+    try {
+        const { data, message } = await reqFetchCoupon({ code: coupon.code });
+        if (data) {
+            ({ code: couponCode.value, value: couponAmount.value } = data)
+            setTimeout(() => {
+                showCouponSpinner.value = false;
+            }, 500)
+        }
+        couponApplyMsg.value = message;
+        isCouponPassed.value = true;
+
+    } catch (error) {
+        isCouponPassed.value = false;
+        // console.log(error);
+    }
+}
+
+// 數字位置同步
+const maxDigit = computed(() => {
+    return cartTotalPrice.value.toString().length
+})
+
+function correctionDigit(currNum: number) {
+    const diffDigit = maxDigit.value - currNum.toString().length
+    return '0'.repeat(diffDigit)
+}
+
+// 訂單總額
+const orderAmount = computed(() => {
+    return cartTotalPrice.value +
+        freightFee.value -
+        discountAmount.value -
+        couponAmount.value
+})
 
 onMounted(() => {
 })
@@ -380,6 +529,7 @@ onMounted(() => {
 
 .discountForm {
     padding: 0 1rem;
+    margin-bottom: 1.5rem;
 
     form {
         position: relative;
@@ -398,7 +548,7 @@ onMounted(() => {
             font-size: .75rem;
         }
 
-        &:has(input:focus, input:valid)>label {
+        &:has(input:focus, input:not(:placeholder-shown))>label {
             opacity: 0;
         }
 
@@ -440,17 +590,44 @@ onMounted(() => {
             }
         }
     }
+
+    .errorMsg {
+        @include flex-center-center;
+        flex-direction: row;
+        gap: .5rem;
+        color: #b3261e;
+        text-wrap: nowrap;
+        position: absolute;
+        bottom: -75%;
+        left: 0%;
+        // transform: translate(0%, -50%);
+    }
+}
+
+.discountContent-enter-active,
+.discountContent-leave-active {
+    transition: opacity .3s;
+}
+
+.discountContent-enter-from,
+.discountContent-leave-to {
+    opacity: 0;
+}
+
+.discountContent-enter-to,
+.discountContent-leave-from {
+    opacity: 1;
 }
 
 .subContainer {
     padding: 0 1rem;
     display: grid;
-    grid-template-rows: 1fr 1fr 1fr 2fr;
+    grid-template-rows: 1fr 2fr 1fr 2fr;
     gap: .5rem;
 
     &>div {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: .5fr 2fr;
 
         &>span:last-of-type {
             justify-self: flex-end;
@@ -478,11 +655,27 @@ onMounted(() => {
         font-size: .8rem;
 
         .itemQuantity {
-            margin-left: .5rem;
+            // margin-left: .5rem;
         }
 
         .discountAmount {
             color: red;
+
+
+        }
+
+        .correctionDigit {
+            color: transparent;
+        }
+
+        .discountContent {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+
+            .loadingFilter {
+                filter: opacity(.25);
+            }
         }
 
         .freight {
@@ -494,8 +687,8 @@ onMounted(() => {
             .QuestionMark {
                 cursor: pointer;
                 opacity: .5;
-                transform: translateY(-1px);
                 transition: opacity .15s;
+                height: 100%;
 
                 &:hover {
                     opacity: 1;
@@ -517,6 +710,50 @@ onMounted(() => {
 
             }
         }
+    }
+
+    .discount {
+        display: grid;
+        grid-template:
+            'a b b' 1fr
+            'a c c' 1fr / .5fr 1fr 1fr;
+
+        .title {
+            grid-area: a;
+        }
+
+        .amountDiscount {
+            grid-area: b;
+        }
+
+        .couponDiscount {
+            grid-area: c;
+        }
+    }
+}
+
+.spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    border-top: 3px solid $secondBacColor;
+    border-right: 3px solid transparent;
+    animation: rotation 1s linear infinite;
+
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes rotation {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
     }
 }
 

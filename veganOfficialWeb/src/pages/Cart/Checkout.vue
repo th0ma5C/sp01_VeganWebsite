@@ -558,8 +558,8 @@
 
 <script setup lang="ts">
 /**
- * todo:  金流api, member DB
- * doing: 折扣碼
+ * todo:  金流api, member DB(order DB)
+ * doing: label id for input
  * ------------------------------------------
  * //delivery payment bind value
  * //profile
@@ -571,6 +571,7 @@
  * //超商分店加入表單
  * //縣市選擇轉場
  * //縣市選擇spin 郵遞區號spin
+ * //折扣碼
  */
 
 import CheckCartList from './CheckCartList/CheckCartList.vue';
@@ -583,7 +584,6 @@ import {
 import * as yup from 'yup';
 import { city } from '@/hooks/useGetCityList';
 import { getPostalCode } from '@/api/postal';
-import { reqFetchCoupon, type CouponCode } from '@/api/coupon';
 
 // 購物車
 const cartStore = useCartStore();
@@ -854,23 +854,9 @@ watch([() => selectedCity.city, selectedTown, addrInput], async (nVal) => {
     }
 })
 
-// 驗證折扣碼
-const coupon = reactive<CouponCode>({
-    code: 'vegan50'
-})
-
-async function fetchCoupon(param: CouponCode) {
-    try {
-        const data = await reqFetchCoupon(param);
-        console.log(data);
-    } catch (error) {
-        console.log(error);
-    }
-}
 
 onMounted(() => {
     if (!isCheckout.value) toggleIsCheckout();
-    fetchCoupon(coupon);
 })
 
 onUnmounted(() => {

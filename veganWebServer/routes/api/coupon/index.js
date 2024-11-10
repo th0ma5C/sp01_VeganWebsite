@@ -14,7 +14,7 @@ router.post('/getCoupon', (req, res) => {
     const { code } = JSON.parse(req.body.data);
 
     if (!findCoupon(code)) {
-        return res.status(400).json({
+        return res.status(422).json({
             message: '折扣碼輸入錯誤'
         })
     }

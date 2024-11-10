@@ -2,13 +2,22 @@ import axios from "axios";
 import type { AxiosRequestConfig, AxiosResponse, AxiosAdapter } from 'axios';
 
 const customAdapter: AxiosAdapter = async (config: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
+    const maxRetries = 3;
+    const delay = 5000;
+
     const reqRetry = async (retryCount = 0): Promise<AxiosResponse<any>> => {
         try {
             return await axios({ ...config, adapter: axios.defaults.adapter });
         } catch (error) {
-            const maxRetries = 3;
+            if (axios.isAxiosError(error) && error.response) {
+                const status = error.response.status;
+                if (status === 422) {
+                    throw error;
+                }
+            }
+
             if (retryCount < maxRetries) {
-                const retryDelay = Math.pow(2, retryCount) * 5000;
+                const retryDelay = Math.pow(2, retryCount) * delay;
                 return new Promise((resolve, reject) => {
                     setTimeout(() => {
                         reqRetry(retryCount + 1).then(resolve).catch(reject);
@@ -19,7 +28,6 @@ const customAdapter: AxiosAdapter = async (config: AxiosRequestConfig): Promise<
         }
     };
 
-    // 初始调用
     return reqRetry();
 };
 
