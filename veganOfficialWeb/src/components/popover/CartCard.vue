@@ -191,6 +191,7 @@ const discountClass = computed(() => {
 // 路由
 const router = useRouter();
 function goCheckoutPage() {
+    if (!cartCounter.value) return
     toggleCartCardOpen()
     toggleIsCheckout()
     router.push('/Checkout');

@@ -21,13 +21,16 @@
                             <div class="formWrapper">
                                 <VField name="email"
                                     v-slot="{ field, meta }">
-                                    <input type="email"
+                                    <input id="email"
+                                        type="email"
+                                        autocomplete="email"
                                         placeholder=""
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
                                 </VField>
-                                <label for="">電子信箱</label>
+                                <label
+                                    for="email">電子信箱</label>
 
                                 <ErrorMessage name="email"
                                     as="div"
@@ -55,13 +58,16 @@
                             <div class="formWrapper">
                                 <VField name="consigneeName"
                                     v-slot="{ field, meta }">
-                                    <input type="text"
+                                    <input
+                                        id="consigneeName"
+                                        type="text"
                                         placeholder=""
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
                                 </VField>
-                                <label for="">姓名</label>
+                                <label
+                                    for="consigneeName">姓名</label>
 
                                 <ErrorMessage
                                     name="consigneeName"
@@ -88,7 +94,8 @@
                                 class="formWrapper addressWrapper">
                                 <VField name="address"
                                     v-slot="{ field, meta }">
-                                    <input type="text"
+                                    <input id="address"
+                                        type="text"
                                         autocomplete="off"
                                         placeholder=""
                                         :="field" :class="{
@@ -96,7 +103,8 @@
                                         }"
                                         @blur="updateAddrInput(field.value)">
                                 </VField>
-                                <label for="">地址</label>
+                                <label
+                                    for="address">地址</label>
 
                                 <ErrorMessage name="address"
                                     as="div"
@@ -125,7 +133,7 @@
                                         name="city"
                                         v-model="inputCity"
                                         v-slot="{ field, meta }">
-                                        <input
+                                        <input id="city"
                                             class="hideInput"
                                             :="field"
                                             placeholder=""
@@ -133,7 +141,7 @@
                                                 invalidInput: !meta.valid && submitCount > 0
                                             }">
                                     </VField>
-                                    <label for=""
+                                    <label for="city"
                                         class="staticLabel"
                                         :class="{
                                             selectingOptions: isOptionsOpen || selectedCity.city !== ''
@@ -236,6 +244,7 @@
                                         name="postal"
                                         v-slot="{ field, meta }">
                                         <input type="text"
+                                            id="postal"
                                             autocomplete="off"
                                             placeholder=""
                                             :="field"
@@ -244,7 +253,7 @@
                                             }">
                                     </VField>
                                     <label
-                                        for="">郵遞區號</label>
+                                        for="postal">郵遞區號</label>
                                     <div class="spinner postalSpinner"
                                         v-show="postalSpinner">
                                     </div>
@@ -278,12 +287,14 @@
                                 <VField name="contactNo"
                                     v-slot="{ field, meta }">
                                     <input type="tel"
+                                        id="contactNo"
                                         placeholder=""
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
                                 </VField>
-                                <label for="">連絡電話</label>
+                                <label
+                                    for="contactNo">連絡電話</label>
 
                                 <ErrorMessage
                                     name="contactNo"
@@ -543,7 +554,6 @@
                         </div>
                     </form>
 
-                    <pre>{{ values }}</pre>
                 </VForm>
             </div>
 
@@ -559,7 +569,7 @@
 <script setup lang="ts">
 /**
  * todo:  金流api, member DB(order DB)
- * doing: label id for input
+ * doing: 
  * ------------------------------------------
  * //delivery payment bind value
  * //profile
@@ -572,6 +582,7 @@
  * //縣市選擇轉場
  * //縣市選擇spin 郵遞區號spin
  * //折扣碼
+ * //label id for input
  */
 
 import CheckCartList from './CheckCartList/CheckCartList.vue';

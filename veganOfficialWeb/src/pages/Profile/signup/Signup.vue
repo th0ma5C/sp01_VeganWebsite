@@ -7,114 +7,9 @@
 
         <div class="inputWrapper">
             <VForm
-                v-slot="{ handleSubmit, submitCount, submitForm, validate }"
-                :initial-values="{ joinPrivacy: false }"
+                v-slot="{ handleSubmit, submitCount, submitForm, validate, values }"
+                :initial-values="{ joinPrivacyPolicy: false }"
                 :validation-schema="signupSchema">
-                <!-- <fieldset class="inputData">
-                    <div class="username">
-                        <VField name="username"
-                            v-slot="{ field, meta }">
-                            <input id="username" type="text"
-                                placeholder=""
-                                autocomplete="off" :="field"
-                                :class="{
-                                    invalidInput: (meta.validated && !meta.valid)
-                                }">
-                        </VField>
-                        <label for="username">稱呼</label>
-
-                        <ErrorMessage as="div"
-                            class="errorMsg" name="username"
-                            v-slot="{ message }">
-                            <SvgIcon name="QNR_alert"
-                                width="18" height="18"
-                                color="#b3261e">
-                            </SvgIcon>
-                            <span>{{ message
-                                }}</span>
-                        </ErrorMessage>
-                    </div>
-
-                    <div class="email">
-                        <VField name="email"
-                            v-slot="{ field, meta }">
-                            <input id="email" type="email"
-                                placeholder=""
-                                autocomplete="off" :="field"
-                                :class="{
-                                    invalidInput: (meta.validated && !meta.valid)
-                                }">
-                        </VField>
-                        <label for="email">電子郵件</label>
-
-                        <ErrorMessage as="div"
-                            class="errorMsg" name="email"
-                            v-slot="{ message }">
-                            <SvgIcon name="QNR_alert"
-                                width="18" height="18"
-                                color="#b3261e">
-                            </SvgIcon>
-                            <span>{{ message
-                                }}</span>
-                        </ErrorMessage>
-                    </div>
-
-                    <div class="password">
-                        <VField id="password"
-                            name="password" type="password"
-                            placeholder="">
-                        </VField>
-                        <label for="password">密碼</label>
-
-                        <ErrorMessage as="div"
-                            class="errorMsg" name="password"
-                            v-slot="{ message }">
-                            <SvgIcon name="QNR_alert"
-                                width="18" height="18"
-                                color="#b3261e">
-                            </SvgIcon>
-                            <span>{{ message
-                                }}</span>
-                        </ErrorMessage>
-                    </div>
-
-                    <div class="password">
-                        <VField id="confirmPassword"
-                            name="confirmPassword"
-                            type="password" placeholder="">
-                        </VField>
-                        <label
-                            for="confirmPassword">確認密碼</label>
-
-                        <ErrorMessage as="div"
-                            class="errorMsg"
-                            name="confirmPassword"
-                            v-slot="{ message }">
-                            <SvgIcon name="QNR_alert"
-                                width="18" height="18"
-                                color="#b3261e">
-                            </SvgIcon>
-                            <span>{{ message
-                                }}</span>
-                        </ErrorMessage>
-
-                        <div class="passwordIcon" @="{
-                            mousedown: toggleShowPassword,
-                            mouseup: toggleShowPassword
-                        }">
-                            <SvgIcon v-show="!showPassword"
-                                name="Hidepassword"
-                                width="20px" height="20px"
-                                color="black">
-                            </SvgIcon>
-                            <SvgIcon v-show="showPassword"
-                                name="Showpassword"
-                                width="20px" height="20px"
-                                color="black">
-                            </SvgIcon>
-                        </div>
-                    </div>
-                </fieldset> -->
                 <form action=""
                     @submit="handleSubmit($event, onSubmit)">
                     <fieldset class="inputData">
@@ -181,23 +76,24 @@
                     <fieldset class="inputPrivacy">
                         <div>
                             <VField v-slot="{ field }"
-                                name="joinPrivacy"
+                                name="joinPrivacyPolicy"
                                 type="checkbox"
                                 :value="true"
                                 :unchecked-value="false">
-                                <input id="joinPrivacy"
+                                <input
+                                    id="joinPrivacyPolicy"
                                     type="checkbox"
                                     v-bind="field"
                                     :value="true" />
                             </VField>
-                            <label for="joinPrivacy">
+                            <label for="joinPrivacyPolicy">
                                 [必要] 我已詳閱並同意顧客隱私權政策
                             </label>
 
 
                             <ErrorMessage as="div"
                                 class="errorMsg"
-                                name="joinPrivacy"
+                                name="joinPrivacyPolicy"
                                 v-slot="{ message }">
                                 <SvgIcon name="QNR_alert"
                                     width="18" height="18"
@@ -223,6 +119,8 @@
                         </div>
                     </div>
                 </form>
+
+                <pre>{{ values }}</pre>
             </VForm>
         </div>
     </div>
@@ -240,9 +138,11 @@ import * as yup from 'yup';
 
 /**
  * todo: account store、DB建置 社群登入
- * doing: 改驗證時機 確認驗證值 蒐集數據
+ * doing: 密碼格式 確認驗證值 蒐集數據
+ * ! 輸入太長會跑版
  * -----------------------------------
  * //同意勾選框
+ * //改驗證時機
  */
 const signupContainer = ref<HTMLElement>();
 const containerStyle = computed(() => {
@@ -295,12 +195,13 @@ yup.addMethod(yup.string, 'email', function validateEmail(message) {
 const signupSchema = yup.object({
     username: yup.string().trim().required('此欄不能空白'),
     email: yup.string().trim().required('此欄不能空白').email(),
-    password: yup.string().trim().required('此欄不能空白').matches(/^\S*$/, '格式錯誤'),
+    password: yup.string().trim()
+        .min(6, '最少6個字').required('此欄不能空白').matches(/^\S*$/, '格式錯誤'),
     confirmPassword: yup
         .string()
         .oneOf([yup.ref('password')], '密碼不相符')
         .required('此欄不能空白'),
-    joinPrivacy: yup.boolean().oneOf([true], '必須閱讀並接受隱私條款')
+    joinPrivacyPolicy: yup.boolean().oneOf([true], '必須閱讀並接受隱私條款')
 })
 
 function onSubmit(values?: Record<string, any>) {
