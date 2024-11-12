@@ -6,12 +6,12 @@
         </h1>
 
         <div class="inputWrapper">
-            <VForm
-                v-slot="{ handleSubmit, submitCount, submitForm, validate, values }"
-                :initial-values="{ joinPrivacyPolicy: false }"
+            <VForm as=""
+                v-slot="{ meta, isSubmitting, handleSubmit, submitCount }"
                 :validation-schema="signupSchema">
                 <form action=""
-                    @submit="handleSubmit($event, onSubmit)">
+                    @change="handleFormChange(meta)"
+                    @submit="handleSubmit($event, signUpReq)">
                     <fieldset class="inputData">
                         <div v-for="({ input, type, label }, index) in signupForm"
                             :class="input" :key="index">
@@ -108,8 +108,23 @@
                     </fieldset>
 
                     <div class="login_signup">
-                        <button>
-                            送出
+                        <div class="ResErrMsg"
+                            v-show="registerMsg">
+                            <SvgIcon name="QNR_alert"
+                                width="18" height="18"
+                                color="#b3261e">
+                            </SvgIcon>
+                            <span>
+                                {{ registerMsg }}
+                            </span>
+                        </div>
+
+                        <button :disabled="isSubmitting">
+                            <span :style="{
+                                opacity: isSubmitting ? .5 : 1
+                            }">送出</span>
+                            <Spinner v-show="isSubmitting">
+                            </Spinner>
                         </button>
 
                         <div class="cancel">
@@ -119,9 +134,9 @@
                         </div>
                     </div>
                 </form>
-
-                <pre>{{ values }}</pre>
             </VForm>
+            <!-- <router-link
+                to="/profile/emailVerify">驗證</router-link> -->
         </div>
     </div>
 </template>
@@ -131,18 +146,24 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
     useField, useForm, type SubmissionHandler,
-    type FormContext
+    type FormContext,
+    type FormMeta
 } from 'vee-validate';
 import * as yup from 'yup';
+import { reqUserRegister } from '@/api/userAuth';
+import { AxiosError } from 'axios';
+import { onBeforeRouteLeave, useRouter } from 'vue-router';
 
 
 /**
- * todo: account store、DB建置 社群登入
- * doing: 密碼格式 確認驗證值 蒐集數據
- * ! 輸入太長會跑版
+ * todo: account store, 社群登入
+ * doing: email會員驗證
+ * //! 輸入太長會跑版
  * -----------------------------------
  * //同意勾選框
  * //改驗證時機
+ * //密碼格式 確認驗證值 蒐集數據
+ * //DB建置
  */
 const signupContainer = ref<HTMLElement>();
 const containerStyle = computed(() => {
@@ -201,17 +222,62 @@ const signupSchema = yup.object({
         .string()
         .oneOf([yup.ref('password')], '密碼不相符')
         .required('此欄不能空白'),
-    joinPrivacyPolicy: yup.boolean().oneOf([true], '必須閱讀並接受隱私條款')
+    joinPrivacyPolicy: yup.boolean()
+        .oneOf([true], '必須閱讀並接受隱私條款').required('必須閱讀並接受隱私條款')
 })
 
-function onSubmit(values?: Record<string, any>) {
-    console.log(JSON.stringify(values, null, 2));
+// 註冊 api req
+type ReqForm = yup.InferType<typeof signupSchema>;
+
+interface ErrorResponse {
+    message: string;
+}
+
+const registerMsg = ref<string | null>(null);
+
+async function signUpReq(form: Record<string, any>) {
+    try {
+        const result = await reqUserRegister(form as ReqForm);
+    } catch (error) {
+        const message = (error as AxiosError<ErrorResponse>).response?.data.message;
+        registerMsg.value = message ?? '未知錯誤'
+        // console.error("驗證失敗：", err.response?.data.message);
+    }
+}
+
+// 提示失去進度
+const formHasChanged = ref(false);
+
+function handleFormChange(meta: FormMeta<ReqForm>) {
+    formHasChanged.value = meta.dirty;
+    console.log(formHasChanged.value);
 }
 
 function handleRefreshAlert(e: Event) {
     e.preventDefault();
-    alert()
+    if (formHasChanged.value) {
+        confirm()
+    }
 }
+
+onBeforeRouteLeave(() => {
+    if (formHasChanged.value) {
+        const answer = confirm('離開將丟失當前進度');
+        return answer
+    }
+})
+
+// 路由
+const router = useRouter();
+
+function routerTo(link: string) {
+    return () => {
+        router.push(link)
+    }
+}
+
+const routerToLogin = routerTo('/profile')
+
 
 onMounted(() => {
     window.addEventListener('beforeunload', handleRefreshAlert);
@@ -334,12 +400,14 @@ $container_width: 300px;
 }
 
 .login_signup {
-    margin-top: 3rem;
+    padding-top: 4rem;
+    // margin-top: 3rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: .75rem;
+    position: relative;
 
     button {
         background-color: $btnBacColor_light;
@@ -351,6 +419,8 @@ $container_width: 300px;
         border-radius: 21px;
         box-shadow: 1px 1px 2px black;
         transition: box-shadow .15s ease;
+        position: relative;
+
 
         &:hover {
             box-shadow: 2px 2px 4px black;
@@ -398,5 +468,21 @@ $container_width: 300px;
             }
         }
     }
+
+    .ResErrMsg {
+        position: absolute;
+        top: 2rem;
+
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+
+        span {
+            color: $error_color;
+        }
+    }
 }
-</style>
+
+// * {
+//     outline: 1px solid black;
+// }</style>

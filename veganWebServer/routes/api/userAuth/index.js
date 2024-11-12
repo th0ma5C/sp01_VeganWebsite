@@ -6,23 +6,38 @@ const User = require('@models/User');
 const jwt = require('jsonwebtoken');
 const { validateRegister, validateLogin } = require('@middlewares/userValidator')
 
+async function isUserExist(username, email) {
+    try {
+        return await User.findOne({
+            $or: [{ username }, { email }]
+        });
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 router.post('/register', validateRegister, async (req, res) => {
     try {
         const { username, email, password, joinPrivacyPolicy } = req.body;
+        if (await isUserExist(username, email)) {
+            return res.status(422).json({ message: '此帳號已存在' });
+        }
+
         const user = new User({ username, email, password, joinPrivacyPolicy });
         await user.save();
         res.status(201).json({ message: '註冊成功' });
+
     } catch (error) {
         res.status(500).json({ message: '伺服器錯誤' });
     }
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', validateLogin, async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user || !(await user.validatePassword(password))) {
-            return res.status(422).json({ message: '用戶名或密碼錯誤' });
+            return res.status(422).json({ message: '信箱或密碼錯誤' });
         }
         const token = jwt.sign({ id: user._id, email: user.email }, 'jwt_secret', { expiresIn: '1h' });
         res.json({ message: '登錄成功', token });

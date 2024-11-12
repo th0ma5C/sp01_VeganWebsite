@@ -1,149 +1,150 @@
 <template>
-    <div class="container">
+    <div class="container" v-if="!isAuth">
         <div class="login" v-if="!$route.meta.hideParent">
             <h1>
                 登入
             </h1>
 
             <div class="inputWrapper">
-                <!-- <form action="">
-                    <fieldset>
-                        <div class="username">
-                            <input type="text" required>
-                            <label for="">電子郵件</label>
-                        </div>
-
-                        <div class="password">
-                            <input
-                                :type="showPassword ? 'text' : 'password'"
-                                required>
-                            <label for="">密碼</label>
-                            <div class="passwordIcon" @="{
-                                mousedown: toggleShowPassword,
-                                mouseup: toggleShowPassword
-                            }">
-                                <SvgIcon
-                                    v-show="!showPassword"
-                                    name="Hidepassword"
-                                    width="20px"
-                                    height="20px"
-                                    color="black">
-                                </SvgIcon>
-                                <SvgIcon
-                                    v-show="showPassword"
-                                    name="Showpassword"
-                                    width="20px"
-                                    height="20px"
-                                    color="black">
-                                </SvgIcon>
-                            </div>
-                        </div>
-                    </fieldset>
-                </form> -->
-                <VForm @submit="onSubmit"
+                <VForm as="" @submit="onSubmit"
+                    v-slot="{ meta, isSubmitting, handleSubmit, submitCount, values }"
                     :validation-schema="loginSchema">
-                    <fieldset>
-                        <div>
-                            <VField name="email"
-                                v-slot="{ field, meta }">
-                                <input type="email"
-                                    id="email" required
-                                    placeholder="" :="field"
-                                    :class="{
-                                        invalidInput: (meta.validated && !meta.valid)
-                                    }">
-                            </VField>
-                            <label for="email">電子信箱</label>
+                    <form action=""
+                        @submit="handleSubmit($event, signUpReq)">
+                        <fieldset>
+                            <div>
+                                <VField name="email"
+                                    v-slot="{ field, meta }">
+                                    <input type="email"
+                                        id="email" required
+                                        placeholder=""
+                                        :="field" :class="{
+                                            invalidInput: !meta.valid && submitCount > 0
+                                        }">
+                                </VField>
+                                <label
+                                    for="email">電子信箱</label>
 
-                            <ErrorMessage as="div"
-                                class="errorMsg"
-                                name="email"
-                                v-slot="{ message }">
-                                <SvgIcon name="QNR_alert"
-                                    width="18" height="18"
-                                    color="#b3261e">
-                                </SvgIcon>
-                                <span>{{ message
-                                    }}</span>
-                            </ErrorMessage>
-                        </div>
-
-                        <div>
-                            <VField name="password"
-                                v-slot="{ field, meta }">
-                                <input
-                                    :type="showPassword ? 'text' : 'password'"
-                                    id="password" required
-                                    placeholder="" :="field"
-                                    :class="{
-                                        invalidInput: (meta.validated && !meta.valid)
+                                <ErrorMessage as="div"
+                                    class="errorMsg"
+                                    name="email"
+                                    v-slot="{ message }"
+                                    :style="{
+                                        opacity: submitCount > 0 ? 1 : 0
                                     }">
-                            </VField>
-                            <label for="password">密碼</label>
-                            <div class="passwordIcon" @="{
-                                mousedown: toggleShowPassword,
-                                mouseup: toggleShowPassword
-                            }">
-                                <SvgIcon
-                                    v-show="!showPassword"
-                                    name="Hidepassword"
-                                    width="20px"
-                                    height="20px"
-                                    color="black">
-                                </SvgIcon>
-                                <SvgIcon
-                                    v-show="showPassword"
-                                    name="Showpassword"
-                                    width="20px"
-                                    height="20px"
-                                    color="black">
-                                </SvgIcon>
+                                    <SvgIcon
+                                        name="QNR_alert"
+                                        width="18"
+                                        height="18"
+                                        color="#b3261e">
+                                    </SvgIcon>
+                                    <span>{{ message
+                                        }}</span>
+                                </ErrorMessage>
                             </div>
 
-                            <ErrorMessage as="div"
-                                class="errorMsg"
-                                name="password"
-                                v-slot="{ message }">
+                            <div>
+                                <VField name="password"
+                                    v-slot="{ field, meta }">
+                                    <input
+                                        :type="showPassword ? 'text' : 'password'"
+                                        id="password"
+                                        required
+                                        placeholder=""
+                                        :="field" :class="{
+                                            invalidInput: !meta.valid && submitCount > 0
+                                        }">
+                                </VField>
+                                <label
+                                    for="password">密碼</label>
+                                <div class="passwordIcon" @="{
+                                    mousedown: toggleShowPassword,
+                                    mouseup: toggleShowPassword
+                                }">
+                                    <SvgIcon
+                                        v-show="!showPassword"
+                                        name="Hidepassword"
+                                        width="20px"
+                                        height="20px"
+                                        color="black">
+                                    </SvgIcon>
+                                    <SvgIcon
+                                        v-show="showPassword"
+                                        name="Showpassword"
+                                        width="20px"
+                                        height="20px"
+                                        color="black">
+                                    </SvgIcon>
+                                </div>
+
+                                <ErrorMessage as="div"
+                                    class="errorMsg"
+                                    name="password"
+                                    v-slot="{ message }"
+                                    :style="{
+                                        opacity: submitCount > 0 ? 1 : 0
+                                    }">
+                                    <SvgIcon
+                                        name="QNR_alert"
+                                        width="18"
+                                        height="18"
+                                        color="#b3261e">
+                                    </SvgIcon>
+                                    <span>
+                                        {{ message }}
+                                    </span>
+                                </ErrorMessage>
+                            </div>
+                        </fieldset>
+                        <div class="forgetPassword">
+                            <router-link
+                                to="/profile/forgetPassword">
+                                忘記密碼？
+                            </router-link>
+                        </div>
+                        <div class="login_signup">
+                            <div class="ResErrMsg"
+                                v-show="registerMsg">
                                 <SvgIcon name="QNR_alert"
                                     width="18" height="18"
                                     color="#b3261e">
                                 </SvgIcon>
                                 <span>
-                                    {{ message }}
+                                    {{ registerMsg }}
                                 </span>
-                            </ErrorMessage>
+                            </div>
+
+                            <button
+                                :disabled="isSubmitting">
+                                <span :style="{
+                                    opacity: isSubmitting ? .5 : 1
+                                }">登入</span>
+                                <Spinner
+                                    v-show="isSubmitting">
+                                </Spinner>
+                            </button>
+
+                            <div class="signup">
+                                <span>
+                                    沒有帳號？
+                                </span>
+                                <router-link
+                                    to="/profile/signUp">
+                                    註冊
+                                </router-link>
+                            </div>
                         </div>
-                    </fieldset>
+                    </form>
                 </VForm>
-
-                <div class="forgetPassword">
-                    <router-link
-                        to="/profile/forgetPassword">
-                        忘記密碼？
-                    </router-link>
-                </div>
-            </div>
-
-            <div class="login_signup">
-                <button>
-                    登入
-                </button>
-
-                <div class="signup">
-                    <span>
-                        沒有帳號？
-                    </span>
-                    <router-link to="/profile/signUp">
-                        註冊
-                    </router-link>
-                </div>
             </div>
         </div>
 
 
-        <router-view v-slot="{ Component }">
+        <router-view v-slot="{ Component, route }">
             <transition name="profileRoute">
-                <component :is="Component"></component>
+                <component :is="Component"
+                    v-if="!route.meta.requireAuth">
+                </component>
             </transition>
         </router-view>
 
@@ -159,20 +160,34 @@
                 <img :src="url" alt="">
             </div>
         </div>
+        <!-- <button @click="login">登入測試</button> -->
+        <router-link to="/profile/account"
+            @click="login">登入測試</router-link>
     </div>
+
+    <router-view v-else v-slot="{ Component, route }">
+        <!-- <transition name="profileRoute"> -->
+        <component :is="Component"
+            v-if="route.meta.requireAuth">
+        </component>
+        <!-- </transition> -->
+    </router-view>
 </template>
 
 <script setup lang="ts">
 /**
- * todo:  account store、DB建置 社群登入
- * doing: 驗證時機改為送出前 臨時帳號 帳號驗證 記住登入資訊
+ * todo:  account store、DB建置 社群登入, 臨時帳號, 登入後頁面
+ * doing: 註冊後跳轉登入頁, 登入後資料庫添加session、響應返回cookie: JWT, store建置, 記住登入資訊
+ * * store含本地儲存JWT, 記住資訊會挾帶token至後端驗證, 添加JWT時限
  * -----------------------------------------
- * ? 
+ * ? profile組件是否添加路由守衛
  * 
  * //樣式完成 分隔線
  * //label 轉場 社群icon
  * //密碼顯示紐
  * //忘記密碼/註冊分頁
+ * //驗證時機改為送出前
+ * //帳號驗證
  */
 
 import { ref } from 'vue';
@@ -181,6 +196,10 @@ import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
 } from 'vee-validate';
 import * as yup from 'yup';
+import { reqUserLogin } from '@/api/userAuth';
+import type { AxiosError } from 'axios';
+import { useUserStore } from '@/store/userStore';
+import { storeToRefs } from 'pinia';
 
 // 社群登入圖片路徑
 const loginIcon = ['Fb.png', 'Google.png', 'Line.png'];
@@ -217,6 +236,33 @@ const loginSchema = yup.object({
     email: yup.string().trim().required('此欄不能空白').email(),
     password: yup.string().trim().required('此欄不能空白').matches(/^\S*$/, '格式錯誤'),
 })
+
+
+
+// 登入 api req
+type ReqForm = yup.InferType<typeof loginSchema>;
+
+interface ErrorResponse {
+    message: string;
+}
+
+const registerMsg = ref<string | null>(null);
+
+async function signUpReq(form: Record<string, any>) {
+    try {
+        const result = await reqUserLogin(form as ReqForm);
+        console.log(result);
+    } catch (error) {
+        const message = (error as AxiosError<ErrorResponse>).response?.data.message;
+        registerMsg.value = message ?? '未知錯誤'
+    }
+}
+
+// 初始化
+const userStore = useUserStore();
+const { isAuth } = storeToRefs(userStore);
+const { login } = userStore;
+
 
 </script>
 
@@ -342,6 +388,7 @@ $container_width: 300px;
     justify-content: center;
     align-items: center;
     gap: .75rem;
+    position: relative;
 
     button {
         background-color: $btnBacColor_light;
@@ -353,6 +400,7 @@ $container_width: 300px;
         border-radius: 21px;
         box-shadow: 1px 1px 2px black;
         transition: box-shadow .15s ease;
+        position: relative;
 
         &:hover {
             box-shadow: 2px 2px 4px black;
@@ -380,6 +428,18 @@ $container_width: 300px;
             &:hover {
                 opacity: 1;
             }
+        }
+    }
+
+    .ResErrMsg {
+        position: absolute;
+        top: -2.25rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+
+        span {
+            color: $error_color;
         }
     }
 }

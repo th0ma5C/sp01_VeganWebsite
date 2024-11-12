@@ -7,7 +7,9 @@ import Checkout from '@/pages/Cart/Checkout.vue'
 import Profile from '@pages/Profile/index.vue'
 import Product from "@/pages/Menu/product/Product.vue";
 import type { RouteLocationNormalized, NavigationGuardNext, NavigationGuardReturn } from 'vue-router'
+import { useUserStore } from '@/store/userStore'
 
+const userStore = useUserStore();
 
 export default [
     {
@@ -95,6 +97,10 @@ export default [
     {
         path: '/profile',
         component: Profile,
+        beforeEnter: (
+            to: RouteLocationNormalized,
+            from: RouteLocationNormalized) => {
+        },
         children: [
             {
                 path: 'forgetPassword',
@@ -109,7 +115,21 @@ export default [
                 meta: {
                     hideParent: true
                 }
-            }
+            },
+            {
+                path: 'emailVerify',
+                component: () => import('@/pages/Profile/emailVerify/EmailVerify.vue'),
+                meta: {
+                    hideParent: true
+                }
+            },
+            {
+                path: 'account',
+                component: () => import('@/pages/Profile/account/Account.vue'),
+                meta: {
+                    hideParent: true
+                }
+            },
         ]
     },
 
