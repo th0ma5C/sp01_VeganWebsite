@@ -126,7 +126,7 @@ function clickCartIcon(target: string) {
     if (target == 'Cart') {
         toggleCartCardOpen()
     } else if (target == 'Person') {
-        Router.push('/profile')
+        Router.push('/profile/account')
     }
 
 }

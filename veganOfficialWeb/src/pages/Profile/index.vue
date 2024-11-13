@@ -18,6 +18,7 @@
                                     <input type="email"
                                         id="email" required
                                         placeholder=""
+                                        autocomplete="username"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
@@ -51,6 +52,7 @@
                                         id="password"
                                         required
                                         placeholder=""
+                                        autocomplete="current-password"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
@@ -166,21 +168,20 @@
     </div>
 
     <router-view v-else v-slot="{ Component, route }">
-        <!-- <transition name="profileRoute"> -->
         <component :is="Component"
             v-if="route.meta.requireAuth">
         </component>
-        <!-- </transition> -->
     </router-view>
 </template>
 
 <script setup lang="ts">
 /**
- * todo:  account store、DB建置 社群登入, 臨時帳號, 登入後頁面
- * doing: 註冊後跳轉登入頁, 登入後資料庫添加session、響應返回cookie: JWT, store建置, 記住登入資訊
+ * todo:  account store、DB建置 社群登入, 臨時帳號, 登入後頁面, 登出
+ * doing:  註冊後跳轉登入頁, 登入後資料庫添加session, store建置, 記住登入資訊
  * * store含本地儲存JWT, 記住資訊會挾帶token至後端驗證, 添加JWT時限
  * -----------------------------------------
  * ? profile組件是否添加路由守衛
+ * ? 遊客購物車
  * 
  * //樣式完成 分隔線
  * //label 轉場 社群icon
@@ -188,6 +189,7 @@
  * //忘記密碼/註冊分頁
  * //驗證時機改為送出前
  * //帳號驗證
+ * //響應返回cookie: JWT
  */
 
 import { ref } from 'vue';
@@ -200,6 +202,7 @@ import { reqUserLogin } from '@/api/userAuth';
 import type { AxiosError } from 'axios';
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 
 // 社群登入圖片路徑
 const loginIcon = ['Fb.png', 'Google.png', 'Line.png'];
@@ -237,7 +240,11 @@ const loginSchema = yup.object({
     password: yup.string().trim().required('此欄不能空白').matches(/^\S*$/, '格式錯誤'),
 })
 
-
+// 路由跳轉
+const router = useRouter();
+function routerTo(route: string) {
+    router.push(route)
+}
 
 // 登入 api req
 type ReqForm = yup.InferType<typeof loginSchema>;
@@ -251,7 +258,8 @@ const registerMsg = ref<string | null>(null);
 async function signUpReq(form: Record<string, any>) {
     try {
         const result = await reqUserLogin(form as ReqForm);
-        console.log(result);
+        login();
+        routerTo('/profile/account')
     } catch (error) {
         const message = (error as AxiosError<ErrorResponse>).response?.data.message;
         registerMsg.value = message ?? '未知錯誤'

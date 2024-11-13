@@ -11,7 +11,7 @@ const customAdapter: AxiosAdapter = async (config: AxiosRequestConfig): Promise<
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
                 const status = error.response.status;
-                if (status === 422) {
+                if (status !== 400) {
                     throw error;
                 }
             }

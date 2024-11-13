@@ -12,6 +12,8 @@ import type { RouteLocationNormalized, NavigationGuardNext, NavigationGuardRetur
 import { useUserStore } from '@/store/userStore'
 import { useNewsStore } from "@/store/newsStore";
 import { useMenuStore } from "@/store/menuStore";
+import { storeToRefs } from "pinia";
+import { reqGetUser } from "@/api/userAuth";
 // import NProgress from 'nprogress'
 // import 'nprogress/nprogress.css'
 
@@ -85,10 +87,6 @@ const routes = [
     {
         path: '/profile',
         component: Profile,
-        beforeEnter: (
-            to: RouteLocationNormalized,
-            from: RouteLocationNormalized) => {
-        },
         children: [
             {
                 path: 'forgetPassword',
@@ -105,8 +103,10 @@ const routes = [
                 }
             },
             {
+                name: 'EmailVerify',
                 path: 'emailVerify',
                 component: () => import('@/pages/Profile/emailVerify/EmailVerify.vue'),
+                props: true,
                 meta: {
                     hideParent: true
                 }
@@ -115,6 +115,31 @@ const routes = [
                 path: 'account',
                 name: 'Account',
                 component: () => import('@/pages/Profile/account/Account.vue'),
+                beforeEnter: async (
+                    to: RouteLocationNormalized,
+                    from: RouteLocationNormalized
+                ) => {
+                    const userStore = useUserStore();
+
+                    try {
+                        const { state, username } = await reqGetUser();
+                        if (state && state == 'confirm') {
+                            userStore.login();
+                            userStore.setUsername(username!)
+                            return true
+                        }
+                    } catch (error) {
+                        userStore.logout();
+                        return router.replace('/profile')
+                    }
+
+                    // const userStore = useUserStore();
+                    // if (userStore.isAuth) {
+                    //     return true
+                    // } else {
+                    //     return router.replace('/profile')
+                    // }
+                },
                 meta: {
                     hideParent: true,
                     requireAuth: true

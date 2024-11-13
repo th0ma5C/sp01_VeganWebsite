@@ -1,5 +1,6 @@
 import request from '@/utils/request/requests';
 import type { AxiosError } from 'axios';
+import type { AuthResData } from './type'
 
 const mock = {
     "joinPrivacyPolicy": true,
@@ -30,7 +31,15 @@ const reqUserRegister = (params: RegisterForm) => {
 }
 
 const reqUserLogin = (params: LoginForm) => {
-    return request.post('/api/auth/login', {
+    return request.post<any, AuthResData>('/api/auth/login', {
+        ...params
+    })
+}
+
+const reqGetUser = () => request.get<any, AuthResData>('/api/auth/profile');
+
+const reqSendVerifyEmail = (params?: any) => {
+    return request.post('/api/auth//send-verifyEmail', {
         ...params
     })
 }
@@ -38,5 +47,7 @@ const reqUserLogin = (params: LoginForm) => {
 
 export {
     reqUserRegister,
-    reqUserLogin
+    reqUserLogin,
+    reqGetUser,
+    reqSendVerifyEmail
 }

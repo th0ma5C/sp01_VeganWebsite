@@ -23,23 +23,41 @@ const validateLogin = [
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
         }
+        next();
     }
 ]
 
-const routerAuthToken = (req, res, next) => {
-    const token = req.headers['authorization'];
-    if (!token) return res.status(401).json({ message: '未授權' });
+// const routerAuthToken = (req, res, next) => {
+//     const token = req.headers['authorization'];
+//     if (!token) return res.status(401).json({ message: '未授權' });
 
-    jwt.verify(token, 'your_jwt_secret', (err, user) => {
-        if (err) return res.status(403).json({ message: '無效的令牌' });
-        req.user = user;
+//     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+//         if (err) return res.status(403).json({ message: '無效的令牌' });
+//         req.user = user;
+//         next();
+//     });
+// }
+
+// 驗證 cookie
+function authToken(req, res, next) {
+    const token = req.cookies.token;
+
+    if (!token) {
+        return res.status(401).json({ message: '請先登入', state: 'denied' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
         next();
-    });
+    } catch (error) {
+        res.status(403).json({ message: '請重新登入', state: 'denied' });
+    }
 }
 
 
 module.exports = {
     validateRegister,
     validateLogin,
-    routerAuthToken
+    authToken
 }

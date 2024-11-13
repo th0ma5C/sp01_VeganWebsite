@@ -8,7 +8,9 @@ const news = require('./news');
 const { getQuestionnaire } = require('./questionnaire');
 const coupon = require('./coupon');
 const auth = require('./userAuth');
+const googleOAth = require('./userAuth/GCPEmailService')
 
+router.use('/OAth', googleOAth)
 
 // 使用路由模块
 router.use('/menu', menu);

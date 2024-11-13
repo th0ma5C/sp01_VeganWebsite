@@ -19,7 +19,7 @@ register()
 // mockServer依賴
 // import '@/mock/mockServer.js'
 // 
-
-app.use(router).use(pinia).use(plugins)
+app.use(pinia);
+app.use(router).use(plugins);
 
 app.mount('#app')

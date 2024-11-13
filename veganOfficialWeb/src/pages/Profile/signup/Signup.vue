@@ -135,8 +135,6 @@
                     </div>
                 </form>
             </VForm>
-            <!-- <router-link
-                to="/profile/emailVerify">驗證</router-link> -->
         </div>
     </div>
 </template>
@@ -153,6 +151,7 @@ import * as yup from 'yup';
 import { reqUserRegister } from '@/api/userAuth';
 import { AxiosError } from 'axios';
 import { onBeforeRouteLeave, useRouter } from 'vue-router';
+import { useUserStore } from '@/store/userStore';
 
 
 /**
@@ -165,6 +164,12 @@ import { onBeforeRouteLeave, useRouter } from 'vue-router';
  * //密碼格式 確認驗證值 蒐集數據
  * //DB建置
  */
+
+//  user store
+const userStore = useUserStore();
+const { setEmail } = userStore
+
+
 const signupContainer = ref<HTMLElement>();
 const containerStyle = computed(() => {
     if (!signupContainer.value) return { top: 0 }
@@ -233,11 +238,18 @@ interface ErrorResponse {
     message: string;
 }
 
-const registerMsg = ref<string | null>(null);
 
+const registerMsg = ref<string | null>(null);
+const formState = ref('processing')
 async function signUpReq(form: Record<string, any>) {
+    const data = form as ReqForm;
     try {
-        const result = await reqUserRegister(form as ReqForm);
+        const result = await reqUserRegister(data);
+        formState.value = 'finish';
+        setEmail(data.email);
+        router.push({
+            name: 'EmailVerify'
+        })
     } catch (error) {
         const message = (error as AxiosError<ErrorResponse>).response?.data.message;
         registerMsg.value = message ?? '未知錯誤'
@@ -250,7 +262,6 @@ const formHasChanged = ref(false);
 
 function handleFormChange(meta: FormMeta<ReqForm>) {
     formHasChanged.value = meta.dirty;
-    console.log(formHasChanged.value);
 }
 
 function handleRefreshAlert(e: Event) {
@@ -261,7 +272,7 @@ function handleRefreshAlert(e: Event) {
 }
 
 onBeforeRouteLeave(() => {
-    if (formHasChanged.value) {
+    if (formHasChanged.value && formState.value !== 'finish') {
         const answer = confirm('離開將丟失當前進度');
         return answer
     }

@@ -1,17 +1,30 @@
 <template>
-    <div class="container" style="font-size: 10rem;">
-        會員區
+    <div class="container">
+        <h1>
+            {{ user.username }} 您好
+        </h1>
+
+        <div>
+            <h2>
+                訂單紀錄
+            </h2>
+
+            <ul>
+                <li>訂單</li>
+            </ul>
+        </div>
+
+        <router-link to="/profile"
+            @click="userStore.logout">登出</router-link>
     </div>
-    <router-link to="/profile"
-        @click="userStore.logout">登出</router-link>
 </template>
 
 <script setup lang="ts">
 import { useUserStore } from '@/store/userStore';
-
-
+import { storeToRefs } from 'pinia';
 
 const userStore = useUserStore();
+const { user } = storeToRefs(userStore);
 
 </script>
 
