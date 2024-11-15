@@ -16,6 +16,7 @@
     "axios": "^1.6.7",
     "fast-glob": "^3.3.2",
     "gsap": "^3.12.5",
+    "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
     "lorem-ipsum": "^2.0.8",
     "mitt": "^3.0.1",

@@ -109,6 +109,12 @@ const routes = [
                 props: true,
                 meta: {
                     hideParent: true
+                },
+                beforeEnter: () => {
+                    const userStore = useUserStore();
+                    if (!userStore.user.email) {
+                        return '/profile'
+                    }
                 }
             },
             {
@@ -120,19 +126,20 @@ const routes = [
                     from: RouteLocationNormalized
                 ) => {
                     const userStore = useUserStore();
-
-                    try {
-                        const { state, username } = await reqGetUser();
-                        if (state && state == 'confirm') {
-                            userStore.login();
-                            userStore.setUsername(username!)
-                            return true
+                    if (!userStore.isAuth) {
+                        try {
+                            const { state, token } = await reqGetUser();
+                            if (state && state == 'confirm' && token) {
+                                userStore.login(token);
+                                return true
+                            }
+                        } catch (error) {
+                            userStore.isAuth = false;
+                            await router.replace('/home')
+                            await router.push('/profile')
+                            return
                         }
-                    } catch (error) {
-                        userStore.logout();
-                        return router.replace('/profile')
                     }
-
                     // const userStore = useUserStore();
                     // if (userStore.isAuth) {
                     //     return true

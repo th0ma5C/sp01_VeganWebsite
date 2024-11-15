@@ -44,16 +44,20 @@ router.post('/login', validateLogin, async (req, res) => {
         if (!user || !(await user.validatePassword(password))) {
             return res.status(422).json({ message: '信箱或密碼錯誤' });
         }
-        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign(
+            { username: user.username, email: user.email, userID: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '1d' }
+        );
 
         res.cookie('token', token, {
             httpOnly: true,
             // secure: process.env.NODE_ENV === 'production', // 僅在 HTTPS 連接時發送
             sameSite: 'Strict',
-            maxAge: 1000 * 60 * 60 // 1 hr
+            maxAge: 1000 * 60 * 60 * 24 // 1 day
         });
 
-        res.json({ message: '登錄成功' });
+        res.json({ message: '登錄成功', token });
 
     } catch (error) {
         res.status(500).json({ message: '伺服器錯誤' });
@@ -63,15 +67,31 @@ router.post('/login', validateLogin, async (req, res) => {
 router.get('/profile', authToken, async (req, res) => {
     try {
         const { email } = req.user;
-        const { username } = await User.findOne({ email });
+        const user = await User.findOne({ email });
+        const token = jwt.sign(
+            { username: user.username, email: user.email, userID: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '1d' }
+        );
 
         res.json({
             message: '歡迎',
-            username,
+            token,
             state: 'confirm'
         });
     } catch (error) {
+        console.log(error);
     }
+})
+
+router.post('/logout', async (req, res) => {
+    res.cookie('token', '', {
+        httpOnly: true,
+        // secure: true,
+        sameSite: 'strict',
+        expires: new Date(0),
+    });
+    res.status(200).json({ message: 'Logged out successfully', state: 'logout' });
 })
 
 router.post('/send-verifyEmail', async (req, res) => {
@@ -104,9 +124,11 @@ router.get('/verify', async (req, res) => {
         if (!user) {
             return res.status(400).send('無效的驗證連結');
         }
+        const verifiedToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
         user.verified = true;
         await user.save();
+
         res.send(`
             <html>
             <head>
@@ -115,10 +137,10 @@ router.get('/verify', async (req, res) => {
             </head>
             <body>
                 <h1>你的帳號已成功驗證！</h1>
-                <p>5秒後將自動跳轉到首頁。如果沒有跳轉，<a href="http://localhost:5173/profile">點擊這裡</a>。</p>
+                <p>5秒後將自動跳轉到首頁。如果沒有跳轉，<a href="http://localhost:5173/profile?token=${verifiedToken}">點擊這裡</a>。</p>
                 <script>
                     setTimeout(() => {
-                        window.location.href = 'http://localhost:5173/profile';
+                        window.location.href = 'http://localhost:5173/profile?token=${verifiedToken}';
                     }, 5000); // 5秒後跳轉
                 </script>
             </body>

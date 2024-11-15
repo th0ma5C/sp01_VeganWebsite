@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { computed, reactive, ref, watch } from "vue";
 import type { MenuItem } from "@/api/menu/type";
+import { useUserStore } from "./userStore";
 
 interface MapState {
     [key: string]: {
@@ -18,7 +19,9 @@ interface StorageData {
     expiration: any;
 }
 
+
 export const useCartStore = defineStore('cart', () => {
+    const userStore = useUserStore();
 
     // cart drawer 開關
     const isCartCardOpen = ref(false);
@@ -135,6 +138,41 @@ export const useCartStore = defineStore('cart', () => {
         isCheckout.value = !isCheckout.value
     }
 
+    // 獲取購物車state
+    const freightFee = ref(0);
+    const getFreightFee = (fee: number) => freightFee.value = fee;
+    const discountAmount = ref(0);
+    const getDiscountAmount = (fee: number) => discountAmount.value = fee;
+    const couponAmount = ref(0);
+    const getCouponAmount = (fee: number) => couponAmount.value = fee;
+    const totalAmount = ref(0);
+    const getTotalAmount = (total: number) => totalAmount.value = total;
+
+    function getCartState() {
+        const list = { ...cartMap };
+        const order = [];
+        for (let i in list) {
+            const item = {
+                name: i,
+                amount: list[i].amount,
+                subtotal: list[i].amount * list[i].price
+            }
+            order.push(item)
+        }
+        return order
+    }
+
+    function getPurchaseOrder() {
+        return {
+            userID: userStore.user.userID,
+            orderList: getCartState(),
+            total: totalAmount.value,
+            freightFee: freightFee.value,
+            discountAmount: discountAmount.value,
+            status: 'new'
+        }
+    }
+
     return {
         isCartCardOpen,
         cartItems,
@@ -143,6 +181,10 @@ export const useCartStore = defineStore('cart', () => {
         cartTotalPrice,
         headerCart,
         isCheckout,
+        freightFee,
+        discountAmount,
+        couponAmount,
+        totalAmount,
         toggleCartCardOpen,
         addItemToCart,
         DELItemFromCart,
@@ -150,6 +192,12 @@ export const useCartStore = defineStore('cart', () => {
         getCartFromStorage,
         initCart,
         getHeaderCart,
-        toggleIsCheckout
+        toggleIsCheckout,
+        getCartState,
+        getFreightFee,
+        getDiscountAmount,
+        getCouponAmount,
+        getTotalAmount,
+        getPurchaseOrder
     }
 })

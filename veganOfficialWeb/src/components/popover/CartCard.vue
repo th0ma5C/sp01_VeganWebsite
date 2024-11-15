@@ -74,11 +74,13 @@
                 <div class="botWrapper">
                     <div class="orderSubtotal">
                         <small class="discountNotice">
-                            <span v-if="true">
-                                <a href="">加入會員</a>享首購優惠
+                            <span v-if="!userStore.isAuth">
+                                <router-link
+                                    to="/profile/signup">加入會員</router-link>享首購優惠
                             </span>
                             <span v-else>
-                                <a href="">社群分享</a>送購物金
+                                <a href=""
+                                    @click.prevent>社群分享</a>送購物金
                             </span>
                         </small>
 
@@ -132,6 +134,7 @@ import { storeToRefs } from 'pinia';
 import { computed, onMounted, watch, ref, watchEffect } from 'vue';
 import type { MenuItem } from "@/api/menu/type";
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/store/userStore';
 
 
 
@@ -197,6 +200,8 @@ function goCheckoutPage() {
     router.push('/Checkout');
 }
 
+// user store
+const userStore = useUserStore();
 
 onMounted(() => {
     initCart();
@@ -416,6 +421,7 @@ onMounted(() => {
 
         a {
             text-decoration: underline;
+            text-underline-offset: 2px;
 
             &:hover {
                 color: blue;

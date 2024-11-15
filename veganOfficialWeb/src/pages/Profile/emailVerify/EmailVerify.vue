@@ -30,13 +30,17 @@ import * as yup from 'yup';
 const { user } = storeToRefs(useUserStore());
 
 const showEmail = computed(() => {
-    const raw = user.value.email;
+    let raw = user.value.email;
+    const length = raw?.length;
+    const regexp = /.{3}(?=@)/
+    raw = raw!.replace(regexp, '***')
     return raw
 })
 
 async function verifyEmail() {
+    if (!user.value.email) return
     const params = {
-        to: showEmail.value
+        to: user.value.email
     }
     reqSendVerifyEmail(params);
 }
@@ -46,7 +50,7 @@ async function verifyEmail() {
 
 <style scoped lang="scss">
 * {
-    outline: 1px solid black;
+    // outline: 1px solid black;
 }
 
 .verifyContainer {
@@ -55,19 +59,19 @@ async function verifyEmail() {
 
     h1 {
         font-size: 2.5rem;
-        margin-bottom: 1rem;
+        margin-bottom: .75rem;
     }
 }
 
 .content {
     h2 {
-        font-size: 1.5rem;
-        margin-bottom: .5rem;
+        font-size: 1.25rem;
+        margin-bottom: 2rem;
     }
 
     p {
-        font-size: 1.25rem;
-        margin-bottom: .5rem;
+        font-size: 1.5rem;
+        margin-bottom: 3rem;
     }
 
     button {

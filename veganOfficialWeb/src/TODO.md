@@ -44,7 +44,10 @@
 
 # pages--checkout
 
-    ##視窗小縣市按鈕會被擋住
+    ## 視窗小縣市按鈕會被擋住
+
+# pages--login
+    ## autofocusInput的功能未確認是否正常(因 veeValidate 的DOM無法在 onMounted 中獲取)
 
 # components
     TODO: 右側會員popover區塊

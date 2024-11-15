@@ -44,10 +44,15 @@ const reqSendVerifyEmail = (params?: any) => {
     })
 }
 
+const reqUserLogout = () => {
+    return request.post<any, AuthResData>('api/auth/logout')
+}
+
 
 export {
     reqUserRegister,
     reqUserLogin,
+    reqUserLogout,
     reqGetUser,
     reqSendVerifyEmail
 }

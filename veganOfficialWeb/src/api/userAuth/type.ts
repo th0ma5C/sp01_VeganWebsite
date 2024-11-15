@@ -1,7 +1,8 @@
 interface AuthResData {
     message: string,
     state?: string,
-    username?: string
+    username?: string,
+    token?: string
 }
 
 export type {

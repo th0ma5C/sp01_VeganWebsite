@@ -4,15 +4,21 @@
             <div class="left">
                 <VForm as=""
                     v-slot="{ handleSubmit, submitCount, values }"
-                    :validation-schema="verifiedSchema">
+                    :validation-schema="verifiedSchema"
+                    :initial-values="{
+                        email: showEmail,
+                        consigneeName: showUsername
+                    }">
                     <form action=""
-                        @submit="handleSubmit($event, onSubmit)">
+                        @submit="handleSubmit($event, createOrder)">
                         <fieldset>
                             <div class="topContent">
                                 <h2>
                                     聯絡方式
                                 </h2>
-                                <router-link to="/profile"
+                                <router-link
+                                    v-show="!isAuth"
+                                    to="/profile"
                                     class="loginLink">
                                     登入
                                 </router-link>
@@ -553,7 +559,8 @@
                             <button>送出</button>
                         </div>
                     </form>
-
+                    <pre>{{ values }}</pre>
+                    <pre>{{ getPurchaseOrder() }}</pre>
                 </VForm>
             </div>
 
@@ -595,11 +602,13 @@ import {
 import * as yup from 'yup';
 import { city } from '@/hooks/useGetCityList';
 import { getPostalCode } from '@/api/postal';
+import { useUserStore } from '@/store/userStore';
+import { reqCreateOrder } from '@/api/order/order';
 
 // 購物車
 const cartStore = useCartStore();
 const { isCheckout } = storeToRefs(cartStore);
-const { toggleIsCheckout } = cartStore;
+const { toggleIsCheckout, getCartState, getPurchaseOrder } = cartStore;
 
 // 表單驗證
 const errMsg = {
@@ -864,6 +873,39 @@ watch([() => selectedCity.city, selectedTown, addrInput], async (nVal) => {
         }
     }
 })
+
+// form
+async function createOrder(form: Record<string, any>) {
+    try {
+        const result = await reqCreateOrder(newOrder(form));
+        console.log(result);
+
+    } catch (error) {
+
+    }
+}
+
+// user store
+const userStore = useUserStore();
+const { isAuth, user } = storeToRefs(userStore);
+
+const showEmail = computed(() => {
+    return user.value.email ?? ''
+})
+
+const showUsername = computed(() => {
+    return user.value.username ?? ''
+})
+
+console.log(getPurchaseOrder());
+
+// create order
+const newOrder = (shippingInfo: Record<string, any>) => {
+    return {
+        shippingInfo,
+        order: getPurchaseOrder()
+    }
+}
 
 
 onMounted(() => {

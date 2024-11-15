@@ -250,6 +250,7 @@ import { reqFetchCoupon, type CouponCode } from '@/api/coupon';
 
 const cartStore = useCartStore();
 const { cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
+const { getFreightFee, getDiscountAmount, getCouponAmount, getTotalAmount } = cartStore;
 
 
 // 進度條長度
@@ -290,13 +291,19 @@ const discountPercent = computed(() => {
     }
 })
 
-const discountAmount = computed(() => Math.floor(cartTotalPrice.value * (1 - discountPercent.value)))
+const discountAmount = computed(() => {
+    const amount = Math.floor(cartTotalPrice.value * (1 - discountPercent.value))
+    getDiscountAmount(amount);
+    return amount
+})
 
 // 運費
 const { selectedDelivery } = defineProps(['selectedDelivery']);
 
 const freightFee = computed(() => {
-    return selectedDelivery == '宅配' ? 120 : 60
+    const fee = selectedDelivery == '宅配' ? 120 : 60;
+    getFreightFee(fee);
+    return fee
 })
 
 // 運費說明
@@ -330,9 +337,11 @@ const showCouponContent = computed(() => {
 
 const showCouponSpinner = ref(true);
 
-// watch(() => coupon.code, (val) => {
-//     console.log(val);
-// })
+watch(couponAmount, (nVal) => {
+    if (nVal) {
+        getCouponAmount(nVal)
+    }
+})
 
 function handleEnter(val: string | null) {
     coupon.code = val ?? ''.trim();
@@ -374,11 +383,27 @@ function correctionDigit(currNum: number) {
 
 // 訂單總額
 const orderAmount = computed(() => {
-    return cartTotalPrice.value +
+    const total = cartTotalPrice.value +
         freightFee.value -
         discountAmount.value -
-        couponAmount.value
+        couponAmount.value;
+    getTotalAmount(total);
+    return total
 })
+
+const handlers = [
+    (newVal: number) => getDiscountAmount(newVal),
+    (newVal: number) => getFreightFee(newVal),
+    (newVal: number) => getCouponAmount(newVal),
+    (newVal: number) => getTotalAmount(newVal),
+]
+
+watch([discountAmount, freightFee, couponAmount, orderAmount], (nVal) => {
+    nVal.forEach((val, index) => {
+        handlers[index](val);
+    })
+    console.log(nVal);
+}, { immediate: true })
 
 onMounted(() => {
 })

@@ -14,18 +14,28 @@
             </ul>
         </div>
 
-        <router-link to="/profile"
-            @click="userStore.logout">登出</router-link>
+        <button @click="userStore.logout">登出</button>
+        <!-- <router-link to="/profile"
+            @click="userStore.logout">登出</router-link> -->
     </div>
 </template>
 
 <script setup lang="ts">
+/**
+ * todo: 引入訂單
+ */
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
+import { onBeforeRouteLeave } from 'vue-router';
 
 const userStore = useUserStore();
-const { user } = storeToRefs(userStore);
+const { isAuth, user } = storeToRefs(userStore);
 
+// onBeforeRouteLeave((to, from) => {
+//     if (to.path == '/profile' && isAuth.value) {
+//         return { path: '/home' }
+//     }
+// })
 </script>
 
 <style scoped lang="scss">

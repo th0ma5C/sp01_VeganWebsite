@@ -6,11 +6,14 @@
             </h1>
 
             <div class="inputWrapper">
-                <VForm as="" @submit="onSubmit"
+                <VForm as=""
                     v-slot="{ meta, isSubmitting, handleSubmit, submitCount, values }"
-                    :validation-schema="loginSchema">
+                    :validation-schema="loginSchema"
+                    :initial-values="{
+                        email: showEmail
+                    }">
                     <form action=""
-                        @submit="handleSubmit($event, signUpReq)">
+                        @submit="handleSubmit($event, loginReq)">
                         <fieldset>
                             <div>
                                 <VField name="email"
@@ -46,13 +49,14 @@
 
                             <div>
                                 <VField name="password"
-                                    v-slot="{ field, meta }">
-                                    <input
+                                    v-slot="{ field, meta, validate }">
+                                    <input ref="passwordRef"
                                         :type="showPassword ? 'text' : 'password'"
                                         id="password"
                                         required
                                         placeholder=""
                                         autocomplete="current-password"
+                                        @input="validate"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
@@ -176,9 +180,10 @@
 
 <script setup lang="ts">
 /**
- * todo:  account store、DB建置 社群登入, 臨時帳號, 登入後頁面, 登出
- * doing:  註冊後跳轉登入頁, 登入後資料庫添加session, store建置, 記住登入資訊
+ * todo:  社群登入, 臨時帳號, 登出清理資料, 忘記密碼, 購物車引入user數據
+ * doing: 登入後頁面(訂單), 登入後資料庫添加session, store建置, 記住登入資訊
  * * store含本地儲存JWT, 記住資訊會挾帶token至後端驗證, 添加JWT時限
+ * !登出時結構崩潰，因為vif
  * -----------------------------------------
  * ? profile組件是否添加路由守衛
  * ? 遊客購物車
@@ -190,9 +195,10 @@
  * //驗證時機改為送出前
  * //帳號驗證
  * //響應返回cookie: JWT
+ * //註冊後跳轉驗證
  */
 
-import { ref } from 'vue';
+import { computed, nextTick, onBeforeMount, onMounted, onUpdated, ref, watch, type Ref } from 'vue';
 import useConcatImgPath from '@/hooks/useConcatImgPath';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
@@ -202,7 +208,8 @@ import { reqUserLogin } from '@/api/userAuth';
 import type { AxiosError } from 'axios';
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { jwtDecode } from 'jwt-decode';
 
 // 社群登入圖片路徑
 const loginIcon = ['Fb.png', 'Google.png', 'Line.png'];
@@ -222,10 +229,10 @@ interface LoginData {
 }
 const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
 
-function onSubmit(val: LoginData) {
-    console.log(val);
-    console.log(JSON.stringify(val, null, 2));
-}
+// function onSubmit(val: LoginData) {
+//     console.log(val);
+//     console.log(JSON.stringify(val, null, 2));
+// }
 
 yup.addMethod(yup.string, 'email', function validateEmail(message) {
     return this.matches(emailRegex, {
@@ -255,10 +262,11 @@ interface ErrorResponse {
 
 const registerMsg = ref<string | null>(null);
 
-async function signUpReq(form: Record<string, any>) {
+async function loginReq(form: Record<string, any>) {
     try {
         const result = await reqUserLogin(form as ReqForm);
-        login();
+        const { token } = result;
+        login(token);
         routerTo('/profile/account')
     } catch (error) {
         const message = (error as AxiosError<ErrorResponse>).response?.data.message;
@@ -268,9 +276,49 @@ async function signUpReq(form: Record<string, any>) {
 
 // 初始化
 const userStore = useUserStore();
-const { isAuth } = storeToRefs(userStore);
-const { login } = userStore;
+const { isAuth, user } = storeToRefs(userStore);
+const { login, setEmail } = userStore;
 
+
+// 跳轉處理
+const route = useRoute();
+
+interface jwtPayload {
+    email?: string
+}
+function handleEmailRedirect() {
+    if (route.query.token) {
+        const token = route.query.token as string;
+        const decoded = jwtDecode<jwtPayload>(token);
+
+        if (decoded.email) setEmail(decoded.email)
+    }
+}
+
+const showEmail = computed(() => {
+    if (user.value.email) {
+        return user.value.email
+    }
+    return ''
+})
+const passwordRef = ref()
+const foo = ref();
+function autofocusInput(target: Ref) {
+    target.value.focus()
+}
+
+watch(passwordRef, (nVal) => {
+    if (nVal && showEmail.value !== '') {
+        autofocusInput(passwordRef)
+    }
+}, { once: true })
+
+onBeforeMount(() => {
+    handleEmailRedirect()
+})
+
+onMounted(() => {
+})
 
 </script>
 
@@ -445,6 +493,7 @@ $container_width: 300px;
         display: flex;
         align-items: center;
         gap: .5rem;
+        transform: translateX(-3px);
 
         span {
             color: $error_color;
