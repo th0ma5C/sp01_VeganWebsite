@@ -14,7 +14,7 @@
                         <fieldset>
                             <div class="topContent">
                                 <h2>
-                                    聯絡方式
+                                    聯絡信箱
                                 </h2>
                                 <router-link
                                     v-show="!isAuth"
@@ -60,12 +60,13 @@
                         </fieldset>
 
                         <fieldset>
-                            <h2>配送地址</h2>
+                            <h2>收件人資訊</h2>
                             <div class="formWrapper">
                                 <VField name="consigneeName"
                                     v-slot="{ field, meta }">
                                     <input
                                         id="consigneeName"
+                                        autocomplete="off"
                                         type="text"
                                         placeholder=""
                                         :="field" :class="{
@@ -147,13 +148,13 @@
                                                 invalidInput: !meta.valid && submitCount > 0
                                             }">
                                     </VField>
-                                    <label for="city"
+                                    <!-- <label for="city"
                                         class="staticLabel"
                                         :class="{
                                             selectingOptions: isOptionsOpen || selectedCity.city !== ''
                                         }">
                                         縣市
-                                    </label>
+                                    </label> -->
 
                                     <ErrorMessage
                                         name="city" as="div"
@@ -177,7 +178,14 @@
 
                                     <div @click.self="toggleOpenOptions"
                                         class="selectWrapper">
+                                        <label for="city"
+                                            class="" :class="{
+                                                selectingOptions: isOptionsOpen || selectedCity.city !== ''
+                                            }">
+                                            縣市
+                                        </label>
                                         <span
+                                            @click="toggleOpenOptions"
                                             class="showCity"
                                             v-show="selectedCity.city">
                                             {{
@@ -656,7 +664,7 @@ let schema = yup.object({
     consigneeName: yup.string().trim().required(),
     contactNo:
         yup.string().trim().required()
-            .test('phone-test', errMsg.required, contactNoVerify),
+            .test('phone-test', errMsg.contactNo, contactNoVerify),
     saveInfo: yup.boolean(),
     subNews: yup.boolean(),
     deliveryType: yup.string(),
@@ -776,7 +784,7 @@ function switchTab(tab: string) {
 // 宅配地址
 const addrInput = ref('');
 const updateAddrInput = (value: string) => {
-    addrInput.value = value.trim();
+    if (value) addrInput.value = value.trim();
 };
 
 const expressAddr = computed(() => {
@@ -903,7 +911,7 @@ console.log(getPurchaseOrder());
 const newOrder = (shippingInfo: Record<string, any>) => {
     return {
         shippingInfo,
-        order: getPurchaseOrder()
+        purchaseOrder: getPurchaseOrder()
     }
 }
 
@@ -1033,6 +1041,7 @@ onUnmounted(() => {
     }
 
     .hideInput {
+        visibility: hidden;
         color: transparent;
     }
 
@@ -1062,13 +1071,19 @@ onUnmounted(() => {
 
 .selectWrapper {
     @include WnH(100%, 48px);
+    padding: 0 1rem;
+    border: 1px solid gray;
+    border-radius: .5rem;
+    background-color: white;
+
     position: absolute;
-    left: 0rem;
+    left: 0;
     top: 0;
 
     .showCity {
-        padding-left: 1rem;
+        // padding-left: 1rem;
         line-height: 48px;
+        user-select: none;
     }
 
     .switchIcon {

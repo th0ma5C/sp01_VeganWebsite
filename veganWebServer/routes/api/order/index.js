@@ -11,9 +11,8 @@ const jwt = require('jsonwebtoken');
 // 創建訂單
 router.post('/createOrder', authToken, async (req, res) => {
     const { userID } = req.user;
-    // const { order } = req.order;
-    res.status(200).json({ message: '建立成功', req });
-    // // 計算總價
+    const { order } = req.body;
+    res.status(200).json({ message: '建立成功' });
     // let totalAmount = 0;
     // products.forEach(product => {
     //     totalAmount += product.price * product.quantity;

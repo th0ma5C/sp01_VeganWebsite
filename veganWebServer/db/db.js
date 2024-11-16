@@ -1,3 +1,6 @@
+const redis = require('../redisClient');
+const updateRedis = require('../scripts/updateRedis');
+
 module.exports = (success, error) => {
     if (typeof error != 'function') {
         error = () => {
@@ -19,8 +22,16 @@ module.exports = (success, error) => {
         for (let uri of uris) {
             try {
                 await mongoose.connect(uri);
-
                 console.log(`${uri}連接成功`);
+
+                if (!redis.isOpen) {
+                    await redis.connect();
+                }
+                console.log('Redis 已啟動');
+
+                await updateRedis();
+                console.log('Redis 緩存已更新');
+
                 success();
                 connected = true;
 

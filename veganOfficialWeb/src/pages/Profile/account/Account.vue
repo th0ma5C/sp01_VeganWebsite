@@ -31,11 +31,11 @@ import { onBeforeRouteLeave } from 'vue-router';
 const userStore = useUserStore();
 const { isAuth, user } = storeToRefs(userStore);
 
-// onBeforeRouteLeave((to, from) => {
-//     if (to.path == '/profile' && isAuth.value) {
-//         return { path: '/home' }
-//     }
-// })
+onBeforeRouteLeave((to, from) => {
+    if (to.path == '/profile' && isAuth.value) {
+        return { path: '/home' }
+    }
+})
 </script>
 
 <style scoped lang="scss">
