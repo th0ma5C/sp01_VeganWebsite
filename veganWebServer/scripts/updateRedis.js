@@ -1,5 +1,5 @@
 const redisClient = require('../redisClient');
-const Stocks = require('../models/stockModel');
+const Stocks = require('../models/StockModel');
 
 module.exports = async (params) => {
     try {
@@ -11,7 +11,7 @@ module.exports = async (params) => {
         // 使用 Redis Multi 寫入數據
         const multi = redisClient.multi();
         stocks.forEach((item) => {
-            multi.set(`product:${item._id}`, item.price, { EX: 86400 }); // 1d
+            multi.set(`${item.name}`, item.price, { EX: 43200 }); // 12 hr
         });
 
         await multi.exec();

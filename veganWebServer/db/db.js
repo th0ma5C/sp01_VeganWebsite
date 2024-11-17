@@ -27,10 +27,9 @@ module.exports = (success, error) => {
                 if (!redis.isOpen) {
                     await redis.connect();
                 }
-                console.log('Redis 已啟動');
+                console.log('Redis activated');
 
                 await updateRedis();
-                console.log('Redis 緩存已更新');
 
                 success();
                 connected = true;

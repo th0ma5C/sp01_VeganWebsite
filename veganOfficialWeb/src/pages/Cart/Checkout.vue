@@ -910,8 +910,10 @@ console.log(getPurchaseOrder());
 // create order
 const newOrder = (shippingInfo: Record<string, any>) => {
     return {
-        shippingInfo,
-        purchaseOrder: getPurchaseOrder()
+        order: {
+            shippingInfo,
+            purchaseOrder: getPurchaseOrder()
+        }
     }
 }
 
