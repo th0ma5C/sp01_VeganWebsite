@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon bin/www"
+    "start:dev": "cross-env NODE_ENV=development nodemon bin/www"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -35,5 +35,8 @@
     "@root": ".",
     "@models": "./models",
     "@middlewares": "./middlewares"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }

@@ -1,5 +1,6 @@
 const redis = require('../redisClient');
 const updateRedis = require('../scripts/updateRedis');
+const startViteServer = require('../scripts/startViteServer.js')
 
 module.exports = (success, error) => {
     if (typeof error != 'function') {

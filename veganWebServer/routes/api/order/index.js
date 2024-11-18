@@ -9,6 +9,7 @@ const redisClient = require('@root/redisClient')
 const jwt = require('jsonwebtoken');
 /**
  * todo: 訂購身分驗證, 價格驗算, 訂購成功email
+ * doing: 下訂email 刪 改 查
  */
 
 
@@ -26,7 +27,7 @@ router.post('/verifyPurchaseOrder', checkOrder, async (req, res) => {
 // 創建訂單
 router.post('/createOrder', [authToken, checkSub], async (req, res) => {
     const { userID } = req.user;
-    const { shippingInfo, purchaseOrder } = req.body;
+    const { shippingInfo, purchaseOrder } = req.body.order;
     const newOrder = new Order({
         shippingInfo,
         purchaseOrder
@@ -43,6 +44,21 @@ router.post('/createOrder', [authToken, checkSub], async (req, res) => {
 
 // 寄送訂單資訊 mail
 router.post('/send-orderCreated-email', async (req, res) => {
+
+})
+
+// 查詢訂單
+router.get('/userOrderList', async (req, res) => {
+
+})
+
+// 變更訂單
+router.post('/editOrder', async (req, res) => {
+
+})
+
+// 刪除訂單
+router.post('/deleteOrder', async (req, res) => {
 
 })
 

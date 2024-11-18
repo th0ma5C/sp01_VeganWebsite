@@ -169,6 +169,7 @@ export const useCartStore = defineStore('cart', () => {
             total: totalAmount.value,
             freightFee: freightFee.value,
             discountAmount: discountAmount.value,
+            couponAmount: couponAmount.value,
             status: 'new'
         }
     }

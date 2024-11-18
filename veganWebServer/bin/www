@@ -3,7 +3,18 @@
 // 導入db函數
 const cron = require('node-cron');
 const db = require('../db/db');
-const updateRedis = require('../scripts/updateRedis');
+const dotenv = require('dotenv');
+const fs = require('fs');
+
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const envFile = `.env.${NODE_ENV}`;
+if (fs.existsSync(envFile)) {
+  dotenv.config({ path: envFile });
+  console.log(`Loaded environment variables from ${envFile}`);
+} else {
+  dotenv.config();
+  console.warn(`Environment file ${envFile} not found, loading default .env`);
+}
 
 db(() => {
   /**

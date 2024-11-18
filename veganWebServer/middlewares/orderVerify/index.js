@@ -50,13 +50,13 @@ async function checkOrder(req, res, next) {
 
 async function checkSub(req, res, next) {
     try {
-        const { purchaseOrder, freightFee, discountAmount, total } = req.body.order.purchaseOrder;
-        let checkTotal = -(freightFee + discountAmount);
-        purchaseOrder.forEach((item) => {
+        const { orderList, freightFee, discountAmount, couponAmount, total } = req.body.order.purchaseOrder;
+        let checkTotal = freightFee - (discountAmount + couponAmount);
+        orderList.forEach((item) => {
             checkTotal += item.subtotal
         })
         if (checkTotal !== total) {
-            res.status(422).json({ message: '請重新建立訂單', state: 'denied' })
+            return res.status(422).json({ message: '請重新建立訂單', state: 'denied' })
         }
         next()
     } catch (error) {
@@ -64,6 +64,7 @@ async function checkSub(req, res, next) {
         res.status(500).json({ message: '伺服器錯誤, 請重新建立訂單', state: 'denied' });
     }
 }
+
 
 
 module.exports = {

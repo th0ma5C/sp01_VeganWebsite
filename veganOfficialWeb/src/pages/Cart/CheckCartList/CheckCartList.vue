@@ -120,7 +120,7 @@
                     </span>
                     <span>${{
                         cartTotalPrice
-                        }}</span>
+                    }}</span>
                 </div>
             </div>
 
@@ -223,7 +223,7 @@
                 <span>總計</span>
                 <span>${{
                     orderAmount.toLocaleString()
-                    }}</span>
+                }}</span>
             </div>
         </div>
     </div>
@@ -402,7 +402,7 @@ watch([discountAmount, freightFee, couponAmount, orderAmount], (nVal) => {
     nVal.forEach((val, index) => {
         handlers[index](val);
     })
-    console.log(nVal);
+    // console.log(nVal);
 }, { immediate: true })
 
 onMounted(() => {

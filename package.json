@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently \"npm run mongo\" \"npm run server-start\" \"npm run client-dev\"",
-    "server-start": "npm start --prefix veganWebServer",
+    "start:dev": "concurrently \"npm run mongo\" \"npm run server-start\" \"wait-on http://localhost:3000 && npm run client-dev\"",
+    "server-start": "npm run start:dev --prefix veganWebServer",
     "client-dev": "npm run dev --prefix veganOfficialWeb",
     "mongo": "start powershell -NoExit -Command mongod",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,7 +13,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "wait-on": "^8.0.1"
   },
   "dependencies": {
     "sideproject": "file:"

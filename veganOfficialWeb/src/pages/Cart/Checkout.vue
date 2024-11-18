@@ -611,7 +611,7 @@ import * as yup from 'yup';
 import { city } from '@/hooks/useGetCityList';
 import { getPostalCode } from '@/api/postal';
 import { useUserStore } from '@/store/userStore';
-import { reqCreateOrder } from '@/api/order/order';
+import { reqCreateOrder, reqVerifyItemPrice } from '@/api/order/order';
 
 // 購物車
 const cartStore = useCartStore();
@@ -905,7 +905,18 @@ const showUsername = computed(() => {
     return user.value.username ?? ''
 })
 
-console.log(getPurchaseOrder());
+// 驗證商品金額
+const isItemListChecked = ref(false)
+async function verifyItemPrice() {
+    try {
+        const params = { order: getCartState() };
+        const result = await reqVerifyItemPrice(params);
+        console.log(result);
+        return result
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 // create order
 const newOrder = (shippingInfo: Record<string, any>) => {
@@ -920,6 +931,7 @@ const newOrder = (shippingInfo: Record<string, any>) => {
 
 onMounted(() => {
     if (!isCheckout.value) toggleIsCheckout();
+    verifyItemPrice()
 })
 
 onUnmounted(() => {
