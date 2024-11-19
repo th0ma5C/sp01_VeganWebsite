@@ -584,7 +584,9 @@
 <script setup lang="ts">
 /**
  * todo:  金流api, member DB(order DB)
- * doing: 
+ * doing: 縣市選完後沒有關閉, 送出後轉至付款頁面
+ * ! 選擇城市後選擇鄉鎮沒有移至頂端，折價券spinner位置不對，重新整理信箱、姓名遺失
+ * ? 儲存寄送資訊
  * ------------------------------------------
  * //delivery payment bind value
  * //profile
@@ -882,16 +884,6 @@ watch([() => selectedCity.city, selectedTown, addrInput], async (nVal) => {
     }
 })
 
-// form
-async function createOrder(form: Record<string, any>) {
-    try {
-        const result = await reqCreateOrder(newOrder(form));
-        console.log(result);
-
-    } catch (error) {
-
-    }
-}
 
 // user store
 const userStore = useUserStore();
@@ -905,20 +897,9 @@ const showUsername = computed(() => {
     return user.value.username ?? ''
 })
 
-// 驗證商品金額
-const isItemListChecked = ref(false)
-async function verifyItemPrice() {
-    try {
-        const params = { order: getCartState() };
-        const result = await reqVerifyItemPrice(params);
-        console.log(result);
-        return result
-    } catch (error) {
-        console.log(error);
-    }
-}
 
-// create order
+
+// collect order info
 const newOrder = (shippingInfo: Record<string, any>) => {
     return {
         order: {
@@ -928,10 +909,20 @@ const newOrder = (shippingInfo: Record<string, any>) => {
     }
 }
 
+// req create order
+async function createOrder(form: Record<string, any>) {
+    try {
+        const result = await reqCreateOrder(newOrder(form));
+        console.log(result);
+
+    } catch (error) {
+
+    }
+}
+
 
 onMounted(() => {
     if (!isCheckout.value) toggleIsCheckout();
-    verifyItemPrice()
 })
 
 onUnmounted(() => {

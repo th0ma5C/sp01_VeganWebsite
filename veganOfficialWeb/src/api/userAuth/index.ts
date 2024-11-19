@@ -48,11 +48,18 @@ const reqUserLogout = () => {
     return request.post<any, AuthResData>('api/auth/logout')
 }
 
+const reqRedirectLogin = (params: any) => {
+    return request.post<any, AuthResData>('api/auth/tokenLogin', {
+        ...params
+    })
+}
+
 
 export {
     reqUserRegister,
     reqUserLogin,
     reqUserLogout,
     reqGetUser,
-    reqSendVerifyEmail
+    reqSendVerifyEmail,
+    reqRedirectLogin
 }

@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
-
+import sass from 'sass';
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
@@ -49,7 +49,9 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: '@import "./src/style/variables.scss";'
+        implementation: sass,
+        api: 'modern-compiler',
+        additionalData: '@use "@/style/variables.scss" as *;'
       },
     },
   },

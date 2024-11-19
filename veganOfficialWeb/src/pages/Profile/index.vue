@@ -204,7 +204,7 @@ import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
 } from 'vee-validate';
 import * as yup from 'yup';
-import { reqUserLogin } from '@/api/userAuth';
+import { reqRedirectLogin, reqUserLogin } from '@/api/userAuth';
 import type { AxiosError } from 'axios';
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
@@ -283,15 +283,18 @@ const { login, setEmail } = userStore;
 // 跳轉處理
 const route = useRoute();
 
-interface jwtPayload {
-    email?: string
-}
-function handleEmailRedirect() {
-    if (route.query.token) {
-        const token = route.query.token as string;
-        const decoded = jwtDecode<jwtPayload>(token);
+async function handleEmailRedirect() {
+    if (!route.query.token) return
 
-        if (decoded.email) setEmail(decoded.email)
+    try {
+        const JWT = route.query.token as string;
+        const { token } = await reqRedirectLogin({ token: JWT });
+        login(token);
+        routerTo('/profile/account');
+        return
+    } catch (error) {
+        console.log(error);
+        return
     }
 }
 
@@ -313,8 +316,8 @@ watch(passwordRef, (nVal) => {
     }
 }, { once: true })
 
-onBeforeMount(() => {
-    handleEmailRedirect()
+onBeforeMount(async () => {
+    await handleEmailRedirect();
 })
 
 onMounted(() => {

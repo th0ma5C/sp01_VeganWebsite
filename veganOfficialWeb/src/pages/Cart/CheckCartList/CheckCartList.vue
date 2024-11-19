@@ -3,7 +3,7 @@
         <div class="barContainer">
             <h4>
                 <span
-                    v-if="cartCounter && cartCounter > 14">
+                    v-if="cartCounter && cartCounter >= 14">
                     恭喜達標
                 </span>
                 <span v-else>
@@ -226,12 +226,22 @@
                 }}</span>
             </div>
         </div>
+
+        <transition name="spinner">
+            <div class="loadingFilter" @click.prevent
+                v-show="!isItemListChecked">
+                <Spinner></Spinner>
+            </div>
+        </transition>
+
     </div>
+
+
 </template>
 
 <script setup lang="ts">
 /**
- * todo: 
+ * todo: 驗證coupon後清空, coupon讀取中filter位置不對
  * ------------------------
  * // 折扣碼
  */
@@ -245,12 +255,14 @@ import {
 import { ref, computed, onMounted, reactive, watch } from 'vue';
 import * as yup from 'yup';
 import { reqFetchCoupon, type CouponCode } from '@/api/coupon';
+import { reqVerifyItemPrice } from '@/api/order/order';
+
 
 
 
 const cartStore = useCartStore();
 const { cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
-const { getFreightFee, getDiscountAmount, getCouponAmount, getTotalAmount } = cartStore;
+const { getFreightFee, getDiscountAmount, getCouponAmount, getTotalAmount, getCartState } = cartStore;
 
 
 // 進度條長度
@@ -405,7 +417,26 @@ watch([discountAmount, freightFee, couponAmount, orderAmount], (nVal) => {
     // console.log(nVal);
 }, { immediate: true })
 
+// 驗證商品金額
+const isItemListChecked = ref(false)
+async function verifyItemPrice() {
+    try {
+        const params = { order: getCartState() };
+        const result = await reqVerifyItemPrice(params);
+        if (result.state == 'confirm') {
+            setTimeout(() => {
+                isItemListChecked.value = true
+            }, 1000)
+        }
+        return
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 onMounted(() => {
+    verifyItemPrice()
+
 })
 
 </script>
@@ -419,6 +450,36 @@ onMounted(() => {
     flex-direction: column;
     gap: 2rem;
 
+}
+
+.loadingFilter {
+    @include WnH(calc(100% + 4rem), calc(100% + 2rem));
+
+    cursor: not-allowed;
+    border-radius: 1rem;
+    position: absolute;
+    top: -1rem;
+    left: -1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    z-index: 2;
+
+    &>div {
+        @include WnH(40px);
+    }
+}
+
+.spinner-leave-active {
+    transition: opacity .3s
+}
+
+.spinner-enter-from,
+.spinner-leave-to {
+    opacity: 0;
+}
+
+.spinner-enter-to,
+.spinner-leave-from {
+    opacity: 1;
 }
 
 .barContainer {
