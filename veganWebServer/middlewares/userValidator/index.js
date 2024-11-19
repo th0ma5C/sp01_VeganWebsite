@@ -1,5 +1,6 @@
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const User = require('@models/User');
 
 const validateRegister = [
     body('username').notEmpty().withMessage('請輸入用戶名'),
@@ -55,9 +56,27 @@ function authToken(req, res, next) {
     }
 }
 
+async function authJWT(req, res, next) {
+    const { token } = req.body;
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const email = decoded.email;
+        const user = await User.findOne({ email });
+        if (!user) {
+            throw new Error('User Error');
+        }
+        req.user = user;
+        next();
+    } catch (error) {
+        res.status(403).json({ message: '請重新登入', state: 'denied' });
+    }
+}
+
 
 module.exports = {
     validateRegister,
     validateLogin,
-    authToken
+    authToken,
+    authJWT
 }

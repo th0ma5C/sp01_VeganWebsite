@@ -717,6 +717,18 @@ onMounted(() => {
     opacity: 1;
 }
 
+@mixin recList_rwd768 {
+    @media (max-width: 768px) {
+        @content;
+    }
+}
+
+@mixin recList_rwd1000 {
+    @media (min-width:768px) and (max-width: 1440px) {
+        @content;
+    }
+}
+
 .recommendList {
     margin-bottom: calc(5% + 48px + 3rem);
 
@@ -761,17 +773,7 @@ onMounted(() => {
         }
     }
 
-    @mixin recList_rwd768 {
-        @media (max-width: 768px) {
-            @content;
-        }
-    }
 
-    @mixin recList_rwd1000 {
-        @media (min-width:768px) and (max-width: 1440px) {
-            @content;
-        }
-    }
 
     .salad,
     .smoothies {
@@ -787,11 +789,10 @@ onMounted(() => {
         //     grid-template-columns: repeat(2, minmax(100px, max-content));
         // }
 
-        @include recList_rwd1000() {
-            // display: none
-        }
-
         @include flex-center-center;
+
+
+
         // justify-content: start;
         margin-left: auto;
         margin-right: auto;
@@ -801,6 +802,9 @@ onMounted(() => {
         padding: 0 3rem;
         // overflow-x: scroll;
 
+        @include recList_rwd1000() {
+            // display: none
+        }
 
         .item {
             // flex: 0 0 calc(33% - 8rem);
@@ -810,6 +814,12 @@ onMounted(() => {
     }
 
     .foo {
+
+
+        display: none;
+        width: 60%;
+        // width: 1440px;
+
         @include recList_rwd768() {
             // width: 80%;
             // display: block
@@ -819,10 +829,6 @@ onMounted(() => {
             // width: 80%;
             // display: block;
         }
-
-        display: none;
-        width: 60%;
-        // width: 1440px;
 
         swiper-slide {
             padding: 1rem 0;

@@ -1,9 +1,10 @@
 import request from '@/utils/request/requests';
 import type { AxiosError } from 'axios';
+import type { OrderResData } from './type'
 
 // 驗證價格
 const reqVerifyItemPrice = (params: any) => {
-    return request.post('/api/order/verifyPurchaseOrder', { ...params })
+    return request.post<any, OrderResData>('/api/order/verifyPurchaseOrder', { ...params })
 }
 
 // 建立訂單

@@ -16,7 +16,7 @@ router.get('/login', (req, res) => {
     res.redirect(authUrl);
 });
 
-router.get('/google/callback', async (req, res) => {
+router.get('/google/cb', async (req, res) => {
     const code = req.query.code; // 授權碼
     try {
         // 使用授權碼交換 token

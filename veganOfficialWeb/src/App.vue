@@ -68,8 +68,8 @@ onUnmounted(() => {
 
 <style lang="scss">
 /* 引入全局樣式和字體 */
-@import "./style/index.scss";
-@import './style/fonts.scss';
+@use "./style/index.scss" as *;
+@use './style/fonts.scss' as *;
 
 
 body {

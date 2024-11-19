@@ -4,7 +4,7 @@ const router = express.Router();
 
 const User = require('@models/User');
 const jwt = require('jsonwebtoken');
-const { validateRegister, validateLogin, authToken } = require('@middlewares/userValidator');
+const { validateRegister, validateLogin, authToken, authJWT } = require('@middlewares/userValidator');
 
 const { mailOptions, transporter } = require('./nodemailer');
 
@@ -60,6 +60,33 @@ router.post('/login', validateLogin, async (req, res) => {
         res.json({ message: '登錄成功', token });
 
     } catch (error) {
+        res.status(500).json({ message: '伺服器錯誤' });
+    }
+})
+
+router.post('/tokenLogin', authJWT, async (req, res) => {
+    const user = req.user
+    try {
+        const token = jwt.sign(
+            { username: user.username, email: user.email, userID: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '1d' }
+        );
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            // secure: process.env.NODE_ENV === 'production', // 僅在 HTTPS 連接時發送
+            sameSite: 'Strict',
+            maxAge: 1000 * 60 * 60 * 24 // 1 day
+        });
+
+        res.status(200).json({
+            message: '歡迎',
+            token,
+            state: 'confirm'
+        });
+    } catch (error) {
+        console.log(error);
         res.status(500).json({ message: '伺服器錯誤' });
     }
 })
