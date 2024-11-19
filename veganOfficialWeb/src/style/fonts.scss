@@ -1,0 +1,41 @@
+/*
+// @font-face {
+//     font-family: 'NotoSansTC';
+//     src: url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@350&display=swap');
+//     // font-display: swap;
+// }
+
+// @font-face {
+//     font-family: 'NotoSans';
+//     src: url('@assets/fonts/Noto_Sans/NotoSans-VariableFont_wdth,wght.woff2') format('woff2');
+//     font-display: swap;
+// }
+
+// @font-face {
+//     font-family: 'NotoSans';
+//     src: url('@assets/fonts/Noto_Sans/NotoSans-VariableFont_wdth,wght.woff2') format('woff2');
+//     font-display: swap;
+// }
+*/
+
+// @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Mr+Dafoe&family=Noto+Sans+TC:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+// 改在index.html pre connect
+$variableFont: 'wght' 350;
+
+body,
+button {
+    font-family: 'Noto Sans', 'Noto Sans TC', sans-serif;
+    font-variation-settings: $variableFont;
+    font-optical-sizing: auto;
+    font-weight: 350;
+    font-style: normal;
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-variation-settings: normal;
+    }
+}
