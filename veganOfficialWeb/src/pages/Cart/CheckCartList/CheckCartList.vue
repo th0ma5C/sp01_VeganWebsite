@@ -1,5 +1,7 @@
 <template>
-    <div class="rightWrapper">
+    <div class="rightWrapper " :class="{
+        loadingFilter: isItemListChecked
+    }">
         <div class="barContainer">
             <h4>
                 <span
@@ -72,10 +74,12 @@
             <VForm as=""
                 v-slot="{ handleSubmit, submitCount, values }"
                 :validation-schema="schema">
-                <form action="" @submit="handleSubmit">
+                <form action=""
+                    @submit="handleSubmit($event, onSubmit)">
                     <VField name="discountCode" as=""
                         v-slot="{ field }">
-                        <input id="discountCode" type=text
+                        <input ref="inputRef"
+                            id="discountCode" type=text
                             autocomplete="off"
                             placeholder="" :="field"
                             @blur="coupon.code = (field.value ?? '').trim()"
@@ -97,8 +101,7 @@
                     </div>
 
                     <div class="formBtn">
-                        <button type="button"
-                            @click="fetchCoupon">
+                        <button type="button">
                             套用
                         </button>
                     </div>
@@ -228,7 +231,7 @@
         </div>
 
         <transition name="spinner">
-            <div class="loadingFilter" @click.prevent
+            <div class="spinnerWrapper" @click.prevent
                 v-show="!isItemListChecked">
                 <Spinner></Spinner>
             </div>
@@ -241,9 +244,10 @@
 
 <script setup lang="ts">
 /**
- * todo: 驗證coupon後清空, coupon讀取中filter位置不對
+ * todo: 
  * ------------------------
  * // 折扣碼
+ * //驗證coupon後清空, coupon讀取中filter位置不對
  */
 
 import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
@@ -251,6 +255,7 @@ import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
+    type FormActions,
 } from 'vee-validate';
 import { ref, computed, onMounted, reactive, watch } from 'vue';
 import * as yup from 'yup';
@@ -328,26 +333,25 @@ function toggleIsIllustrateShow(e: Event) {
 type CouponInput = {
     code: CouponCode['code'] | null;
 }
+type CouponForm = Record<string, string>;
 
 const schema = yup.object({
     discountCode: yup.string().trim()
 })
 
+const inputRef = ref()
 const isCouponPassed = ref<null | boolean>(null);
 const couponErrMsg = '無此折扣碼';
 const couponCode = ref('')
 const couponAmount = ref(0);
 const couponApplyMsg = ref('');
 
+const showCouponContent = computed(() => !(couponAmount.value == 0))
+const showCouponSpinner = ref(true);
+
 const coupon = reactive<CouponInput>({
     code: null
 })
-
-const showCouponContent = computed(() => {
-    return !(couponAmount.value == 0)
-})
-
-const showCouponSpinner = ref(true);
 
 watch(couponAmount, (nVal) => {
     if (nVal) {
@@ -363,7 +367,7 @@ function handleEnter(val: string | null) {
 async function fetchCoupon() {
     if (!coupon.code) {
         isCouponPassed.value = false;
-        return
+        return false
     }
 
     try {
@@ -376,10 +380,24 @@ async function fetchCoupon() {
         }
         couponApplyMsg.value = message;
         isCouponPassed.value = true;
-
+        return true
     } catch (error) {
         isCouponPassed.value = false;
         // console.log(error);
+        return false
+    }
+}
+
+
+async function onSubmit<T extends CouponForm>(val: T, { resetForm }: FormActions<T>) {
+    try {
+        const isValidate = await fetchCoupon();
+        if (isValidate) {
+            resetForm()
+            inputRef.value.blur();
+        }
+    } catch (error) {
+        console.log(error);
     }
 }
 
@@ -450,9 +468,17 @@ onMounted(() => {
     flex-direction: column;
     gap: 2rem;
 
+    &>div:not(.spinnerWrapper) {
+        filter: blur(2px);
+        transition: filter .3s;
+    }
 }
 
-.loadingFilter {
+.loadingFilter>div:not(.spinnerWrapper) {
+    filter: blur(0);
+}
+
+.spinnerWrapper {
     @include WnH(calc(100% + 4rem), calc(100% + 2rem));
 
     cursor: not-allowed;
@@ -460,7 +486,7 @@ onMounted(() => {
     position: absolute;
     top: -1rem;
     left: -1rem;
-    background-color: rgba(0, 0, 0, 0.2);
+    // background-color: rgba(0, 0, 0, 0.2);
     z-index: 2;
 
     &>div {
@@ -746,8 +772,6 @@ onMounted(() => {
 
         .discountAmount {
             color: red;
-
-
         }
 
         .correctionDigit {

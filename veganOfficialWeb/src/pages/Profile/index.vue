@@ -305,10 +305,12 @@ const showEmail = computed(() => {
     return ''
 })
 const passwordRef = ref()
-const foo = ref();
 function autofocusInput(target: Ref) {
     target.value.focus()
 }
+
+// initialize order list
+
 
 watch(passwordRef, (nVal) => {
     if (nVal && showEmail.value !== '') {
@@ -321,6 +323,7 @@ onBeforeMount(async () => {
 })
 
 onMounted(() => {
+    userStore.getUserOrderList()
 })
 
 </script>
