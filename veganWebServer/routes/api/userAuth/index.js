@@ -124,7 +124,8 @@ router.post('/logout', async (req, res) => {
 router.post('/send-verifyEmail', async (req, res) => {
     try {
         const { to } = req.body;
-        const token = jwt.sign({ id: to }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const userID = await User.findOne({ email: to }).select('_id')
+        const token = jwt.sign({ userID, email: to }, process.env.JWT_SECRET, { expiresIn: '1h' });
         const options = {
             ...mailOptions,
             text: `請點擊以下連結來驗證你的信箱: ${to}`,
@@ -144,14 +145,14 @@ router.get('/verify', async (req, res) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const id = decoded.id;
+        const email = decoded.email;
 
         // 查找該使用者並更新狀態
-        const user = await User.findOne({ email: id });
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).send('無效的驗證連結');
         }
-        const verifiedToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' })
+        const verifiedToken = jwt.sign({ email: user.email, userID: user.userID }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
         user.verified = true;
         await user.save();

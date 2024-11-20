@@ -1,3 +1,4 @@
+import { reqGetUserOrder, reqGetUserShippingInfo } from "@/api/order/order";
 import { reqUserLogout } from "@/api/userAuth";
 import { jwtDecode } from "jwt-decode";
 import { defineStore } from "pinia";
@@ -10,17 +11,21 @@ interface LoginTokenPayload {
     userID: string
 }
 
-const storage_KEY = 'profile';
+const ProfileStorage_KEY = 'profile';
+const CheckoutFormStorage_KEY = 'checkoutForm';
+
 
 export const useUserStore = defineStore('user', () => {
 
     const router = useRouter();
     const isAuth = ref(false);
+    const userToken = ref<string | null>(null);
     const user = reactive({
         username: null as null | string,
         email: null as null | string,
         userID: null as null | string,
     })
+    const userCheckoutForm = reactive({})
 
     function setUsername(username: string) {
         user.username = username
@@ -39,6 +44,7 @@ export const useUserStore = defineStore('user', () => {
         if (token) {
             storeUserProfile(token)
             loadUserProfile();
+            userToken.value = token;
         }
     }
 
@@ -58,11 +64,11 @@ export const useUserStore = defineStore('user', () => {
 
     function storeUserProfile(token: string) {
         const val = JSON.stringify(token)
-        localStorage.setItem(storage_KEY, val)
+        localStorage.setItem(ProfileStorage_KEY, val)
     }
 
     function loadUserProfile() {
-        const data = JSON.parse(localStorage.getItem(storage_KEY) ?? '');
+        const data = JSON.parse(localStorage.getItem(ProfileStorage_KEY) ?? '');
         if (!data || data === '') return
 
         const decoded = jwtDecode<LoginTokenPayload>(data);
@@ -72,11 +78,34 @@ export const useUserStore = defineStore('user', () => {
     }
 
     function clearStorageProfile() {
-        localStorage.removeItem(storage_KEY)
+        localStorage.removeItem(ProfileStorage_KEY)
     }
 
-    function verifyToken() {
+    function getStorageToken() {
+        const token = JSON.parse(localStorage.getItem(ProfileStorage_KEY) ?? '');
+        return token
+    }
 
+    // get saved shipping info
+    async function getSavedShippingInfo() {
+        const token = userToken.value ?? getStorageToken();
+        try {
+            const { shippingInfo } = await reqGetUserShippingInfo(token);
+            console.log(shippingInfo);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    // get user order
+    async function getUserOrderList() {
+        const token = userToken.value ?? getStorageToken();
+        try {
+            const { order } = await reqGetUserOrder(token);
+            console.log(order);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     return {
@@ -86,5 +115,7 @@ export const useUserStore = defineStore('user', () => {
         logout,
         setUsername,
         setEmail,
+        getSavedShippingInfo,
+        getUserOrderList
     }
 })

@@ -3,13 +3,14 @@
         <div class="wrapper">
             <div class="left">
                 <VForm as=""
-                    v-slot="{ handleSubmit, submitCount, values }"
+                    v-slot="{ handleSubmit, submitCount, values, meta }"
                     :validation-schema="verifiedSchema"
                     :initial-values="{
                         email: showEmail,
                         consigneeName: showUsername
                     }">
                     <form action=""
+                        @change="handleFormChange(meta)"
                         @submit="handleSubmit($event, createOrder)">
                         <fieldset>
                             <div class="topContent">
@@ -203,52 +204,53 @@
                                                 optionOpen: isOptionsOpen
                                             }">
                                         </SvgIcon>
-                                        <div class="optionsWrapper"
-                                            v-show="isOptionsOpen">
-                                            <div
-                                                class="title">
-                                                <span
-                                                    @click="switchTab('city')">縣市</span>
-                                                <span
-                                                    :class="{
-                                                        'not-allowed': !selectedCity.city
-                                                    }"
-                                                    @click="switchTab('town')">鄉鎮</span>
-                                            </div>
-
-                                            <div
-                                                class="tabs">
-                                                <ul
-                                                    v-show="currTab == 'city'">
-                                                    <li v-for="({ NAME, CODE }) in showCityList"
-                                                        :key="CODE"
-                                                        @click="pickCity({ city: NAME, code: CODE })">
-                                                        {{
-                                                            NAME
-                                                        }}
-                                                    </li>
-                                                </ul>
-
-                                                <ul
-                                                    v-show="currTab == 'town'">
-                                                    <div class="spinner"
-                                                        v-show="showSpinner">
-                                                    </div>
-
-
-                                                    <li v-for="(town, index) in townList"
-                                                        :key="index"
-                                                        :style="{
-
+                                        <transition
+                                            name="optionsWrapper">
+                                            <div class="optionsWrapper"
+                                                v-show="isOptionsOpen">
+                                                <div
+                                                    class="title">
+                                                    <span
+                                                        @click="switchTab('city')">縣市</span>
+                                                    <span
+                                                        :class="{
+                                                            'not-allowed': !selectedCity.city
                                                         }"
-                                                        @click="pickTown(town)">
-                                                        {{
-                                                            town
-                                                        }}
-                                                    </li>
-                                                </ul>
+                                                        @click="switchTab('town')">鄉鎮</span>
+                                                </div>
+
+                                                <div ref="tabsRef"
+                                                    class="tabs">
+                                                    <ul
+                                                        v-show="currTab == 'city'">
+                                                        <li v-for="({ NAME, CODE }) in showCityList"
+                                                            :key="CODE"
+                                                            @click="pickCity({ city: NAME, code: CODE })">
+                                                            {{
+                                                                NAME
+                                                            }}
+                                                        </li>
+                                                    </ul>
+
+                                                    <ul
+                                                        v-show="currTab == 'town'">
+                                                        <div class="spinner"
+                                                            v-show="showSpinner">
+                                                        </div>
+                                                        <li v-for="(town, index) in townList"
+                                                            :key="index"
+                                                            :style="{
+
+                                                            }"
+                                                            @click="pickTown(town)">
+                                                            {{
+                                                                town
+                                                            }}
+                                                        </li>
+                                                    </ul>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </transition>
                                     </div>
                                 </div>
 
@@ -583,10 +585,9 @@
 
 <script setup lang="ts">
 /**
- * todo:  金流api, member DB(order DB)
- * doing: 縣市選完後沒有關閉, 送出後轉至付款頁面
- * ! 選擇城市後選擇鄉鎮沒有移至頂端，折價券spinner位置不對，重新整理信箱、姓名遺失
- * ? 儲存寄送資訊
+ * todo:  金流api, 購買清單組件
+ * doing: 儲存結帳資訊的初始化, 送出後轉至付款頁面
+ * ! 重新整理信箱、姓名遺失
  * ------------------------------------------
  * //delivery payment bind value
  * //profile
@@ -600,25 +601,32 @@
  * //縣市選擇spin 郵遞區號spin
  * //折扣碼
  * //label id for input
+ * //折價券spinner位置不對 -> 類名衝突導致
+ * //縣市選完後沒有關閉,選擇城市後選擇鄉鎮沒有移至頂端
  */
 
 import CheckCartList from './CheckCartList/CheckCartList.vue';
 import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, useTemplateRef } from 'vue';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
+    type FormMeta,
 } from 'vee-validate';
 import * as yup from 'yup';
 import { city } from '@/hooks/useGetCityList';
 import { getPostalCode } from '@/api/postal';
 import { useUserStore } from '@/store/userStore';
-import { reqCreateOrder, reqVerifyItemPrice } from '@/api/order/order';
+import { reqCreateOrder, reqGetUserShippingInfo, reqVerifyItemPrice } from '@/api/order/order';
+import { onBeforeRouteLeave, useRouter } from 'vue-router';
 
 // 購物車
 const cartStore = useCartStore();
 const { isCheckout } = storeToRefs(cartStore);
 const { toggleIsCheckout, getCartState, getPurchaseOrder } = cartStore;
+
+// 路由
+const router = useRouter();
 
 // 表單驗證
 const errMsg = {
@@ -754,6 +762,8 @@ function pickCity(city: typeof selectedCity) {
 // 鄉鎮列表
 const townList = ref<string[]>([]);
 const showSpinner = ref(true);
+const tabsRef = useTemplateRef('tabsRef');
+
 watch(selectedCity, async (nVal) => {
     if (nVal) {
         showSpinner.value = true;
@@ -766,7 +776,8 @@ watch(selectedCity, async (nVal) => {
 // selected town
 const selectedTown = ref('');
 function pickTown(town: string) {
-    selectedTown.value = town
+    selectedTown.value = town;
+    isOptionsOpen.value = false;
 }
 
 // city input value
@@ -778,9 +789,9 @@ const inputCity = computed(() => {
 const currTab = ref('city');
 function switchTab(tab: string) {
     if (tab == 'town' && !selectedCity.city) return
+    tabsRef.value!.scrollTop = 0;
     currTab.value = tab;
 }
-
 
 
 // 宅配地址
@@ -913,20 +924,45 @@ const newOrder = (shippingInfo: Record<string, any>) => {
 async function createOrder(form: Record<string, any>) {
     try {
         const result = await reqCreateOrder(newOrder(form));
-        console.log(result);
 
     } catch (error) {
 
     }
 }
 
+// 提示失去進度
+const formHasChanged = ref(false);
+const isFormFinish = ref(false);
+function handleFormChange(meta: FormMeta<Record<string, string>>) {
+    formHasChanged.value = meta.dirty;
+}
+
+function handleRefreshAlert(e: Event) {
+    e.preventDefault();
+    if (!formHasChanged.value) return
+    if (confirm()) {
+        // router.push()
+    }
+}
+
+
+onBeforeRouteLeave(() => {
+    if (formHasChanged.value && !isFormFinish.value) {
+        const answer = confirm('離開將丟失當前進度');
+        return answer
+    }
+})
+
 
 onMounted(() => {
     if (!isCheckout.value) toggleIsCheckout();
+    window.addEventListener('beforeunload', handleRefreshAlert);
+    userStore.getSavedShippingInfo()
 })
 
 onUnmounted(() => {
-    toggleIsCheckout()
+    toggleIsCheckout();
+    window.removeEventListener('beforeunload', handleRefreshAlert);
 })
 </script>
 
@@ -1104,11 +1140,11 @@ onUnmounted(() => {
     }
 
     .optionsWrapper {
-        width: 100%;
+        width: calc(100% + 1px);
         height: 250px;
         position: absolute;
-        top: calc(100%);
-        left: 0;
+        top: calc(100% + 6px);
+        left: -1px;
         z-index: 2;
         background-color: white;
         border: 1px solid black;
@@ -1127,6 +1163,7 @@ onUnmounted(() => {
                 padding: .5rem;
                 flex: 1;
                 text-align: center;
+                user-select: none;
 
                 &:first-of-type {
                     border-right: 1px solid gray;
@@ -1172,6 +1209,7 @@ onUnmounted(() => {
                 padding-left: 1rem;
                 line-height: 36px;
                 border-bottom: 1px solid gray;
+                user-select: none;
 
                 &:hover {
                     box-shadow:
@@ -1180,6 +1218,23 @@ onUnmounted(() => {
                 }
             }
         }
+    }
+
+    .optionsWrapper-enter-active,
+    .optionsWrapper-leave-active {
+        transition: transform .15s, opacity .15s;
+    }
+
+    .optionsWrapper-enter-from,
+    .optionsWrapper-leave-to {
+        opacity: 0;
+        transform: translateY(-2.5%);
+    }
+
+    .optionsWrapper-enter-to,
+    .optionsWrapper-leave-from {
+        opacity: 1;
+        transform: translate(0);
     }
 }
 

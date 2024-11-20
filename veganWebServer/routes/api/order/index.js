@@ -7,40 +7,14 @@ const Order = require('@models/OrderModel');
 const Stocks = require('@models/StockModel');
 const redisClient = require('@root/redisClient')
 const jwt = require('jsonwebtoken');
-const { transporter } = require('./nodemailer/mailer');
+const { orderMailer } = require('./nodemailer/mailer');
+const { saveShippingInfo } = require('./saveShippingInfo/saveInfo')
 /**
  * todo: 訂購身分驗證, 價格驗算, 訂購成功email
- * doing: 下訂email 刪 改 查
+ * doing:  刪 改 查
+ * ---------------------------------------------
+ * //下訂email
  */
-
-// 訂單email
-async function mailOptions(username, orderID, userID) {
-    try {
-        const user = await User.findOne({ _id: userID });
-        const userToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' })
-
-        return {
-            from: 'thomas29111@gmail.com',
-            to: 'thomas29111@gmail.com',
-            subject: `Relation-Ship 感謝您的訂購(${orderID})`,
-            html: `
-            <h1>Hi! ${username}</h1>
-            <p>
-            感謝您的訂購，<br />
-            您的訂單編號：${orderID} <br />
-            詳細訂單內容請點選連結查看：<br />
-            <a 
-            style="font-size: 1.25rem;"
-            href="http://localhost:5173/profile?token=${userToken}">訂單狀態</a><br />
-            如有任何疑問歡迎諮詢課服，謝謝！
-            </p>
-        `
-        }
-    } catch (error) {
-        console.log(error);
-        throw new Error('sending order mail failed')
-    }
-}
 
 // 查詢訂單DB
 async function findOrderbyUserID(userID) {
@@ -76,14 +50,12 @@ router.post('/createOrder', [authToken, checkSub], async (req, res) => {
 
     try {
         const savedOrder = await newOrder.save();
-        console.log('new order', savedOrder._id);
 
-        const orderIdShort = savedOrder._id.toString().slice(-6);
-        const orderIdCustom = `ORD-${new Date().toISOString().slice(0, 10)}-${orderIdShort}`;
-        const info = await transporter.sendMail(
-            await mailOptions(shippingInfo.consigneeName, orderIdCustom, userID)
-        );
-        console.log('郵件已發送: ', info.response);
+        await orderMailer(shippingInfo.consigneeName, userID, savedOrder._id);
+
+        if (shippingInfo.saveInfo) {
+            await saveShippingInfo(userID, shippingInfo);
+        }
 
         res.status(200).json({ message: '訂單已建立', state: 'confirm' });
     } catch (error) {
@@ -92,17 +64,62 @@ router.post('/createOrder', [authToken, checkSub], async (req, res) => {
     }
 });
 
-// 寄送訂單資訊 mail
-// router.post('/send-orderCreated-email', async (req, res) => {
+function authUser(req, res, next) {
+    const token = req.cookies.token ?? req.headers.authorization;
 
-// })
+    if (token) {
+        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+            if (err) {
+                return res.status(403).json({ message: 'Invalid token', state: 'denied' });
+            }
+            req.user = user;
+            next();
+        });
+    } else {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+}
 
-// 查詢訂單
-router.get('/userOrderList', async (req, res) => {
+// shipping info
+router.get('/getShippingInfo', authUser, async (req, res) => {
+    const decoded = req.user;
     try {
+        const user = await User.findById(decoded.userID);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!user.shippingInfo) return res.status(200).json({
+            state: 'denied',
+            message: 'info not found'
+        });
+
+        res.status(200).json({
+            state: 'confirm',
+            shippingInfo: user.shippingInfo
+        });
 
     } catch (error) {
+        console.error('Error fetching user shipping info:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+})
 
+
+// 查詢訂單
+router.get('/userOrderList', authUser, async (req, res) => {
+    const decoded = req.user;
+    try {
+        const order = await Order.find({ 'purchaseOrder.userID': decoded.userID });
+
+        if (!order || order.length === 0) {
+            return res.status(404).json({ message: 'order not found' });
+        }
+
+        res.status(200).json({ order, state: 'confirm' });
+    } catch (error) {
+        console.error('Error fetching order:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 })
 

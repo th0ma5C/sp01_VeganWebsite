@@ -7,10 +7,28 @@ const reqVerifyItemPrice = (params: any) => {
     return request.post<any, OrderResData>('/api/order/verifyPurchaseOrder', { ...params })
 }
 
+// user shipping info
+const reqGetUserShippingInfo = (token: string) => {
+    return request.get<any, OrderResData>('/api/order/getShippingInfo', {
+        headers: {
+            Authorization: token
+        }
+    })
+}
+
 // 建立訂單
 const reqCreateOrder = (params: any) => {
     return request.post('/api/order/createOrder', {
         ...params
+    })
+}
+
+// 查詢訂單
+const reqGetUserOrder = (token: string) => {
+    return request.get<any, OrderResData>('/api/order/userOrderList', {
+        headers: {
+            Authorization: token
+        }
     })
 }
 
@@ -20,12 +38,11 @@ const reqCreateOrder = (params: any) => {
 // 修改訂單
 
 
-// 查詢訂單
-
-
 
 
 export {
     reqVerifyItemPrice,
-    reqCreateOrder
+    reqGetUserShippingInfo,
+    reqCreateOrder,
+    reqGetUserOrder
 }
