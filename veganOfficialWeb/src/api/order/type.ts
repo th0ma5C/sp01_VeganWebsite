@@ -35,5 +35,7 @@ interface OrderResData {
 }
 
 export type {
+    Order,
+    ShippingInfo,
     OrderResData
 }

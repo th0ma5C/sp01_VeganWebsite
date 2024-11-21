@@ -8,6 +8,7 @@ const news = require('./news');
 const { getQuestionnaire } = require('./questionnaire');
 const coupon = require('./coupon');
 const auth = require('./userAuth');
+const checkout = require('./checkout/checkout');
 
 const googleOAth = require('./userAuth/GCPEmailService');
 router.use('/OAth', googleOAth);
@@ -39,5 +40,8 @@ router.use('/auth', auth);
 
 // 訂單
 router.use('/order', order);
+
+// 結帳
+router.use('/checkout', checkout);
 
 module.exports = router;

@@ -2,7 +2,7 @@ import { reqGetUserOrder, reqGetUserShippingInfo } from "@/api/order/order";
 import { reqUserLogout } from "@/api/userAuth";
 import { jwtDecode } from "jwt-decode";
 import { defineStore } from "pinia";
-import { reactive, ref } from "vue";
+import { reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 interface LoginTokenPayload {
@@ -25,17 +25,17 @@ export const useUserStore = defineStore('user', () => {
         email: null as null | string,
         userID: null as null | string,
     })
-    const userCheckoutForm = reactive({})
+    const userSavedCheckoutForm = reactive({});
 
-    function setUsername(username: string) {
+    function setUsername(username: string | null) {
         user.username = username
     }
 
-    function setEmail(email: string) {
+    function setEmail(email: string | null) {
         user.email = email
     }
 
-    function setUserID(id: string) {
+    function setUserID(id: string | null) {
         user.userID = id
     }
 
@@ -53,6 +53,9 @@ export const useUserStore = defineStore('user', () => {
         try {
             const result = await reqUserLogout();
             if (result.state == 'logout') {
+                setUsername(null);
+                setEmail(null);
+                setUserID(null);
                 clearStorageProfile();
                 await router.replace('/home');
                 await router.push('/profile')
@@ -91,7 +94,7 @@ export const useUserStore = defineStore('user', () => {
         const token = userToken.value ?? getStorageToken();
         try {
             const { shippingInfo } = await reqGetUserShippingInfo(token);
-            console.log(shippingInfo);
+            return shippingInfo
         } catch (error) {
             console.log(error);
         }
@@ -102,15 +105,29 @@ export const useUserStore = defineStore('user', () => {
         const token = userToken.value ?? getStorageToken();
         try {
             const { order } = await reqGetUserOrder(token);
-            console.log(order);
         } catch (error) {
             console.log(error);
         }
     }
 
+    watch(userToken, async (nVal) => {
+        if (nVal) {
+            try {
+                const info = await getSavedShippingInfo();
+                if (info && info['_id']) {
+                    const { _id, ...filteredInfo } = info;
+                    Object.assign(userSavedCheckoutForm, filteredInfo);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    })
+
     return {
         isAuth,
         user,
+        userSavedCheckoutForm,
         login,
         logout,
         setUsername,
