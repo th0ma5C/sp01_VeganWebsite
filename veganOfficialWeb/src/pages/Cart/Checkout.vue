@@ -590,7 +590,6 @@
 </template>
 
 <script setup lang="ts">
-console.log(import.meta.env);
 /**
  * todo:  DB儲存user購物車, 金流api, 購買清單組件
  * doing: 送出後轉至付款頁面
