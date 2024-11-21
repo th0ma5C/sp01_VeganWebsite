@@ -1,14 +1,20 @@
 <template>
     <div class="container" @click="clickOuter">
         <div class="wrapper">
-            <div class="left">
-                <VForm as=""
-                    v-slot="{ handleSubmit, submitCount, values, meta }"
+            <div class="left" :class="{
+                loadingFilter: isFormInit
+            }">
+                <VForm ref="checkoutForm" as=""
+                    v-slot="{ handleSubmit, submitCount, values, meta, setValues }"
                     :validation-schema="verifiedSchema"
-                    :initial-values="{
-                        email: showEmail,
-                        consigneeName: showUsername
-                    }">
+                    :initial-values="userSavedCheckoutForm">
+                    <transition name="initSpinner">
+                        <div class="spinnerWrapper"
+                            @click.prevent
+                            v-show="!isFormInit">
+                            <Spinner></Spinner>
+                        </div>
+                    </transition>
                     <form action=""
                         @change="handleFormChange(meta)"
                         @submit="handleSubmit($event, createOrder)">
@@ -584,10 +590,10 @@
 </template>
 
 <script setup lang="ts">
+console.log(import.meta.env);
 /**
- * todo:  金流api, 購買清單組件
- * doing: 儲存結帳資訊的初始化, 送出後轉至付款頁面
- * ! 重新整理信箱、姓名遺失
+ * todo:  DB儲存user購物車, 金流api, 購買清單組件
+ * doing: 送出後轉至付款頁面
  * ------------------------------------------
  * //delivery payment bind value
  * //profile
@@ -603,12 +609,14 @@
  * //label id for input
  * //折價券spinner位置不對 -> 類名衝突導致
  * //縣市選完後沒有關閉,選擇城市後選擇鄉鎮沒有移至頂端
+ * //儲存結帳資訊的初始化
+ * //重新整理信箱、姓名遺失->若登入過會顯示，若在結帳業重新整理會消失
  */
 
 import CheckCartList from './CheckCartList/CheckCartList.vue';
 import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, useTemplateRef } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, useTemplateRef, onBeforeMount } from 'vue';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
     type FormMeta,
@@ -619,6 +627,7 @@ import { getPostalCode } from '@/api/postal';
 import { useUserStore } from '@/store/userStore';
 import { reqCreateOrder, reqGetUserShippingInfo, reqVerifyItemPrice } from '@/api/order/order';
 import { onBeforeRouteLeave, useRouter } from 'vue-router';
+import { reqGetUser } from '@/api/userAuth';
 
 // 購物車
 const cartStore = useCartStore();
@@ -764,15 +773,17 @@ const townList = ref<string[]>([]);
 const showSpinner = ref(true);
 const tabsRef = useTemplateRef('tabsRef');
 
-watch(selectedCity, async (nVal) => {
+watch(() => selectedCity.city, async (nVal) => {
     if (nVal) {
         showSpinner.value = true;
         townList.value = [];
-        townList.value = await city.getShowTownList(nVal.city);
+        townList.value = await city.getShowTownList(nVal);
+        if (townList.value.includes(selectedTown.value)) return
         selectedTown.value = '';
         showSpinner.value = false;
     }
 })
+
 // selected town
 const selectedTown = ref('');
 function pickTown(town: string) {
@@ -781,8 +792,14 @@ function pickTown(town: string) {
 }
 
 // city input value
-const inputCity = computed(() => {
-    return selectedCity.city + ', ' + selectedTown.value
+const inputCity = computed({
+    get() {
+        return selectedCity.city + ', ' + selectedTown.value
+    },
+    set(newValue) {
+        [selectedCity.city, selectedTown.value] = newValue.split(', ');
+    }
+    // return selectedCity.city + ', ' + selectedTown.value
 })
 
 // 切換城市選取
@@ -898,7 +915,32 @@ watch([() => selectedCity.city, selectedTown, addrInput], async (nVal) => {
 
 // user store
 const userStore = useUserStore();
-const { isAuth, user } = storeToRefs(userStore);
+const { getSavedShippingInfo } = userStore;
+const { isAuth, user, userSavedCheckoutForm } = storeToRefs(userStore);
+
+const checkoutForm = ref();
+const isFormInit = ref(false);
+userStore.$subscribe(async (_, state) => {
+    if (!state.isAuth) {
+        try {
+            const { state, token } = await reqGetUser();
+            if (state && state == 'confirm' && token) {
+                userStore.login(token);
+            }
+        } catch (error) {
+            userStore.isAuth = false;
+            return
+        }
+    } else if (state.isAuth && Object.keys(state.userSavedCheckoutForm).length != 0) {
+        nextTick(() => {
+            checkoutForm.value.setValues(state.userSavedCheckoutForm);
+            setTimeout(() => {
+                isFormInit.value = true
+            }, 1000)
+        })
+    }
+}, { immediate: true })
+
 
 const showEmail = computed(() => {
     return user.value.email ?? ''
@@ -907,8 +949,6 @@ const showEmail = computed(() => {
 const showUsername = computed(() => {
     return user.value.username ?? ''
 })
-
-
 
 // collect order info
 const newOrder = (shippingInfo: Record<string, any>) => {
@@ -957,7 +997,6 @@ onBeforeRouteLeave(() => {
 onMounted(() => {
     if (!isCheckout.value) toggleIsCheckout();
     window.addEventListener('beforeunload', handleRefreshAlert);
-    userStore.getSavedShippingInfo()
 })
 
 onUnmounted(() => {
@@ -984,6 +1023,33 @@ onUnmounted(() => {
 
     .left {
         border-right: 1px solid gray;
+        position: relative;
+
+        &>*:not(.spinnerWrapper) {
+            filter: blur(2px);
+            transition: filter .3s;
+        }
+    }
+
+    .loadingFilter>*:not(.spinnerWrapper) {
+        filter: blur(0);
+    }
+
+    .spinnerWrapper {
+        @include WnH(32%);
+
+        cursor: not-allowed;
+        border-radius: 1rem;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        // background-color: rgba(0, 0, 0, 0.2);
+        transform: translateX(-50%);
+        z-index: 2;
+
+        &>div {
+            @include WnH(30px);
+        }
     }
 }
 
@@ -1183,6 +1249,7 @@ onUnmounted(() => {
 
         .tabs {
             overflow-y: scroll;
+            height: 100%;
 
             &::-webkit-scrollbar {
                 width: 6px;
