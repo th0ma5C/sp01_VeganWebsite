@@ -16,26 +16,34 @@ interface ShippingInfo {
     [key: string]: string | null
 }
 
+interface PurchaseOrder {
+    orderList: Order[],
+    total: number,
+    freightFee: number,
+    discountAmount: number,
+    status: string,
+    userID: string,
+    _id: string
+}
+interface UserOrder {
+    _id: string,
+    purchaseOrder: PurchaseOrder,
+    createdAt: string,
+    updatedAt: string,
+}
+
 interface OrderResData {
     message: string,
     state?: string,
     username?: string,
     token?: string,
     shippingInfo?: ShippingInfo,
-    order?: {
-        shippingInfo: ShippingInfo,
-        purchaseOrder: {
-            orderList: Order[]
-        },
-        total: number,
-        freightFee: number,
-        discountAmount: number,
-        status: string
-    }
+    order?: UserOrder[],
 }
 
 export type {
     Order,
     ShippingInfo,
+    UserOrder,
     OrderResData
 }

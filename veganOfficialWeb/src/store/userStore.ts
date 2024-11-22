@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import { defineStore } from "pinia";
 import { reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import type { UserOrder } from "@/api/order/type";
 
 interface LoginTokenPayload {
     username: string,
@@ -26,6 +27,7 @@ export const useUserStore = defineStore('user', () => {
         userID: null as null | string,
     })
     const userSavedCheckoutForm = reactive({});
+    const userOrderList = ref<UserOrder[]>([]);
 
     function setUsername(username: string | null) {
         user.username = username
@@ -105,11 +107,15 @@ export const useUserStore = defineStore('user', () => {
         const token = userToken.value ?? getStorageToken();
         try {
             const { order } = await reqGetUserOrder(token);
+            // const orderList = order?.map((item) => item.purchaseOrder);
+            if (!order) return
+            return userOrderList.value = order
         } catch (error) {
             console.log(error);
         }
     }
 
+    // 在結帳頁刷新時可以復原已登入的使用者數據
     watch(userToken, async (nVal) => {
         if (nVal) {
             try {
@@ -128,6 +134,7 @@ export const useUserStore = defineStore('user', () => {
         isAuth,
         user,
         userSavedCheckoutForm,
+        userOrderList,
         login,
         logout,
         setUsername,

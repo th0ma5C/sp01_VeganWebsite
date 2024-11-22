@@ -323,7 +323,6 @@ onBeforeMount(async () => {
 })
 
 onMounted(() => {
-    userStore.getUserOrderList()
 })
 
 </script>

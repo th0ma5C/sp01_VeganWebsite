@@ -20,7 +20,7 @@ const { saveShippingInfo } = require('./saveShippingInfo/saveInfo')
 async function findOrderbyUserID(userID) {
     try {
         const orders = await Order.find({ 'purchaseOrder.userID': userID })
-            .select('purchaseOrder')
+            .select('-shippingInfo')
             .lean();
         return orders;
     } catch (err) {
@@ -110,7 +110,7 @@ router.get('/getShippingInfo', authUser, async (req, res) => {
 router.get('/userOrderList', authUser, async (req, res) => {
     const decoded = req.user;
     try {
-        const order = await Order.find({ 'purchaseOrder.userID': decoded.userID });
+        const order = await findOrderbyUserID(decoded.userID);
 
         if (!order || order.length === 0) {
             return res.status(404).json({ message: 'order not found' });
