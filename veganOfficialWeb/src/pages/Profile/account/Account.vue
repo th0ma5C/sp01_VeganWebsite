@@ -1,40 +1,64 @@
 <template>
-    <div class="container">
-        <h1>
-            {{ user.username }} 您好
-        </h1>
+    <div class="orderContainer">
+        <div class="username">
+            <h1>
+                {{ user.username }} 您好
+            </h1>
 
-        <div>
+            <button @click="logout">登出</button>
+        </div>
+
+
+        <div class="userOrder">
             <h2>
                 訂單紀錄
             </h2>
 
-            <ul>
-                <!-- <li v-for="({ orderID, purchaseOrder }, index) in showOrderList"
+            <ul class="listContainer">
+                <li v-for="({ orderID, shippingInfo, purchaseOrder, createdAt }, index) in showOrderList"
                     :key="orderID">
-                    {{ }}
-                </li> -->
-                <li v-for="(item, index) in 5" :key="index">
-                    <div>
+                    <div class="orderTitle">
                         <h3>
-                            訂單編號
+                            {{ orderID }}
                         </h3>
 
-                        <span>時間</span>
+                        <span>{{ createdAt }}</span>
                     </div>
 
-                    <div>
-                        <span>
-                            訂單內容
-                        </span>
+                    <div class="orderContent"
+                        v-show="false">
+                        <div class="progressBar">
+                            訂單進度條
+                        </div>
+
+                        <div class="content">
+                            <div>
+                                {{ shippingInfo }}
+                            </div>
+
+                            <div>
+                                <ul>
+                                    <li v-for="(item, index) in purchaseOrder.orderList"
+                                        :key="index">
+                                        {{ item }}
+                                    </li>
+                                </ul>
+
+                                <div>
+                                    {{
+                                        purchaseOrder.total
+                                    }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="editBtn">
+                            修改按鈕
+                        </div>
                     </div>
                 </li>
             </ul>
         </div>
-
-        <button @click="logout">登出</button>
-        <!-- <router-link to="/profile"
-            @click="userStore.logout">登出</router-link> -->
     </div>
 </template>
 
@@ -97,10 +121,10 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 * {
-    outline: 1px solid black;
+    // outline: 1px solid black;
 }
 
-.container {
+.orderContainer {
     @extend %headerPseudo;
     @extend %fixContainer;
 
@@ -108,6 +132,64 @@ onMounted(async () => {
     @apply justify-normal;
     @apply min-h-[80vh];
 
+    padding-top: 4rem;
 
+    &>div {
+        width: 100%;
+        max-width: 1440px;
+        padding: 0 6rem;
+    }
+}
+
+.username {
+    display: flex;
+    align-items: baseline;
+    gap: 2rem;
+    margin-bottom: 3rem;
+
+    h1 {
+        font-size: 2rem;
+        font-variation-settings: 'wght' 500;
+    }
+
+    button {
+        font-size: small;
+        text-align: end;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        opacity: .5;
+        transition: color .2s, opacity .2s;
+
+        &:hover {
+            color: $btnBacColor_light;
+            opacity: 1;
+        }
+    }
+}
+
+.userOrder {
+
+    &>* {
+        padding-left: 1.5rem;
+    }
+}
+
+.listContainer>li {
+    display: flex;
+    flex-direction: column;
+
+
+    .orderTitle {}
+
+    .orderContent {
+
+        .content {
+            display: flex;
+
+            &>div {
+                flex: 1;
+            }
+        }
+    }
 }
 </style>

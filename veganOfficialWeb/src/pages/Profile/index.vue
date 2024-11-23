@@ -180,7 +180,7 @@
 
 <script setup lang="ts">
 /**
- * todo:  社群登入, 臨時帳號, 登出清理資料, 忘記密碼, 購物車引入user數據
+ * todo:  社群登入, 臨時帳號, 登出清理資料, 忘記密碼, user DB 連結購物車
  * doing: 登入後頁面(訂單), 登入後資料庫添加session, store建置, 記住登入資訊
  * * store含本地儲存JWT, 記住資訊會挾帶token至後端驗證, 添加JWT時限
  * !登出時結構崩潰，因為vif

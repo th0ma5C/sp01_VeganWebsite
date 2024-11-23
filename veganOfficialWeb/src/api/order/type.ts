@@ -27,6 +27,7 @@ interface PurchaseOrder {
 }
 interface UserOrder {
     _id: string,
+    shippingInfo: ShippingInfo,
     purchaseOrder: PurchaseOrder,
     createdAt: string,
     updatedAt: string,

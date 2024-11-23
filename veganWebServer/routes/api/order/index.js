@@ -20,7 +20,6 @@ const { saveShippingInfo } = require('./saveShippingInfo/saveInfo')
 async function findOrderbyUserID(userID) {
     try {
         const orders = await Order.find({ 'purchaseOrder.userID': userID })
-            .select('-shippingInfo')
             .lean();
         return orders;
     } catch (err) {
