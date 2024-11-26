@@ -11,20 +11,37 @@
         <div class="listContainer">
             <nav>
                 <ul>
-                    <li v-for="(tab, tabName) in tabs"
+                    <li v-for="(tab, tabName, index) in tabs"
                         :key="tabName">
-                        <h2 @click="switchTab(tabName)">
-                            {{ tabName }}
+                        <h2 @click="switchTab(tabName)"
+                            :class="{ unselected: tabName !== currTab }">
+                            <SvgIcon
+                                :name="index == 0 ? 'OrderList' : 'Setting'"
+                                width="27" height="27"
+                                color=black class="tabIcon">
+                            </SvgIcon>
+                            <span>
+                                {{ tabName }}
+                            </span>
                         </h2>
 
                         <div v-for="(section, index) in tab"
-                            :key="index" class="branch"
-                            :class="{
-                                selectedTab: tabName == currTab
+                            :key="index"
+                            @click="switchBranch(section)"
+                            class="branch" :class="{
+                                selectedTab: tabName == currTab,
+                                unselected: section !== currBranch
                             }">
-                            <h3>
+                            <h3 class="subTab">
                                 {{ section }}
                             </h3>
+                        </div>
+
+                        <div v-if="index == 0"
+                            class="selectedPseudoTrack">
+                            <div class="slider"
+                                :style="sliderTranslate">
+                            </div>
                         </div>
                     </li>
                 </ul>
@@ -107,7 +124,7 @@
  */
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, watch, ref } from 'vue';
+import { computed, onMounted, watch, ref, type Ref } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import Delivering from './tab1/Delivering.vue';
 
@@ -152,10 +169,34 @@ const tabs = {
 }
 
 // 切換tab
-const currTab = ref('購買清單')
-function switchTab(tab: string) {
-    currTab.value = tab;
+function switcher(target: Ref) {
+    return (val: string) => {
+        target.value = val
+    }
 }
+
+const currTab = ref('購買清單')
+const switchTab = switcher(currTab);
+
+// 切換branch
+const currBranch = ref('全部');
+const switchBranch = switcher(currBranch);
+const sliderTranslate = computed(() => {
+    switch (currBranch.value) {
+        case '待付款':
+            return {
+                transform: 'translateY(41px)'
+            }
+        case '已完成':
+            return {
+                transform: 'translateY(82px)'
+            }
+        default:
+            return {
+                transform: 'translateY(0px)'
+            }
+    }
+})
 
 // router hook
 onBeforeRouteLeave((to, from) => {
@@ -232,68 +273,93 @@ onMounted(async () => {
     }
 
     nav {
-        width: 175px;
+        width: 125px;
 
         li {
             overflow: hidden;
-            border: 1px solid black;
-            border-right: none;
-            text-align: center;
+            position: relative;
 
             h2 {
                 font-size: 1.25rem;
                 cursor: pointer;
-                height: 50px;
-                line-height: 50px;
+                height: 40px;
+                line-height: 40px;
                 user-select: none;
                 position: relative;
 
-                &::after {
-                    content: '';
-                    position: absolute;
-                    left: 0;
-                    bottom: -1px;
-                    width: 100%;
-                    height: 1px;
-                    background-color: black;
+                display: flex;
+                align-items: center;
+                flex-direction: row;
+                gap: .25rem;
+
+                transition: opacity .15s;
+
+                .tabIcon {
+                    transform: translateY(-2px);
                 }
+
+                // &::after {
+                //     content: '';
+                //     position: absolute;
+                //     left: 0;
+                //     bottom: -1px;
+                //     width: 100%;
+                //     height: 1px;
+                // }
             }
 
-            &:first-of-type {
-                border-radius: 1rem 0 0 0;
-            }
+            .selectedPseudoTrack {
+                background-color: rgba(0, 0, 0, 0.15);
+                width: 2px;
+                height: calc(100% - 58px);
+                position: absolute;
+                top: calc(40px + .5rem);
+                left: .75rem;
 
-            &:last-of-type {
-                border-top: none;
-                border-radius: 0 0 0 1rem;
+                .slider {
+                    background-color: $btnBacColor;
+                    width: 2px;
+                    height: 22%;
+                    transform: translateY(0px);
+                    transition: transform .3s ease-in-out;
+                }
             }
         }
 
         .branch {
             max-height: 0;
-            transition: max-height .5s ease-in-out;
+            transition: max-height .5s ease-in-out, opacity .5s;
 
             h3 {
+                font-size: 1rem;
                 padding: .5rem 0;
+                padding-left: 2.5rem;
                 cursor: pointer;
                 user-select: none;
                 opacity: 0;
                 transition: opacity .5s;
             }
 
-            &:first-of-type>h3 {
-                padding-top: 1rem;
-            }
+            // &:nth-of-type(1)>.subTab {
+            //     padding-top: 1rem;
+            //     position: relative;
+            // }
 
-            &:last-of-type>h3 {
-                padding-bottom: 1rem;
-            }
+            // &:nth-of-type(2)>.subTab {
+            //     position: relative;
+            // }
+
+            // &:nth-of-type(3)>.subTab {
+            //     padding-bottom: 1rem;
+            //     position: relative;
+            // }
         }
 
         .selectedTab {
-            max-height: 4rem;
+            max-height: 3rem;
 
             h3 {
+                padding-left: 2.5rem;
                 opacity: 1;
             }
         }
@@ -301,7 +367,7 @@ onMounted(async () => {
 
     .tabContainer {
         flex: 1;
-        border: 1px solid black;
+        // border: 1px solid black;
         padding-left: 2rem;
         border-radius: 0 1rem 1rem 1rem;
 
@@ -309,30 +375,9 @@ onMounted(async () => {
             height: 100%;
         }
     }
+
+    .unselected {
+        opacity: .5;
+    }
 }
-
-// .userOrder {
-
-//     &>* {
-//         padding-left: 1.5rem;
-//     }
-// }
-
-// .listContainer>li {
-//     display: flex;
-//     flex-direction: column;
-
-
-//     .orderTitle {}
-
-//     .orderContent {
-
-//         .content {
-//             display: flex;
-
-//             &>div {
-//                 flex: 1;
-//             }
-//         }
-//     }
-// }</style>
+</style>

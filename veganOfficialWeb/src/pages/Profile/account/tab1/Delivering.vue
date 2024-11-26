@@ -3,33 +3,109 @@
         訂單紀錄
     </h2>
 
-    <div>
-        表頭
-    </div>
-
     <main>
-        <ul class="listContainer">
-            <li v-for="({ orderID, shippingInfo, purchaseOrder, createdAt }, index) in showOrderList"
-                :key="orderID">
-                <div class="orderTitle">
-                    <h3>
-                        {{ orderID }}
-                    </h3>
-
-                    <span>{{ createdAt }}</span>
-                </div>
-
-                <div class="orderContent" v-show="false">
-                    <div class="progressBar">
-                        訂單進度條
+        <ul class="orderContainer">
+            <li>
+                <div class="orderTitle orderHeader">
+                    <div>
+                        <h3>
+                            訂單編號
+                        </h3>
                     </div>
 
+                    <div class="progressBar">
+                        訂單進度
+                    </div>
+
+                    <div>
+                        <span>日期</span>
+                    </div>
+
+                    <div>
+                        <span>
+                            金額
+                        </span>
+                    </div>
+
+                    <div>
+                    </div>
+                </div>
+            </li>
+
+            <li v-for="({ orderID, shippingInfo, purchaseOrder, createdAt }, index) in showOrderList"
+                :key="orderID">
+                <div class="orderTitle listItem">
+                    <div>
+                        <h3>
+                            {{ orderID }}
+                        </h3>
+                    </div>
+
+                    <div class="progressBar">
+                        <div class="trail"></div>
+                        <div v-for="(text, index) in milestone"
+                            :key="index" class="milestone"
+                            :class="{
+                                step1: index == 0,
+                                step2: index == 1,
+                                step3: index == 2,
+                                step4: index == 3,
+                            }">
+                            <span>{{ text }}</span>
+                        </div>
+                        <div class="progress"></div>
+                    </div>
+
+                    <div>
+                        <span>{{ createdAt }}</span>
+                    </div>
+
+                    <div>
+                        <span>
+                            ${{
+                                purchaseOrder.total.toLocaleString()
+                            }}
+                        </span>
+                    </div>
+
+                    <div>
+                        <button
+                            @click="toggleListOpen(index)">
+                            <SvgIcon name="ListArrowDown"
+                                height="24px" width="24px"
+                                color="black"
+                                class="listIcon">
+                            </SvgIcon>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="orderContent" v-show="true"
+                    :class="listState[index].isOpen ? 'listOpen' : 'listClosed'">
                     <div class="content">
-                        <div>
-                            {{ shippingInfo }}
+                        <div class="info">
+                            <h4>
+                                配送資訊
+                            </h4>
+                            <div>
+                                {{
+                                    shippingInfo.consigneeName
+                                }}
+                            </div>
+                            <div>
+                                {{ shippingInfo.contactNo }}
+                            </div>
+                            <div>
+                                {{ shippingInfo.city +
+                                    shippingInfo.address }}
+                            </div>
+                            <div>
+                                {{ shippingInfo.deliveryType
+                                }}
+                            </div>
                         </div>
 
-                        <div>
+                        <div class="itemList">
                             <ul>
                                 <li v-for="(item, index) in purchaseOrder.orderList"
                                     :key="index">
@@ -57,7 +133,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/store/userStore';
-import { computed, watch } from 'vue';
+import { computed, watch, watchEffect, ref } from 'vue';
 import type { UserOrder } from '@/api/order/type';
 
 
@@ -77,11 +153,220 @@ const showOrderList = computed(() => {
     return formatted
 });
 
+// milestone
+const milestone = ['建立', '付款成功', '配送中', '配送完成'];
+
+// list state
+interface ListState {
+    orderID: string,
+    isOpen: boolean
+}
+const listState = ref<ListState[]>([]);
+watchEffect(() => {
+    if (showOrderList.value.length != 0) {
+        showOrderList.value.forEach((item) => {
+            listState.value.push({
+                orderID: item.orderID,
+                isOpen: false
+            })
+        })
+    }
+})
+
+function toggleListOpen(target: number) {
+    listState.value[target].isOpen = !listState.value[target].isOpen
+}
+
 </script>
 
 <style scoped lang="scss">
+* {
+    // outline: 1px solid black;
+}
+
 h2 {
+    font-size: 2rem;
     height: 50px;
     line-height: 50px;
+    font-variation-settings: 'wght' 450;
+    margin-bottom: 1rem;
+}
+
+.orderContainer {
+    text-align: center;
+
+
+    &>li {
+        // border: 1px solid black;
+        border-radius: 1rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 1px 1px 2px 2px rgba(0, 0, 0, 0.5);
+        transition: max-height .75s;
+
+        &:has(.orderHeader) {
+            box-shadow: none;
+            margin-bottom: 0;
+            padding: 0 1rem;
+        }
+    }
+
+    .orderHeader {
+        margin-bottom: .5rem;
+    }
+
+    .listItem {
+        cursor: pointer;
+
+        h3 {
+            // padding-left: 1rem;
+        }
+
+        .progressBar {
+            width: 100%;
+            height: 4px;
+            border-radius: 4px;
+
+
+            position: relative;
+
+            outline: 1px solid $btnBacColor;
+            background-color: $primaryBacColor;
+
+
+            .milestone {
+                width: 10px;
+                height: 10px;
+                border-radius: 100%;
+
+                position: absolute;
+                top: 50%;
+                transform: translate(-50%, -50%);
+
+                outline: 1px solid $btnBacColor;
+                background-color: $primaryBacColor;
+
+                span {
+                    font-size: .75rem;
+                    text-wrap: nowrap;
+
+                    position: absolute;
+                    top: -1.25rem;
+                    left: 0;
+                }
+            }
+
+            .step1 {
+                left: 25%;
+
+                span {
+                    transform: translateX(-7px);
+                }
+            }
+
+            .step2 {
+                left: 50%;
+
+                span {
+                    transform: translateX(-19px);
+                }
+            }
+
+            .step3 {
+                left: 75%;
+
+                span {
+                    transform: translateX(-13px);
+                }
+            }
+
+            .step4 {
+                left: 100%;
+
+                span {
+                    transform: translateX(-19px);
+                }
+            }
+
+            .progress {
+                width: 25%;
+                height: 4px;
+                border-radius: 4px;
+
+
+                position: absolute;
+                top: 0;
+                left: 0;
+
+                outline: 1px solid $btnBacColor;
+                background-color: $btnBacColor;
+            }
+        }
+    }
+
+    .orderTitle {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        padding: .5rem;
+
+        &>div:nth-of-type(1) {
+            flex: 1;
+        }
+
+        &>div:nth-of-type(2) {
+            margin-left: 2rem;
+            margin-right: 4rem;
+            flex: 2;
+        }
+
+        &>div:nth-of-type(3) {
+            flex: 1;
+        }
+
+        &>div:nth-of-type(4) {
+            flex: 1;
+        }
+
+        &>div:nth-of-type(5) {
+            @include flex-center-center;
+            flex: .5;
+
+            .listIcon {
+                transform: rotate(-90deg);
+            }
+        }
+    }
+
+    .orderContent {
+        text-align: start;
+        display: grid;
+        transition: all .5s;
+
+        padding: 1rem 0;
+
+        &>* {
+            overflow: hidden;
+        }
+
+        .content {
+            display: flex;
+            gap: .5rem;
+
+            &>div {
+                flex: 1;
+            }
+        }
+    }
+
+    .listClosed {
+        padding: 0;
+        grid-template-rows: 0fr 0fr;
+    }
+
+    .listOpen {
+        grid-template-rows: 1fr auto;
+    }
 }
 </style>
