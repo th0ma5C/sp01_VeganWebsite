@@ -23,7 +23,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
-  secret: 'keyboard cat',
+  secret: 'vegan',
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false }

@@ -6,7 +6,7 @@ const User = require('@models/User');
 const jwt = require('jsonwebtoken');
 const { validateRegister, validateLogin, authToken, authJWT } = require('@middlewares/userValidator');
 
-const { mailOptions, transporter } = require('./nodemailer');
+const { mailOptions, setTransporter } = require('./nodemailer');
 
 async function isUserExist(username, email) {
     try {
@@ -131,6 +131,7 @@ router.post('/send-verifyEmail', async (req, res) => {
             text: `請點擊以下連結來驗證你的信箱: ${to}`,
             html: `<p>請點擊以下連結來驗證你的信箱: <a href="http://localhost:3000/api/auth/verify?token=${token}">驗證連結</a></p>`,
         }
+        const transporter = await setTransporter();
         const info = await transporter.sendMail(options);
         console.log('郵件已發送: ', info.response);
         res.status(200).send({ message: '郵件發送成功', options });

@@ -85,6 +85,7 @@ export const useMenuStore = defineStore('menu', (() => {
     let isLoaded = ref(false);
     const hotList = ref<MenuItem[]>([]);
     const newList = ref<MenuItem[]>([]);
+    const menuImgURLMap = ref<Record<string, string>>({});
 
     async function fetchMenu() {
         try {
@@ -95,11 +96,18 @@ export const useMenuStore = defineStore('menu', (() => {
                 el.fileName = '/api' + el.fileName + '.png';
                 // 新增ID
                 el.id = nanoid(4);
+                // 緩存圖片地址
+                if (el.name) {
+                    menuImgURLMap.value[el.name] = el.fileName
+                }
             });
 
             menu[1].items.forEach((el) => {
                 el.fileName = '/api' + el.fileName + '.jpg';
                 el.id = nanoid(4);
+                if (el.name) {
+                    menuImgURLMap.value[el.name] = el.fileName
+                }
             });
 
             fullMenu.value = menu;
@@ -189,14 +197,12 @@ export const useMenuStore = defineStore('menu', (() => {
         return result
     }
 
-    // function init() {
-    //     if (isLoaded.value == false) {
-    //         fetchIngredients()
-    //         fetchMenu()
-    //     }
-    // }
-    // init();
-
+    function getImgURLbyName(target: string) {
+        console.log(target);
+        if (target in menuImgURLMap.value) {
+            return menuImgURLMap.value[target]
+        }
+    }
 
     return {
         fullMenu,
@@ -206,11 +212,13 @@ export const useMenuStore = defineStore('menu', (() => {
         newList,
         ingredientsList,
         isLoaded,
+        menuImgURLMap,
         fetchMenu,
         fetchHotList,
         fetchNewList,
         fetchIngredients,
         getInfoByName,
-        getSameStyleItem
+        getSameStyleItem,
+        getImgURLbyName
     }
 }))

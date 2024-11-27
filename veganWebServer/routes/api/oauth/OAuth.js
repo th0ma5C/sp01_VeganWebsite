@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const OAuthToken = require('@models/OAuthTokenModel');
 
 const googleOAuth2Client = require('@root/config/googleOAth2Client');
 
@@ -16,7 +17,7 @@ router.get('/login', (req, res) => {
     res.redirect(authUrl);
 });
 
-router.get('/google/callback', async (req, res) => {
+router.get('/google/cb', async (req, res) => {
     const code = req.query.code; // 授權碼
     try {
         // 使用授權碼交換 token
@@ -24,15 +25,36 @@ router.get('/google/callback', async (req, res) => {
 
         // 設定憑證並保存 token
         googleOAuth2Client.setCredentials(tokens);
-        req.session.tokens = tokens; // 保存到 session 或數據庫
+        // req.session.tokens = tokens;
+        // req.session.authenticated = true;
 
         console.log('Access Token:', tokens.access_token);
-        console.log('Refresh Token:', tokens.refresh_token); // 保存此值以便後續使用
+        console.log('Refresh Token:', tokens.refresh_token);
 
         googleOAuth2Client.setCredentials(tokens);
         res.send('Token retrieved successfully. Check the console for details.');
-        // 保存 tokens.refresh_token 用於後續應用程式使用
-        req.session.tokens = tokens;
+
+        let token = await OAuthToken.findOne();
+
+        if (token) {
+            token.accessToken = tokens.access_token;
+            token.refreshToken = tokens.refresh_token;
+            token.tokenType = tokens.token_type;
+            token.scope = tokens.scope;
+            token.expiryDate = new Date(tokens.expiry_date);
+            await token.save();
+        } else {
+            token = new OAuthToken({
+                accessToken: tokens.access_token,
+                refreshToken: tokens.refresh_token,
+                tokenType: tokens.token_type,
+                scope: tokens.scope,
+                expiryDate: new Date(tokens.expiry_date)
+            });
+            await token.save();
+        }
+        console.log('Token retrieved and saved to database successfully.');
+
     } catch (err) {
         console.error('Error authenticating with Google:', err);
         res.status(500).send('Error authenticating with Google');

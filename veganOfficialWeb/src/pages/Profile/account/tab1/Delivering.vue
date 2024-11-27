@@ -18,12 +18,12 @@
                     </div>
 
                     <div>
-                        <span>日期</span>
+                        <span>建立日期</span>
                     </div>
 
                     <div>
                         <span>
-                            金額
+                            訂單金額
                         </span>
                     </div>
 
@@ -34,7 +34,8 @@
 
             <li v-for="({ orderID, shippingInfo, purchaseOrder, createdAt }, index) in showOrderList"
                 :key="orderID">
-                <div class="orderTitle listItem">
+                <div class="orderTitle listItem"
+                    @click="toggleListOpen(index)">
                     <div>
                         <h3>
                             {{ orderID }}
@@ -69,12 +70,13 @@
                     </div>
 
                     <div>
-                        <button
-                            @click="toggleListOpen(index)">
+                        <button>
                             <SvgIcon name="ListArrowDown"
                                 height="24px" width="24px"
                                 color="black"
-                                class="listIcon">
+                                class="listIcon" :class="{
+                                    rotateIcon: listState[index].isOpen
+                                }">
                             </SvgIcon>
                         </button>
                     </div>
@@ -85,9 +87,9 @@
                     <div class="content">
                         <div class="info">
                             <h4>
-                                配送資訊
+                                收件地址
                             </h4>
-                            <div>
+                            <div class="consigneeName">
                                 {{
                                     shippingInfo.consigneeName
                                 }}
@@ -107,22 +109,53 @@
 
                         <div class="itemList">
                             <ul>
-                                <li v-for="(item, index) in purchaseOrder.orderList"
+                                <li v-for="({ name, amount, subtotal }, index) in purchaseOrder.orderList"
                                     :key="index">
-                                    {{ item }}
+                                    <div v-if="isLoaded"
+                                        class="imgWrapper">
+                                        <img :src="menuImgURLMap[name]"
+                                            :class="name.includes('沙拉') ? 'saladBG' : ''"
+                                            alt="">
+                                    </div>
+                                    <div class="itemName">
+                                        <h4>
+                                            {{ name }}
+                                        </h4>
+                                        <span>
+                                            數量：{{ amount }}
+                                        </span>
+                                    </div>
+                                    <div class="subtotal">
+                                        $
+                                        <span
+                                            class="correctionDigit"
+                                            v-text="correctionDigit(subtotal,
+                                                purchaseOrder.total)">
+                                        </span>
+                                        <span>
+                                            {{
+                                                subtotal.toLocaleString()
+                                            }}
+                                        </span>
+                                    </div>
                                 </li>
                             </ul>
 
-                            <div>
-                                {{
-                                    purchaseOrder.total
-                                }}
+                            <div class="total">
+                                <span>總額：</span>
+                                <span>
+                                    ${{
+                                        purchaseOrder.total.toLocaleString()
+                                    }}
+                                </span>
                             </div>
                         </div>
                     </div>
 
                     <div class="editBtn">
-                        修改按鈕
+                        <button>
+                            {{ '付款' }}
+                        </button>
                     </div>
                 </div>
             </li>
@@ -135,11 +168,17 @@ import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/store/userStore';
 import { computed, watch, watchEffect, ref } from 'vue';
 import type { UserOrder } from '@/api/order/type';
+import { useMenuStore } from '@/store/menuStore';
+import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
 
-
+// pinia
 const userStore = useUserStore();
 // const { getUserOrderList, logout } = userStore;
 const { userOrderList } = storeToRefs(userStore);
+
+const menuStore = useMenuStore();
+const { isLoaded, menuImgURLMap } = storeToRefs(menuStore);
+const { fetchMenu, getImgURLbyName } = menuStore;
 
 const showOrderList = computed(() => {
     if (!userOrderList.value || userOrderList.value.length == 0) return []
@@ -159,22 +198,55 @@ const milestone = ['建立', '付款成功', '配送中', '配送完成'];
 // list state
 interface ListState {
     orderID: string,
-    isOpen: boolean
+    isOpen: boolean,
+    itemImgURL?: string
 }
 const listState = ref<ListState[]>([]);
 watchEffect(() => {
     if (showOrderList.value.length != 0) {
-        showOrderList.value.forEach((item) => {
+        showOrderList.value.forEach(async (item) => {
             listState.value.push({
                 orderID: item.orderID,
                 isOpen: false
-            })
+            });
         })
     }
 })
 
 function toggleListOpen(target: number) {
     listState.value[target].isOpen = !listState.value[target].isOpen
+}
+
+// item list
+watchEffect(async () => {
+    try {
+        if (!isLoaded.value) await fetchMenu();
+    } catch (error) {
+        console.log(error);
+    }
+})
+const imgMap = computed(() => {
+    return { ...menuImgURLMap.value }
+})
+
+// 數字位置同步
+function correctionDigit(currNum: number, maxDigit: number) {
+    const diffDigit = maxDigit.toString().length - currNum.toString().length
+    return '0'.repeat(diffDigit)
+}
+
+// 按鈕 action
+const editBtnAction = (state: string) => {
+    switch (state) {
+        case 'new':
+
+            return '付款'
+        case 'processed':
+
+            return ''
+        default:
+            return '再買一次'
+    }
 }
 
 </script>
@@ -334,6 +406,11 @@ h2 {
             flex: .5;
 
             .listIcon {
+                transform: rotate(0deg);
+                transition: transform .3s;
+            }
+
+            .rotateIcon {
                 transform: rotate(-90deg);
             }
         }
@@ -342,7 +419,7 @@ h2 {
     .orderContent {
         text-align: start;
         display: grid;
-        transition: all .5s;
+        transition: grid-template-rows .5s, padding .25s linear;
 
         padding: 1rem 0;
 
@@ -353,9 +430,122 @@ h2 {
         .content {
             display: flex;
             gap: .5rem;
+            padding: 0rem 4rem;
+            margin-bottom: 1rem;
+            border-top: 1px solid gray;
+            transition: border-top .25s, margin-bottom .25s;
 
             &>div {
-                flex: 1;
+                // flex: 1;
+                padding-top: 2rem;
+            }
+        }
+
+        .editBtn {
+            padding: 0 4rem;
+            justify-self: end;
+            font-size: .75rem;
+
+            button {
+                @include WnH(80px, 30px);
+                border: 1px solid green;
+                border-radius: 1rem;
+                background-color: $btnBacColor;
+                color: $primaryBacColor;
+            }
+        }
+
+    }
+
+    .info {
+        border-right: 1px solid gray;
+        margin-right: .5rem;
+        flex: 1;
+
+        h4 {
+            @apply mb-6;
+
+            font-size: 1.25rem;
+            font-variation-settings: 'wght' 450;
+        }
+
+        &>div {
+            @apply opacity-80 text-sm;
+        }
+
+        .consigneeName {
+            @apply mb-3 text-lg opacity-100;
+        }
+    }
+
+    .itemList {
+        margin-left: .5rem;
+        flex: 2;
+
+        li {
+            display: flex;
+            margin-bottom: .5rem;
+        }
+
+        .imgWrapper {
+            position: relative;
+            border: 1px solid gray;
+            border-radius: 1rem;
+            width: 100px;
+
+            img {
+                border-radius: 1rem;
+            }
+        }
+
+        .saladBG {
+            background: no-repeat url('@assets/img/Menu/bac_wood.jpg') center/contain;
+        }
+
+        .itemName {
+            padding: 0 .5rem 0 2rem;
+            flex: 2;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: .5rem;
+
+            h4 {
+                font-size: 1.25rem;
+                font-variation-settings: 'wght' 500;
+            }
+
+            p {}
+        }
+
+        .subtotal {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+
+            span {
+                // font-size: 1.25rem;
+            }
+
+            .correctionDigit {
+                user-select: none;
+                color: transparent;
+            }
+        }
+
+        .total {
+            text-align: end;
+
+            span:first-of-type {
+                font-size: .75rem;
+            }
+
+            span:last-of-type {
+                font-size: 1.25rem;
+                font-variation-settings: 'wght' 600;
+                color: $btnBacColor;
             }
         }
     }
@@ -363,6 +553,11 @@ h2 {
     .listClosed {
         padding: 0;
         grid-template-rows: 0fr 0fr;
+
+        .content {
+            margin-bottom: 0;
+            border-top: 0px;
+        }
     }
 
     .listOpen {

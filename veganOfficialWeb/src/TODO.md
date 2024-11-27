@@ -65,6 +65,9 @@
     ## order counter
 !!! * 組件 v model 組件內ref 則一(問卷使用v model，其他地方未確認)
 
+    ## footer
+!!! * 初始化不要播放箭頭動畫
+
 # style
     ##font
     ~~*改用google font api，可以用preConnect~~

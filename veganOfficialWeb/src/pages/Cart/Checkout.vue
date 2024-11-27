@@ -575,8 +575,6 @@
                             <button>送出</button>
                         </div>
                     </form>
-                    <pre>{{ values }}</pre>
-                    <pre>{{ getPurchaseOrder() }}</pre>
                 </VForm>
             </div>
 

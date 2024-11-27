@@ -1,19 +1,18 @@
-const nodemailer = require('nodemailer');
 const User = require('@models/User');
 const jwt = require('jsonwebtoken');
+const setTransporter = require('@scripts/nodemailer')
 
-
-// 使用 OAuth2 設定傳送憑證
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        type: 'OAuth2',
-        user: 'thomas29111@gmail.com',
-        clientId: process.env.CLIENT_ID,
-        clientSecret: process.env.CLIENT_SECRET,
-        refreshToken: process.env.Refresh_Token,
-    },
-});
+// // 使用 OAuth2 設定傳送憑證
+// const transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     auth: {
+//         type: 'OAuth2',
+//         user: 'thomas29111@gmail.com',
+//         clientId: process.env.CLIENT_ID,
+//         clientSecret: process.env.CLIENT_SECRET,
+//         refreshToken: process.env.Refresh_Token,
+//     },
+// });
 
 // 訂單email
 async function mailOptions(username, orderID, userID) {
@@ -48,9 +47,11 @@ async function orderMailer(recipientName, userID, orderID) {
     try {
         const orderIdShort = orderID.toString().slice(-6);
         const orderIdCustom = `ORD-${new Date().toISOString().slice(0, 10)}-${orderIdShort}`;
-        await transporter.sendMail(
+        const transporter = await setTransporter();
+        const info = await transporter.sendMail(
             await mailOptions(recipientName, orderIdCustom, userID)
         );
+        console.log('郵件已發送: ', info.response);
     } catch (error) {
         console.log(error);
         throw new Error('order mailer crash')
@@ -58,7 +59,7 @@ async function orderMailer(recipientName, userID, orderID) {
 }
 
 module.exports = {
-    transporter,
+    setTransporter,
     orderMailer,
     mailOptions
 }

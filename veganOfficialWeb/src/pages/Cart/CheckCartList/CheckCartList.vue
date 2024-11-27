@@ -123,7 +123,7 @@
                     </span>
                     <span>${{
                         cartTotalPrice
-                    }}</span>
+                        }}</span>
                 </div>
             </div>
 
@@ -226,7 +226,7 @@
                 <span>總計</span>
                 <span>${{
                     orderAmount.toLocaleString()
-                }}</span>
+                    }}</span>
             </div>
         </div>
 
@@ -775,6 +775,7 @@ onMounted(() => {
         }
 
         .correctionDigit {
+            user-select: none;
             color: transparent;
         }
 

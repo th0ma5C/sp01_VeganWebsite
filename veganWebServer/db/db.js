@@ -1,6 +1,6 @@
 const redis = require('../redisClient');
 const updateRedis = require('../scripts/updateRedis');
-const startViteServer = require('../scripts/startViteServer.js')
+const cronTokenRefresh = require('../scripts/refreshOAuth');
 
 module.exports = (success, error) => {
     if (typeof error != 'function') {
@@ -31,6 +31,8 @@ module.exports = (success, error) => {
                 console.log('Redis activated');
 
                 await updateRedis();
+
+                await cronTokenRefresh();
 
                 success();
                 connected = true;

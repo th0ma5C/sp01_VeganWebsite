@@ -34,7 +34,8 @@
   "_moduleAliases": {
     "@root": ".",
     "@models": "./models",
-    "@middlewares": "./middlewares"
+    "@middlewares": "./middlewares",
+    "@scripts": "./scripts"
   },
   "devDependencies": {
     "cross-env": "^7.0.3"

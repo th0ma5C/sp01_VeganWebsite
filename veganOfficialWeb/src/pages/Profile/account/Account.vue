@@ -121,6 +121,7 @@
 /**
  * todo:  引入訂單, 刪、改訂單
  * doing: DB加入訂單編號屬性, 頁面結構、CSS
+ * !若先進account後又新增訂單，account不會同步更新
  */
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';

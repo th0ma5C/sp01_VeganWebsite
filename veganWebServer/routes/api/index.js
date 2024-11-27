@@ -9,9 +9,8 @@ const { getQuestionnaire } = require('./questionnaire');
 const coupon = require('./coupon');
 const auth = require('./userAuth');
 const checkout = require('./checkout/checkout');
+const oauth = require('./oauth/OAuth');
 
-const googleOAth = require('./userAuth/GCPEmailService');
-router.use('/OAth', googleOAth);
 
 const order = require('./order');
 
@@ -43,5 +42,8 @@ router.use('/order', order);
 
 // 結帳
 router.use('/checkout', checkout);
+
+// get mailer token
+router.use('/OAuth', oauth);
 
 module.exports = router;
