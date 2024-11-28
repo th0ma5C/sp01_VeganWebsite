@@ -572,7 +572,16 @@
                         </fieldset>
 
                         <div class="btnWrapper">
-                            <button>送出</button>
+                            <button>
+                                <Spinner class="btnSpinner"
+                                    v-show="orderProcessing && meta.valid">
+                                </Spinner>
+                                <span :class="{
+                                    hideText: orderProcessing
+                                }">
+                                    送出
+                                </span>
+                            </button>
                         </div>
                     </form>
                 </VForm>
@@ -912,7 +921,7 @@ watch([() => selectedCity.city, selectedTown, addrInput], async (nVal) => {
 
 // user store
 const userStore = useUserStore();
-const { getSavedShippingInfo } = userStore;
+const { getSavedShippingInfo, getUserOrderList } = userStore;
 const { isAuth, user, userSavedCheckoutForm } = storeToRefs(userStore);
 
 const checkoutForm = ref();
@@ -958,12 +967,17 @@ const newOrder = (shippingInfo: Record<string, any>) => {
 }
 
 // req create order
+const orderProcessing = ref(false);
 async function createOrder(form: Record<string, any>) {
     try {
-        const result = await reqCreateOrder(newOrder(form));
-
+        orderProcessing.value = true;
+        const { state } = await reqCreateOrder(newOrder(form));
+        if (state == 'confirm') {
+            await getUserOrderList();
+            await router.replace('/profile/account')
+        }
     } catch (error) {
-
+        console.log(error);
     }
 }
 
@@ -1513,6 +1527,18 @@ onUnmounted(() => {
         border-radius: .5rem;
         background-color: $btnBacColor;
         color: $primaryBacColor;
+        position: relative;
+    }
+
+    .btnSpinner {
+        width: 24px;
+        height: 24px;
+        border-top-color: $primaryBacColor;
+        // transform: translate(-50%, calc(-50% - 3px));
+    }
+
+    .hideText {
+        opacity: 0;
     }
 }
 

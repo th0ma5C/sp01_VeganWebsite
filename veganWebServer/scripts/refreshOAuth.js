@@ -1,46 +1,35 @@
-const OAuthToken = require('../models/OAuthTokenModel');
 const cron = require('node-cron');
-const { google } = require('googleapis');
+const googleOAuth2Client = require('../config/googleOAth2Client');
+const OAuthToken = require('../models/OAuthTokenModel');
 
 async function refreshGCPToken() {
+    console.log('checking GCP token');
     try {
         const tokenData = await OAuthToken.findOne();
         const currentTime = new Date();
         const timeToExpiry = tokenData.expiryDate - currentTime;
-        if (!tokenData || timeToExpiry <= 5 * 60 * 1000) {
+        if (!tokenData || timeToExpiry <= 60 * 60 * 1000) {
             console.log('Token has expired or does not exist, refreshing...');
-
-            const oAuth2Client = new google.auth.OAuth2(
-                process.env.CLIENT_ID,
-                process.env.CLIENT_SECRET,
-                process.env.REDIRECT_URI
-            );
-
-            oAuth2Client.setCredentials({
+            googleOAuth2Client.setCredentials({
                 refresh_token: tokenData.refreshToken,
             });
 
-            const newTokens = await oAuth2Client.getAccessToken();
-            const { token, res } = newTokens;
-
-            const expiryDate = new Date(Date.now() + res.data.expires_in * 1000);
-
-            await OAuthToken.updateOne({}, {
-                accessToken: token,
-                expiryDate: expiryDate,
-            }, { upsert: true });
+            const { token, res: { data: { expiry_date } } } = await googleOAuth2Client.getAccessToken();
+            tokenData.accessToken = token;
+            tokenData.expiryDate = new Date(expiry_date);
+            await tokenData.save();
 
             console.log('Token updated successfully');
         } else {
-            console.log('Token is still valid');
+            console.log('GCP token not expired');
         }
     } catch (error) {
         console.error('Failed to refresh access token:', error);
     }
 }
 
-function scheduleTokenRefresh() {
-    cron.schedule('55 * * * *', async () => {
+async function scheduleTokenRefresh() {
+    cron.schedule('0 * * * *', async () => {
         try {
             console.log('Running cron job to check and refresh OAuth token');
             await refreshGCPToken();
@@ -50,4 +39,7 @@ function scheduleTokenRefresh() {
     });
 }
 
-module.exports = scheduleTokenRefresh;
+module.exports = {
+    refreshGCPToken,
+    scheduleTokenRefresh
+};

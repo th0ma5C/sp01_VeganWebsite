@@ -54,66 +54,10 @@
                 </section>
 
                 <section v-show="false">
-                    <h2>歷史訂單</h2>
-                </section>
-
-                <section v-show="false">
                     <h2>用戶設定</h2>
                 </section>
             </div>
         </div>
-
-
-        <!-- <div class="userOrder">
-            <h2>
-                訂單紀錄
-            </h2>
-
-            <ul class="listContainer">
-                <li v-for="({ orderID, shippingInfo, purchaseOrder, createdAt }, index) in showOrderList"
-                    :key="orderID">
-                    <div class="orderTitle">
-                        <h3>
-                            {{ orderID }}
-                        </h3>
-
-                        <span>{{ createdAt }}</span>
-                    </div>
-
-                    <div class="orderContent"
-                        v-show="false">
-                        <div class="progressBar">
-                            訂單進度條
-                        </div>
-
-                        <div class="content">
-                            <div>
-                                {{ shippingInfo }}
-                            </div>
-
-                            <div>
-                                <ul>
-                                    <li v-for="(item, index) in purchaseOrder.orderList"
-                                        :key="index">
-                                        {{ item }}
-                                    </li>
-                                </ul>
-
-                                <div>
-                                    {{
-                                        purchaseOrder.total
-                                    }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="editBtn">
-                            修改按鈕
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </div> -->
     </div>
 </template>
 
@@ -121,7 +65,9 @@
 /**
  * todo:  引入訂單, 刪、改訂單
  * doing: DB加入訂單編號屬性, 頁面結構、CSS
- * !若先進account後又新增訂單，account不會同步更新
+ * ------------------------------------
+ * //!若先進account後又新增訂單，account不會同步更新
+ * 
  */
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';

@@ -46,15 +46,13 @@
                         <div class="trail"></div>
                         <div v-for="(text, index) in milestone"
                             :key="index" class="milestone"
-                            :class="{
-                                step1: index == 0,
-                                step2: index == 1,
-                                step3: index == 2,
-                                step4: index == 3,
-                            }">
+                            :class="[`step${index + 1}`,
+                            { filled: milestoneStyle[purchaseOrder.status as OrderStatus] > index }]">
                             <span>{{ text }}</span>
                         </div>
-                        <div class="progress"></div>
+                        <div class="progress"
+                            :style="progressStatusStyle[purchaseOrder.status as OrderStatus]">
+                        </div>
                     </div>
 
                     <div>
@@ -85,7 +83,8 @@
                 <div class="orderContent" v-show="true"
                     :class="listState[index].isOpen ? 'listOpen' : 'listClosed'">
                     <div class="content">
-                        <div class="info">
+                        <div class="info"
+                            v-if="shippingInfo.deliveryType !== '超商'">
                             <h4>
                                 收件地址
                             </h4>
@@ -100,6 +99,31 @@
                             <div>
                                 {{ shippingInfo.city +
                                     shippingInfo.address }}
+                            </div>
+                            <div>
+                                {{ shippingInfo.deliveryType
+                                }}
+                            </div>
+                        </div>
+                        <div class="info" v-else>
+                            <h4>
+                                收件地址
+                            </h4>
+                            <div class="consigneeName">
+                                {{
+                                    shippingInfo.consigneeName
+                                }}
+                            </div>
+                            <div>
+                                {{ shippingInfo.contactNo }}
+                            </div>
+                            <div>
+                                {{ shippingInfo.storeBranch
+                                }}
+                            </div>
+                            <div>
+                                {{ shippingInfo.storeAddr
+                                }}
                             </div>
                             <div>
                                 {{ shippingInfo.deliveryType
@@ -178,17 +202,21 @@ const { userOrderList } = storeToRefs(userStore);
 
 const menuStore = useMenuStore();
 const { isLoaded, menuImgURLMap } = storeToRefs(menuStore);
-const { fetchMenu, getImgURLbyName } = menuStore;
+const { fetchMenu } = menuStore;
 
 const showOrderList = computed(() => {
     if (!userOrderList.value || userOrderList.value.length == 0) return []
-    const formatted = userOrderList.value.map((item) => {
-        return {
-            ...item,
-            orderID: item._id.toString().slice(-6),
-            createdAt: item.createdAt.split('T')[0],
-        }
-    })
+    const formatted = [...userOrderList.value]
+        .sort((a, b) => {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        })
+        .map((item) => {
+            return {
+                ...item,
+                orderID: item._id.toString().slice(-6),
+                createdAt: item.createdAt.split('T')[0],
+            }
+        })
     return formatted
 });
 
@@ -199,7 +227,6 @@ const milestone = ['建立', '付款成功', '配送中', '配送完成'];
 interface ListState {
     orderID: string,
     isOpen: boolean,
-    itemImgURL?: string
 }
 const listState = ref<ListState[]>([]);
 watchEffect(() => {
@@ -207,7 +234,7 @@ watchEffect(() => {
         showOrderList.value.forEach(async (item) => {
             listState.value.push({
                 orderID: item.orderID,
-                isOpen: false
+                isOpen: false,
             });
         })
     }
@@ -248,6 +275,24 @@ const editBtnAction = (state: string) => {
             return '再買一次'
     }
 }
+
+// progress bar
+type OrderStatus = 'cancelled' | 'new' | 'processed' | 'shipped' | 'completed';
+const progressStatusStyle = ref({
+    cancelled: { width: '0%', opacity: '0' },
+    new: { width: '25%' },
+    processed: { width: '50%' },
+    shipped: { width: '75%' },
+    completed: { width: '100%' },
+})
+
+const milestoneStyle = ref({
+    cancelled: 0,
+    new: 1,
+    processed: 2,
+    shipped: 3,
+    completed: 4,
+})
 
 </script>
 
@@ -305,6 +350,8 @@ h2 {
             outline: 1px solid $btnBacColor;
             background-color: $primaryBacColor;
 
+            .trail {}
+
 
             .milestone {
                 width: 10px;
@@ -326,6 +373,8 @@ h2 {
                     top: -1.25rem;
                     left: 0;
                 }
+
+
             }
 
             .step1 {
@@ -360,8 +409,34 @@ h2 {
                 }
             }
 
+            .filled {
+                background-color: $btnBacColor;
+            }
+
+            // &:has(.new) .step1 {
+            //     background-color: $btnBacColor;
+            // }
+
+            // &:has(.processed) .step1,
+            // &:has(.processed) .step2 {
+            //     background-color: $btnBacColor;
+            // }
+
+            // &:has(.shipped) .step1,
+            // &:has(.shipped) .step2,
+            // &:has(.shipped) .step3 {
+            //     background-color: $btnBacColor;
+            // }
+
+            // &:has(.completed) .step1,
+            // &:has(.completed) .step2,
+            // &:has(.completed) .step3,
+            // &:has(.completed) .step4 {
+            //     background-color: $btnBacColor;
+            // }
+
             .progress {
-                width: 25%;
+                // width: 0%;
                 height: 4px;
                 border-radius: 4px;
 
@@ -372,6 +447,7 @@ h2 {
 
                 outline: 1px solid $btnBacColor;
                 background-color: $btnBacColor;
+
             }
         }
     }

@@ -30,8 +30,6 @@ router.get('/google/cb', async (req, res) => {
 
         console.log('Access Token:', tokens.access_token);
         console.log('Refresh Token:', tokens.refresh_token);
-
-        googleOAuth2Client.setCredentials(tokens);
         res.send('Token retrieved successfully. Check the console for details.');
 
         let token = await OAuthToken.findOne();

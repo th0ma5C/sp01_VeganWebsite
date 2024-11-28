@@ -18,7 +18,7 @@ const reqGetUserShippingInfo = (token: string) => {
 
 // 建立訂單
 const reqCreateOrder = (params: any) => {
-    return request.post('/api/order/createOrder', {
+    return request.post<any, OrderResData>('/api/order/createOrder', {
         ...params
     })
 }

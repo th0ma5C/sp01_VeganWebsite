@@ -1,8 +1,4 @@
 #!/usr/bin/env node
-
-// 導入db函數
-const cron = require('node-cron');
-const db = require('../db/db');
 const dotenv = require('dotenv');
 const fs = require('fs');
 
@@ -15,6 +11,12 @@ if (fs.existsSync(envFile)) {
   dotenv.config();
   console.warn(`Environment file ${envFile} not found, loading default .env`);
 }
+
+// 導入db函數
+const cron = require('node-cron');
+const db = require('../db/db');
+
+
 
 db(() => {
   /**

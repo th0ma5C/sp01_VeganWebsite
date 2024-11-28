@@ -1,5 +1,4 @@
 require('dotenv').config();
-
 const { google } = require('googleapis');
 
 const googleOAuth2Client = new google.auth.OAuth2(
