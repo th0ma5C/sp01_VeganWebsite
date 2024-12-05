@@ -6,7 +6,7 @@ const User = require('@models/User');
 const jwt = require('jsonwebtoken');
 const { validateRegister, validateLogin, authToken, authJWT } = require('@middlewares/userValidator');
 
-const { mailOptions, setTransporter } = require('./nodemailer');
+const { mailOptions, getTransporter } = require('./nodemailer');
 
 async function isUserExist(username, email) {
     try {
@@ -75,7 +75,6 @@ router.post('/tokenLogin', authJWT, async (req, res) => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            // secure: process.env.NODE_ENV === 'production', // 僅在 HTTPS 連接時發送
             sameSite: 'Strict',
             maxAge: 1000 * 60 * 60 * 24 // 1 day
         });
@@ -100,6 +99,12 @@ router.get('/profile', authToken, async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            sameSite: 'Strict',
+            maxAge: 1000 * 60 * 60 * 24 // 1 day
+        });
 
         res.json({
             message: '歡迎',
@@ -131,7 +136,7 @@ router.post('/send-verifyEmail', async (req, res) => {
             text: `請點擊以下連結來驗證你的信箱: ${to}`,
             html: `<p>請點擊以下連結來驗證你的信箱: <a href="http://localhost:3000/api/auth/verify?token=${token}">驗證連結</a></p>`,
         }
-        const transporter = await setTransporter();
+        const transporter = getTransporter();
         const info = await transporter.sendMail(options);
         console.log('郵件已發送: ', info.response);
         res.status(200).send({ message: '郵件發送成功', options });

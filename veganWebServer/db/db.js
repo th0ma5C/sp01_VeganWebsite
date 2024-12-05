@@ -1,6 +1,6 @@
 const redis = require('../redisClient');
 const updateRedis = require('../scripts/updateRedis');
-const { scheduleTokenRefresh, refreshGCPToken } = require('../scripts/refreshOAuth');
+const { scheduleTokenRefresh, refreshGCPToken, autoRefreshToken } = require('../scripts/refreshOAuth');
 
 module.exports = (success, error) => {
     if (typeof error != 'function') {
@@ -32,8 +32,9 @@ module.exports = (success, error) => {
 
                 await updateRedis();
 
-                await refreshGCPToken();
-                await scheduleTokenRefresh();
+                // await refreshGCPToken();
+                // await scheduleTokenRefresh();
+                // await autoRefreshToken();
 
                 success();
                 connected = true;

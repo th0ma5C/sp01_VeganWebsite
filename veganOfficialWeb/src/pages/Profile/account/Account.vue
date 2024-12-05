@@ -49,7 +49,7 @@
 
             <div class="tabContainer">
                 <section>
-                    <Delivering>
+                    <Delivering :selectBranch="currBranch">
                     </Delivering>
                 </section>
 
@@ -65,6 +65,7 @@
 /**
  * todo:  引入訂單, 刪、改訂單
  * doing: DB加入訂單編號屬性, 頁面結構、CSS
+ * ! 1440寬下，list數量少時容器會塌陷
  * ------------------------------------
  * //!若先進account後又新增訂單，account不會同步更新
  * 
@@ -102,9 +103,9 @@ const showOrderList = computed(() => {
     })
     return formatted
 });
-watch(showOrderList, (nVal) => {
-    console.log(nVal);
-})
+// watch(showOrderList, (nVal) => {
+//     console.log(nVal);
+// })
 
 // spinner
 const isOrderLoaded = computed(() => showOrderList.value?.length !== 0)
@@ -113,7 +114,7 @@ const isOrderLoaded = computed(() => showOrderList.value?.length !== 0)
 const tabs = {
     '購買清單': ['全部', '待付款', '已完成'],
     '用戶設定': []
-}
+} as const;
 
 // 切換tab
 function switcher(target: Ref) {
@@ -126,7 +127,8 @@ const currTab = ref('購買清單')
 const switchTab = switcher(currTab);
 
 // 切換branch
-const currBranch = ref('全部');
+type CurrBranch = typeof tabs['購買清單'][number];
+const currBranch = ref<CurrBranch>('全部');
 const switchBranch = switcher(currBranch);
 const sliderTranslate = computed(() => {
     switch (currBranch.value) {
@@ -168,7 +170,7 @@ onMounted(async () => {
 
     @apply flex-col;
     @apply justify-normal;
-    @apply min-h-[80vh];
+    @apply min-h-[87vh];
 
     padding-top: 2rem;
 
@@ -245,14 +247,9 @@ onMounted(async () => {
                     transform: translateY(-2px);
                 }
 
-                // &::after {
-                //     content: '';
-                //     position: absolute;
-                //     left: 0;
-                //     bottom: -1px;
-                //     width: 100%;
-                //     height: 1px;
-                // }
+                &:hover {
+                    opacity: 1;
+                }
             }
 
             .selectedPseudoTrack {
@@ -283,31 +280,21 @@ onMounted(async () => {
                 padding-left: 2.5rem;
                 cursor: pointer;
                 user-select: none;
-                opacity: 0;
-                transition: opacity .5s;
+                // opacity: 0;
+                color: transparent;
+                // visibility: hidden;
+                transition: color .5s;
             }
-
-            // &:nth-of-type(1)>.subTab {
-            //     padding-top: 1rem;
-            //     position: relative;
-            // }
-
-            // &:nth-of-type(2)>.subTab {
-            //     position: relative;
-            // }
-
-            // &:nth-of-type(3)>.subTab {
-            //     padding-bottom: 1rem;
-            //     position: relative;
-            // }
         }
 
         .selectedTab {
             max-height: 3rem;
 
             h3 {
+                color: black;
                 padding-left: 2.5rem;
-                opacity: 1;
+                // visibility: visible;
+                // opacity: 1;
             }
         }
     }
@@ -320,11 +307,23 @@ onMounted(async () => {
 
         section {
             height: 100%;
+            // position: relative;
         }
     }
 
     .unselected {
-        opacity: .5;
+
+        &:is(h2) {
+            opacity: .5;
+        }
+
+        &>h3 {
+            opacity: .5;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
     }
 }
 </style>

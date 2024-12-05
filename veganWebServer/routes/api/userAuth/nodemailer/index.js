@@ -1,4 +1,4 @@
-const setTransporter = require('@scripts/nodemailer')
+const { getTransporter } = require('@scripts/nodemailer')
 
 // 設定郵件內容
 const mailOptions = {
@@ -9,5 +9,5 @@ const mailOptions = {
 
 module.exports = {
     mailOptions,
-    setTransporter
+    getTransporter
 }

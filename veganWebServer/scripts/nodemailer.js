@@ -13,11 +13,13 @@ const OAuthToken = require('@models/OAuthTokenModel');
 //     },
 // });
 
-module.exports = async () => {
+let transporter;
+
+const initTransporter = async () => {
     try {
         const tokenData = await OAuthToken.findOne()
 
-        let transporter = nodemailer.createTransport({
+        transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
                 type: 'OAuth2',
@@ -28,9 +30,26 @@ module.exports = async () => {
                 accessToken: tokenData.accessToken,
             },
         });
+        transporter.on('token', async (token) => {
+            try {
+                tokenData.accessToken = token.accessToken;
+                tokenData.expiryDate = new Date(token.expires);
+                await tokenData.save();
+
+                console.log('access token refreshed');
+            } catch (error) {
+                console.error('Failed to refresh access token:', error);
+            }
+        });
 
         return transporter;
     } catch (error) {
         console.log(error);
     }
 }
+
+initTransporter();
+
+module.exports = {
+    getTransporter: () => transporter,
+};

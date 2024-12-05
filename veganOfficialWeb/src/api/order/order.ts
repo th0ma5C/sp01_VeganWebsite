@@ -32,8 +32,14 @@ const reqGetUserOrder = (token: string) => {
     })
 }
 
-// 刪除訂單
-
+// 取消訂單
+const reqCancelUserOrder = (token: string, orderID: string) => {
+    return request.patch<any, OrderResData>(`/api/order/${orderID}`, {
+        headers: {
+            Authorization: token
+        }
+    })
+}
 
 // 修改訂單
 
@@ -44,5 +50,6 @@ export {
     reqVerifyItemPrice,
     reqGetUserShippingInfo,
     reqCreateOrder,
-    reqGetUserOrder
+    reqGetUserOrder,
+    reqCancelUserOrder
 }

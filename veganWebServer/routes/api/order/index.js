@@ -120,15 +120,29 @@ router.get('/userOrderList', authUser, async (req, res) => {
     }
 })
 
-// 變更訂單
-router.post('/editOrder', async (req, res) => {
 
+// 取消訂單
+router.patch('/:orderID', authUser, async (req, res) => {
+    const decoded = req.user;
+    const { orderID } = req.params;
+    try {
+        const result = await Order.findByIdAndUpdate(
+            orderID,
+            { $set: { 'purchaseOrder.status': 'cancelled', updatedAt: new Date() } },
+            { new: true });
+
+        if (!result) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        res.status(200).json({ message: '訂單已取消', state: 'confirm' });
+    } catch (error) {
+        console.error('Error canceling order:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
 })
 
-// 刪除訂單
-router.post('/deleteOrder', async (req, res) => {
-
-})
+// 付款
 
 // router.post('/test', async (req, res) => {
 //     try {

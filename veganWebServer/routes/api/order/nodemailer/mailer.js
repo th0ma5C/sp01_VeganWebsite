@@ -1,6 +1,6 @@
 const User = require('@models/User');
 const jwt = require('jsonwebtoken');
-const setTransporter = require('@scripts/nodemailer')
+const { getTransporter } = require('@scripts/nodemailer')
 
 // // 使用 OAuth2 設定傳送憑證
 // const transporter = nodemailer.createTransport({
@@ -47,7 +47,7 @@ async function orderMailer(recipientName, userID, orderID) {
     try {
         const orderIdShort = orderID.toString().slice(-6);
         const orderIdCustom = `ORD-${new Date().toISOString().slice(0, 10)}-${orderIdShort}`;
-        const transporter = await setTransporter();
+        const transporter = getTransporter();
         const info = await transporter.sendMail(
             await mailOptions(recipientName, orderIdCustom, userID)
         );
@@ -59,7 +59,7 @@ async function orderMailer(recipientName, userID, orderID) {
 }
 
 module.exports = {
-    setTransporter,
+    getTransporter,
     orderMailer,
     mailOptions
 }

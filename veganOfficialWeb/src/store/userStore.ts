@@ -1,4 +1,4 @@
-import { reqGetUserOrder, reqGetUserShippingInfo } from "@/api/order/order";
+import { reqCancelUserOrder, reqGetUserOrder, reqGetUserShippingInfo } from "@/api/order/order";
 import { reqUserLogout } from "@/api/userAuth";
 import { jwtDecode } from "jwt-decode";
 import { defineStore } from "pinia";
@@ -9,7 +9,9 @@ import type { UserOrder } from "@/api/order/type";
 interface LoginTokenPayload {
     username: string,
     email: string,
-    userID: string
+    userID: string,
+    exp: number,
+    iat: number
 }
 
 const ProfileStorage_KEY = 'profile';
@@ -115,6 +117,30 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
+    async function cancelOrder(orderID: string) {
+        try {
+            if (!userToken.value) throw new Error('請重新登入');
+            const decoded = jwtDecode<LoginTokenPayload>(userToken.value);
+            const currTime = Math.floor(Date.now() / 1000);
+            if (decoded.exp < currTime) throw new Error('請重新登入');
+
+            const result = await reqCancelUserOrder(userToken.value, orderID);
+            return result
+        } catch (error) {
+            console.error('Error canceling order:', error);
+        }
+    }
+
+    async function refreshOrderList() {
+        try {
+            userOrderList.value.length = 0;
+            const result = await getUserOrderList()
+            return result
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     // 在結帳頁刷新時可以復原已登入的使用者數據
     watch(userToken, async (nVal) => {
         if (nVal) {
@@ -140,6 +166,8 @@ export const useUserStore = defineStore('user', () => {
         setUsername,
         setEmail,
         getSavedShippingInfo,
-        getUserOrderList
+        getUserOrderList,
+        cancelOrder,
+        refreshOrderList
     }
 })

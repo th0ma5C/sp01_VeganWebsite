@@ -32,8 +32,12 @@
                 </div>
             </li>
 
-            <li v-for="({ orderID, shippingInfo, purchaseOrder, createdAt }, index) in showOrderList"
-                :key="orderID">
+            <li v-for="({ _id, orderID, shippingInfo, purchaseOrder, createdAt, statusBtnList, statusStyleIndex }, index) in showOrderList"
+                :key="orderID" :class="{
+                    orderCompleted: purchaseOrder.status == 'cancelled' || purchaseOrder.status == 'completed',
+                    loadingFilter: isListLoading
+                }" ref="orderListRefs"
+                v-show="filterWord.includes(purchaseOrder.status)">
                 <div class="orderTitle listItem"
                     @click="toggleListOpen(index)">
                     <div>
@@ -44,14 +48,24 @@
 
                     <div class="progressBar">
                         <div class="trail"></div>
+                        <div class="milestone step0 filled"
+                            :class="{
+                                cancelledFilled: purchaseOrder.status == 'cancelled'
+                            }">
+                            <span
+                                v-if="purchaseOrder.status == 'cancelled'">{{
+                                    '取消' }}</span>
+                        </div>
                         <div v-for="(text, index) in milestone"
                             :key="index" class="milestone"
                             :class="[`step${index + 1}`,
-                            { filled: milestoneStyle[purchaseOrder.status as OrderStatus] > index }]">
+                            { filled: statusStyleIndex > index }]">
                             <span>{{ text }}</span>
                         </div>
-                        <div class="progress"
-                            :style="progressStatusStyle[purchaseOrder.status as OrderStatus]">
+                        <div class="progress" :style="{
+                            width: `${statusStyleIndex * 25}%`,
+                            opacity: purchaseOrder.status == 'cancelled' ? '0' : '1'
+                        }">
                         </div>
                     </div>
 
@@ -94,14 +108,17 @@
                                 }}
                             </div>
                             <div>
-                                {{ shippingInfo.contactNo }}
+                                {{
+                                    shippingInfo.contactNo
+                                }}
                             </div>
                             <div>
                                 {{ shippingInfo.city +
                                     shippingInfo.address }}
                             </div>
                             <div>
-                                {{ shippingInfo.deliveryType
+                                {{
+                                    shippingInfo.deliveryType
                                 }}
                             </div>
                         </div>
@@ -115,18 +132,23 @@
                                 }}
                             </div>
                             <div>
-                                {{ shippingInfo.contactNo }}
-                            </div>
-                            <div>
-                                {{ shippingInfo.storeBranch
+                                {{
+                                    shippingInfo.contactNo
                                 }}
                             </div>
                             <div>
-                                {{ shippingInfo.storeAddr
+                                {{
+                                    shippingInfo.storeBranch
                                 }}
                             </div>
                             <div>
-                                {{ shippingInfo.deliveryType
+                                {{
+                                    shippingInfo.storeAddr
+                                }}
+                            </div>
+                            <div>
+                                {{
+                                    shippingInfo.deliveryType
                                 }}
                             </div>
                         </div>
@@ -146,7 +168,8 @@
                                             {{ name }}
                                         </h4>
                                         <span>
-                                            數量：{{ amount }}
+                                            數量：{{ amount
+                                            }}
                                         </span>
                                     </div>
                                     <div class="subtotal">
@@ -177,32 +200,76 @@
                     </div>
 
                     <div class="editBtn">
-                        <button>
-                            {{ '付款' }}
+                        <button
+                            v-for="(item, index) in statusBtnList"
+                            :key="index"
+                            @click="toggleDialogOpen(item, _id)">
+                            {{ item }}
                         </button>
                     </div>
                 </div>
             </li>
+            <div class="spinnerContainer"
+                v-show="isListLoading">
+                <Spinner style="width: 3rem; height: 3rem;">
+                </Spinner>
+            </div>
         </ul>
+        <transition name="Dialog">
+            <Dialog v-show="isCancelDialogOpen"
+                :orderID="orderOnCancelling"
+                @toggleDialogOpen="toggleDialogOpen"
+                @cancelConfirm="refreshList">
+            </Dialog>
+        </transition>
     </main>
 </template>
 
 <script setup lang="ts">
+//TODO 按鈕功能
+/**
+ * 
+ */
+
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/store/userStore';
-import { computed, watch, watchEffect, ref } from 'vue';
+import { computed, watch, watchEffect, ref, useTemplateRef, onMounted, nextTick, onUpdated } from 'vue';
 import type { UserOrder } from '@/api/order/type';
 import { useMenuStore } from '@/store/menuStore';
 import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
+import gsap from 'gsap';
+import { Flip } from 'gsap/Flip';
+import Dialog from './dialog/Dialog.vue';
 
 // pinia
 const userStore = useUserStore();
 // const { getUserOrderList, logout } = userStore;
 const { userOrderList } = storeToRefs(userStore);
+const { cancelOrder, refreshOrderList } = userStore;
 
 const menuStore = useMenuStore();
 const { isLoaded, menuImgURLMap } = storeToRefs(menuStore);
 const { fetchMenu } = menuStore;
+
+// 按鈕 action
+const editBtnText = ref({
+    cancelled: null,
+    new: ['取消訂單', '付款'],
+    processed: ['聯絡客服'],
+    shipped: ['聯絡客服'],
+    completed: ['再買一次'],
+});
+
+// progress bar
+type OrderStatus = 'cancelled' | 'new' | 'processed' | 'shipped' | 'completed';
+
+const orderStatusStyle = ref({
+    cancelled: 0,
+    new: 1,
+    processed: 2,
+    shipped: 3,
+    completed: 4,
+})
 
 const showOrderList = computed(() => {
     if (!userOrderList.value || userOrderList.value.length == 0) return []
@@ -215,6 +282,8 @@ const showOrderList = computed(() => {
                 ...item,
                 orderID: item._id.toString().slice(-6),
                 createdAt: item.createdAt.split('T')[0],
+                statusStyleIndex: orderStatusStyle.value[item.purchaseOrder.status as OrderStatus],
+                statusBtnList: editBtnText.value[item.purchaseOrder.status as OrderStatus]
             }
         })
     return formatted
@@ -227,6 +296,7 @@ const milestone = ['建立', '付款成功', '配送中', '配送完成'];
 interface ListState {
     orderID: string,
     isOpen: boolean,
+    status: string
 }
 const listState = ref<ListState[]>([]);
 watchEffect(() => {
@@ -235,6 +305,7 @@ watchEffect(() => {
             listState.value.push({
                 orderID: item.orderID,
                 isOpen: false,
+                status: item.purchaseOrder.status
             });
         })
     }
@@ -262,36 +333,109 @@ function correctionDigit(currNum: number, maxDigit: number) {
     return '0'.repeat(diffDigit)
 }
 
-// 按鈕 action
-const editBtnAction = (state: string) => {
-    switch (state) {
-        case 'new':
+// GSAP
+gsap.registerPlugin(Flip);
+function GSAPsetList(state: Flip.FlipState) {
+    Flip.from(state, {
+        fade: true,
+        simple: true,
+        duration: 0.5,
+        absolute: false,
+        absoluteOnLeave: true,
+        ease: "power2.out",
+        onEnter: (elements) => {
+            return gsap.fromTo(elements,
+                { opacity: 0, scale: .9, transformOrigin: 'center' },
+                { opacity: 1, scale: 1, transformOrigin: 'center', duration: .3 })
+        },
+        onLeave: (elements) => {
+            return gsap.fromTo(elements,
+                { opacity: 1, scale: 1, transformOrigin: 'center', },
+                { opacity: 0, scale: .9, transformOrigin: 'center', duration: .3 })
+        },
+        onComplete: () => {
+            closeList();
+        }
+    });
+}
 
-            return '付款'
-        case 'processed':
 
-            return ''
+// branch filter
+type Branch = '全部' | '待付款' | '已完成'
+const { selectBranch } = defineProps<{ selectBranch: Branch }>();
+
+const filterWord = computed(() => {
+    let word = null;
+
+    switch (selectBranch) {
+        case '已完成':
+            word = ['completed', 'cancelled'];
+            break
+        case '待付款':
+            word = ['new'];
+            break
         default:
-            return '再買一次'
+            word = ['new', 'processed', 'shipped', 'completed', 'cancelled'];
+            break
+    }
+    return word
+})
+// 切分頁GSAP轉場
+const orderListRefs = useTemplateRef('orderListRefs');
+watch(() => selectBranch, (nVal) => {
+    let state = Flip.getState(orderListRefs.value);
+    if (nVal) {
+        nextTick(() => {
+            GSAPsetList(state)
+        })
+    }
+})
+
+// 切分頁時關閉已打開且不相關的訂單
+function closeList() {
+    listState.value.forEach((item) => {
+        if (!filterWord.value.includes(item.status)) {
+            item.isOpen = false;
+        }
+    })
+}
+
+// 取消訂單
+// const cancelActionRES = ref('');
+// const cancelAction = async (orderID: string) => {
+//     try {
+//         const result = await cancelOrder(orderID);
+//         if (!result) {
+//             return cancelActionRES.value = '取消失敗'
+//         }
+//         return cancelActionRES.value = '取消成功'
+//     } catch (error) {
+//         return cancelActionRES.value = '取消失敗'
+//     }
+// }
+// 確認框
+const orderOnCancelling = ref<null | string>(null);
+const isCancelDialogOpen = ref(false);
+function toggleDialogOpen(btn: string, orderID: string) {
+    if (btn !== '取消訂單') return
+    orderOnCancelling.value = orderID;
+    isCancelDialogOpen.value = !isCancelDialogOpen.value;
+}
+
+// 刷新訂單列表
+const isListLoading = ref(false);
+async function refreshList() {
+    try {
+        await refreshOrderList();
+    } catch (error) {
+        console.log(error);
     }
 }
 
-// progress bar
-type OrderStatus = 'cancelled' | 'new' | 'processed' | 'shipped' | 'completed';
-const progressStatusStyle = ref({
-    cancelled: { width: '0%', opacity: '0' },
-    new: { width: '25%' },
-    processed: { width: '50%' },
-    shipped: { width: '75%' },
-    completed: { width: '100%' },
+onUpdated(() => {
 })
 
-const milestoneStyle = ref({
-    cancelled: 0,
-    new: 1,
-    processed: 2,
-    shipped: 3,
-    completed: 4,
+onMounted(() => {
 })
 
 </script>
@@ -300,6 +444,30 @@ const milestoneStyle = ref({
 * {
     // outline: 1px solid black;
 }
+
+// .orderList-move,
+// .orderList-enter-active,
+// .orderList-leave-active {
+//     width: 100%;
+//     transition: all 10s;
+// }
+
+// .orderList-leave-active {
+//     width: 100%;
+//     position: absolute;
+// }
+
+// .orderList-enter-from,
+// .orderList-leave-to {
+//     opacity: 0;
+//     transform: translate(30px, 30px);
+// }
+
+// .orderList-enter-to,
+// .orderList-leave-from {
+//     transform: translate(0, 0);
+//     opacity: 1;
+// }
 
 h2 {
     font-size: 2rem;
@@ -311,7 +479,7 @@ h2 {
 
 .orderContainer {
     text-align: center;
-
+    position: relative;
 
     &>li {
         // border: 1px solid black;
@@ -319,17 +487,26 @@ h2 {
         padding: 1rem;
         margin-bottom: 1rem;
         box-shadow: 1px 1px 2px 2px rgba(0, 0, 0, 0.5);
-        transition: max-height .75s;
 
         &:has(.orderHeader) {
             box-shadow: none;
             margin-bottom: 0;
             padding: 0 1rem;
         }
+
+
     }
 
     .orderHeader {
         margin-bottom: .5rem;
+    }
+
+    .orderCompleted {
+
+        .orderTitle,
+        .orderContent>*:not(.editBtn) {
+            opacity: .5;
+        }
     }
 
     .listItem {
@@ -365,6 +542,8 @@ h2 {
                 outline: 1px solid $btnBacColor;
                 background-color: $primaryBacColor;
 
+                transition: background-color .3s;
+
                 span {
                     font-size: .75rem;
                     text-wrap: nowrap;
@@ -375,6 +554,15 @@ h2 {
                 }
 
 
+            }
+
+            .step0 {
+                left: 0%;
+
+
+                span {
+                    transform: translateX(-7px);
+                }
             }
 
             .step1 {
@@ -413,30 +601,12 @@ h2 {
                 background-color: $btnBacColor;
             }
 
-            // &:has(.new) .step1 {
-            //     background-color: $btnBacColor;
-            // }
-
-            // &:has(.processed) .step1,
-            // &:has(.processed) .step2 {
-            //     background-color: $btnBacColor;
-            // }
-
-            // &:has(.shipped) .step1,
-            // &:has(.shipped) .step2,
-            // &:has(.shipped) .step3 {
-            //     background-color: $btnBacColor;
-            // }
-
-            // &:has(.completed) .step1,
-            // &:has(.completed) .step2,
-            // &:has(.completed) .step3,
-            // &:has(.completed) .step4 {
-            //     background-color: $btnBacColor;
-            // }
+            .cancelledFilled {
+                background-color: $error_color;
+                outline-color: $error_color;
+            }
 
             .progress {
-                // width: 0%;
                 height: 4px;
                 border-radius: 4px;
 
@@ -448,6 +618,7 @@ h2 {
                 outline: 1px solid $btnBacColor;
                 background-color: $btnBacColor;
 
+                transition: width .3s;
             }
         }
     }
@@ -521,13 +692,19 @@ h2 {
             padding: 0 4rem;
             justify-self: end;
             font-size: .75rem;
+            display: flex;
+            gap: .5rem;
 
             button {
                 @include WnH(80px, 30px);
-                border: 1px solid green;
+                border: 1px solid $btnBacColor;
                 border-radius: 1rem;
                 background-color: $btnBacColor;
                 color: $primaryBacColor;
+
+                &:hover {
+                    filter: brightness(1.2);
+                }
             }
         }
 
@@ -639,5 +816,31 @@ h2 {
     .listOpen {
         grid-template-rows: 1fr auto;
     }
+}
+
+.spinnerContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.loadingFilter {
+    filter: blur(2px);
+}
+
+.Dialog-enter-active,
+.Dialog-leave-active {
+    transition: opacity .3s;
+}
+
+.Dialog-enter-from,
+.Dialog-leave-to {
+    opacity: 0;
+}
+
+.Dialog-enter-to,
+.Dialog-leave-from {
+    opacity: 1;
 }
 </style>
