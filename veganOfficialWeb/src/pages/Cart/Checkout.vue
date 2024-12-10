@@ -934,6 +934,7 @@ userStore.$subscribe(async (_, state) => {
                 userStore.login(token);
             }
         } catch (error) {
+            isFormInit.value = true
             userStore.isAuth = false;
             return
         }
@@ -1047,7 +1048,7 @@ onUnmounted(() => {
     }
 
     .spinnerWrapper {
-        @include WnH(32%);
+        @include WnH(100%, 100vh);
 
         cursor: not-allowed;
         border-radius: 1rem;
@@ -1059,7 +1060,7 @@ onUnmounted(() => {
         z-index: 2;
 
         &>div {
-            @include WnH(30px);
+            @include WnH(40px);
         }
     }
 }

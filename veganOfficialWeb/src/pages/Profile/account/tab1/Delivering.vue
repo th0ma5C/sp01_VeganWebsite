@@ -328,9 +328,18 @@ const imgMap = computed(() => {
 })
 
 // 數字位置同步
-function correctionDigit(currNum: number, maxDigit: number) {
-    const diffDigit = maxDigit.toString().length - currNum.toString().length
-    return '0'.repeat(diffDigit)
+function correctionDigit(currNum: number, maxNum: number) {
+    const currDigit = currNum.toString().length;
+    const maxDigit = maxNum.toString().length;
+
+    const diffDigit = maxDigit - currDigit;
+    let comma = 0;
+
+    if ((maxDigit % 3) !== 0 && maxDigit !== currDigit) {
+        comma = Math.floor(maxDigit / 3);
+    }
+
+    return '0'.repeat(diffDigit) + ','.repeat(comma);
 }
 
 // GSAP

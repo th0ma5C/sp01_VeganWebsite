@@ -139,7 +139,7 @@ import { useUserStore } from '@/store/userStore';
 
 
 const cartStore = useCartStore();
-const { isCartCardOpen, cartItems, cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
+const { isCartCardOpen, cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
 const { toggleCartCardOpen, DELItemFromCart, initCart, toggleIsCheckout } = cartStore;
 
 const showCartItemList = computed(() => {

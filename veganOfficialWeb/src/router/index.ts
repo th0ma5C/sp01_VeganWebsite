@@ -86,7 +86,18 @@ const routes = [
     },
     {
         path: '/profile',
+        name: 'Profile',
         component: Profile,
+        beforeEnter: (
+            to: RouteLocationNormalized,
+            from: RouteLocationNormalized
+        ) => {
+            const userStore = useUserStore();
+            if (userStore.isAuth && to.path == '/profile') {
+                return '/profile/account'
+            }
+            return true
+        },
         children: [
             {
                 path: 'forgetPassword',
@@ -151,7 +162,7 @@ const routes = [
                     hideParent: true,
                     requireAuth: true
                 }
-            },
+            }
         ]
     },
 ]
@@ -162,6 +173,21 @@ const router = createRouter({
     scrollBehavior(to, from, savePosition) {
         return { top: 0 }
     }
+})
+
+router.beforeEach(async (to, from) => {
+    const userStore = useUserStore();
+    if (!userStore.isAuth) {
+        try {
+            const { state, token } = await reqGetUser();
+            if (state && state == 'confirm' && token) {
+                userStore.login(token);
+            }
+        } catch (error) {
+            userStore.isAuth = false;
+        }
+    }
+    return true
 })
 
 export default router

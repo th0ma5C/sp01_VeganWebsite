@@ -73,10 +73,26 @@ async function authJWT(req, res, next) {
     }
 }
 
+function authUser(req, res, next) {
+    const token = req.cookies.token ?? req.headers.authorization;
+
+    if (token) {
+        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+            if (err) {
+                return res.status(403).json({ message: 'Invalid token', state: 'denied' });
+            }
+            req.user = user;
+            next();
+        });
+    } else {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+}
 
 module.exports = {
     validateRegister,
     validateLogin,
     authToken,
-    authJWT
+    authJWT,
+    authUser
 }

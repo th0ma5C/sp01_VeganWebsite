@@ -29,6 +29,7 @@ const GET_MENU = `
                     rating
                     date
                     tags
+                    id
                 }
             }
         }
@@ -62,7 +63,8 @@ export const useMenuStore = defineStore('menu', (() => {
             rating: null,
             date: null,
             tags: [],
-            main: null
+            main: null,
+            id: null
         }
     ]);
     let smoothieList: Ref<MenuItem[]> = ref([
@@ -76,7 +78,8 @@ export const useMenuStore = defineStore('menu', (() => {
             rating: null,
             date: null,
             tags: [],
-            main: null
+            main: null,
+            id: null
         }
     ]);
     let ingredientsList: Ref<ingredientsList[]> = ref([
@@ -95,7 +98,7 @@ export const useMenuStore = defineStore('menu', (() => {
                 // 補全圖片地址
                 el.fileName = '/api' + el.fileName + '.png';
                 // 新增ID
-                el.id = nanoid(4);
+                // el.id = nanoid(4);
                 // 緩存圖片地址
                 if (el.name) {
                     menuImgURLMap.value[el.name] = el.fileName
@@ -104,7 +107,7 @@ export const useMenuStore = defineStore('menu', (() => {
 
             menu[1].items.forEach((el) => {
                 el.fileName = '/api' + el.fileName + '.jpg';
-                el.id = nanoid(4);
+                // el.id = nanoid(4);
                 if (el.name) {
                     menuImgURLMap.value[el.name] = el.fileName
                 }

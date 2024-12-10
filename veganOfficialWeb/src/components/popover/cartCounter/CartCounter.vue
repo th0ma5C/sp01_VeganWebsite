@@ -4,8 +4,10 @@
             v-if="amount || (cartCounter && cartCounter < 99)">
             {{ showNum }}
         </span>
-        <span v-else>
+        <span v-else-if="cartCounter && cartCounter > 99">
             {{ 99 }}+
+        </span>
+        <span v-else>
         </span>
     </div>
 </template>

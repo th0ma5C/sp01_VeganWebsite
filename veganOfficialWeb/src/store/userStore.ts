@@ -2,9 +2,10 @@ import { reqCancelUserOrder, reqGetUserOrder, reqGetUserShippingInfo } from "@/a
 import { reqUserLogout } from "@/api/userAuth";
 import { jwtDecode } from "jwt-decode";
 import { defineStore } from "pinia";
-import { reactive, ref, watch } from "vue";
+import { computed, inject, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import type { UserOrder } from "@/api/order/type";
+import type { UserOrder, ShippingInfo } from "@/api/order/type";
+import { useCartStore } from "./cartStore";
 
 interface LoginTokenPayload {
     username: string,
@@ -19,19 +20,20 @@ const CheckoutFormStorage_KEY = 'checkoutForm';
 
 
 export const useUserStore = defineStore('user', () => {
+    const nanoid = inject('nanoid') as (t: number) => string;
 
     const router = useRouter();
     const isAuth = ref(false);
     const userToken = ref<string | null>(null);
     const user = reactive({
-        username: null as null | string,
+        username: 'anonymous' as 'anonymous' | string,
         email: null as null | string,
-        userID: null as null | string,
+        userID: nanoid(6) as | string,
     })
-    const userSavedCheckoutForm = reactive({});
+    const userSavedCheckoutForm = reactive<Partial<ShippingInfo>>({});
     const userOrderList = ref<UserOrder[]>([]);
 
-    function setUsername(username: string | null) {
+    function setUsername(username: string) {
         user.username = username
     }
 
@@ -39,58 +41,93 @@ export const useUserStore = defineStore('user', () => {
         user.email = email
     }
 
-    function setUserID(id: string | null) {
+    function setUserID(id: string) {
         user.userID = id
     }
 
-    function login(token?: string) {
-        isAuth.value = true;
-        if (token) {
-            storeUserProfile(token)
-            loadUserProfile();
-            userToken.value = token;
+    function setUserState({ username = 'anonymous', email = null as null | string, userID = nanoid(6) }) {
+        setUsername(username);
+        setEmail(email);
+        setUserID(userID);
+    }
+
+    async function login(token?: string) {
+        try {
+            isAuth.value = true;
+            if (token) {
+                storeUserProfile(token)
+                loadUserProfile();
+                userToken.value = token;
+            }
+            const cartStore = useCartStore();
+            await cartStore.memberLoadCart();
+        } catch (error) {
+            console.log(error);
         }
     }
 
     async function logout() {
-        isAuth.value = false;
         try {
             const result = await reqUserLogout();
             if (result.state == 'logout') {
-                setUsername(null);
-                setEmail(null);
-                setUserID(null);
+                setUserState({})
                 clearStorageProfile();
+                isAuth.value = false;
+                userToken.value = null;
+                if (Object.keys(userSavedCheckoutForm).length !== 0) {
+                    Object.keys(userSavedCheckoutForm).forEach(key => {
+                        delete userSavedCheckoutForm[key];
+                    });
+                }
+
+                userOrderList.value.length = 0;
+
+                const cartStore = useCartStore();
+                Object.keys(cartStore.cartMap).forEach(key => {
+                    delete cartStore.cartMap[key];
+                });
+
                 await router.replace('/home');
-                await router.push('/profile')
+                await router.push('/profile');
             }
         } catch (error) {
-
+            console.log(error);
         }
     }
 
-    function storeUserProfile(token: string) {
-        const val = JSON.stringify(token)
+    function storeUserProfile(token?: string) {
+        let val = null;
+        token ? (val = JSON.stringify(token)) : (val = JSON.stringify(user));
         localStorage.setItem(ProfileStorage_KEY, val)
     }
 
     function loadUserProfile() {
-        const data = JSON.parse(localStorage.getItem(ProfileStorage_KEY) ?? '');
-        if (!data || data === '') return
-
-        const decoded = jwtDecode<LoginTokenPayload>(data);
-        setUsername(decoded.username);
-        setEmail(decoded.email);
-        setUserID(decoded.userID);
+        try {
+            const data = JSON.parse(localStorage.getItem(ProfileStorage_KEY) ?? 'null');
+            if (!data) return
+            if (typeof data === 'string') {
+                const decoded = jwtDecode<LoginTokenPayload>(data);
+                if (!decoded) return;
+                setUserState(decoded);
+                return
+            }
+            else {
+                Object.assign(user, data)
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
+    // user state initialize
+    loadUserProfile();
 
     function clearStorageProfile() {
         localStorage.removeItem(ProfileStorage_KEY)
     }
 
     function getStorageToken() {
-        const token = JSON.parse(localStorage.getItem(ProfileStorage_KEY) ?? '');
-        return token
+        const token = JSON.parse(localStorage.getItem(ProfileStorage_KEY) ?? 'null');
+        return token ?? ''
     }
 
     // get saved shipping info
@@ -154,20 +191,23 @@ export const useUserStore = defineStore('user', () => {
                 console.log(error);
             }
         }
-    })
+    });
+
 
     return {
         isAuth,
         user,
         userSavedCheckoutForm,
         userOrderList,
+        userToken,
         login,
         logout,
         setUsername,
         setEmail,
+        storeUserProfile,
         getSavedShippingInfo,
         getUserOrderList,
         cancelOrder,
-        refreshOrderList
+        refreshOrderList,
     }
 })

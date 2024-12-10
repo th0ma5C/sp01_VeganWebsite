@@ -117,13 +117,17 @@ router.get('/profile', authToken, async (req, res) => {
 })
 
 router.post('/logout', async (req, res) => {
-    res.cookie('token', '', {
-        httpOnly: true,
-        // secure: true,
-        sameSite: 'strict',
-        expires: new Date(0),
-    });
-    res.status(200).json({ message: 'Logged out successfully', state: 'logout' });
+    try {
+        res.cookie('token', '', {
+            httpOnly: true,
+            // secure: true,
+            sameSite: 'strict',
+            expires: new Date(0),
+        });
+        res.status(200).json({ message: 'Logged out successfully', state: 'logout' });
+    } catch (error) {
+        console.log(error);
+    }
 })
 
 router.post('/send-verifyEmail', async (req, res) => {

@@ -1,9 +1,10 @@
-const { GraphQLSchema, GraphQLNonNull, GraphQLObjectType, GraphQLString, GraphQLList, GraphQLFloat } = require('graphql');
-const MenuModel = require('../../../../models/MenuModel');
+const { GraphQLSchema, GraphQLNonNull, GraphQLObjectType, GraphQLString, GraphQLList, GraphQLFloat, GraphQLID } = require('graphql');
+const MenuModel = require('@models/MenuModel');
 
 const MenuItemType = new GraphQLObjectType({
     name: 'MenuItem',
     fields: {
+        id: { type: GraphQLID },
         name: { type: GraphQLString },
         description: { type: GraphQLString },
         ingredients: { type: new GraphQLList(GraphQLString) },
@@ -49,6 +50,7 @@ const QueryType = new GraphQLObjectType({
                                     input: "$items",
                                     as: "item",
                                     in: {
+                                        id: "$$item._id",
                                         name: "$$item.name",
                                         description: "$$item.description",
                                         ingredients: "$$item.ingredients",

@@ -12,7 +12,8 @@ interface MenuItem {
     rating: number | null;
     date: string | null;
     tags: string[];
-    main: string | null
+    main: string | null,
+    id: string | null,
     [key: string]: any;
 }
 

@@ -10,8 +10,7 @@ const coupon = require('./coupon');
 const auth = require('./userAuth');
 const checkout = require('./checkout/checkout');
 const oauth = require('./oauth/OAuth');
-
-
+const cart = require('./cart/cart.js');
 const order = require('./order');
 
 // 使用路由模块
@@ -45,5 +44,8 @@ router.use('/checkout', checkout);
 
 // get mailer token
 router.use('/OAuth', oauth);
+
+// 購物車
+router.use('/cart', cart)
 
 module.exports = router;

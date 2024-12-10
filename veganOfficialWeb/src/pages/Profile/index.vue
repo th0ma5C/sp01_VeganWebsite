@@ -320,6 +320,9 @@ watch(passwordRef, (nVal) => {
 
 onBeforeMount(async () => {
     await handleEmailRedirect();
+    if (isAuth.value) {
+        router.push('/profile/account')
+    }
 })
 
 onMounted(() => {

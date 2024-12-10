@@ -121,9 +121,17 @@
                     <span class="itemQuantity">
                         {{ cartCounter }}項
                     </span>
-                    <span>${{
-                        cartTotalPrice
-                        }}</span>
+                    <div>
+                        <span>$</span>
+                        <span class="correctionDigit"
+                            v-text="correctionDigit(cartTotalPrice)">
+                        </span>
+                        <span>
+                            {{
+                                cartTotalPrice
+                            }}
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -403,11 +411,13 @@ async function onSubmit<T extends CouponForm>(val: T, { resetForm }: FormActions
 
 // 數字位置同步
 const maxDigit = computed(() => {
-    return cartTotalPrice.value.toString().length
+    const bigNum = Math.max(cartTotalPrice.value, freightFee.value);
+    return bigNum.toString().length
 })
 
 function correctionDigit(currNum: number) {
-    const diffDigit = maxDigit.value - currNum.toString().length
+    const currDigit = currNum.toString().length;
+    const diffDigit = maxDigit.value - currDigit
     return '0'.repeat(diffDigit)
 }
 
@@ -479,7 +489,7 @@ onMounted(() => {
 }
 
 .spinnerWrapper {
-    @include WnH(calc(100% + 4rem), calc(100% + 2rem));
+    @include WnH(calc(100% + 4rem), calc(100vh - 3.5rem));
 
     cursor: not-allowed;
     border-radius: 1rem;

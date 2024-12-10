@@ -1,14 +1,20 @@
-import { defineStore } from "pinia";
+import { defineStore, storeToRefs } from "pinia";
 import { computed, reactive, ref, watch } from "vue";
 import type { MenuItem } from "@/api/menu/type";
+import type { ResData } from "@/api/cart/type";
 import { useUserStore } from "./userStore";
+import { useMenuStore } from "./menuStore";
+import { reqGetMemberCart, reqSaveCartList } from "@/api/cart/CartRequest";
+import debounce from "lodash/debounce";
+
 
 interface MapState {
     [key: string]: {
         price: number,
         amount: number,
         imgUrl: string,
-        category: string
+        category: string,
+        id: string
     }
 }
 
@@ -19,9 +25,15 @@ interface StorageData {
     expiration: any;
 }
 
-
 export const useCartStore = defineStore('cart', () => {
     const userStore = useUserStore();
+    const { storeUserProfile } = userStore;
+    const { isAuth, user, userToken } = storeToRefs(userStore);
+
+    const menuStore = useMenuStore();
+    const { getInfoByName, fetchMenu } = menuStore;
+    const { isLoaded, fullMenu } = storeToRefs(menuStore);
+
 
     // cart drawer 開關
     const isCartCardOpen = ref(false);
@@ -29,23 +41,29 @@ export const useCartStore = defineStore('cart', () => {
         isCartCardOpen.value = !isCartCardOpen.value
     }
 
-    const cartItems = reactive<MenuItem[]>([]);
-    const cartMap = reactive<MapState>({})
+    // const cartItems = reactive<MenuItem[]>([]);
+    const cartMap = reactive<MapState>({});
+    const localCart = ref<MapState>({});
+    const cloudCart = ref<MapState>({});
 
     // 新增item
     function addItemToCart(item: MenuItem) {
-        cartItems.push(item);
+        // cartItems.push(item);
         if (!cartMap[item.name!]) {
             cartMap[item.name!] = {
                 price: item.price!,
                 amount: 1,
                 imgUrl: item.fileName!,
-                category: item.category!
+                category: item.category!,
+                id: item.id!
             }
         } else {
             cartMap[item.name!].amount += 1
         }
         setCartToStorage();
+        // if (isAuth.value) {
+        //     memberSaveCart();
+        // }
     }
     // 刪除item
     function DELItemFromCart(target: string) {
@@ -73,15 +91,14 @@ export const useCartStore = defineStore('cart', () => {
 
     // storage 緩存
     const storageKey = 'cart';
-    const user = 'mock user';
-    const userID = '00000000';
+    // const user = 'mock user';
+    // const userID = '00000000';
     const expiredTime = 1000 * 60 * 60 * 24 * 2; // 2天
-    const stamp = ref(Date.now() + expiredTime);
+    const stamp = ref(Date.now());
 
     const cacheData = computed(() => {
         return {
-            user,
-            id: userID,
+            user: user.value,
             data: cartMap,
             expiration: stamp.value
         }
@@ -92,9 +109,9 @@ export const useCartStore = defineStore('cart', () => {
     }
 
     function setCartToStorage() {
-        if (cacheData.value.user == 'mock user') {
-            stamp.value = Date.now() + expiredTime;
-        }
+        if (isAuth.value) return
+        stamp.value = Date.now() + expiredTime;
+
         try {
             const data = JSON.stringify(cacheData.value);
             localStorage.setItem(storageKey, data);
@@ -116,15 +133,62 @@ export const useCartStore = defineStore('cart', () => {
         }
     }
 
-    function initCart() {
+    function initCartMap() {
         const cartData = getCartFromStorage();
         if (!cartData) return
+
         const { data } = cartData;
+
         Object.assign(cartMap, { ...data });
+        // localCart.value = { ...data };
     }
 
-    watch(cartMap, () => {
-        setCartToStorage()
+    async function initCartItems() {
+        try {
+            if (!menuStore.isLoaded) {
+                await fetchMenu();
+            }
+
+            for (const [key, val] of Object.entries(cartMap)) {
+                let item = getInfoByName(key);
+                if (item) {
+                    // cartItems.push(...Array(val.amount).fill(item));
+                }
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async function initCart() {
+        try {
+            initCartMap();
+            setCartToStorage();
+            await initCartItems();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    let saveCartTimer: ReturnType<typeof setTimeout> | null = null;
+    watch([cartMap, isAuth], async (nVal, oVal) => {
+        try {
+            if (nVal) {
+                storeUserProfile();
+                setCartToStorage();
+                if (oVal[1] && nVal[1]) {
+                    // if (saveCartTimer) clearTimeout(saveCartTimer);
+
+                    // saveCartTimer = setTimeout(async () => {
+                    await memberSaveCart();
+                    // saveCartTimer = null
+                    // }, 50);
+                    // await memberSaveCart();
+                }
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }, { deep: true })
 
     const headerCart = ref();
@@ -174,9 +238,106 @@ export const useCartStore = defineStore('cart', () => {
         }
     }
 
+    // 會員儲存 cart list
+    interface MemberCartList {
+        item: string,
+        quantity: number
+    }
+    const memberCartList = computed<MemberCartList[]>(() => {
+        return Object.values(cartMap).map((item) => {
+            return {
+                item: item.id,
+                quantity: item.amount
+            }
+        })
+    })
+
+    async function memberSaveCart() {
+        try {
+            const result = await reqSaveCartList(memberCartList.value, userToken.value);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    function setCloudCart(item: MenuItem) {
+        if (!cloudCart.value[item.name!]) {
+            cloudCart.value[item.name!] = {
+                price: item.price!,
+                amount: 1,
+                imgUrl: item.fileName!,
+                category: item.category!,
+                id: item.id!
+            }
+        } else {
+            cloudCart.value[item.name!].amount += 1
+        }
+    }
+
+    async function formattedCartData(data: ResData['cart']) {
+        try {
+            localCart.value = { ...cartMap };
+            if (!isLoaded.value) await fetchMenu();
+            const menu = fullMenu.value.flatMap((el) => {
+                return el.items
+            })
+            data.forEach((cartItem) => {
+                const target = menu.find((item) => {
+                    return item.id == cartItem.item
+                })
+                if (target) {
+                    for (let i = 0; i < cartItem.quantity; i++) {
+                        addItemToCart(target);
+                    }
+                }
+            })
+            // console.log(mergeLocalAndCloudCart(localCart.value, cloudCart.value));
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    function mergeLocalAndCloudCart(local: MapState, cloud: MapState) {
+        const mergeMap = new Map<keyof MapState, MapState[string]>();
+        const mergeCart: MapState = {};
+
+        for (const [key, val] of Object.entries(cloud)) {
+            mergeMap.set(key, val)
+        }
+
+        for (const [key, val] of Object.entries(local)) {
+            const cloudQuantity = mergeMap.get(key)?.amount || 0;
+            mergeMap.set(key, { ...val, amount: val.amount + cloudQuantity })
+        }
+
+        mergeMap.forEach((item, index) => {
+            mergeCart[index] = item;
+        })
+
+        return mergeCart
+    }
+
+    // 登入後清空本地cart
+    function clearLocalCart() {
+        localStorage.removeItem(storageKey);
+    }
+
+    async function memberLoadCart() {
+        try {
+            const { cart } = await reqGetMemberCart(userToken.value);
+            await formattedCartData(cart);
+            clearLocalCart()
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    //todo 會員更新 cart list
+
+
     return {
         isCartCardOpen,
-        cartItems,
+        // cartItems,
         cartMap,
         cartCounter,
         cartTotalPrice,
@@ -199,6 +360,10 @@ export const useCartStore = defineStore('cart', () => {
         getDiscountAmount,
         getCouponAmount,
         getTotalAmount,
-        getPurchaseOrder
+        getPurchaseOrder,
+        memberSaveCart,
+        memberLoadCart,
+        clearLocalCart,
+        // mergeLocalAndCloudCart
     }
 })

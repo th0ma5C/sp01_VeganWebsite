@@ -1,5 +1,6 @@
 const { Schema, model } = require('mongoose');
 const bcrypt = require('bcryptjs');
+const MenuItem = require('./MenuModel');
 
 const ShippingInfoSchema = new Schema({
     email: { type: String, required: true },
@@ -20,7 +21,13 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     joinPrivacyPolicy: { type: Boolean, required: true },
     verified: { type: Boolean, required: true },
-    shippingInfo: { type: ShippingInfoSchema }
+    shippingInfo: { type: ShippingInfoSchema },
+    cart: [
+        {
+            item: { type: Schema.Types.ObjectId, ref: 'menu.items', required: true },
+            quantity: { type: Number, required: true, default: 1 }
+        }
+    ]
 });
 
 userSchema.pre('save', async function (next) {
