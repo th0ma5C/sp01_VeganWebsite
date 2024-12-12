@@ -22,6 +22,7 @@ router.post('/saveList', authUser, async (req, res) => {
                     { $set: { cart: [] } },
                     { runValidators: true, upsert: true }
                 );
+                return res.status(200).json({ msg: 'member cart cleared' });
             }
             return res.status(404).json({ error: `One or more menu items not found` });
         }
@@ -55,13 +56,20 @@ router.get('/getList', authUser, async (req, res) => {
     }
 })
 
-// 更新user cart
-router.patch('/updateList', authUser, async (req, res) => {
+// user 送出訂單後 reset cart
+router.delete('/resetList', authUser, async (req, res) => {
     const { userID } = req.user;
     try {
+        await User.updateOne(
+            { _id: userID },
+            { $set: { cart: [] } },
+            { runValidators: true, upsert: true }
+        );
 
+        res.status(200).json({ message: 'Cart clear successfully', state: 'confirm' });
     } catch (error) {
-
+        console.log(error);
+        res.status(400).json({ error: 'Internal server error' });
     }
 })
 

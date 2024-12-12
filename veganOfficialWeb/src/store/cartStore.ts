@@ -4,7 +4,7 @@ import type { MenuItem } from "@/api/menu/type";
 import type { ResData } from "@/api/cart/type";
 import { useUserStore } from "./userStore";
 import { useMenuStore } from "./menuStore";
-import { reqGetMemberCart, reqSaveCartList } from "@/api/cart/CartRequest";
+import { reqGetMemberCart, reqResetMemberCart, reqSaveCartList } from "@/api/cart/CartRequest";
 import debounce from "lodash/debounce";
 
 
@@ -260,19 +260,19 @@ export const useCartStore = defineStore('cart', () => {
         }
     }
 
-    function setCloudCart(item: MenuItem) {
-        if (!cloudCart.value[item.name!]) {
-            cloudCart.value[item.name!] = {
-                price: item.price!,
-                amount: 1,
-                imgUrl: item.fileName!,
-                category: item.category!,
-                id: item.id!
-            }
-        } else {
-            cloudCart.value[item.name!].amount += 1
-        }
-    }
+    // function setCloudCart(item: MenuItem) {
+    //     if (!cloudCart.value[item.name!]) {
+    //         cloudCart.value[item.name!] = {
+    //             price: item.price!,
+    //             amount: 1,
+    //             imgUrl: item.fileName!,
+    //             category: item.category!,
+    //             id: item.id!
+    //         }
+    //     } else {
+    //         cloudCart.value[item.name!].amount += 1
+    //     }
+    // }
 
     async function formattedCartData(data: ResData['cart']) {
         try {
@@ -291,31 +291,30 @@ export const useCartStore = defineStore('cart', () => {
                     }
                 }
             })
-            // console.log(mergeLocalAndCloudCart(localCart.value, cloudCart.value));
         } catch (error) {
             console.log(error);
         }
     }
 
-    function mergeLocalAndCloudCart(local: MapState, cloud: MapState) {
-        const mergeMap = new Map<keyof MapState, MapState[string]>();
-        const mergeCart: MapState = {};
+    // function mergeLocalAndCloudCart(local: MapState, cloud: MapState) {
+    //     const mergeMap = new Map<keyof MapState, MapState[string]>();
+    //     const mergeCart: MapState = {};
 
-        for (const [key, val] of Object.entries(cloud)) {
-            mergeMap.set(key, val)
-        }
+    //     for (const [key, val] of Object.entries(cloud)) {
+    //         mergeMap.set(key, val)
+    //     }
 
-        for (const [key, val] of Object.entries(local)) {
-            const cloudQuantity = mergeMap.get(key)?.amount || 0;
-            mergeMap.set(key, { ...val, amount: val.amount + cloudQuantity })
-        }
+    //     for (const [key, val] of Object.entries(local)) {
+    //         const cloudQuantity = mergeMap.get(key)?.amount || 0;
+    //         mergeMap.set(key, { ...val, amount: val.amount + cloudQuantity })
+    //     }
 
-        mergeMap.forEach((item, index) => {
-            mergeCart[index] = item;
-        })
+    //     mergeMap.forEach((item, index) => {
+    //         mergeCart[index] = item;
+    //     })
 
-        return mergeCart
-    }
+    //     return mergeCart
+    // }
 
     // 登入後清空本地cart
     function clearLocalCart() {
@@ -332,12 +331,33 @@ export const useCartStore = defineStore('cart', () => {
         }
     }
 
-    //todo 會員更新 cart list
+    // todo 送出訂單後清空購物車
+    async function memberResetCart() {
+        try {
+            await reqResetMemberCart(userToken.value);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async function refreshMemberCart() {
+        try {
+            if (isAuth.value) {
+                for (let item in cartMap) {
+                    delete cartMap[item]
+                }
+                await memberResetCart();
+                await memberLoadCart();
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
 
 
     return {
         isCartCardOpen,
-        // cartItems,
         cartMap,
         cartCounter,
         cartTotalPrice,
@@ -364,6 +384,7 @@ export const useCartStore = defineStore('cart', () => {
         memberSaveCart,
         memberLoadCart,
         clearLocalCart,
-        // mergeLocalAndCloudCart
+        memberResetCart,
+        refreshMemberCart
     }
 })

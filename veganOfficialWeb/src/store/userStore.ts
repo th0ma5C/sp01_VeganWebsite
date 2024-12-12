@@ -6,6 +6,7 @@ import { computed, inject, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import type { UserOrder, ShippingInfo } from "@/api/order/type";
 import { useCartStore } from "./cartStore";
+import { useQuestionnaireStore } from "./questionnaireStore";
 
 interface LoginTokenPayload {
     username: string,
@@ -67,25 +68,12 @@ export const useUserStore = defineStore('user', () => {
     }
 
     async function logout() {
+        const questionnaireStore = useQuestionnaireStore();
         try {
             const result = await reqUserLogout();
             if (result.state == 'logout') {
-                setUserState({})
-                clearStorageProfile();
-                isAuth.value = false;
-                userToken.value = null;
-                if (Object.keys(userSavedCheckoutForm).length !== 0) {
-                    Object.keys(userSavedCheckoutForm).forEach(key => {
-                        delete userSavedCheckoutForm[key];
-                    });
-                }
-
-                userOrderList.value.length = 0;
-
-                const cartStore = useCartStore();
-                Object.keys(cartStore.cartMap).forEach(key => {
-                    delete cartStore.cartMap[key];
-                });
+                clearExpiredUserData();
+                questionnaireStore.clearSurveyData();
 
                 await router.replace('/home');
                 await router.push('/profile');
@@ -128,6 +116,26 @@ export const useUserStore = defineStore('user', () => {
     function getStorageToken() {
         const token = JSON.parse(localStorage.getItem(ProfileStorage_KEY) ?? 'null');
         return token ?? ''
+    }
+
+    // user token expired
+    function clearExpiredUserData() {
+        setUserState({})
+        clearStorageProfile();
+        isAuth.value = false;
+        userToken.value = null;
+        if (Object.keys(userSavedCheckoutForm).length !== 0) {
+            Object.keys(userSavedCheckoutForm).forEach(key => {
+                delete userSavedCheckoutForm[key];
+            });
+        }
+
+        userOrderList.value.length = 0;
+
+        const cartStore = useCartStore();
+        Object.keys(cartStore.cartMap).forEach(key => {
+            delete cartStore.cartMap[key];
+        });
     }
 
     // get saved shipping info
@@ -209,5 +217,6 @@ export const useUserStore = defineStore('user', () => {
         getUserOrderList,
         cancelOrder,
         refreshOrderList,
+        clearExpiredUserData
     }
 })

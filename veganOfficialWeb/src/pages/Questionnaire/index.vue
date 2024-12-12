@@ -25,8 +25,7 @@
                         上一頁
                     </div>
 
-                    <div class="state"
-                        @click="showResult()">
+                    <div class="state">
                         {{ currPage }}
                         / {{ QNR_pagesCount }}
                     </div>
@@ -245,7 +244,12 @@ import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import type { Birth, Info, Form } from '@/store/type/QNR_type'
 import { useMenuStore } from '@/store/menuStore';
+import { useUserStore } from '@/store/userStore';
 
+
+// user store
+const userStore = useUserStore();
+const { user } = storeToRefs(userStore);
 
 // loading overlay
 const loadingProgress = computed(() => ({
@@ -283,7 +287,9 @@ async function initQuestionnaire() {
     try {
         await updateProgress(25, fetchQuestionnaire());
         await updateProgress(50, initQNR());
-        if (QNR_isDone.value) await updateProgress(75, showResult());
+        if (QNR_isDone.value || surveyHasCompleted.value) {
+            await updateProgress(75, showResult());
+        }
         await loadingTimer(100);
     } catch (error) {
         console.log(error);
@@ -300,7 +306,8 @@ const {
     QNR_isDone,
     QNR_result,
     currPage,
-    formPageTranslateX
+    formPageTranslateX,
+    surveyHasCompleted
 } = storeToRefs(QuestionnaireStore);
 
 const {
@@ -415,11 +422,11 @@ function verifyInfoForm(form: typeof QNR_result.value) {
         verifyBirth(birth)
     ) {
         turnPage('+');
-        console.log('passed');
+        // console.log('passed');
     } else {
-        turnPage('+');
+        // turnPage('+');
         isFormVerified.value = false;
-        console.log('failed');
+        // console.log('failed');
     }
 }
 
@@ -469,8 +476,8 @@ async function showResult() {
         if (!isLoaded.value) {
             await fetchMenu();
         }
-        setQNR_result(mockData);
         QNR_isDone.value = true;
+        await setQNR_result(QNR_result.value);
         setQNRtoStorage();
         router.push('/questionnaire/result');
     } catch (error) {

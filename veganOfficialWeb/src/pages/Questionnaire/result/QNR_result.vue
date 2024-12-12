@@ -212,6 +212,7 @@ import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
 // questionnaireStore
 const questionnaireStore = useQuestionnaireStore();
 const { QNR_result, QNR_isDone } = storeToRefs(questionnaireStore);
+const { memberSaveResult, memberGetResult } = questionnaireStore;
 // const { info: { userName, gender, birth }, habit, flavor, ingredients, food, calories } = QNR_result.value;
 
 
@@ -588,7 +589,6 @@ function checkResultState() {
         Router.back()
     }
 }
-
 
 // 生命週期
 onBeforeMount(() => {

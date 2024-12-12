@@ -5,7 +5,7 @@ const { createHandler } = require("graphql-http/lib/use/express")
 // 引入路由模块
 const menu = require('./menu');
 const news = require('./news');
-const { getQuestionnaire } = require('./questionnaire');
+const survey = require('./questionnaire');
 const coupon = require('./coupon');
 const auth = require('./userAuth');
 const checkout = require('./checkout/checkout');
@@ -28,7 +28,8 @@ router.use('/graphql', createHandler({
 }));
 
 // 問卷api
-router.get('/questionnaire', getQuestionnaire);
+// router.get('/questionnaire', getQuestionnaire);
+router.use('/questionnaire', survey);
 
 // coupon api
 router.use('/coupon', coupon);

@@ -77,31 +77,34 @@
                 <form action=""
                     @submit="handleSubmit($event, onSubmit)">
                     <VField name="discountCode" as=""
-                        v-slot="{ field }">
+                        v-slot="{ field, resetField }">
                         <input ref="inputRef"
                             id="discountCode" type=text
                             autocomplete="off"
                             placeholder="" :="field"
-                            @blur="coupon.code = (field.value ?? '').trim()"
+                            @blur="handleBlur(field.value, resetField, $event)"
                             @keydown.enter="handleEnter(field.value)">
                     </VField>
                     <label for="discountCode">折扣碼</label>
 
-                    <div class="errorMsg" :style="{
-                        opacity: (isCouponPassed == false) && (coupon.code) ? 1 : 0
-                    }">
-                        <SvgIcon name="QNR_alert" width="18"
-                            height="18" color="#b3261e">
-                        </SvgIcon>
-                        <span>
-                            {{
-                                couponErrMsg
-                            }}
-                        </span>
-                    </div>
+                    <transition name="couponErrMsg">
+                        <div class="errorMsg"
+                            v-show="(isCouponPassed == false) && (coupon.code)">
+                            <SvgIcon name="QNR_alert"
+                                width="18" height="18"
+                                color="#b3261e">
+                            </SvgIcon>
+                            <span>
+                                {{
+                                    couponErrMsg
+                                }}
+                            </span>
+                        </div>
+                    </transition>
+
 
                     <div class="formBtn">
-                        <button type="button">
+                        <button>
                             套用
                         </button>
                     </div>
@@ -372,6 +375,13 @@ function handleEnter(val: string | null) {
     fetchCoupon()
 }
 
+function handleBlur(val: string, resetField: () => void, e: Event) {
+    if (val && !val.trim()) {
+        resetField();
+    }
+    return coupon.code = (val ?? '').trim()
+}
+
 async function fetchCoupon() {
     if (!coupon.code) {
         isCouponPassed.value = false;
@@ -391,6 +401,9 @@ async function fetchCoupon() {
         return true
     } catch (error) {
         isCouponPassed.value = false;
+        setTimeout(() => {
+            isCouponPassed.value = null;
+        }, 3000)
         // console.log(error);
         return false
     }
@@ -403,6 +416,7 @@ async function onSubmit<T extends CouponForm>(val: T, { resetForm }: FormActions
         if (isValidate) {
             resetForm()
             inputRef.value.blur();
+        } else {
         }
     } catch (error) {
         console.log(error);
@@ -890,6 +904,21 @@ onMounted(() => {
 
 .freightIllustrate-enter-to,
 .freightIllustrate-leave-from {
+    opacity: 1;
+}
+
+.couponErrMsg-enter-active,
+.couponErrMsg-leave-active {
+    transition: opacity .15s;
+}
+
+.couponErrMsg-enter-from,
+.couponErrMsg-leave-to {
+    opacity: 0;
+}
+
+.couponErrMsg-enter-to,
+.couponErrMsg-leave-from {
     opacity: 1;
 }
 </style>

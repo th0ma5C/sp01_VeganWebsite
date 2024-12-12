@@ -30,8 +30,18 @@ const reqGetMemberCart = (token: string | null) => {
     })
 }
 
+// after created order, reset cart
+const reqResetMemberCart = (token: string | null) => {
+    return request.delete('/api/cart/resetList', {
+        headers: {
+            Authorization: token ?? ''
+        }
+    })
+}
+
 
 export {
     reqSaveCartList,
-    reqGetMemberCart
+    reqGetMemberCart,
+    reqResetMemberCart
 }

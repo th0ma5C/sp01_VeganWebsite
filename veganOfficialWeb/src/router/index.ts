@@ -177,14 +177,17 @@ const router = createRouter({
 
 router.beforeEach(async (to, from) => {
     const userStore = useUserStore();
-    if (!userStore.isAuth) {
+    if (userStore.user.username !== 'anonymous' && !userStore.isAuth) {
         try {
             const { state, token } = await reqGetUser();
             if (state && state == 'confirm' && token) {
-                userStore.login(token);
+                await userStore.login(token);
+            } else {
+                userStore.clearExpiredUserData();
             }
         } catch (error) {
-            userStore.isAuth = false;
+            userStore.clearExpiredUserData();
+            console.log(error);
         }
     }
     return true

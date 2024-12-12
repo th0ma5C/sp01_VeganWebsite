@@ -475,7 +475,10 @@
                                                 as="div"
                                                 v-slot="{ message }"
                                                 class="errorMsg"
-                                                v-show="selectedDelivery == '超商'">
+                                                v-show="selectedDelivery == '超商'"
+                                                :style="{
+                                                    opacity: submitCount > 0 ? 1 : 0
+                                                }">
                                                 <SvgIcon
                                                     name="QNR_alert"
                                                     width="18"
@@ -597,9 +600,9 @@
 </template>
 
 <script setup lang="ts">
+//TODO: 金流api
 /**
- * todo:  DB儲存user購物車, 金流api, 購買清單組件
- * doing: 送出後轉至付款頁面
+ * doing: anonymous create order, 送出後轉至付款頁面
  * ------------------------------------------
  * //delivery payment bind value
  * //profile
@@ -617,6 +620,8 @@
  * //縣市選完後沒有關閉,選擇城市後選擇鄉鎮沒有移至頂端
  * //儲存結帳資訊的初始化
  * //重新整理信箱、姓名遺失->若登入過會顯示，若在結帳業重新整理會消失
+ * //DB儲存user購物車
+ * //購買清單組件
  */
 
 import CheckCartList from './CheckCartList/CheckCartList.vue';
@@ -634,11 +639,17 @@ import { useUserStore } from '@/store/userStore';
 import { reqCreateOrder, reqGetUserShippingInfo, reqVerifyItemPrice } from '@/api/order/order';
 import { onBeforeRouteLeave, useRouter } from 'vue-router';
 import { reqGetUser } from '@/api/userAuth';
+import { reqResetMemberCart } from '@/api/cart/CartRequest';
 
 // 購物車
 const cartStore = useCartStore();
 const { isCheckout } = storeToRefs(cartStore);
-const { toggleIsCheckout, getCartState, getPurchaseOrder } = cartStore;
+const { toggleIsCheckout,
+    getCartState,
+    getPurchaseOrder,
+    memberLoadCart,
+    memberResetCart,
+    refreshMemberCart } = cartStore;
 
 // 路由
 const router = useRouter();
@@ -922,7 +933,7 @@ watch([() => selectedCity.city, selectedTown, addrInput], async (nVal) => {
 // user store
 const userStore = useUserStore();
 const { getSavedShippingInfo, getUserOrderList } = userStore;
-const { isAuth, user, userSavedCheckoutForm } = storeToRefs(userStore);
+const { isAuth, user, userSavedCheckoutForm, userToken } = storeToRefs(userStore);
 
 const checkoutForm = ref();
 const isFormInit = ref(false);
@@ -974,6 +985,7 @@ async function createOrder(form: Record<string, any>) {
         orderProcessing.value = true;
         const { state } = await reqCreateOrder(newOrder(form));
         if (state == 'confirm') {
+            await refreshMemberCart();
             await getUserOrderList();
             await router.replace('/profile/account')
         }
@@ -1174,6 +1186,7 @@ onUnmounted(() => {
         bottom: -75%;
         left: 0%;
         transform: translate(0%, -50%);
+        transition: opacity .15s;
     }
 }
 
