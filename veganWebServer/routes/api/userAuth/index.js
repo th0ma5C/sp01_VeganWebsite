@@ -4,7 +4,7 @@ const router = express.Router();
 
 const User = require('@models/User');
 const jwt = require('jsonwebtoken');
-const { validateRegister, validateLogin, authToken, authJWT } = require('@middlewares/userValidator');
+const { validateRegister, validateLogin, authToken, authJWT, authUser } = require('@middlewares/userValidator');
 
 const { mailOptions, getTransporter } = require('./nodemailer');
 
@@ -90,10 +90,10 @@ router.post('/tokenLogin', authJWT, async (req, res) => {
     }
 })
 
-router.get('/profile', authToken, async (req, res) => {
+router.get('/profile', authUser, async (req, res) => {
     try {
-        const { email } = req.user;
-        const user = await User.findOne({ email });
+        const { userID } = req.user;
+        const user = await User.findById(userID);
         const token = jwt.sign(
             { username: user.username, email: user.email, userID: user._id },
             process.env.JWT_SECRET,
@@ -106,13 +106,14 @@ router.get('/profile', authToken, async (req, res) => {
             maxAge: 1000 * 60 * 60 * 24 // 1 day
         });
 
-        res.json({
+        res.status(200).json({
             message: '歡迎',
             token,
             state: 'confirm'
         });
     } catch (error) {
         console.log(error);
+        res.status(500).json({ message: 'Invalid request' });
     }
 })
 
@@ -127,6 +128,7 @@ router.post('/logout', async (req, res) => {
         res.status(200).json({ message: 'Logged out successfully', state: 'logout' });
     } catch (error) {
         console.log(error);
+        res.status(400).json({ message: 'Invalid request' });
     }
 })
 
@@ -137,7 +139,7 @@ router.post('/send-verifyEmail', async (req, res) => {
         const token = jwt.sign({ userID, email: to }, process.env.JWT_SECRET, { expiresIn: '1h' });
         const options = {
             ...mailOptions,
-            text: `請點擊以下連結來驗證你的信箱: ${to}`,
+            text: `請點擊以下連結來驗證你的信箱(連結將在一小時後失效): ${to}`,
             html: `<p>請點擊以下連結來驗證你的信箱: <a href="http://localhost:3000/api/auth/verify?token=${token}">驗證連結</a></p>`,
         }
         const transporter = getTransporter();

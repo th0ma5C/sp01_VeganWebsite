@@ -23,7 +23,7 @@ const reqGetQuestionnaire = (params?: any) => request.get<any, resType.Questionn
 const reqSaveSurveyResult = (result: any, token?: string) => {
     return request.post('/api/questionnaire/saveResult', {
         headers: {
-            Authorization: token ?? ''
+            Authorization: token
         },
         data: {
             result
@@ -35,7 +35,7 @@ const reqSaveSurveyResult = (result: any, token?: string) => {
 const reqGetSavedResult = (token?: string) => {
     return request.get<any, SurveyResponse>('/api/questionnaire/result', {
         headers: {
-            Authorization: token ?? ''
+            Authorization: token
         }
     })
 }

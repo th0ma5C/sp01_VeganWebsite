@@ -49,8 +49,10 @@ const reqUserLogout = () => {
 }
 
 const reqRedirectLogin = (params: any) => {
-    return request.post<any, AuthResData>('api/auth/tokenLogin', {
-        ...params
+    return request.post<any, AuthResData>('api/auth/tokenLogin', null, {
+        headers: {
+            Authorization: params.token
+        }
     })
 }
 

@@ -8,7 +8,7 @@ const reqVerifyItemPrice = (params: any) => {
 }
 
 // user shipping info
-const reqGetUserShippingInfo = (token: string) => {
+const reqGetUserShippingInfo = (token: string | null) => {
     return request.get<any, OrderResData>('/api/order/getShippingInfo', {
         headers: {
             Authorization: token
@@ -24,7 +24,7 @@ const reqCreateOrder = (params: any) => {
 }
 
 // 查詢訂單
-const reqGetUserOrder = (token: string) => {
+const reqGetUserOrder = (token: string | null) => {
     return request.get<any, OrderResData>('/api/order/userOrderList', {
         headers: {
             Authorization: token
@@ -33,7 +33,7 @@ const reqGetUserOrder = (token: string) => {
 }
 
 // 取消訂單
-const reqCancelUserOrder = (token: string, orderID: string) => {
+const reqCancelUserOrder = (token: string | null, orderID: string) => {
     return request.patch<any, OrderResData>(`/api/order/${orderID}`, {
         headers: {
             Authorization: token
@@ -42,8 +42,6 @@ const reqCancelUserOrder = (token: string, orderID: string) => {
 }
 
 // 修改訂單
-
-
 
 
 export {

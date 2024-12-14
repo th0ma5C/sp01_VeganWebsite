@@ -987,7 +987,9 @@ async function createOrder(form: Record<string, any>) {
         if (state == 'confirm') {
             await refreshMemberCart();
             await getUserOrderList();
-            await router.replace('/profile/account')
+            isAuth.value ?
+                await router.replace('/profile/account') :
+                await router.replace('/');
         }
     } catch (error) {
         console.log(error);

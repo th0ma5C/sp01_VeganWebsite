@@ -13,7 +13,7 @@ import type { ResData } from './type'
 const reqSaveCartList = (params: any, token: string | null) => {
     return request.post('/api/cart/saveList', {
         headers: {
-            Authorization: token ?? ''
+            Authorization: token
         },
         data: {
             cart: params
@@ -25,7 +25,7 @@ const reqSaveCartList = (params: any, token: string | null) => {
 const reqGetMemberCart = (token: string | null) => {
     return request.get<any, ResData>('/api/cart/getList', {
         headers: {
-            Authorization: token ?? ''
+            Authorization: token
         }
     })
 }
@@ -34,7 +34,7 @@ const reqGetMemberCart = (token: string | null) => {
 const reqResetMemberCart = (token: string | null) => {
     return request.delete('/api/cart/resetList', {
         headers: {
-            Authorization: token ?? ''
+            Authorization: token
         }
     })
 }

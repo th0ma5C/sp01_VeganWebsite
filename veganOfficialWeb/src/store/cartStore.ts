@@ -340,6 +340,12 @@ export const useCartStore = defineStore('cart', () => {
         }
     }
 
+    function guestResetCart() {
+        for (let i in cartMap) {
+            delete cartMap[i];
+        }
+    }
+
     async function refreshMemberCart() {
         try {
             if (isAuth.value) {
@@ -348,6 +354,8 @@ export const useCartStore = defineStore('cart', () => {
                 }
                 await memberResetCart();
                 await memberLoadCart();
+            } else {
+                guestResetCart();
             }
         } catch (error) {
             console.log(error);

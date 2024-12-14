@@ -20,7 +20,9 @@ const OrderItemSchema = new Schema({
 });
 
 const PurchaseOrderSchema = new Schema({
-    userID: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    userID: {
+        type: Schema.Types.Mixed, required: true, index: true
+    },
     orderList: { type: [OrderItemSchema], required: true },
     total: { type: Number, required: true },
     freightFee: { type: Number, required: true },

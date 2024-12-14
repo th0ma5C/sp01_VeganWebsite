@@ -1,6 +1,7 @@
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const User = require('@models/User');
+const Order = require('@models/OrderModel');
 
 const validateRegister = [
     body('username').notEmpty().withMessage('請輸入用戶名'),
@@ -57,24 +58,38 @@ function authToken(req, res, next) {
 }
 
 async function authJWT(req, res, next) {
-    const { token } = req.body;
-
+    const token = req.cookies.token ?? req.headers.authorization;
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const email = decoded.email;
-        const user = await User.findOne({ email });
+        const { email, isGuest = false, userID = null } = jwt.verify(token, process.env.JWT_SECRET);
+        if (isGuest) {
+            const token = jwt.sign(
+                { email, userID, isGuest },
+                process.env.JWT_SECRET,
+                { expiresIn: '1d' }
+            );
+            return res.status(200).json({
+                token,
+                msg: 'guest check order'
+            })
+        }
+
+        let user = await User.findOne({ email });
+
         if (!user) {
             throw new Error('User Error');
         }
+
         req.user = user;
         next();
     } catch (error) {
+        console.log(error);
         res.status(403).json({ message: '請重新登入', state: 'denied' });
     }
 }
 
 function authUser(req, res, next) {
     const token = req.cookies.token ?? req.headers.authorization;
+    // const { email, userID, isGuest } = jwt.verify(token, process.env.JWT_SECRET)
 
     if (token) {
         jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
@@ -84,6 +99,19 @@ function authUser(req, res, next) {
             req.user = user;
             next();
         });
+        return
+    }
+    // else if (req.path == '/userOrderList' && isGuest) {
+    //     req.user = {
+    //         userID
+    //     }
+    //     return next()
+    // } 
+    else if ((req.path == '/createOrder' && !token)) {
+        const { purchaseOrder } = req.body.order;
+        req.user = { userID: purchaseOrder.userID };
+        req.isGuest = true;
+        return next()
     } else {
         return res.status(401).json({ message: 'Unauthorized' });
     }

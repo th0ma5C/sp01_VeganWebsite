@@ -52,15 +52,20 @@ export const useUserStore = defineStore('user', () => {
         setUserID(userID);
     }
 
-    async function login(token?: string) {
+    async function login(token?: string, isGuest?: boolean) {
         try {
             isAuth.value = true;
-            if (token) {
+            if (token && !isGuest) {
                 storeUserProfile(token)
                 loadUserProfile();
                 userToken.value = token;
             }
+
             const cartStore = useCartStore();
+            if (isGuest && token) {
+                userToken.value = token
+                return
+            }
             await cartStore.memberLoadCart();
         } catch (error) {
             console.log(error);

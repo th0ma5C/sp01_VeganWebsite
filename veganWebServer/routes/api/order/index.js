@@ -5,18 +5,17 @@ const { checkOrder, checkSub } = require('@middlewares/orderVerify');
 const User = require('@models/User');
 const Order = require('@models/OrderModel');
 const jwt = require('jsonwebtoken');
-const { orderMailer } = require('./nodemailer/mailer');
+const { orderMailer, guestOrderMailer } = require('./nodemailer/mailer');
 const { saveShippingInfo } = require('./saveShippingInfo/saveInfo')
-/**
- * todo: 訂購身分驗證, 價格驗算, 訂購成功email
- * doing:  刪 改 查
- * ---------------------------------------------
- * //下訂email
- */
+const mongoose = require('mongoose');
+
+
 
 // 查詢訂單DB
-async function findOrderbyUserID(userID) {
+async function findOrderbyUserID(id) {
     try {
+        const isGuestID = /^[a-zA-Z0-9]{6}$/.test(id);
+        const userID = isGuestID ? id : new mongoose.Types.ObjectId(id);
         const orders = await Order.find({ 'purchaseOrder.userID': userID })
             .lean();
         return orders;
@@ -37,8 +36,9 @@ router.post('/verifyPurchaseOrder', checkOrder, async (req, res) => {
 })
 
 // 創建訂單
-router.post('/createOrder', [authToken, checkSub], async (req, res) => {
+router.post('/createOrder', [authUser, checkSub], async (req, res) => {
     const { userID } = req.user;
+    const isGuest = req.isGuest ?? false;
     const { shippingInfo, purchaseOrder } = req.body.order;
     const newOrder = new Order({
         shippingInfo,
@@ -48,9 +48,9 @@ router.post('/createOrder', [authToken, checkSub], async (req, res) => {
     try {
         const savedOrder = await newOrder.save();
 
-        await orderMailer(shippingInfo.consigneeName, userID, savedOrder._id);
+        await orderMailer(shippingInfo.consigneeName, userID, savedOrder._id, shippingInfo.email, isGuest);
 
-        if (shippingInfo.saveInfo) {
+        if (shippingInfo.saveInfo && !isGuest) {
             await saveShippingInfo(userID, shippingInfo);
         }
 
@@ -61,21 +61,6 @@ router.post('/createOrder', [authToken, checkSub], async (req, res) => {
     }
 });
 
-// function authUser(req, res, next) {
-//     const token = req.cookies.token ?? req.headers.authorization;
-
-//     if (token) {
-//         jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-//             if (err) {
-//                 return res.status(403).json({ message: 'Invalid token', state: 'denied' });
-//             }
-//             req.user = user;
-//             next();
-//         });
-//     } else {
-//         return res.status(401).json({ message: 'Unauthorized' });
-//     }
-// }
 
 // shipping info
 router.get('/getShippingInfo', authUser, async (req, res) => {
@@ -144,6 +129,33 @@ router.patch('/:orderID', authUser, async (req, res) => {
 
 // 付款
 
+// doing: guest create order
+// TODO:  ship info page, guest service popover
+router.post('/guest/createOrder', async (req, res) => {
+    try {
+        const { guestID } = req.user;
+        const { shippingInfo, purchaseOrder } = req.body.order;
+        const newOrder = new Order({
+            shippingInfo,
+            purchaseOrder,
+        });
+
+        const savedOrder = await newOrder.save();
+
+        await orderMailer(shippingInfo.consigneeName, guestID, savedOrder._id, shippingInfo.email);
+
+        res.status(200).json({ message: '訂單已建立', state: 'confirm' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to create order' });
+    }
+});
+
+
+
+module.exports = router;
+
+// redis cache time spend test code
 // router.post('/test', async (req, res) => {
 //     try {
 //         const { list } = req.body;
@@ -178,4 +190,3 @@ router.patch('/:orderID', authUser, async (req, res) => {
 // })
 
 
-module.exports = router;

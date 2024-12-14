@@ -249,8 +249,8 @@ const loginSchema = yup.object({
 
 // 路由跳轉
 const router = useRouter();
-function routerTo(route: string) {
-    router.push(route)
+async function routerTo(route: string) {
+    await router.push(route)
 }
 
 // 登入 api req
@@ -281,6 +281,11 @@ const { login, setEmail } = userStore;
 
 
 // 跳轉處理
+interface RedirectResTokenDecoded {
+    email: string,
+    userID: string,
+    isGuest: boolean
+}
 const route = useRoute();
 
 async function handleEmailRedirect() {
@@ -288,9 +293,12 @@ async function handleEmailRedirect() {
 
     try {
         const JWT = route.query.token as string;
+        const decoded = jwtDecode(JWT);
+        console.log(decoded);
         const { token } = await reqRedirectLogin({ token: JWT });
-        login(token);
-        routerTo('/profile/account');
+        const { isGuest } = jwtDecode<RedirectResTokenDecoded>(token!);
+        await login(token, isGuest)
+        await routerTo('/profile/account');
         return
     } catch (error) {
         console.log(error);
