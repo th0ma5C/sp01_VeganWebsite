@@ -2,10 +2,11 @@
     <div class="orderContainer">
         <div class="username">
             <h1>
-                {{ user.username }} 您好
+                {{ showUsername }} {{ welcomeWords }}
             </h1>
 
-            <button @click="logout">登出</button>
+            <button v-show="showUsername !== ''"
+                @click="logout">登出</button>
         </div>
 
         <div class="listContainer">
@@ -32,7 +33,9 @@
                                 selectedTab: tabName == currTab,
                                 unselected: section !== currBranch
                             }">
-                            <h3 class="subTab">
+                            <h3 class="subTab" :class="{
+                                emptyList: (index == 1 || index == 2) && userOrderList.length == 0
+                            }">
                                 {{ section }}
                             </h3>
                         </div>
@@ -48,14 +51,20 @@
             </nav>
 
             <div class="tabContainer">
-                <section>
-                    <Delivering :selectBranch="currBranch">
-                    </Delivering>
-                </section>
+                <transition-group name="switchTab">
+                    <section v-show="currTab == '購買清單'"
+                        key="購買清單">
+                        <Delivering
+                            :selectBranch="currBranch">
+                        </Delivering>
+                    </section>
 
-                <section v-show="false">
-                    <h2>用戶設定</h2>
-                </section>
+                    <section v-show="currTab == '用戶設定'"
+                        key="用戶設定">
+                        <Setting></Setting>
+                    </section>
+                </transition-group>
+
             </div>
         </div>
     </div>
@@ -72,14 +81,23 @@
  */
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, watch, ref, type Ref } from 'vue';
+import { computed, onMounted, watch, ref, type Ref, shallowRef } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import Delivering from './tab1/Delivering.vue';
+import Setting from './tab2/Setting.vue';
+import { jwtDecode } from 'jwt-decode';
 
 // user store
 const userStore = useUserStore();
-const { getUserOrderList, logout } = userStore;
-const { isAuth, user, userOrderList } = storeToRefs(userStore);
+const { getUserOrderList, logout, clearExpiredUserData } = userStore;
+const { isAuth, user, userOrderList, userToken } = storeToRefs(userStore);
+
+const showUsername = computed(() => {
+    if (user.value.username == 'anonymous') {
+        return ''
+    }
+    return user.value.username
+})
 
 async function fetchOrder() {
     try {
@@ -123,13 +141,16 @@ function switcher(target: Ref) {
     }
 }
 
-const currTab = ref('購買清單')
+const currTab = ref('購買清單');
 const switchTab = switcher(currTab);
 
 // 切換branch
 type CurrBranch = typeof tabs['購買清單'][number];
 const currBranch = ref<CurrBranch>('全部');
-const switchBranch = switcher(currBranch);
+const switchBranch = (target: string) => {
+    if (userOrderList.value.length == 0) return
+    switcher(currBranch)(target);
+};
 const sliderTranslate = computed(() => {
     switch (currBranch.value) {
         case '待付款':
@@ -147,10 +168,39 @@ const sliderTranslate = computed(() => {
     }
 })
 
+// welcome words
+const welcomeWords = computed(() => {
+    const now = new Date().getHours();
+    let word = '';
+
+    if (now < 12 && now >= 5) {
+        word = '早安'
+    } else if (now >= 12 && now < 18) {
+        word = '午安'
+    } else {
+        word = '晚安'
+    }
+
+    return word
+})
+
 // router hook
-onBeforeRouteLeave((to, from) => {
+interface RedirectResTokenDecoded {
+    email: string,
+    userID: string,
+    isGuest: boolean
+}
+onBeforeRouteLeave(async (to, from) => {
     if (to.path == '/profile' && isAuth.value) {
         return { path: '/home' }
+    }
+
+    const JWT = userToken.value as string;
+    if (!JWT) return true
+    const decoded = jwtDecode<RedirectResTokenDecoded>(JWT);
+    if (user.value.userID !== decoded.userID && decoded.isGuest) {
+        clearExpiredUserData()
+        return true
     }
 })
 
@@ -227,6 +277,7 @@ onMounted(async () => {
         li {
             overflow: hidden;
             position: relative;
+            user-select: none;
 
             h2 {
                 font-size: 1.25rem;
@@ -278,13 +329,22 @@ onMounted(async () => {
                 font-size: 1rem;
                 padding: .5rem 0;
                 padding-left: 2.5rem;
-                cursor: pointer;
+                // cursor: pointer;
                 user-select: none;
                 // opacity: 0;
                 color: transparent;
                 // visibility: hidden;
                 transition: color .5s;
+
+                &:not(.emptyList) {
+                    cursor: pointer;
+                }
             }
+        }
+
+        .emptyList {
+            // pointer-events: none;
+            cursor: not-allowed;
         }
 
         .selectedTab {
@@ -304,6 +364,7 @@ onMounted(async () => {
         // border: 1px solid black;
         padding-left: 2rem;
         border-radius: 0 1rem 1rem 1rem;
+        position: relative;
 
         section {
             height: 100%;
@@ -320,10 +381,27 @@ onMounted(async () => {
         &>h3 {
             opacity: .5;
 
-            &:hover {
+            &:not(.emptyList):hover {
                 opacity: 1;
             }
         }
     }
+}
+
+.switchTab-enter-active,
+.switchTab-leave-active {
+    position: absolute;
+    width: calc(100% - 2rem);
+    transition: opacity .15s;
+}
+
+.switchTab-enter-from,
+.switchTab-leave-to {
+    opacity: 0;
+}
+
+.switchTab-enter-to,
+.switchTab-leave-from {
+    opacity: 1;
 }
 </style>

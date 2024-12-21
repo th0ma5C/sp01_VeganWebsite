@@ -167,8 +167,8 @@
             </div>
         </div>
         <!-- <button @click="login">登入測試</button> -->
-        <router-link to="/profile/account"
-            @click="login">登入測試</router-link>
+        <!-- <router-link to="/profile/account"
+            @click="login">登入測試</router-link> -->
     </div>
 
     <router-view v-else v-slot="{ Component, route }">
@@ -293,11 +293,9 @@ async function handleEmailRedirect() {
 
     try {
         const JWT = route.query.token as string;
-        const decoded = jwtDecode(JWT);
-        console.log(decoded);
         const { token } = await reqRedirectLogin({ token: JWT });
-        const { isGuest } = jwtDecode<RedirectResTokenDecoded>(token!);
-        await login(token, isGuest)
+        const decoded = jwtDecode<RedirectResTokenDecoded>(token!);
+        await login(token, decoded.isGuest)
         await routerTo('/profile/account');
         return
     } catch (error) {

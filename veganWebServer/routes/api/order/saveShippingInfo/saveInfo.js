@@ -1,25 +1,50 @@
 // 保存結帳資訊
-const User = require('@models/User');
+// const User = require('@models/User');
+const ShippingInfo = require('@models/ShippingInfoModel');
 
-async function saveShippingInfo(userId, info) {
+async function saveShippingInfo(data) {
     try {
-        // const user = await User.findById(userId);
-        // if (user) {
-        //     user.shippingInfo = info;
-        //     await user.save();
-        // }
-        await User.findByIdAndUpdate(
-            userId,
-            { $set: { 'shippingInfo': info } },
-            { runValidators: true, upsert: true }
-        );
-        return
+        return await ShippingInfo.create(data)
     } catch (error) {
         console.error("Error saving shipping info");
         throw error;
     }
 }
 
+async function deleteShippingInfo(userID) {
+    try {
+        return await ShippingInfo.deleteOne({ userID })
+    } catch (error) {
+        console.error("Error delete shipping info");
+        throw error;
+    }
+}
+
+async function editShippingInfo(data) {
+    try {
+        return await ShippingInfo.findOneAndUpdate(
+            { userID: data.userID },
+            { data },
+            { new: true }
+        )
+    } catch (error) {
+        console.error("Error edit shipping info");
+        throw error;
+    }
+}
+
+async function getShippingInfo(userID) {
+    try {
+        return await ShippingInfo.findOne({ userID });
+    } catch (error) {
+        console.error("Error get shipping info");
+        throw error;
+    }
+}
+
 module.exports = {
-    saveShippingInfo
+    saveShippingInfo,
+    deleteShippingInfo,
+    editShippingInfo,
+    getShippingInfo
 }

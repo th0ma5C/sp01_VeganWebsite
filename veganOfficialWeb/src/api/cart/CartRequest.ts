@@ -12,11 +12,12 @@ import type { ResData } from './type'
 // 儲存cart
 const reqSaveCartList = (params: any, token: string | null) => {
     return request.post('/api/cart/saveList', {
-        headers: {
-            Authorization: token
-        },
         data: {
             cart: params
+        }
+    }, {
+        headers: {
+            Authorization: token
         }
     })
 }

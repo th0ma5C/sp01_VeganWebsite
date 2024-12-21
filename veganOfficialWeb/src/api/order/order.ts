@@ -17,9 +17,13 @@ const reqGetUserShippingInfo = (token: string | null) => {
 }
 
 // 建立訂單
-const reqCreateOrder = (params: any) => {
+const reqCreateOrder = (params: any, token?: string) => {
     return request.post<any, OrderResData>('/api/order/createOrder', {
         ...params
+    }, {
+        headers: {
+            Authorization: token
+        }
     })
 }
 
@@ -34,7 +38,7 @@ const reqGetUserOrder = (token: string | null) => {
 
 // 取消訂單
 const reqCancelUserOrder = (token: string | null, orderID: string) => {
-    return request.patch<any, OrderResData>(`/api/order/${orderID}`, {
+    return request.patch<any, OrderResData>(`/api/order/${orderID}`, null, {
         headers: {
             Authorization: token
         }

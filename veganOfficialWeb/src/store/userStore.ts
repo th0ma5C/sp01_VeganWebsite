@@ -56,11 +56,11 @@ export const useUserStore = defineStore('user', () => {
         try {
             isAuth.value = true;
             if (token && !isGuest) {
+                console.log('object');
                 storeUserProfile(token)
                 loadUserProfile();
                 userToken.value = token;
             }
-
             const cartStore = useCartStore();
             if (isGuest && token) {
                 userToken.value = token
@@ -159,9 +159,10 @@ export const useUserStore = defineStore('user', () => {
         const token = userToken.value ?? getStorageToken();
         try {
             const { order } = await reqGetUserOrder(token);
+            await refreshShippingInfo()
             // const orderList = order?.map((item) => item.purchaseOrder);
             if (!order) return
-            return userOrderList.value = order
+            return userOrderList.value = [...order]
         } catch (error) {
             console.log(error);
         }
@@ -191,15 +192,24 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
+    // refresh user shipping info
+    async function refreshShippingInfo() {
+        try {
+            const info = await getSavedShippingInfo();
+            if (info && info['_id']) {
+                const { _id, ...filteredInfo } = info;
+                Object.assign(userSavedCheckoutForm, filteredInfo);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     // 在結帳頁刷新時可以復原已登入的使用者數據
     watch(userToken, async (nVal) => {
         if (nVal) {
             try {
-                const info = await getSavedShippingInfo();
-                if (info && info['_id']) {
-                    const { _id, ...filteredInfo } = info;
-                    Object.assign(userSavedCheckoutForm, filteredInfo);
-                }
+                await refreshShippingInfo()
             } catch (error) {
                 console.log(error);
             }
@@ -222,6 +232,7 @@ export const useUserStore = defineStore('user', () => {
         getUserOrderList,
         cancelOrder,
         refreshOrderList,
-        clearExpiredUserData
+        clearExpiredUserData,
+        refreshShippingInfo
     }
 })

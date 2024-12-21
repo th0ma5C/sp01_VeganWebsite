@@ -30,6 +30,14 @@
                     <div>
                     </div>
                 </div>
+
+                <div :class="{
+                    emptyList: showOrderList.length == 0
+                }" v-show="showOrderList.length == 0">
+                    <h3>
+                        沒有訂單
+                    </h3>
+                </div>
             </li>
 
             <li v-for="({ _id, orderID, shippingInfo, purchaseOrder, createdAt, statusBtnList, statusStyleIndex }, index) in showOrderList"
@@ -244,7 +252,7 @@ import Dialog from './dialog/Dialog.vue';
 // pinia
 const userStore = useUserStore();
 // const { getUserOrderList, logout } = userStore;
-const { userOrderList } = storeToRefs(userStore);
+const { userOrderList, userSavedCheckoutForm } = storeToRefs(userStore);
 const { cancelOrder, refreshOrderList } = userStore;
 
 const menuStore = useMenuStore();
@@ -508,6 +516,13 @@ h2 {
 
     .orderHeader {
         margin-bottom: .5rem;
+    }
+
+    .emptyList {
+        padding: 0 .5rem;
+        margin-top: 2.5rem;
+        color: rgba(0, 0, 0, 0.5);
+        width: calc(100% / 5.5 * 5);
     }
 
     .orderCompleted {

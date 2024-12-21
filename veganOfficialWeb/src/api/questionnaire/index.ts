@@ -22,12 +22,13 @@ const reqGetQuestionnaire = (params?: any) => request.get<any, resType.Questionn
 // member save survey result
 const reqSaveSurveyResult = (result: any, token?: string) => {
     return request.post('/api/questionnaire/saveResult', {
-        headers: {
-            Authorization: token
-        },
         data: {
             result
         }
+    }, {
+        headers: {
+            Authorization: token
+        },
     })
 }
 

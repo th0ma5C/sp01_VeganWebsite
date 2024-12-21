@@ -650,7 +650,6 @@ const amountSubtotal = computed(() => {
 const flyToCartEl = ref();
 const isFlightDelay = ref(false);
 emitter.on('navEvent', (e) => {
-    console.log('on nav event');
     isFlightDelay.value = e as boolean
 })
 

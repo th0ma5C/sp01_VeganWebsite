@@ -155,13 +155,6 @@
                                                 invalidInput: !meta.valid && submitCount > 0
                                             }">
                                     </VField>
-                                    <!-- <label for="city"
-                                        class="staticLabel"
-                                        :class="{
-                                            selectingOptions: isOptionsOpen || selectedCity.city !== ''
-                                        }">
-                                        縣市
-                                    </label> -->
 
                                     <ErrorMessage
                                         name="city" as="div"
@@ -660,7 +653,6 @@ const errMsg = {
     email: '請輸入正確信箱格式',
     contactNo: '請輸入有效的電話號碼',
     postal: '請輸入有效的郵遞區號',
-
 }
 yup.setLocale({
     mixed: {
@@ -705,7 +697,7 @@ let schema = yup.object({
     subNews: yup.boolean(),
     deliveryType: yup.string(),
     paymentType: yup.string(),
-})
+});
 
 const verifiedSchema = computed(() => {
     if (selectedDelivery.value == '宅配') {
@@ -729,9 +721,9 @@ const verifiedSchema = computed(() => {
     return schema
 })
 
-function onSubmit(values?: Record<string, any>) {
-    console.log(JSON.stringify(values, null, 2));
-}
+// function onSubmit(values?: Record<string, any>) {
+//     console.log(JSON.stringify(values, null, 2));
+// }
 
 // const expressSchema = yup.object({
 //     email: yup.string().trim().required('此欄不能空白').email(),
@@ -795,11 +787,14 @@ watch(() => selectedCity.city, async (nVal) => {
         showSpinner.value = true;
         townList.value = [];
         townList.value = await city.getShowTownList(nVal);
-        if (townList.value.includes(selectedTown.value)) return
+        if (townList.value.includes(selectedTown.value)) {
+            showSpinner.value = false;
+            return
+        }
         selectedTown.value = '';
         showSpinner.value = false;
     }
-})
+}, { immediate: true })
 
 // selected town
 const selectedTown = ref('');
@@ -956,6 +951,16 @@ userStore.$subscribe(async (_, state) => {
                 isFormInit.value = true
             }, 1000)
         })
+    } else if (state.isAuth && Object.keys(state.userSavedCheckoutForm).length == 0) {
+        nextTick(() => {
+            checkoutForm.value.setValues({
+                email: user.value.email,
+                consigneeName: user.value.username
+            })
+            setTimeout(() => {
+                isFormInit.value = true
+            }, 1000)
+        })
     }
 }, { immediate: true })
 
@@ -985,6 +990,7 @@ async function createOrder(form: Record<string, any>) {
         orderProcessing.value = true;
         const { state } = await reqCreateOrder(newOrder(form));
         if (state == 'confirm') {
+            window.removeEventListener('beforeunload', handleRefreshAlert);
             await refreshMemberCart();
             await getUserOrderList();
             isAuth.value ?
@@ -1001,6 +1007,7 @@ const formHasChanged = ref(false);
 const isFormFinish = ref(false);
 function handleFormChange(meta: FormMeta<Record<string, string>>) {
     formHasChanged.value = meta.dirty;
+    isFormFinish.value = meta.valid
 }
 
 function handleRefreshAlert(e: Event) {

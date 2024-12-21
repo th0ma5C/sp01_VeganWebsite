@@ -22,7 +22,7 @@ async function mailOptions(username, orderID, userID, userEmail, isGuest) {
 
         const userToken = isGuest ?
             jwt.sign({ userID, email: userEmail, isGuest }, process.env.JWT_SECRET, { expiresIn: '7d' }) :
-            jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            jwt.sign({ userID: user._id, email: user.email, isGuest }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
         return {
             from: 'thomas29111@gmail.com',

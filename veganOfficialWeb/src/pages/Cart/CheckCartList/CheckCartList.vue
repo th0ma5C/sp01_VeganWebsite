@@ -43,7 +43,9 @@
                 <li class="cartItem"
                     v-for="(item, index) in cartMap"
                     :key="index">
-                    <div class="imgContainer">
+                    <div class="imgContainer" :class="{
+                        saladBg: item.category == 'salad'
+                    }">
                         <img :src="item.imgUrl" alt="圖片">
                         <CartCounter :amount="item.amount"
                             class="counter">
@@ -89,7 +91,7 @@
 
                     <transition name="couponErrMsg">
                         <div class="errorMsg"
-                            v-show="(isCouponPassed == false) && (coupon.code)">
+                            v-show="(isCouponPassed == false) && (coupon.code) && submitCount != 0">
                             <SvgIcon name="QNR_alert"
                                 width="18" height="18"
                                 color="#b3261e">
@@ -237,7 +239,7 @@
                 <span>總計</span>
                 <span>${{
                     orderAmount.toLocaleString()
-                    }}</span>
+                }}</span>
             </div>
         </div>
 
@@ -266,7 +268,7 @@ import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
-    type FormActions,
+    type FormActions, type SubmissionHandler
 } from 'vee-validate';
 import { ref, computed, onMounted, reactive, watch } from 'vue';
 import * as yup from 'yup';
@@ -370,9 +372,9 @@ watch(couponAmount, (nVal) => {
     }
 })
 
-function handleEnter(val: string | null) {
+function handleEnter(val: string) {
+    if (!val) return
     coupon.code = val ?? ''.trim();
-    fetchCoupon()
 }
 
 function handleBlur(val: string, resetField: () => void, e: Event) {
@@ -382,14 +384,14 @@ function handleBlur(val: string, resetField: () => void, e: Event) {
     return coupon.code = (val ?? '').trim()
 }
 
-async function fetchCoupon() {
+async function fetchCoupon(val: string) {
     if (!coupon.code) {
         isCouponPassed.value = false;
         return false
     }
 
     try {
-        const { data, message } = await reqFetchCoupon({ code: coupon.code });
+        const { data, message } = await reqFetchCoupon({ code: val });
         if (data) {
             ({ code: couponCode.value, value: couponAmount.value } = data)
             setTimeout(() => {
@@ -412,7 +414,7 @@ async function fetchCoupon() {
 
 async function onSubmit<T extends CouponForm>(val: T, { resetForm }: FormActions<T>) {
     try {
-        const isValidate = await fetchCoupon();
+        const isValidate = await fetchCoupon(val.discountCode);
         if (isValidate) {
             resetForm()
             inputRef.value.blur();
@@ -632,6 +634,10 @@ onMounted(() => {
             img {
                 border-radius: 1rem;
             }
+        }
+
+        .saladBg {
+            background: no-repeat url('@assets/img/Menu/bac_wood.jpg') center/contain;
         }
 
         .itemContent {

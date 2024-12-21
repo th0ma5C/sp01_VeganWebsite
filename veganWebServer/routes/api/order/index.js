@@ -4,26 +4,27 @@ const { authToken, authUser } = require('@middlewares/userValidator');
 const { checkOrder, checkSub } = require('@middlewares/orderVerify');
 const User = require('@models/User');
 const Order = require('@models/OrderModel');
+const ShippingInfo = require('@models/ShippingInfoModel');
 const jwt = require('jsonwebtoken');
 const { orderMailer, guestOrderMailer } = require('./nodemailer/mailer');
-const { saveShippingInfo } = require('./saveShippingInfo/saveInfo')
+const { saveShippingInfo, deleteShippingInfo, editShippingInfo, getShippingInfo } = require('./saveShippingInfo/saveInfo')
 const mongoose = require('mongoose');
 
 
 
-// 查詢訂單DB
-async function findOrderbyUserID(id) {
-    try {
-        const isGuestID = /^[a-zA-Z0-9]{6}$/.test(id);
-        const userID = isGuestID ? id : new mongoose.Types.ObjectId(id);
-        const orders = await Order.find({ 'purchaseOrder.userID': userID })
-            .lean();
-        return orders;
-    } catch (err) {
-        console.error('Error fetching purchase orders:', err);
-        throw err;
-    }
-}
+// 查詢訂單DB => done by mongoose middleware
+// async function findOrderbyUserID(id) {
+//     try {
+//         const isGuestID = /^[A-Za-z0-9_-]{6}$/.test(id);
+//         const userID = isGuestID ? id : new mongoose.Types.ObjectId(id);
+//         const orders = await Order.find({ 'purchaseOrder.userID': userID })
+//             .lean();
+//         return orders;
+//     } catch (err) {
+//         console.error('Error fetching purchase orders:', err);
+//         throw err;
+//     }
+// }
 
 // 驗證訂單
 router.post('/verifyPurchaseOrder', checkOrder, async (req, res) => {
@@ -40,18 +41,19 @@ router.post('/createOrder', [authUser, checkSub], async (req, res) => {
     const { userID } = req.user;
     const isGuest = req.isGuest ?? false;
     const { shippingInfo, purchaseOrder } = req.body.order;
-    const newOrder = new Order({
-        shippingInfo,
-        purchaseOrder
-    });
+    const newOrder = new Order({ shippingInfo, purchaseOrder });
 
     try {
         const savedOrder = await newOrder.save();
 
         await orderMailer(shippingInfo.consigneeName, userID, savedOrder._id, shippingInfo.email, isGuest);
 
-        if (shippingInfo.saveInfo && !isGuest) {
-            await saveShippingInfo(userID, shippingInfo);
+        if (shippingInfo.saveInfo) {
+            const form = {
+                userID,
+                ...shippingInfo
+            }
+            await saveShippingInfo(form);
         }
 
         res.status(200).json({ message: '訂單已建立', state: 'confirm' });
@@ -61,43 +63,103 @@ router.post('/createOrder', [authUser, checkSub], async (req, res) => {
     }
 });
 
+// save shipping info
+// router.post('/saveShippingInfo', authUser, async (req, res) => {
+//     try {
+//         const { userID } = req.user;
+//         const form = {
+//             userID,
+//             ...req.data.info
+//         };
+//         await saveShippingInfo(form);
+//     } catch (error) {
+//         res.status(500).json({ error: 'Failed to save info' })
+//     }
+// })
 
-// shipping info
+// get shipping info
 router.get('/getShippingInfo', authUser, async (req, res) => {
-    const decoded = req.user;
     try {
-        const user = await User.findById(decoded.userID);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        const { userID } = req.user;
+        const result = await getShippingInfo(userID);
+        if (!result) {
+            return res.status(404).json({ message: 'shippingInfo not found' });
         }
-
-        if (!user.shippingInfo) return res.status(200).json({
-            state: 'denied',
-            message: 'info not found'
-        });
-
         res.status(200).json({
             state: 'confirm',
-            shippingInfo: user.shippingInfo
+            shippingInfo: result
         });
-
     } catch (error) {
-        console.error('Error fetching user shipping info:', error);
-        res.status(500).json({ message: 'Server error' });
+        console.log(error);
+        res.status(500).json({ message: 'Failed to get info' });
     }
 })
+// router.get('/getShippingInfo', authUser, async (req, res) => {
+//     const { userID } = req.user;
+//     try {
+//         const order = await Order.findOne({ 'purchaseOrder.userID': userID }).sort({ createdAt: -1 });
 
+//         if (!order) {
+//             return res.status(404).json({ message: 'order not saved', state: 'denied' });
+//         }
+
+//         if (!order.shippingInfo || !order.shippingInfo.saveInfo) {
+//             return res.status(404).json({ message: 'info not saved', state: 'denied' });
+//         }
+
+//         res.status(200).json({
+//             state: 'confirm',
+//             shippingInfo: order.shippingInfo
+//         });
+
+//     } catch (error) {
+//         console.error('Error fetching user shipping info:', error);
+//         res.status(500).json({ message: 'Server error' });
+//     }
+// })
+
+// edit shipping info
+router.patch('/saveShippingInfo', authUser, async (req, res) => {
+    try {
+        const { userID } = req.user;
+        const form = {
+            userID,
+            ...req.data.shippingInfo
+        }
+        const result = await editShippingInfo(form);
+        res.status(200).json({
+            result,
+            state: 'confirm'
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Failed to update info' });
+    }
+})
+// delete shipping info
+router.delete('/saveShippingInfo', authUser, async (req, res) => {
+    try {
+        const { userID } = req.user;
+        await deleteShippingInfo(userID);
+        res.status(200).json({
+            message: 'info deleted',
+            state: 'confirm'
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Failed to delete info' });
+    }
+})
 
 // 查詢訂單
 router.get('/userOrderList', authUser, async (req, res) => {
     const decoded = req.user;
     try {
-        const order = await findOrderbyUserID(decoded.userID);
+        const order = await Order.find({ 'purchaseOrder.userID': decoded.userID }).lean();
 
         if (!order || order.length === 0) {
             return res.status(404).json({ message: 'order not found' });
         }
-
         res.status(200).json({ order, state: 'confirm' });
     } catch (error) {
         console.error('Error fetching order:', error);
@@ -131,25 +193,25 @@ router.patch('/:orderID', authUser, async (req, res) => {
 
 // doing: guest create order
 // TODO:  ship info page, guest service popover
-router.post('/guest/createOrder', async (req, res) => {
-    try {
-        const { guestID } = req.user;
-        const { shippingInfo, purchaseOrder } = req.body.order;
-        const newOrder = new Order({
-            shippingInfo,
-            purchaseOrder,
-        });
+// router.post('/guest/createOrder', async (req, res) => {
+//     try {
+//         const { guestID } = req.user;
+//         const { shippingInfo, purchaseOrder } = req.body.order;
+//         const newOrder = new Order({
+//             shippingInfo,
+//             purchaseOrder,
+//         });
 
-        const savedOrder = await newOrder.save();
+//         const savedOrder = await newOrder.save();
 
-        await orderMailer(shippingInfo.consigneeName, guestID, savedOrder._id, shippingInfo.email);
+//         await orderMailer(shippingInfo.consigneeName, guestID, savedOrder._id, shippingInfo.email);
 
-        res.status(200).json({ message: '訂單已建立', state: 'confirm' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to create order' });
-    }
-});
+//         res.status(200).json({ message: '訂單已建立', state: 'confirm' });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Failed to create order' });
+//     }
+// });
 
 
 

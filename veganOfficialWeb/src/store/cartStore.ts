@@ -169,20 +169,19 @@ export const useCartStore = defineStore('cart', () => {
             console.log(error);
         }
     }
-
     let saveCartTimer: ReturnType<typeof setTimeout> | null = null;
+    const DEBOUNCE_DELAY = 3000;
     watch([cartMap, isAuth], async (nVal, oVal) => {
         try {
             if (nVal) {
                 storeUserProfile();
                 setCartToStorage();
                 if (oVal[1] && nVal[1]) {
-                    // if (saveCartTimer) clearTimeout(saveCartTimer);
-
-                    // saveCartTimer = setTimeout(async () => {
-                    await memberSaveCart();
-                    // saveCartTimer = null
-                    // }, 50);
+                    if (saveCartTimer) clearTimeout(saveCartTimer);
+                    saveCartTimer = setTimeout(async () => {
+                        await memberSaveCart();
+                        saveCartTimer = null
+                    }, DEBOUNCE_DELAY);
                     // await memberSaveCart();
                 }
             }

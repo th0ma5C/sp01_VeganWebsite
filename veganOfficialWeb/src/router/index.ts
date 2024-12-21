@@ -13,10 +13,16 @@ import { useUserStore } from '@/store/userStore'
 import { useNewsStore } from "@/store/newsStore";
 import { useMenuStore } from "@/store/menuStore";
 import { storeToRefs } from "pinia";
-import { reqGetUser } from "@/api/userAuth";
+import { reqGetUser, reqRedirectLogin } from "@/api/userAuth";
+import { jwtDecode } from "jwt-decode";
 // import NProgress from 'nprogress'
 // import 'nprogress/nprogress.css'
 
+interface RedirectResTokenDecoded {
+    email: string,
+    userID: string,
+    isGuest: boolean
+}
 
 const routes = [
     {
@@ -176,7 +182,27 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from) => {
+    // if (to.path == '/profile' && to.query.token) return true;
+
     const userStore = useUserStore();
+
+    if (to.path == '/profile' && to.query.token) {
+        try {
+            const JWT = to.query.token as string
+            const decoded = jwtDecode<RedirectResTokenDecoded>(JWT);
+            if (decoded.isGuest) {
+                await userStore.logout();
+                const { token } = await reqRedirectLogin({ token: JWT });
+                await userStore.login(token, decoded.isGuest)
+            } else {
+                return true
+            }
+        } catch (error) {
+            console.log(error);
+        }
+        return '/profile/account'
+    }
+
     if (userStore.user.username !== 'anonymous' && !userStore.isAuth) {
         try {
             const { state, token } = await reqGetUser();
