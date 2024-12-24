@@ -210,6 +210,7 @@ import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { jwtDecode } from 'jwt-decode';
+import { useToastStore } from '@/store/toastStore';
 
 // 社群登入圖片路徑
 const loginIcon = ['Fb.png', 'Google.png', 'Line.png'];
@@ -263,11 +264,13 @@ interface ErrorResponse {
 const registerMsg = ref<string | null>(null);
 
 async function loginReq(form: Record<string, any>) {
+    const toastStore = useToastStore();
     try {
         const result = await reqUserLogin(form as ReqForm);
         const { token } = result;
         login(token);
-        routerTo('/profile/account')
+        routerTo('/profile/account');
+        toastStore.addNotification(`${user.value.username}，歡迎！`)
     } catch (error) {
         const message = (error as AxiosError<ErrorResponse>).response?.data.message;
         registerMsg.value = message ?? '未知錯誤'

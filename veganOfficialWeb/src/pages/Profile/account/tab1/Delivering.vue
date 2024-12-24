@@ -740,7 +740,7 @@ h2 {
         flex: 1;
 
         h4 {
-            @apply mb-6;
+            @apply mb-2;
 
             font-size: 1.25rem;
             font-variation-settings: 'wght' 450;
@@ -751,7 +751,7 @@ h2 {
         }
 
         .consigneeName {
-            @apply mb-3 text-lg opacity-100;
+            @apply mb-1 text-lg opacity-100;
         }
     }
 

@@ -7,6 +7,7 @@ import { useRouter } from "vue-router";
 import type { UserOrder, ShippingInfo } from "@/api/order/type";
 import { useCartStore } from "./cartStore";
 import { useQuestionnaireStore } from "./questionnaireStore";
+import { useToastStore } from "./toastStore";
 
 interface LoginTokenPayload {
     username: string,
@@ -22,7 +23,7 @@ const CheckoutFormStorage_KEY = 'checkoutForm';
 
 export const useUserStore = defineStore('user', () => {
     const nanoid = inject('nanoid') as (t: number) => string;
-
+    const toastStore = useToastStore();
     const router = useRouter();
     const isAuth = ref(false);
     const userToken = ref<string | null>(null);
@@ -53,10 +54,10 @@ export const useUserStore = defineStore('user', () => {
     }
 
     async function login(token?: string, isGuest?: boolean) {
+        const toastStore = useToastStore();
         try {
             isAuth.value = true;
             if (token && !isGuest) {
-                console.log('object');
                 storeUserProfile(token)
                 loadUserProfile();
                 userToken.value = token;
@@ -74,6 +75,7 @@ export const useUserStore = defineStore('user', () => {
 
     async function logout() {
         const questionnaireStore = useQuestionnaireStore();
+        const toastStore = useToastStore();
         try {
             const result = await reqUserLogout();
             if (result.state == 'logout') {
@@ -129,11 +131,12 @@ export const useUserStore = defineStore('user', () => {
         clearStorageProfile();
         isAuth.value = false;
         userToken.value = null;
-        if (Object.keys(userSavedCheckoutForm).length !== 0) {
-            Object.keys(userSavedCheckoutForm).forEach(key => {
-                delete userSavedCheckoutForm[key];
-            });
-        }
+        deleteSavedInfo();
+        // if (Object.keys(userSavedCheckoutForm).length !== 0) {
+        //     Object.keys(userSavedCheckoutForm).forEach(key => {
+        //         delete userSavedCheckoutForm[key];
+        //     });
+        // }
 
         userOrderList.value.length = 0;
 
@@ -197,11 +200,26 @@ export const useUserStore = defineStore('user', () => {
         try {
             const info = await getSavedShippingInfo();
             if (info && info['_id']) {
-                const { _id, ...filteredInfo } = info;
-                Object.assign(userSavedCheckoutForm, filteredInfo);
+                // const { _id, ...filteredInfo } = info;
+                setUserShippingInfo(info);
             }
         } catch (error) {
             console.log(error);
+        }
+    }
+
+    // set user shipping info
+    function setUserShippingInfo(data: ShippingInfo) {
+        // const { _id, ...filteredInfo } = data;
+        Object.assign(userSavedCheckoutForm, data);
+    }
+
+    // delete user shipping info
+    function deleteSavedInfo() {
+        if (Object.keys(userSavedCheckoutForm).length !== 0) {
+            Object.keys(userSavedCheckoutForm).forEach(key => {
+                delete userSavedCheckoutForm[key];
+            });
         }
     }
 
@@ -233,6 +251,8 @@ export const useUserStore = defineStore('user', () => {
         cancelOrder,
         refreshOrderList,
         clearExpiredUserData,
-        refreshShippingInfo
+        refreshShippingInfo,
+        setUserShippingInfo,
+        deleteSavedInfo,
     }
 })

@@ -633,6 +633,7 @@ import { reqCreateOrder, reqGetUserShippingInfo, reqVerifyItemPrice } from '@/ap
 import { onBeforeRouteLeave, useRouter } from 'vue-router';
 import { reqGetUser } from '@/api/userAuth';
 import { reqResetMemberCart } from '@/api/cart/CartRequest';
+import { useToastStore } from '@/store/toastStore';
 
 // 購物車
 const cartStore = useCartStore();
@@ -986,6 +987,7 @@ const newOrder = (shippingInfo: Record<string, any>) => {
 // req create order
 const orderProcessing = ref(false);
 async function createOrder(form: Record<string, any>) {
+    const toastStore = useToastStore();
     try {
         orderProcessing.value = true;
         const { state } = await reqCreateOrder(newOrder(form));
@@ -996,6 +998,7 @@ async function createOrder(form: Record<string, any>) {
             isAuth.value ?
                 await router.replace('/profile/account') :
                 await router.replace('/');
+            toastStore.addNotification(`訂單送出，請確認信箱`)
         }
     } catch (error) {
         console.log(error);

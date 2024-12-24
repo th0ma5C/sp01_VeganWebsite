@@ -1,12 +1,32 @@
 import request from '@/utils/request/requests';
 import type { AxiosError } from 'axios';
+import type { ShippingInfo } from '../order/type';
 
-const saveShippingInfo = () => {
-    return request.post('', {
+interface InfoRes {
+    result: ShippingInfo,
+    state: string
+}
 
+const saveShippingInfo = (params: Partial<ShippingInfo>, token: string) => {
+    return request.patch<any, InfoRes>('/api/order/saveShippingInfo', {
+        ...params
+    }, {
+        headers: {
+            Authorization: token
+        }
+    })
+}
+
+const deleteShippingInfo = (token: string) => {
+    return request.delete('/api/order/saveShippingInfo', {
+        headers: {
+            Authorization: token
+        }
     })
 }
 
 
 export {
+    saveShippingInfo,
+    deleteShippingInfo
 }

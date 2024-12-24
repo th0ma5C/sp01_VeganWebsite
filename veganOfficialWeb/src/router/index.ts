@@ -15,6 +15,7 @@ import { useMenuStore } from "@/store/menuStore";
 import { storeToRefs } from "pinia";
 import { reqGetUser, reqRedirectLogin } from "@/api/userAuth";
 import { jwtDecode } from "jwt-decode";
+import { useToastStore } from "@/store/toastStore";
 // import NProgress from 'nprogress'
 // import 'nprogress/nprogress.css'
 
@@ -185,6 +186,8 @@ router.beforeEach(async (to, from) => {
     // if (to.path == '/profile' && to.query.token) return true;
 
     const userStore = useUserStore();
+    const toastStore = useToastStore();
+
 
     if (to.path == '/profile' && to.query.token) {
         try {
@@ -211,6 +214,7 @@ router.beforeEach(async (to, from) => {
             } else {
                 userStore.clearExpiredUserData();
             }
+            toastStore.addNotification(`${userStore.user.username}，歡迎！`)
         } catch (error) {
             userStore.clearExpiredUserData();
             console.log(error);

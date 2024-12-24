@@ -124,7 +124,7 @@ router.patch('/saveShippingInfo', authUser, async (req, res) => {
         const { userID } = req.user;
         const form = {
             userID,
-            ...req.data.shippingInfo
+            ...req.body
         }
         const result = await editShippingInfo(form);
         res.status(200).json({

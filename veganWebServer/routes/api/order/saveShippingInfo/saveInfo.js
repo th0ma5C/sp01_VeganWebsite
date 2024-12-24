@@ -22,9 +22,10 @@ async function deleteShippingInfo(userID) {
 
 async function editShippingInfo(data) {
     try {
-        return await ShippingInfo.findOneAndUpdate(
-            { userID: data.userID },
-            { data },
+        const { __v, ...filterData } = data;
+        return await ShippingInfo.findByIdAndUpdate(
+            data._id,
+            { ...filterData, $inc: { __v: 1 } },
             { new: true }
         )
     } catch (error) {

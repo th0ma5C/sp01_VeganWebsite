@@ -65,7 +65,7 @@
                         編輯
                     </button>
 
-                    <button>
+                    <button @click="toggleConfirmOpen">
                         刪除
                     </button>
                 </div>
@@ -74,7 +74,7 @@
             <transition name="editDialog">
                 <VForm as="div" v-show="isDialogOpen"
                     class="editDialog"
-                    v-slot="{ handleSubmit, submitCount, values, meta, setValues }"
+                    v-slot="{ handleSubmit, submitCount, values, meta, setValues, resetForm }"
                     :validation-schema="FormSchema"
                     :initial-values="showShippingInfo"
                     @click="clickOuter">
@@ -372,17 +372,36 @@
                         </fieldset>
 
                         <div class="dialogBtn">
-                            <button>
+                            <button
+                                @click="handleSubmit($event, handleInfoSubmit(meta.dirty))">
                                 儲存
                             </button>
                             <button type="button"
-                                @click="toggleDialogOpen">
+                                @click="toggleDialogOpen($event, resetForm)">
                                 取消
                             </button>
                         </div>
                     </form>
                 </VForm>
             </transition>
+
+            <div class="confirmDeleteDialog"
+                v-show="confirmDeleteOpen">
+                <div class="dialogContainer">
+                    <h3>
+                        確認刪除？
+                    </h3>
+
+                    <div class="btnWrapper">
+                        <button @click="handleDelete">
+                            確定
+                        </button>
+                        <button @click="toggleConfirmOpen">
+                            取消
+                        </button>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 </template>
@@ -391,17 +410,20 @@
 import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, useTemplateRef, onBeforeMount } from 'vue';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
-    type FormMeta,
+    type FormMeta, type SubmissionContext, type FormState,
 } from 'vee-validate';
 import * as yup from 'yup';
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
 import { city } from '@/hooks/useGetCityList';
 import { getPostalCode } from '@/api/postal';
+import type { ShippingInfo } from '@/api/order/type';
+import { deleteShippingInfo, saveShippingInfo } from '@/api/shippingInfo/shippingInfo';
 
 //pinia store
 const userStore = useUserStore();
-const { userSavedCheckoutForm } = storeToRefs(userStore);
+const { setUserShippingInfo, deleteSavedInfo } = userStore;
+const { userSavedCheckoutForm, userToken } = storeToRefs(userStore);
 const showShippingInfo = computed(() => {
     return { ...userSavedCheckoutForm.value }
 })
@@ -471,8 +493,9 @@ const FormSchema = yup.object({
 
 // show edit dialog
 const isDialogOpen = ref(false);
-function toggleDialogOpen() {
+function toggleDialogOpen(e?: Event, cb?: () => void) {
     isDialogOpen.value = !isDialogOpen.value
+    if (cb) cb()
 }
 
 function clickOuter() {
@@ -585,6 +608,78 @@ watch([() => selectedCity.city, selectedTown, addrInput], async (nVal) => {
         }
     }
 })
+
+// 表單驗證
+
+// 編輯 info
+const loadingNewInfo = ref(false);
+function loadingTimer() {
+    setTimeout(() => {
+        loadingNewInfo.value = false;
+    }, 1500);
+}
+function handleInfoSubmit(dirty: boolean) {
+    return async (form: Record<string, any>, ctx: SubmissionContext) => {
+        const data = form as ShippingInfo;
+        const token = userToken.value;
+        if (!token || !data || !dirty) {
+            ctx.resetForm();
+            toggleDialogOpen();
+            return
+        }
+
+        try {
+            loadingNewInfo.value = true;
+            const { result, state } = await saveShippingInfo(data, token);
+            if (result) {
+                setUserShippingInfo(result);
+                toggleDialogOpen();
+                loadingTimer();
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+}
+// async function handleInfoSubmit(form: Record<string, any>) {
+//     const data = form as ShippingInfo;
+//     const token = userToken.value;
+//     if (!token || !data || !isFormEdit.value) return
+
+//     try {
+//         loadingNewInfo.value = true;
+//         const { result, state } = await saveShippingInfo(data, token);
+//         if (result) {
+//             setUserShippingInfo(result);
+//             toggleDialogOpen();
+//             loadingTimer();
+//         }
+
+//     } catch (error) {
+//         console.log(error);
+//     }
+// }
+
+// 刪除 info
+const confirmDeleteOpen = ref(false);
+function toggleConfirmOpen() {
+    confirmDeleteOpen.value = !confirmDeleteOpen.value
+}
+
+async function handleDelete() {
+    const token = userToken.value;
+    if (!token) return
+    try {
+        loadingNewInfo.value = true;
+        await deleteShippingInfo(token);
+        deleteSavedInfo();
+        loadingTimer();
+        toggleConfirmOpen()
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 onMounted(() => {
     initForm();
@@ -749,7 +844,7 @@ h2 {
 
     fieldset {
         min-width: 400px;
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
 
         input {
             @include WnH(100%, 36px);
@@ -1018,6 +1113,49 @@ h2 {
 
     .dialogForm {
         transform: scale(1) translate(-50%, -50%);
+    }
+}
+
+.confirmDeleteDialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99;
+
+    width: 100vw;
+    height: 100vh;
+
+    background-color: rgba(0, 0, 0, 0.25);
+
+    .dialogContainer {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        background-color: $primaryBacColor;
+
+        padding: 1.5rem 3rem;
+        border-radius: 1rem;
+
+        transform-origin: top left;
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 2cap;
+            margin-right: 3.75rem;
+        }
+
+        .btnWrapper {
+            display: flex;
+            gap: .75rem;
+            justify-content: flex-end;
+
+            button {
+                @include WnH(60px, 30px);
+                @extend %edit_button;
+            }
+        }
     }
 }
 </style>

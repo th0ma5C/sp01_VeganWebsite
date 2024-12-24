@@ -6,7 +6,7 @@
             </h1>
 
             <button v-show="showUsername !== ''"
-                @click="logout">登出</button>
+                @click="userLogout">登出</button>
         </div>
 
         <div class="listContainer">
@@ -86,6 +86,7 @@ import { onBeforeRouteLeave } from 'vue-router';
 import Delivering from './tab1/Delivering.vue';
 import Setting from './tab2/Setting.vue';
 import { jwtDecode } from 'jwt-decode';
+import { useToastStore } from '@/store/toastStore';
 
 // user store
 const userStore = useUserStore();
@@ -183,6 +184,17 @@ const welcomeWords = computed(() => {
 
     return word
 })
+
+// 登出
+async function userLogout() {
+    const toastStore = useToastStore();
+    try {
+        await logout();
+        toastStore.addNotification('登出成功！')
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 // router hook
 interface RedirectResTokenDecoded {

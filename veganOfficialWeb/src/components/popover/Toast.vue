@@ -1,11 +1,161 @@
 <template>
     <div>
-        彈出吐司
+        <ul class="toastContainer">
+            <transition-group name="notificationList">
+                <li v-for="(item, index) in notificationList"
+                    ref="itemList" v-show="item.show"
+                    :key="item.content">
+                    <!-- <div class="countdownBarTrack">
+                        <div class="bar" :style="{
+                            transform: `scaleX(${item.countdownBar_width}%)`
+                        }">
+                        </div>
+                    </div> -->
+
+                    <div class="content">
+                        <SvgIcon name="cancel" width="20px"
+                            height="20px" color="black"
+                            class="cancel">
+                        </SvgIcon>
+
+                        <div class="text">
+                            {{ item.content }}
+                        </div>
+                    </div>
+                </li>
+            </transition-group>
+        </ul>
+        <!-- <button @click="bar"
+            style="position: fixed; top: 1rem; left: 1rem;z-index: 99; background-color: white;">測試+</button>
+        <button @click="pop"
+            style="position: fixed; top: 3rem; left: 1rem;z-index: 99; background-color: white;">測試-</button> -->
     </div>
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, watch, ref, watchEffect, useTemplateRef, nextTick } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useToastStore } from '@/store/toastStore';
+
+
+const toastStore = useToastStore();
+const { notificationList } = storeToRefs(toastStore);
+const { addNotification, pop } = toastStore;
+
+
+function bar() {
+    addNotification('測試測試測試測試');
+}
+
 
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+* {
+    // outline: 1px solid black;
+}
+
+.toastContainer {
+    --svg-opacity: 0;
+    min-width: 180px;
+    position: fixed;
+    top: 80px;
+    right: 6rem;
+    z-index: 99;
+
+
+    &>li {
+        min-width: 180px;
+        min-height: 48px;
+        padding: .5rem 1rem;
+        padding-top: calc(.5rem + 4px);
+        margin-bottom: .5rem;
+        box-shadow: 1px 1px 4px 1px rgba(0, 0, 0, 0.5);
+
+        background-color: $primaryBacColor;
+        border-radius: .25rem;
+
+        overflow: hidden;
+
+        transform-origin: right;
+
+        &:not(.notificationList-leave-active) {
+            position: relative;
+        }
+    }
+
+    & li:hover {
+        .cancel {
+            opacity: 1;
+        }
+    }
+}
+
+.notificationList-move,
+.notificationList-enter-active,
+.notificationList-leave-active {
+    transition: all .2s;
+}
+
+.notificationList-leave-active {
+    position: absolute;
+}
+
+.notificationList-enter-from,
+.notificationList-leave-to {
+    opacity: 0;
+    transform: scale(0.1) translate(10px, 0);
+}
+
+.notificationList-enter-to,
+.notificationList-leave-from {
+    opacity: 1;
+}
+
+.countdownBarTrack {
+    width: 100%;
+    height: 4px;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    // background-color: rgba(0, 0, 0, 0.2);
+
+    .bar {
+        height: 100%;
+        width: 100%;
+
+        border-radius: 2px;
+
+        background-color: $btnBacColor_light;
+
+        transform-origin: left;
+        // will-change: transform;
+        // transition: transform .13;
+    }
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    padding-right: 18px;
+    position: relative;
+
+    .cancel {
+        cursor: pointer;
+        align-self: flex-end;
+        opacity: 0;
+        transition: opacity .3s;
+
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+    }
+
+    .text {
+        text-wrap: nowrap;
+    }
+}
+</style>
