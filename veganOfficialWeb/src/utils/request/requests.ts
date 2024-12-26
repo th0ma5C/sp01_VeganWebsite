@@ -1,5 +1,8 @@
 import axios from "axios";
 import type { AxiosRequestConfig, AxiosResponse, AxiosAdapter } from 'axios';
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
+
 
 const customAdapter: AxiosAdapter = async (config: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
     const maxRetries = 3;
@@ -46,13 +49,16 @@ const requests = axios.create({
 
 // 請求攔截器
 requests.interceptors.request.use((config) => {
+    NProgress.start()
     return config;
 })
 
 // 響應攔截器
 requests.interceptors.response.use((res) => {
+    NProgress.done()
     return res.data;
 }, (err) => {
+    NProgress.done()
     return Promise.reject(/*new Error('failed!')*/ err);
 })
 

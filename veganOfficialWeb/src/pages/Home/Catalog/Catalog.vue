@@ -124,7 +124,7 @@
  */
 import { watch, onMounted, ref, reactive } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
-import { useLoader } from '@/store/loader';
+import { useLoaderStore } from '@/store/loader';
 import { storeToRefs } from 'pinia';
 import type { MenuItem } from '@/api/menu/type';
 import { useRouter } from 'vue-router';
@@ -237,7 +237,7 @@ function imgCounter() {
     imgCount.value++;
 }
 
-let { loaderActivated } = storeToRefs(useLoader());
+let { loaderActivated } = storeToRefs(useLoaderStore());
 let isLoaded = ref(false);
 // watch([imgCount, menu], ([newCount,]) => {
 //     let done = (menu[0].list!.length) + (menu[1].list!.length);

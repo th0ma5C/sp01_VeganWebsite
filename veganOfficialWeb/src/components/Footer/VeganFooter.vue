@@ -7,7 +7,8 @@
                     每週精選的美味直送您的信箱！
                 </p>
                 <form action="" class="submitForm">
-                    <input type='email' name="submitEmail"
+                    <input id="subEmail" type='email'
+                        name="submitEmail"
                         placeholder="E-mail">
                     <button
                         @click.prevent="setArrowState('out')">

@@ -90,7 +90,8 @@
                                 <VField id="email"
                                     name="email"
                                     type="email"
-                                    placeholder="">
+                                    placeholder=""
+                                    autocomplete="off">
                                 </VField>
 
                                 <label
@@ -419,6 +420,7 @@ import { city } from '@/hooks/useGetCityList';
 import { getPostalCode } from '@/api/postal';
 import type { ShippingInfo } from '@/api/order/type';
 import { deleteShippingInfo, saveShippingInfo } from '@/api/shippingInfo/shippingInfo';
+import { useToastStore } from '@/store/toastStore';
 
 //pinia store
 const userStore = useUserStore();
@@ -627,6 +629,7 @@ function handleInfoSubmit(dirty: boolean) {
             toggleDialogOpen();
             return
         }
+        const toastStore = useToastStore();
 
         try {
             loadingNewInfo.value = true;
@@ -635,6 +638,7 @@ function handleInfoSubmit(dirty: boolean) {
                 setUserShippingInfo(result);
                 toggleDialogOpen();
                 loadingTimer();
+                toastStore.addNotification(`修改成功`)
             }
 
         } catch (error) {
@@ -670,12 +674,14 @@ function toggleConfirmOpen() {
 async function handleDelete() {
     const token = userToken.value;
     if (!token) return
+    const toastStore = useToastStore();
     try {
         loadingNewInfo.value = true;
         await deleteShippingInfo(token);
         deleteSavedInfo();
         loadingTimer();
-        toggleConfirmOpen()
+        toggleConfirmOpen();
+        toastStore.addNotification(`刪除成功`)
     } catch (error) {
         console.log(error);
     }

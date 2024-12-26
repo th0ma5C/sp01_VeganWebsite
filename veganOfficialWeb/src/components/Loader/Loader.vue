@@ -28,10 +28,13 @@
                         d="m260.63,43.68c.16,0,.48-.12.96-.36,5.96-3.2,12.52-7.46,19.68-12.78.36.28.54.62.54,1.02s-.2.78-.6,1.14-.97.88-1.71,1.56c-.74.68-2.15,1.9-4.23,3.66-2.08,1.76-4.02,3.36-5.82,4.8-4.72,3.8-8.2,6.04-10.44,6.72-.72.2-1.5.3-2.34.3-1.36,0-2.04-1.06-2.04-3.18,0-.72.44-1.91,1.32-3.57.88-1.66,1.32-2.87,1.32-3.63,0-.08-.06-.12-.18-.12s-.42.18-.9.54c-5.56,4.32-8.94,7.32-10.14,9-.24.36-.56.54-.96.54-.88,0-1.44-.42-1.68-1.26,0-1.2,1.69-4.24,5.07-9.12s7.35-10.01,11.91-15.39c4.56-5.38,8.28-9.17,11.16-11.37.84-.8,2.8-1.2,5.88-1.2.48.12.72.32.72.6s-.14.56-.42.84c-11.52,11.12-18.84,18.82-21.96,23.1-.16.16-.37.45-.63.87-.26.42-.39.69-.39.81l.06.06c.16,0,1.42-.89,3.78-2.67,2.36-1.78,4.12-3.05,5.28-3.81.36-.36,1.12-.54,2.28-.54,1,.12,1.5.44,1.5.96,0,.16-.04.3-.12.42-2.96,4.2-4.74,6.88-5.34,8.04-1.2,1.88-1.8,3.12-1.8,3.72,0,.2.08.3.24.3Z" />
                     <path class="draw-12"
                         d="m277.01,42.6c-.32.56-.48,1.06-.48,1.5s.24.66.72.66c.28,0,.76-.12,1.44-.36,7.48-3.92,14.8-8.54,21.96-13.86.36.28.54.62.54,1.02s-.2.78-.6,1.14c-.4.36-.97.88-1.71,1.56-.74.68-2.15,1.9-4.23,3.66-2.08,1.76-4.02,3.36-5.82,4.8-4.72,3.8-8.2,6.04-10.44,6.72-.72.2-1.5.3-2.34.3-3.08,0-4.62-1.64-4.62-4.92,0-1.28.7-3.11,2.1-5.49,1.4-2.38,2.84-4.48,4.32-6.3,1.48-1.82,2.46-2.83,2.94-3.03.72-.44,1.5-.66,2.34-.66s1.64.16,2.4.48c.24.12.36.28.36.48s-.19.5-.57.9c-.38.4-.96,1.02-1.74,1.86-.78.84-1.94,2.29-3.48,4.35-1.54,2.06-2.57,3.79-3.09,5.19Zm14.4-23.64c.4,0,.66.08.78.24.56.68.84,1.23.84,1.65s-.12.78-.36,1.08c-.24.3-.53.64-.87,1.02-.34.38-1.02.9-2.04,1.56-1.02.66-2.01.99-2.97.99-.72-.12-1.08-.56-1.08-1.32,0-1.2.72-2.37,2.16-3.51,1.44-1.14,2.62-1.71,3.54-1.71Z" />
-                    <path class="draw-13"
+                    <path
+                        @animationend="drawFinished = true"
+                        class="draw-13"
                         d="m310.07,21.54c.44,0,.92.33,1.44.99s.78,1.15.78,1.47-.06.54-.18.66c-2.76,2.4-5.44,4.92-8.04,7.56-2.6,2.64-4.52,4.68-5.76,6.12l-1.8,2.16c-.32.32-.48.54-.48.66s.04.18.12.18.18-.06.3-.18l.54-.42c6.56-5.84,11.66-8.76,15.3-8.76.48,0,.92.14,1.32.42,1.36,1.12,2.04,2.39,2.04,3.81s-1.01,3.23-3.03,5.43c-2.02,2.2-4.51,4.13-7.47,5.79-2.96,1.66-5.43,2.49-7.41,2.49s-3.29-.52-3.93-1.56l-.66-.96s-.1-.06-.18-.06c-.88,0-3.79,2.8-8.73,8.4-4.94,5.6-8.11,9.66-9.51,12.18-.16.72-.48,1.08-.96,1.08-.24,0-.46-.08-.66-.24l-2.7-2.1c-.16-.08-.24-.26-.24-.54,0-.48,3.03-4.41,9.09-11.79,6.06-7.38,12.41-14.69,19.05-21.93,6.64-7.24,10.56-10.86,11.76-10.86Zm-15.24,25.32c1.32,0,3.33-.77,6.03-2.31,2.7-1.54,5.12-3.21,7.26-5.01s3.21-3.06,3.21-3.78c0-.12-.06-.18-.18-.18-.88,0-2.73.89-5.55,2.67-2.82,1.78-5.43,3.58-7.83,5.4-2.4,1.82-3.6,2.81-3.6,2.97s.22.24.66.24Z" />
                 </g>
             </svg>
+            <div class="light" v-show="drawFinished"></div>
         </div>
     </div>
 </template>
@@ -39,23 +42,24 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useLoader } from '@/store/loader';
+import { useLoaderStore } from '@/store/loader';
 
-let { loaderActivated } = storeToRefs(useLoader())
-let loaded = ref(false)
+let { loaderActivated } = storeToRefs(useLoaderStore())
+let loaded = ref(false);
+const drawFinished = ref(false);
 
-watch(loaderActivated, (newVal) => {
-    const delay = setInterval(() => {
-        loaded.value = true
-    }, 5000)
+// watch(loaderActivated, (newVal) => {
+//     const delay = setInterval(() => {
+//         loaded.value = true
+//     }, 5000)
 
-    if (newVal == false) {
-        clearInterval(delay)
-        setInterval(() => {
-            loaded.value = true
-        }, 2500)
-    }
-})
+//     if (newVal == false) {
+//         clearInterval(delay)
+//         setInterval(() => {
+//             loaded.value = true
+//         }, 2500)
+//     }
+// })
 
 </script>
 
@@ -104,6 +108,18 @@ $strokeDashoffset: 600;
     }
 }
 
+@keyframes loading {
+    0% {
+        transform: translate(-50%, -50%
+        );
+}
+
+100% {
+    transform: translate(150%,
+            -50%);
+}
+}
+
 .container {
     height: 100vh;
     position: fixed;
@@ -114,25 +130,38 @@ $strokeDashoffset: 600;
 
     .svgContainer {
         @include flex-center-center;
-        @include WnH(100vw, 100vh
-    );
-    background-color: $primaryBacColor;
-}
+        @include WnH(100vw, 100vh);
 
-svg {
-    @include WnH(61.8%);
-    filter: drop-shadow(8px 8px 8px rgba(0, 0, 0, 0.5));
-}
+        background-color: $primaryBacColor;
+        position: relative;
 
-path {
-    fill: transparent;
-    stroke: $secondBacColor;
-    stroke-width: 0.2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: $strokeDashoffset;
-    stroke-dashoffset: $strokeDashoffset;
-}
+        .light {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 50%;
+            height: 50%;
+            // background: linear-gradient(115deg, transparent 40%, red 50%, transparent 52%);
+            animation: loading 4s infinite ease-in-out;
+            background: linear-gradient(125deg, transparent 40%, #FCFAF2 50%, transparent 52%);
+        }
+    }
+
+    svg {
+        @include WnH(61.8%);
+        filter: drop-shadow(8px 8px 8px rgba(0, 0, 0, 0.5));
+    }
+
+    path {
+        fill: transparent;
+        stroke: $secondBacColor;
+        stroke-width: 0.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: $strokeDashoffset;
+        stroke-dashoffset: $strokeDashoffset;
+    }
 }
 
 .b {

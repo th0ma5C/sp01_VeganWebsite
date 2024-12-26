@@ -169,7 +169,10 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
 
             const cloudResult = await memberGetResult();
             if (isAuth.value && cloudResult) {
-                storageResult = cloudResult;
+                const cloudStamp = new Date(cloudResult.createdAt).getTime();
+                if (cloudStamp > localStorage.timeStamp || !QNR_isDone.value) {
+                    storageResult = cloudResult;
+                }
                 surveyHasCompleted.value = true;
             }
 

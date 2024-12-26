@@ -67,10 +67,13 @@
                         </fieldset>
 
                         <fieldset>
-                            <h3>生理性別</h3>
+                            <h3>性別</h3>
                             <div class="gender"
                                 :class="{ alertInput: setAlertClass(QNR_result.info.gender) }">
-                                <select name="gender" id=""
+                                <label
+                                    for="gender">性別</label>
+                                <select name="gender"
+                                    id="gender" required
                                     v-model.lazy="QNR_result.info.gender">
                                     <option value="">
                                     </option>
@@ -833,7 +836,13 @@ $alertColor: #b3261e;
         }
 
         .gender {
+            @extend %inputTextLabel;
             cursor: pointer;
+
+            label {
+                user-select: none;
+                pointer-events: none;
+            }
         }
 
         .userName {
@@ -877,7 +886,7 @@ $alertColor: #b3261e;
         //     background-color: $primaryBacColor;
         // }
 
-        :is(.userName, .birthInput):is(:focus-within, :has(input:valid, select:valid))>label {
+        :is(.userName, .birthInput, .gender):is(:focus-within, :has(input:valid, select:valid))>label {
             transform: translateY(calc(-100% - 10px)) scale(0.8);
             background-color: $primaryBacColor;
         }

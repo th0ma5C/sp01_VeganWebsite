@@ -1,6 +1,5 @@
 import request from '@/utils/request/requests';
 import type * as resType from './type';
-import mockResponse from '@/mock/data/GPT_response/GPT_res.json'
 
 interface SurveyResponse {
     result: {
@@ -13,8 +12,18 @@ interface SurveyResponse {
         flavor: string,
         ingredients: string[],
         food: string[],
-        calories: string
+        calories: string,
+        createdAt: string
     }
+}
+
+interface Node {
+    tag?: string,
+    content?: string
+}
+
+interface GPT_RES {
+    result: Node[]
 }
 
 const reqGetQuestionnaire = (params?: any) => request.get<any, resType.Questionnaire[]>('/api/questionnaire/getQuestionnaire', params);
@@ -42,8 +51,10 @@ const reqGetSavedResult = (token?: string) => {
 }
 
 // get GPT response
-const getGPTAnalyze = () => {
-    return mockResponse
+const getGPTAnalyze = (params: any) => {
+    return request.post<any, GPT_RES>('/api/questionnaire/gpt-analyze', {
+        data: { ...params }
+    })
 }
 
 export {

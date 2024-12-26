@@ -11,8 +11,23 @@
                 }}，您的專屬分析完成了！
             </h1>
 
-            <div class="gptRes">
-                <div class="content">
+            <div class="gptRes content">
+                <transition name="spinner">
+                    <Spinner v-show="isAnalyzing"></Spinner>
+                </transition>
+
+                <component
+                    v-for="(node, index) in renderNodes"
+                    :is="node.tag" :key="index" :class="{
+                        typingMask: isAnalyzing
+                    }">
+                    {{ node.content }}
+                    <div class="cursor"
+                        v-show="node.content?.length !== node.count">
+                    </div>
+                </component>
+
+                <!-- <div class="content">
                     <h2>營養建議</h2>
                     <p>鷹村先生，根據您選擇的完全素食飲食習慣、清爽的口味偏好，以及Omega-3、抗氧化物、維生素的需求，我們為您提供以下建議：
                     </p>
@@ -37,7 +52,7 @@
                     <h2>每日卡路里建議</h2>
                     <p>根據您的每日卡路里需求（1800卡），建議選擇低卡且富含營養的食材，並適當控制油脂和糖分的攝取。多食用蔬果及全穀類食材，以達到均衡飲食的效果。
                     </p>
-                </div>
+                </div> -->
             </div>
 
             <div class="guideContent">
@@ -208,11 +223,12 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import useListener from '@/hooks/useListener';
 import { useCartStore } from '@/store/cartStore';
 import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
+import { getGPTAnalyze } from '@/api/questionnaire';
 
 // questionnaireStore
 const questionnaireStore = useQuestionnaireStore();
 const { QNR_result, QNR_isDone } = storeToRefs(questionnaireStore);
-const { memberSaveResult, memberGetResult } = questionnaireStore;
+const { memberSaveResult, memberGetResult, clearSurveyData } = questionnaireStore;
 // const { info: { userName, gender, birth }, habit, flavor, ingredients, food, calories } = QNR_result.value;
 
 
@@ -354,9 +370,9 @@ function findRecommend(arrays: MenuItem[][]): MenuItem[] {
     let threshold = 1;
 
     arrays.flat().forEach(item => {
+        if (!item) return
         countMap.set(item, (countMap.get(item) || 0) + 1);
     });
-
     function getResult() {
         const list = Array.from(countMap)
             .filter(([item, count]) => count > threshold)
@@ -509,9 +525,13 @@ function createListScrollTrigger() {
 
 // 重新測驗
 const Router = useRouter();
-function retest() {
-    QNR_isDone.value = false;
-    Router.back();
+async function retest() {
+    try {
+        await clearSurveyData();
+        Router.back();
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 // 按鈕切換
@@ -572,9 +592,63 @@ function createViewCartScrollTrigger() {
 
 
 // 打字效果
-// onMounted(() => {
-//     console.dir(viewCart.value);
-// })
+function sleep(duration: number) {
+    return new Promise(resolve => setTimeout(resolve, duration))
+}
+interface Node {
+    tag?: string,
+    content?: string,
+    count?: number
+}
+const renderNodes = ref<Node[]>([
+    {
+        tag: 'div',
+        content: '鷹村先生，根據您選擇的完全素食飲食習慣、清爽的口味偏好，以及Omega-3、抗氧化物、維生素的需求，我們為您提供以下建議：',
+        count: 60
+    },
+    {
+        tag: 'div',
+        content: '營養建議',
+        count: 3
+    },
+]);
+const analyzeResult = ref();
+const isAnalyzing = ref(true);
+
+async function fetchGPTAnalyze() {
+    try {
+        const { result } = await getGPTAnalyze(QNR_result.value);
+        const data = result.map((item) => {
+            return {
+                ...item,
+                count: item.content?.length
+            }
+        })
+        await typeEffect(renderNodes, data);
+        isAnalyzing.value = false;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function typeEffect(nodes: Ref, data: Node[]) {
+    nodes.value = data.map((item) => ({ tag: 'div', content: '', count: item.count }));
+
+    for (let i = 0; i < data.length; i++) {
+        for (let char of data[i].content ?? '') {
+            nodes.value[i].content += char;
+            const delay = Math.floor(Math.random() * 30 + 20);
+            await sleep(delay);
+        }
+    }
+
+    await sleep(1000);
+    nextTick(() => {
+        data.forEach((item, index) => {
+            nodes.value[index].tag = item.tag;
+        })
+    })
+}
 
 // 購物車state
 const cartStore = useCartStore();
@@ -586,6 +660,7 @@ const { toggleCartCardOpen } = cartStore;
 function checkResultState() {
     if (!isLoaded.value) {
         // Router.push('/questionnaire');
+        console.log('object');
         Router.back()
     }
 }
@@ -596,6 +671,7 @@ onBeforeMount(() => {
 })
 
 onMounted(() => {
+    // console.log(saladRank.value);
     setTimeout(() => {
         if (!viewCart.value) return
         switchViewCartBtn();
@@ -604,6 +680,7 @@ onMounted(() => {
     // nextTick(() => {
     createViewCartScrollTrigger();
     createListScrollTrigger();
+    // fetchGPTAnalyze();
     // });
 })
 
@@ -639,6 +716,20 @@ onMounted(() => {
     }
 }
 
+@keyframes flashing_cursor {
+    0% {
+        visibility: hidden;
+    }
+
+    50% {
+        visibility: visible;
+    }
+
+    100% {
+        visibility: hidden;
+    }
+}
+
 
 .topText {
     margin-top: 3rem;
@@ -655,7 +746,8 @@ onMounted(() => {
         background-color: white;
         width: 60%;
         margin: 2rem auto;
-        padding: 1rem;
+        padding: 1rem 2rem;
+        position: relative;
     }
 
     .content {
@@ -663,21 +755,47 @@ onMounted(() => {
         justify-content: center;
         flex-direction: column;
         text-align: start;
+        text-wrap: pretty;
         gap: .5rem;
+        min-height: 5rem;
 
         h2 {
             font-size: 1.25rem;
             font-weight: 450;
+            margin-bottom: .5rem;
+        }
+
+        h3 {
+            padding-left: 1rem;
+            font-variation-settings: 'wght' 450;
         }
 
         p {
-            padding-left: 2.5rem;
+            padding-left: 2rem;
             font-variation-settings: 'wght' 450;
         }
 
-        li {
-            padding-left: 2.5rem;
-            font-variation-settings: 'wght' 450;
+        &>*:not(.spinner) {
+            transition: opacity .3s;
+            width: fit-content;
+            position: relative;
+        }
+
+        .typingMask {
+            opacity: .5;
+        }
+
+        .cursor {
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: 15%;
+
+            width: 2px;
+            height: 1rem;
+            background-color: black;
+
+            animation: flashing_cursor step-end 1s infinite;
         }
     }
 
@@ -686,6 +804,21 @@ onMounted(() => {
         font-size: 1.5rem;
         font-variation-settings: 'wght' 500;
     }
+}
+
+.spinner-enter-active,
+.spinner-leave-active {
+    transition: opacity .3s;
+}
+
+.spinner-enter-from,
+.spinner-leave-to {
+    opacity: 0;
+}
+
+.spinner-enter-to,
+.spinner-leave-from {
+    opacity: 1;
 }
 
 @keyframes slideUp {

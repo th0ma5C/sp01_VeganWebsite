@@ -1,33 +1,35 @@
 <template>
-    <!-- <Loader></Loader> -->
-    <transition name="app">
-        <!-- <div v-show="!loaderActivated"> -->
-        <div>
-            <header>
-                <VeganHeader></VeganHeader>
-            </header>
-            <main>
-                <router-view
-                    v-if="!$route.meta?.keepAlive"></router-view>
-
-                <router-view v-slot="{ Component }">
-                    <keep-alive :max="3">
-                        <component :key="$route.query.name"
-                            v-if="$route.meta?.keepAlive"
-                            :is="Component">
-                        </component>
-                    </keep-alive>
-                </router-view>
-
-                <CartCard></CartCard>
-                <div class="flyToCartContainer"></div>
-                <Toast></Toast>
-            </main>
-            <footer>
-                <VeganFooter></VeganFooter>
-            </footer>
-        </div>
+    <transition name="loader">
+        <Loader v-show="loaderActivated"></Loader>
     </transition>
+
+    <!-- <transition name="app"> -->
+    <div v-show="!loaderActivated">
+        <header>
+            <VeganHeader></VeganHeader>
+        </header>
+        <main>
+            <router-view
+                v-if="!$route.meta?.keepAlive"></router-view>
+
+            <router-view v-slot="{ Component }">
+                <keep-alive :max="3">
+                    <component :key="$route.query.name"
+                        v-if="$route.meta?.keepAlive"
+                        :is="Component">
+                    </component>
+                </keep-alive>
+            </router-view>
+
+            <CartCard></CartCard>
+            <div class="flyToCartContainer"></div>
+            <Toast></Toast>
+        </main>
+        <footer>
+            <VeganFooter></VeganFooter>
+        </footer>
+    </div>
+    <!-- </transition> -->
 </template>
 
 <script setup lang="ts">
@@ -37,12 +39,11 @@ import Loader from './components/Loader/Loader.vue';
 import CartCard from './components/popover/CartCard.vue';
 import Toast from './components/popover/Toast.vue';
 import { onMounted, watch, toRefs, onUnmounted } from 'vue';
-import { useLoader } from '@/store/loader';
+import { useLoaderStore } from '@/store/loader';
 import preloadImgList from './utils/preloadImgList';
 import { storeToRefs } from 'pinia';
 
-
-let { loaderActivated } = storeToRefs(useLoader());
+let { loaderActivated } = storeToRefs(useLoaderStore());
 
 onMounted(() => {
     watch(loaderActivated, (newValue) => {
@@ -103,6 +104,24 @@ body {
 
 .app-enter-to {
     transform: scale(1);
+}
+
+.loader-enter-active,
+.loader-leave-active {
+    transition: opacity 1s, transform 1s;
+}
+
+.loader-enter-from,
+.loader-leave-to {
+    opacity: 0;
+    transform: scale(5) translateZ(0);
+}
+
+.loader-enter-to,
+.loader-leave-from {
+    opacity: 1;
+    transform: scale(1) translateZ(0);
+    // display: none;
 }
 
 footer {

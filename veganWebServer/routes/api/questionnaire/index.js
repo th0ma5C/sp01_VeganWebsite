@@ -4,6 +4,8 @@ const QuestionnaireModel = require('@models/QuestionnaireModel');
 const SurveyResultModel = require('@models/QuestionnaireResultModel');
 const User = require('@models/User');
 const { authToken, authUser } = require('@middlewares/userValidator');
+const mockData = require('./mockGPT/GPT_res.json');
+const { setTimeout } = require('timers/promises');
 
 
 router.get('/getQuestionnaire', async (req, res) => {
@@ -69,6 +71,21 @@ router.get('/result', authUser, async (req, res) => {
             });
         }
 
+        return res.status(200).json({
+            result,
+            state: 'confirm'
+        })
+    } catch (error) {
+        res.status(400).json({ error: 'Internal server error' });
+    }
+})
+
+// gpt response
+router.post('/gpt-analyze', async (req, res) => {
+    try {
+        const form = req.body.data;
+        const result = mockData;
+        await setTimeout(3000);
         return res.status(200).json({
             result,
             state: 'confirm'

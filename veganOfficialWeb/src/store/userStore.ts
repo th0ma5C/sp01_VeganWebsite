@@ -26,6 +26,7 @@ export const useUserStore = defineStore('user', () => {
     const toastStore = useToastStore();
     const router = useRouter();
     const isAuth = ref(false);
+    const isLoading = ref(false);
     const userToken = ref<string | null>(null);
     const user = reactive({
         username: 'anonymous' as 'anonymous' | string,
@@ -177,8 +178,10 @@ export const useUserStore = defineStore('user', () => {
             const decoded = jwtDecode<LoginTokenPayload>(userToken.value);
             const currTime = Math.floor(Date.now() / 1000);
             if (decoded.exp < currTime) throw new Error('請重新登入');
+            const toastStore = useToastStore();
 
             const result = await reqCancelUserOrder(userToken.value, orderID);
+            toastStore.addNotification(`已取消訂單`);
             return result
         } catch (error) {
             console.error('Error canceling order:', error);
@@ -237,6 +240,7 @@ export const useUserStore = defineStore('user', () => {
 
     return {
         isAuth,
+        isLoading,
         user,
         userSavedCheckoutForm,
         userOrderList,

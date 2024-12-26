@@ -33,3 +33,17 @@ button:hover {
 [draggable='true'] {
     user-select: none;
 }
+
+#nprogress .bar {
+    background: #3EA350 !important;
+}
+
+#nprogress .peg {
+    box-shadow: 0 0 10px #3EA350, 0 0 5px #3EA350 !important;
+}
+
+#nprogress .spinner-icon {
+    border-top-color: #3EA350 !important;
+    border-left-color: #3EA350 !important;
+
+}

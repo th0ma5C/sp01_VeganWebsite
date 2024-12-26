@@ -26,18 +26,20 @@
                             </span>
                         </h2>
 
-                        <div v-for="(section, index) in tab"
-                            :key="index"
-                            @click="switchBranch(section)"
-                            class="branch" :class="{
-                                selectedTab: tabName == currTab,
-                                unselected: section !== currBranch
-                            }">
-                            <h3 class="subTab" :class="{
-                                emptyList: (index == 1 || index == 2) && userOrderList.length == 0
-                            }">
-                                {{ section }}
-                            </h3>
+                        <div class="collapseWrapper">
+                            <div v-for="(section, index) in tab"
+                                :key="index"
+                                @click="switchBranch(section)"
+                                class="branch" :class="{
+                                    selectedTab: tabName == currTab,
+                                    unselected: section !== currBranch
+                                }">
+                                <h3 class="subTab" :class="{
+                                    emptyList: (index == 1 || index == 2) && userOrderList.length == 0
+                                }">
+                                    {{ section }}
+                                </h3>
+                            </div>
                         </div>
 
                         <div v-if="index == 0"
@@ -291,6 +293,7 @@ onMounted(async () => {
             position: relative;
             user-select: none;
 
+
             h2 {
                 font-size: 1.25rem;
                 cursor: pointer;
@@ -334,8 +337,8 @@ onMounted(async () => {
         }
 
         .branch {
-            max-height: 0;
-            transition: max-height .5s ease-in-out, opacity .5s;
+            // max-height: 0;
+            // transition: max-height .5s ease-in-out, opacity .5s;
 
             h3 {
                 font-size: 1rem;
@@ -360,7 +363,7 @@ onMounted(async () => {
         }
 
         .selectedTab {
-            max-height: 3rem;
+            // max-height: 3rem;
 
             h3 {
                 color: black;
@@ -368,6 +371,22 @@ onMounted(async () => {
                 // visibility: visible;
                 // opacity: 1;
             }
+        }
+
+        .collapseWrapper {
+            display: grid;
+            opacity: 0;
+            grid-template-rows: 0fr 0fr 0fr;
+            transition: grid-template-rows .5s, opacity .3s;
+
+            &>div {
+                overflow: hidden;
+            }
+        }
+
+        & li:has(.selectedTab) .collapseWrapper {
+            grid-template-rows: 1fr 1fr 1fr;
+            opacity: 1;
         }
     }
 

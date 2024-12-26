@@ -16,8 +16,11 @@ import { storeToRefs } from "pinia";
 import { reqGetUser, reqRedirectLogin } from "@/api/userAuth";
 import { jwtDecode } from "jwt-decode";
 import { useToastStore } from "@/store/toastStore";
-// import NProgress from 'nprogress'
-// import 'nprogress/nprogress.css'
+import { useLoaderStore } from "@/store/loader";
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
+
+NProgress.configure({ showSpinner: false });
 
 interface RedirectResTokenDecoded {
     email: string,
@@ -182,22 +185,34 @@ const router = createRouter({
     }
 })
 
+
 router.beforeEach(async (to, from) => {
     // if (to.path == '/profile' && to.query.token) return true;
+    NProgress.start();
 
     const userStore = useUserStore();
     const toastStore = useToastStore();
+    const loaderStore = useLoaderStore();
 
 
     if (to.path == '/profile' && to.query.token) {
         try {
+            loaderStore.loaderActivated = true;
             const JWT = to.query.token as string
             const decoded = jwtDecode<RedirectResTokenDecoded>(JWT);
             if (decoded.isGuest) {
-                await userStore.logout();
+                if (decoded.userID !== userStore.user.userID) {
+                    await userStore.logout();
+                }
                 const { token } = await reqRedirectLogin({ token: JWT });
-                await userStore.login(token, decoded.isGuest)
+                await userStore.login(token, decoded.isGuest);
+                setTimeout(() => {
+                    loaderStore.loaderActivated = false;
+                }, 5000);
             } else {
+                setTimeout(() => {
+                    loaderStore.loaderActivated = false;
+                }, 5000);
                 return true
             }
         } catch (error) {
@@ -208,19 +223,28 @@ router.beforeEach(async (to, from) => {
 
     if (userStore.user.username !== 'anonymous' && !userStore.isAuth) {
         try {
+            loaderStore.loaderActivated = true;
             const { state, token } = await reqGetUser();
             if (state && state == 'confirm' && token) {
                 await userStore.login(token);
             } else {
                 userStore.clearExpiredUserData();
             }
-            toastStore.addNotification(`${userStore.user.username}，歡迎！`)
+            setTimeout(() => {
+                loaderStore.loaderActivated = false;
+                toastStore.addNotification(`${userStore.user.username}，歡迎！`)
+            }, 5000);
         } catch (error) {
             userStore.clearExpiredUserData();
             console.log(error);
         }
     }
+
     return true
+})
+
+router.afterEach((to, from) => {
+    NProgress.done()
 })
 
 export default router
