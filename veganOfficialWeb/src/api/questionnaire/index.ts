@@ -19,7 +19,7 @@ interface SurveyResponse {
 
 interface Node {
     tag?: string,
-    content?: string
+    content?: string,
 }
 
 interface GPT_RES {

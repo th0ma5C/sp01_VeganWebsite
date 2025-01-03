@@ -4,7 +4,9 @@
     </transition>
 
     <!-- <transition name="app"> -->
-    <div v-show="!loaderActivated">
+    <div :style="{
+        opacity: loaderActivated ? 0 : 1
+    }">
         <header>
             <VeganHeader></VeganHeader>
         </header>

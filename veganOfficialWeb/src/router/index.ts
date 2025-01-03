@@ -181,6 +181,8 @@ const router = createRouter({
     history: createWebHistory(),
     routes,
     scrollBehavior(to, from, savePosition) {
+        // if (to.path == '/about') return
+
         return { top: 0 }
     }
 })
@@ -234,12 +236,16 @@ router.beforeEach(async (to, from) => {
                 loaderStore.loaderActivated = false;
                 toastStore.addNotification(`${userStore.user.username}，歡迎！`)
             }, 5000);
+            return true
         } catch (error) {
             userStore.clearExpiredUserData();
             console.log(error);
         }
     }
 
+    setTimeout(() => {
+        loaderStore.loaderActivated = false;
+    }, 5000);
     return true
 })
 

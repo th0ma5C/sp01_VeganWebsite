@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="b" data-name="圖層 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 86.41 45.33">
+  <defs>
+    <style>
+      .d {
+        fill: none;
+        stroke: #231815;
+        stroke-miterlimit: 10;
+        stroke-width: 4px;
+      }
+    </style>
+  </defs>
+  <g id="c" data-name="圖層 1">
+    <g>
+      <rect class="d" x="8.64" y="8.64" width="28.05" height="28.05" transform="translate(-9.39 22.66) rotate(-45)"/>
+      <line class="d" x1="86.41" y1="22.66" x2="41.96" y2="22.66"/>
+    </g>
+  </g>
+</svg>

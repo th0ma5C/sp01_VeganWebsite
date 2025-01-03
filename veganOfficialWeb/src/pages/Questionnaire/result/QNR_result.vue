@@ -11,23 +11,49 @@
                 }}，您的專屬分析完成了！
             </h1>
 
-            <div class="gptRes content">
+            <div class="gptRes" :class="{
+                unClickable: isAnalyzing
+            }">
                 <transition name="spinner">
                     <Spinner v-show="isAnalyzing"></Spinner>
                 </transition>
 
-                <component
-                    v-for="(node, index) in renderNodes"
-                    :is="node.tag" :key="index" :class="{
-                        typingMask: isAnalyzing
-                    }">
-                    {{ node.content }}
-                    <div class="cursor"
-                        v-show="node.content?.length !== node.count">
-                    </div>
-                </component>
+                <div class="content" ref="analyzeResult">
+                    <component
+                        v-for="(node, index) in renderNodes"
+                        :is="node.tag" :key="index" :class="{
+                            typingMask: isAnalyzing
+                        }">
+                        {{ node.content }}
+                        <span class="cursor" v-show="(node.content?.length !== node.count && node.content?.length) ||
+                            (index == 0 && !node.content?.length)
+                            ">
+                        </span>
+                    </component>
+                </div>
 
-                <!-- <div class="content">
+                <div class="svgWrapper">
+                    <transition name="copySvg"
+                        mode="out-in">
+                        <SvgIcon name="Copy" width="24px"
+                            height="24px" color="black"
+                            v-if="!isAnalyzing && !isCopied"
+                            class="copySvg"
+                            @click="copyGPTResponse"
+                            key="0">
+                        </SvgIcon>
+                        <SvgIcon name="Check" width="24px"
+                            height="24px" color="black"
+                            class="checkSvg"
+                            v-else-if="!isAnalyzing && isCopied"
+                            @click="isCopied = false"
+                            key="1">
+                        </SvgIcon>
+                    </transition>
+                </div>
+
+                <!-- 
+                <div class="content" ref="analyzeResult">
                     <h2>營養建議</h2>
                     <p>鷹村先生，根據您選擇的完全素食飲食習慣、清爽的口味偏好，以及Omega-3、抗氧化物、維生素的需求，我們為您提供以下建議：
                     </p>
@@ -213,7 +239,7 @@
 import Product_template from '@/components/Product/Product_template.vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { useMenuStore } from '@/store/menuStore';
-import { ref, onMounted, watch, computed, reactive, nextTick, onBeforeMount, watchEffect } from 'vue';
+import { ref, onMounted, watch, computed, reactive, nextTick, onBeforeMount, watchEffect, useTemplateRef } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
@@ -592,33 +618,37 @@ function createViewCartScrollTrigger() {
 
 
 // 打字效果
+// TODO GPT api 回覆格式: 1. Node 2. 預先排版的markdown
 function sleep(duration: number) {
     return new Promise(resolve => setTimeout(resolve, duration))
 }
 interface Node {
     tag?: string,
     content?: string,
-    count?: number
+    count?: number,
 }
 const renderNodes = ref<Node[]>([
-    {
-        tag: 'div',
-        content: '鷹村先生，根據您選擇的完全素食飲食習慣、清爽的口味偏好，以及Omega-3、抗氧化物、維生素的需求，我們為您提供以下建議：',
-        count: 60
-    },
-    {
-        tag: 'div',
-        content: '營養建議',
-        count: 3
-    },
+    // {
+    //     tag: 'div',
+    //     content: '鷹村先生，根據您選擇的完全素食飲食習慣、清爽的口味偏好，以及Omega-3、抗氧化物、維生素的需求，我們為您提供以下建議：',
+    //     count: 60
+    // },
+    // {
+    //     tag: 'div',
+    //     content: '',
+    //     count: 3
+    // },
 ]);
-const analyzeResult = ref();
+const analyzeResult = useTemplateRef('analyzeResult');
 const isAnalyzing = ref(true);
+const typingSpeed = 30;
+// const resContent = ref('')
 
 async function fetchGPTAnalyze() {
     try {
         const { result } = await getGPTAnalyze(QNR_result.value);
         const data = result.map((item) => {
+            // resContent.value += item.markdown;
             return {
                 ...item,
                 count: item.content?.length
@@ -633,21 +663,60 @@ async function fetchGPTAnalyze() {
 
 async function typeEffect(nodes: Ref, data: Node[]) {
     nodes.value = data.map((item) => ({ tag: 'div', content: '', count: item.count }));
+    await sleep(3000);
+
+    let tempNodes = [...nodes.value];
 
     for (let i = 0; i < data.length; i++) {
-        for (let char of data[i].content ?? '') {
-            nodes.value[i].content += char;
-            const delay = Math.floor(Math.random() * 30 + 20);
+        let buffer = '';
+        for (let [index, char] of [...(data[i].content ?? '')].entries()) {
+            const batchSize = Math.floor(Math.random() * 5 + 1);
+            buffer += char;
+            if ((index + 1) % batchSize === 0 || index === data[i].content!.length - 1) {
+                tempNodes[i].content += buffer;
+                nodes.value = [...tempNodes];
+                buffer = '';
+            }
+
+            const delay = Math.floor(Math.random() * typingSpeed + 20);
             await sleep(delay);
         }
+        // for (let char of data[i].content ?? '') {
+        //     nodes.value[i].content += char;
+        //     const delay = Math.floor(Math.random() * 30 + 20);
+        //     await sleep(delay);
+        // }
     }
+    await sleep(500);
 
-    await sleep(1000);
     nextTick(() => {
         data.forEach((item, index) => {
             nodes.value[index].tag = item.tag;
         })
     })
+}
+
+//copy GPT response
+const isCopied = ref(false);
+async function copyGPTResponse() {
+    isCopied.value = true;
+    // console.dir(analyzeResult.value);
+    if (analyzeResult.value) {
+        try {
+            await navigator.clipboard.writeText(analyzeResult.value.innerHTML);
+            alert('複製')
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    // if (resContent.value) {
+    //     try {
+    //         await navigator.clipboard.writeText(resContent.value);
+    //         alert('複製')
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // }
 }
 
 // 購物車state
@@ -680,7 +749,7 @@ onMounted(() => {
     // nextTick(() => {
     createViewCartScrollTrigger();
     createListScrollTrigger();
-    // fetchGPTAnalyze();
+    fetchGPTAnalyze();
     // });
 })
 
@@ -748,6 +817,34 @@ onMounted(() => {
         margin: 2rem auto;
         padding: 1rem 2rem;
         position: relative;
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+        }
+
+        .svgWrapper {
+            position: relative;
+            display: flex;
+            justify-content: end;
+            margin-right: .25rem;
+
+            .copySvg {
+                cursor: pointer;
+                opacity: .75;
+                transition: opacity .2s;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+
+            .checkSvg {
+                // position: absolute;
+                // top: 0;
+                // right: .25rem;
+            }
+        }
     }
 
     .content {
@@ -757,7 +854,7 @@ onMounted(() => {
         text-align: start;
         text-wrap: pretty;
         gap: .5rem;
-        min-height: 5rem;
+        min-height: 7rem;
 
         h2 {
             font-size: 1.25rem;
@@ -787,16 +884,22 @@ onMounted(() => {
 
         .cursor {
             content: '';
-            position: absolute;
-            right: 0;
-            bottom: 15%;
+            display: inline-block;
+            vertical-align: sub;
+            // position: absolute;
+            // right: 0;
+            // bottom: 15%;
 
             width: 2px;
-            height: 1rem;
+            height: 1.25rem;
             background-color: black;
 
             animation: flashing_cursor step-end 1s infinite;
         }
+    }
+
+    .unClickable * {
+        user-select: none;
     }
 
     .guideContent {
@@ -818,6 +921,24 @@ onMounted(() => {
 
 .spinner-enter-to,
 .spinner-leave-from {
+    opacity: 1;
+}
+
+.copySvg-enter-active,
+.copySvg-leave-active {
+    transition: opacity .15s;
+    // position: absolute;
+}
+
+.copySvg-leave-active {}
+
+.copySvg-enter-from,
+.copySvg-leave-to {
+    opacity: 0;
+}
+
+.copySvg-enter-to,
+.copySvg-leave-from {
     opacity: 1;
 }
 

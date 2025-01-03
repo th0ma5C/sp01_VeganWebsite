@@ -300,7 +300,7 @@ onUnmounted(() => {
         @include flex-center-center;
         @include WnH(100%, 100%);
 
-        opacity: 0.03;
+        opacity: 0.05;
         position: fixed;
         pointer-events: none;
         top: 0;
