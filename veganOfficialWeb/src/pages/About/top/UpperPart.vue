@@ -1,122 +1,190 @@
 <template>
     <div class="upperContainer">
         <div class="left">
-            <span>About Us</span>
+            <div class="page1">
+                <h1>
+                    About Us
+                </h1>
+
+                <div class="navContainer">
+                    <div class="nav"
+                        v-for="(item, index) in btnList"
+                        :key="index"
+                        @click="clickScroll(item)">
+                        <div class="textWrapper">
+                            <span>
+                                {{ item }}
+                            </span>
+                            <span>
+                                {{ item }}
+                            </span>
+                        </div>
+
+                        <div class="arrowIcon">
+                            <SvgIcon name="rightArrow"
+                                width="16px" height="16px"
+                                color="#FCFAF2">
+                            </SvgIcon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page2" ref="upperContainer">
+                <div class="top">
+                    <div v-for="(item, index) in 3"
+                        :key="index">
+                        <div class="starWrapper">
+                            <SvgIcon name="Star"
+                                width="26px" height="26px"
+                                color="#0d731e"
+                                v-for="(item, index) in 5"
+                                :key="index"></SvgIcon>
+                        </div>
+                        <div class="middleText">
+                            <h2>
+                                Lorem, ipsum.
+                            </h2>
+                            <p>
+                                Lorem ipsum dolor sit.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <div class="text"
+                        v-for="(item, index) in 2"
+                        :key="index">
+                        <h2>
+                            <SvgIcon name="Mark"
+                                width="24px" height="24px"
+                                color="black"
+                                class="markIcon1">
+                            </SvgIcon>
+                            <span>
+                                Lorem ipsum
+                            </span>
+                            <SvgIcon name="Mark"
+                                width="24px" height="24px"
+                                color="black"
+                                class="markIcon1">
+                            </SvgIcon>
+                        </h2>
+                        <p>
+                            Lorem ipsum dolor sit amet
+                            consectetur adipisicing elit.
+                            Neque
+                            vel soluta quam numquam
+                            reprehenderit modi, quo, ducimus
+                            eius illum dignissimos eaque
+                            optio
+                            nostrum nihil doloremque
+                            accusantium
+                            maxime minima recusandae
+                            doloribus.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="right">
-            <div class="top">
-                <div class="rightText">
-                    <h1>
-                        Lorem ipsum dolor sit amet.
-                    </h1>
-                    <p>
-                        Lorem ipsum dolor sit amet
-                        consectetur, adipisicing elit.
-                        Consequuntur, laboriosam
-                        repellendus! Consectetur quo fuga
-                        excepturi vel maxime dolore at
-                        suscipit officia reiciendis atque,
-                        odit enim.
-                    </p>
-                </div>
-                <div class="imgBlock1">
-                </div>
-            </div>
-
-            <div class="mid">
-                <div>
-                    <div class="starWrapper">
-                        <SvgIcon name="Star" width="26px"
-                            height="26px" color="#0d731e"
-                            v-for="(item, index) in 5"
-                            :key="index"></SvgIcon>
+            <swiper-container :loop="true" effect="fade"
+                :autoplay="{
+                    delay: 3000
+                }" :speed="1000"
+                :pagination="{ clickable: true }"
+                pagination-dynamic-bullets="true"
+                :injectStyles="injectStyles">
+                <swiper-slide
+                    v-for="(item, index) in imgList"
+                    :key="index">
+                    <div class="imgSlider">
+                        <img :src="item.url" alt="">
                     </div>
-                    <div class="middleText">
-                        <h2>
-                            Lorem, ipsum.
-                        </h2>
-                        <p>
-                            Lorem ipsum dolor sit.
-                        </p>
-                    </div>
-                </div>
-                <div>
-                    <div class="starWrapper">
-                        <SvgIcon name="Star" width="26px"
-                            height="26px" color="#0d731e"
-                            v-for="(item, index) in 5"
-                            :key="index"></SvgIcon>
-                    </div>
-                    <div class="middleText">
-                        <h2>
-                            Lorem, ipsum.
-                        </h2>
-                        <p>
-                            Lorem ipsum dolor sit amet.
-                        </p>
-                    </div>
-                </div>
-                <div>
-                    <div class="starWrapper">
-                        <SvgIcon name="Star" width="26px"
-                            height="26px" color="#0d731e"
-                            v-for="(item, index) in 5"
-                            :key="index"></SvgIcon>
-                    </div>
-                    <div class="middleText">
-                        <h2>
-                            Lorem, ipsum.
-                        </h2>
-                        <p>
-                            Lorem ipsum dolor sit.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bottom">
-                <div class="imgBlock2">
-                </div>
-                <div class="rightText">
-                    <h2>
-                        <SvgIcon name="Mark" width="24px"
-                            height="24px" color="black"
-                            class="markIcon1">
-                        </SvgIcon>
-                        <span>
-                            Lorem ipsum
-                        </span>
-                        <SvgIcon name="Mark" width="24px"
-                            height="24px" color="black"
-                            class="markIcon1">
-                        </SvgIcon>
-                    </h2>
-                    <p>
-                        Lorem ipsum dolor sit amet
-                        consectetur adipisicing elit. Neque
-                        vel soluta quam numquam
-                        reprehenderit modi, quo, ducimus
-                        eius illum dignissimos eaque optio
-                        nostrum nihil doloremque accusantium
-                        maxime minima recusandae doloribus.
-                    </p>
-                </div>
-            </div>
+                </swiper-slide>
+            </swiper-container>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue';
-import gsap from 'gsap';
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { positionStore } from '../store/usePagePosition'
 
 
-const showRightPart = ref(false)
+const imgList = ref([
+    {
+        url: '/imgs/about/upper_left.webp'
+    },
+    {
+        url: '/imgs/about/upper_right_env.webp'
+    },
+    {
+        url: '/imgs/about/upper_right_chef.webp'
+    },
+]);
+
+let injectStyles = [
+    `
+    :host{
+        --swiper-pagination-bullet-width: 10px;
+        --swiper-pagination-bullet-height: 10px;
+        --swiper-pagination-color: #FCFAF2;    
+    }
+    `
+];
+
+// position store
+const upperContainer = useTemplateRef('upperContainer');
+function exposePosition() {
+    if (upperContainer.value) {
+        const { top } = upperContainer.value.getBoundingClientRect();
+        positionStore.setPosition('upper', top);
+    }
+}
+
+// position store
+const positionState = computed(() => {
+    return positionStore.getPosition();
+})
+
+const btnList = ref(['CONCEPT', 'ACCESS', 'FAQ'] as const)
+function clickScroll(target: typeof btnList.value[number]) {
+    switch (target) {
+        case 'CONCEPT':
+            const { upper } = positionState.value;
+            window.scroll({
+                top: upper,
+                behavior: 'smooth'
+            })
+            break;
+        case 'ACCESS':
+            const { middle } = positionState.value;
+            window.scroll({
+                top: middle,
+                behavior: 'smooth'
+            })
+            break;
+
+        default:
+            const { bottom } = positionState.value;
+            window.scroll({
+                top: bottom,
+                behavior: 'smooth'
+            })
+            break;
+    }
+}
+
+// 
+
 
 onMounted(() => {
+    exposePosition();
 })
+
 </script>
 
 <style scoped lang="scss">
@@ -125,15 +193,15 @@ onMounted(() => {
 }
 
 .upperContainer {
-    height: 100vh;
-    // min-height: 920px;
-    max-height: 920px;
+    // height: 100vh;
+    // // min-height: 920px;
+    // max-height: 920px;
 
-    margin-top: 100px;
-    padding: 1rem;
+    // // margin-top: 100px;
+    // // padding: 1rem;
 
     display: flex;
-    gap: 1rem;
+    // gap: 1rem;
 
     &>div {
         flex: 1;
@@ -141,139 +209,182 @@ onMounted(() => {
 }
 
 .left {
-    background-image: url('/imgs/about/upper_left.webp');
-    background-position: 10% center;
-    position: relative;
 
-    border-radius: 1rem;
 
-    span {
+    // background-color: $btnBacColor;
+
+    h1 {
         font-family: "EB Garamond", serif;
-        font-size: 6rem;
-        font-variation-settings: 'wght' 600;
+        font-size: 5rem;
+        font-variation-settings: 'wght' 800;
         font-style: italic;
-        color: $primaryBacColor ;
+        color: $secondBacColor;
+    }
 
-        position: absolute;
-        bottom: 2.5rem;
-        left: 2rem;
+    .page1 {
+        min-height: 100vh;
 
-        backdrop-filter: blur(1px);
-        border-radius: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
 
+
+        padding-left: 8rem;
+    }
+
+    .page2 {
+        min-height: 100vh;
+        padding: 1rem 6rem;
+
+        h2 {
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+            font-variation-settings: 'wght' 400;
+        }
+
+        .top {
+            display: flex;
+            gap: 1rem;
+
+            &>div {
+                padding: 1rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                flex: 1;
+                border-radius: 1rem;
+                overflow: hidden;
+                border: 2px solid $secondBacColor;
+                border-radius: 1rem;
+            }
+
+            .starWrapper {
+                display: flex;
+                justify-content: center;
+                margin: 1rem 0 .75rem 0;
+            }
+
+            .middleText {
+                text-align: center;
+
+                p {
+                    font-size: .9rem;
+                }
+            }
+        }
+
+        .content {
+            height: 100%;
+            padding: 3rem 2rem;
+
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+
+            p {
+                line-height: 2;
+            }
+
+            h2:has(.markIcon1) {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                .markIcon1 {
+                    margin-right: 1rem;
+                    transform: translateY(2px);
+                }
+
+                .markIcon1:nth-of-type(2) {
+                    margin-left: 1rem;
+                    transform: rotate(180deg) translateY(-2px);
+                }
+            }
+        }
+    }
+}
+
+.navContainer {
+    display: flex;
+    gap: 2rem;
+
+    .nav {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
         // overflow: hidden;
 
-        text-shadow:
-            3px 1px 0 $secondBacColor,
-            4px 2px 0 $secondBacColor,
-            6px 3px 5px $btnBacColor;
+        span {
+            display: block;
+            color: $btnBacColor;
+            font-variation-settings: 'wght' 600;
+            user-select: none;
+            transition: transform .3s;
+        }
+
+        span:nth-of-type(2) {
+            position: absolute;
+            top: 100%;
+            left: 0;
+        }
+
+        .textWrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        &:hover {
+            .textWrapper span {
+                transform: translateY(-100%)
+            }
+
+            .arrowIcon {
+                transform: scale(1.2) rotate(90deg);
+            }
+        }
+    }
+
+    .arrowIcon {
+        @include WnH(18px);
+        background-color: $btnBacColor;
+        transform: rotate(90deg);
+
+        display: flex;
+        justify-content: center;
+
+        border-radius: 100%;
+
+        transition: transform .3s;
     }
 }
 
 .right {
-    // background-image: url('/imgs/about/upper_left.webp');
-    // background-position: 65% center;
+    max-height: calc(100vh);
 
-    display: grid;
-    grid-template-rows: 2fr 1fr 2fr;
-    gap: 1rem;
+    position: sticky;
+    top: 0;
 
-    border-radius: 1rem;
-
+    // margin-top: 100px;
     overflow: hidden;
-    // text-wrap: balance;
 
-    h1 {
-        font-size: 1.75rem;
-        margin-bottom: 1rem;
-        font-variation-settings: 'wght' 500;
+    swiper-container {
+        height: 100%;
     }
 
-    h2 {
-        font-size: 1.5rem;
-        font-variation-settings: 'wght' 400;
-    }
-
-    &>div {
+    .imgSlider {
         display: flex;
-        gap: 1rem;
+        justify-content: center;
+        align-items: center;
 
-        &>div {
-            flex: 1;
-            border-radius: 1rem;
-            overflow: hidden;
-            // background-color: $primaryBacColor;
+        height: 100%;
 
-            &:not(.imgBlock1, .imgBlock2) {
-                border: 2px solid $secondBacColor;
-            }
-        }
-    }
+        overflow: hidden;
 
-    .rightText {
-        padding: 2rem;
-
-        h1,
-        h2 {
-            margin-bottom: 1.25rem;
-        }
-
-        p {
-            line-height: 2;
-        }
-
-        h2:has(.markIcon1) {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            .markIcon1 {
-                margin-right: 1rem;
-                transform: translateY(2px);
-            }
-
-            .markIcon1:nth-of-type(2) {
-                margin-left: 1rem;
-                transform: rotate(180deg) translateY(-2px);
-            }
-        }
-    }
-
-    .imgBlock1 {
-        background-image: url('/imgs/about/upper_right_env.webp');
-        background-position: top;
-        background-size: cover;
-    }
-
-    .imgBlock2 {
-        background-image: url('/imgs/about/upper_right_chef.webp');
-        background-position: top;
-        background-size: cover;
-    }
-
-    .mid {
-
-        &>div {
-            padding: 1rem;
-
-            display: flex;
-            flex-direction: column;
-            // justify-content: space-evenly;
-            align-items: center;
-        }
-
-        .starWrapper {
-            display: flex;
-            justify-content: center;
-            margin: 1rem 0 .75rem 0;
-        }
-
-        .middleText {
-            text-align: center;
-
-            p {
-                font-size: .9rem;
-            }
+        img {
+            max-width: none;
+            height: 100%;
         }
     }
 }

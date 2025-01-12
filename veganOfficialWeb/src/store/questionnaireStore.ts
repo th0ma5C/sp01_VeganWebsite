@@ -226,6 +226,15 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         }
     }
 
+    // home page recommendation
+    const recommendList = ref<any[]>([]);
+    function setRecList(list: any[]) {
+        recommendList.value = [...list];
+    }
+    function getRecList() {
+        return recommendList.value
+    }
+
     return {
         QNR_IsLoaded,
         questionnaire,

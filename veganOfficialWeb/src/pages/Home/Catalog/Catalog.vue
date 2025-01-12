@@ -45,12 +45,15 @@
             class="tabsContainer">
             <div class="tabs" v-for="(item, index) in menu"
                 :key="index" v-show="show == index">
-                <div class="tab">
-                    <swiper-container
+                <div class="tab" v-show="item.list.length">
+                    <swiper-container ref="swiperRef"
                         :class="{ 'menuSwiper0': index == 0, 'menuSwiper1': index == 1 }"
                         :thumbs-swiper="`.menuSubSwiper${index}`"
-                        navigation="true" rewind="true"
-                        :injectStyles="injectStyles">
+                        speed="750" :rewind="true"
+                        :effect="'fade'" :cross-fade="true"
+                        :injectStyles="injectStyles"
+                        :navigation-prev-el="index == 0 ? '.prevBtn0' : '.prevBtn1'"
+                        :navigation-next-el="index == 0 ? '.nextBtn0' : '.nextBtn1'">
                         <swiper-slide
                             v-for="({ fileName, name, description }, index) in item.list"
                             :key="index">
@@ -81,11 +84,26 @@
                             </div>
                         </swiper-slide>
                     </swiper-container>
+                    <template
+                        v-if="index == 0 || index == 1">
+                        <div
+                            :class="['prevBtn', `prevBtn${index}`]">
+                            <SvgIcon name="Previous"
+                                width="36px" height="36px"
+                                color="#0d731e"></SvgIcon>
+                        </div>
+                        <div
+                            :class="['nextBtn', `nextBtn${index}`]">
+                            <SvgIcon name="Next"
+                                width="36px" height="36px"
+                                color="#0d731e">
+                            </SvgIcon>
+                        </div>
+                    </template>
                     <swiper-container
                         :class="{ 'menuSubSwiper0': index == 0, 'menuSubSwiper1': index == 1 }"
                         space-between="2"
                         :slides-per-view="item.list.length"
-                        free-mode="true"
                         watch-slides-progress="true">
                         <swiper-slide
                             v-for="({ fileName }, index) in item.list"
@@ -102,9 +120,13 @@
                             </a>
                         </swiper-slide>
                     </swiper-container>
-                    <div v-if="index == 2"
-                        class="analyzeLink">
-                        <a href=""><span>開始免費專屬分析</span></a>
+                </div>
+                <div class="tab"
+                    v-if="index == 2 && item.list.length == 0">
+                    <div class="analyzeLink">
+                        <router-link to="/questionnaire">
+                            <span>開始免費專屬分析</span>
+                        </router-link>
                     </div>
                 </div>
             </div>
@@ -122,13 +144,14 @@
  * *0429改Skeleton邏輯、CSS Skeleton圖片預加載 *0501完整菜單連結hover、線條動畫
  * *0901swiper說明字樣
  */
-import { watch, onMounted, ref, reactive } from 'vue';
+import { watch, onMounted, ref, reactive, useTemplateRef, nextTick } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
 import { useLoaderStore } from '@/store/loader';
 import { storeToRefs } from 'pinia';
 import type { MenuItem } from '@/api/menu/type';
 import { useRouter } from 'vue-router';
 import { useMenuStore } from '@/store/menuStore';
+import type { SwiperContainer } from 'swiper/element';
 
 let menu = reactive([
     {
@@ -156,14 +179,14 @@ let injectStyles = [
     :host{
         --swiper-navigation-size: 33px;
         --swiper-navigation-color: #00430b;
-    }
-    .swiper-button-next{
-        right:18%;
-    }
-    .swiper-button-prev{
-        left:18%;
-    }
-    `
+    }`
+    // .swiper-button-next{
+    //     right:18%;
+    // }
+    // .swiper-button-prev{
+    //     left:18%;
+    // }
+    // `
 ]
 
 let lineMargin = ref(25);
@@ -225,9 +248,17 @@ function determineClass(type: string) {
 // }
 
 let show = ref(0);
-let transitionName = ref('init')
+let transitionName = ref('init');
+const swiperRef = useTemplateRef<SwiperContainer[]>('swiperRef');
 function changeTab(n: number) {
     show.value = n;
+    nextTick(() => {
+        if (swiperRef.value) {
+            swiperRef.value.forEach((container) => {
+                container.swiper.update();
+            })
+        }
+    })
 }
 
 let getTabClass = (index: number) => index === show.value ? 'active' : '';
@@ -294,13 +325,14 @@ onMounted(() => {
 
 .tabContainer {
     @include main-part;
-    margin: 1rem auto;
-    margin-top: 66px;
+    margin-inline: auto;
+    margin-block: 6rem 9rem;
     display: flex;
     align-items: normal;
     justify-content: flex-start;
-    gap: 9rem;
-    height: 898px;
+    gap: 5rem;
+    // height: 898px;
+    min-height: 100%;
     flex-direction: column;
     overflow: hidden;
 
@@ -336,6 +368,7 @@ onMounted(() => {
                     align-items: center;
                     border-radius: 0.5rem;
                     opacity: 30%;
+                    transition: all 0.2s;
 
                     &>div {
                         margin: 3px;
@@ -345,13 +378,13 @@ onMounted(() => {
                     &:hover {
                         opacity: 1;
                         transform: scale(1.1);
-                        transition: all 0.2s linear
                     }
 
                     span {
                         color: $secondBacColor;
                         white-space: nowrap;
                         overflow: hidden;
+                        font-variation-settings: 'wght' 500;
                     }
                 }
 
@@ -393,6 +426,7 @@ onMounted(() => {
                 top: -1px;
                 transform-style: preserve-3d;
                 text-align: center;
+                font-variation-settings: 'wght' 500;
 
                 .linkText {
                     @include WnH(100%);
@@ -475,14 +509,21 @@ onMounted(() => {
         swiper-slide {
             @include flex-center-center;
             gap: 1.5rem;
+            background-color: $primaryBacColor;
 
             img {
                 @include WnH(300px);
                 filter: drop-shadow(2px 2px 2px gray);
+                transition: scale .3s;
+
+                &:hover {
+                    scale: 1.05;
+                }
             }
 
             a {
                 position: relative;
+                user-select: none;
 
                 .imgSkeleton {
                     @include WnH(300px);
@@ -509,11 +550,12 @@ onMounted(() => {
 
     @mixin subCatalogTab {
         width: fit-content;
+        // width: 80%;
 
 
         .swiper-slide-thumb-active {
             opacity: 1;
-            transform: none
+            transform: none;
         }
 
         swiper-slide {
@@ -534,6 +576,7 @@ onMounted(() => {
             img,
             a {
                 @include WnH(150px);
+                user-select: none;
             }
 
 
@@ -558,14 +601,41 @@ onMounted(() => {
 
         .tabs {
             position: absolute;
-            width: 80%;
+            width: 75%;
 
             .tab {
-                margin: 0.5rem 0 1rem 0;
+                // margin: 0.5rem 0 1rem 0;
+                position: relative;
 
                 .menuSwiper0,
                 .menuSwiper1 {
                     @include catalogTab;
+                }
+
+                .prevBtn,
+                .nextBtn {
+                    position: absolute;
+                    top: 30%;
+                    z-index: 2;
+                    transform: translate(-50%, -50%);
+                    transform-origin: left top;
+                    transition: scale .2s;
+
+                    &:hover {
+                        scale: 1.15;
+                    }
+
+                    &:active {
+                        transform: translate(calc(-50% + 1px), calc(-50% + 1px));
+                    }
+                }
+
+                .prevBtn {
+                    left: 15%;
+                }
+
+                .nextBtn {
+                    right: 15%;
                 }
 
                 .menuSubSwiper0,
@@ -577,36 +647,41 @@ onMounted(() => {
                     // outline: 1px solid black;
                     width: 375px;
                     transform: translateY(-18px);
+                    color: $secondBacColor;
 
                     h2 {
                         font-size: 2rem;
                         margin-bottom: 1rem;
-                        // text-align: center;
+                        font-variation-settings: 'wght' 600;
+                        letter-spacing: 1px;
                     }
 
                     p {
                         font-size: 1rem;
-                        // text-indent: 2rem;
                         line-height: 1.75;
-                        // padding-left: 1rem;
+                        font-variation-settings: 'wght' 500;
                     }
                 }
 
                 .analyzeLink {
+                    cursor: pointer;
                     position: absolute;
                     top: 50%;
                     left: 50%;
                     transform: translate(-50%, -50%);
-                    width: 140px;
-                    height: 80px;
+                    padding: .75rem 1rem;
                     border-radius: 1rem;
                     background-color: $secondBacColor;
                     filter: drop-shadow(2px 2px 1px black);
-                    transition: transform 0.5s ease;
+                    transition: scale .15s;
+                    transform-origin: left top;
 
                     &:hover {
-                        transform: translate(-50%, -50%) scale(1.05);
-                        transform-origin: center;
+                        scale: 1.1;
+                    }
+
+                    &:active {
+                        transform: translate(calc(-50% + 1px), calc(-50% + 1px));
                     }
 
                     span {

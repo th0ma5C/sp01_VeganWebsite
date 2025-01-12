@@ -4,7 +4,7 @@
         <header class="header" ref="header">
             <router-link :to="{ name: 'Home' }">
                 <SvgIcon name="Logo" height="65px"
-                    color="black">
+                    color="#00430b">
                 </SvgIcon>
             </router-link>
             <div>
@@ -24,7 +24,8 @@
                         <a href=""
                             @click.prevent="clickCartIcon(icon)">
                             <SvgIcon :name="icon"
-                                width="35px" height="35px">
+                                width="35px" height="35px"
+                                color="#00430b">
                             </SvgIcon>
                         </a>
                         <CartCounter v-if="icon == 'Cart'"
@@ -110,9 +111,6 @@ const Router = useRouter();
 const Route = useRoute()
 
 function prevPage() {
-    // console.log(Router);
-    // console.log(Route);
-    // Router.back();
     const steps = Route.matched.length;
     Router.go(-steps)
 }
@@ -148,13 +146,13 @@ emitter.on('sendIcon', () => {
 })
 
 watch(hideNav, (nVal) => {
-    // console.log('emit nav event');
     emitter.emit('navEvent', nVal)
 })
 
 onMounted(() => {
     window.addEventListener('scroll', throttledOnScroll);
-    getHeaderCart(iconList.value[1]); // 暴露cart按鈕元素
+    // 暴露cart按鈕元素
+    getHeaderCart(iconList.value[1]);
 })
 
 onBeforeUnmount(() => {
@@ -200,6 +198,9 @@ onBeforeUnmount(() => {
             .navLink {
                 li {
                     margin-left: 2rem;
+                    font-variation-settings: 'wght' 600;
+                    color: $secondBacColor;
+                    letter-spacing: 1px;
                 }
             }
 
@@ -230,7 +231,6 @@ onBeforeUnmount(() => {
     border-bottom: none;
     width: 100%;
     transition: all 0.2s linear;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.5);
 
     a {
         display: block;

@@ -16,12 +16,11 @@
             <transition-group name="carousel" tag="div"
                 ref="div" class="carousel"
                 :style="swiperStyle">
-                <p v-for="(  item  ) in showSwiper"
-                    :key="item.id" :class="[
-                        { 'dragging': isDown },
-                    ]
-                        ">
-                    {{ item.title }}
+                <p v-for="({ id, title }) in showSwiper"
+                    :key="id"
+                    :class="{ 'dragging': isDown }"
+                    @mouseup="titleOnclick(title)">
+                    {{ title }}
                 </p>
             </transition-group>
         </div>
@@ -29,12 +28,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useSwiper } from '@/hooks/useSwiper';
+import { useRouter } from 'vue-router';
 
 const carousel = [
     { title: '最新美味上架！立即探索我們最新的素食餐盒和果昔，品嚐獨特的素食美味。' },
-    { title: '最新消息、特別優惠、限量商品和精彩活動都在這裡！' },
     { title: '過敏原報告，查看我們食物過敏警報，確保您點的安心。' },
     { title: 'APP限定好康：下載果漾APP，即刻獲得專屬優惠及最新活動資訊。' },
     { title: '加入會員，享專屬優待！加入我們的會員計畫，即刻享有限定優惠和會員專屬好康。' },
@@ -42,23 +41,60 @@ const carousel = [
 
 // 切換、自動輪播、拖曳
 const div = ref(); //拖曳物件之容器
-const { throttleChangeSwiper, showSwiper, isDown, swiperStyle } = useSwiper(div, carousel, 5000)
+const { throttleChangeSwiper, showSwiper, isDown, isDrag, swiperStyle } = useSwiper(div, carousel, 7500)
 
-// 生命鉤子
+// 跳轉
+const router = useRouter();
+
+function routeTo(page: string, config?: Record<string, any>) {
+    return () => {
+        router.push({
+            path: page,
+            ...config
+        });
+    }
+}
+
+const routeMenu = routeTo('/menu');
+const routeAbout = routeTo('/about', {
+    query: { scroll: "FAQ" }
+});
+const routeApp = () => {
+    const url = 'https://www.microsoft.com/zh-tw/store/top-free/apps/pc';
+    window.open(url, '_blank')?.focus();
+}
+const routeMember = routeTo('/profile')
+
+function titleOnclick(target: string) {
+    if (isDrag.value) return
+
+    switch (target) {
+        case carousel[0].title:
+            routeMenu();
+            break;
+        case carousel[1].title:
+            routeAbout();
+            break;
+        case carousel[2].title:
+            routeApp()
+            break;
+        case carousel[3].title:
+            routeMember()
+            break;
+
+        default:
+            break;
+    }
+}
+
 </script>
 
 <style lang="scss" scoped>
-* {
-    // border: 1px solid black;
-}
-
 .container {
     @extend %fixContainer;
     @extend %headerPseudo;
 
     flex-direction: column;
-
-    &::before {}
 
     .marquee {
         @include flex-center-center;
@@ -89,13 +125,13 @@ const { throttleChangeSwiper, showSwiper, isDown, swiperStyle } = useSwiper(div,
             will-change: transform;
             display: flex;
             position: relative;
+            cursor: pointer;
 
             p {
                 text-align: center;
                 margin: 0;
                 min-width: 100%;
                 line-height: 3rem;
-                // transition: all 1s ease;
             }
 
             p:first-child,

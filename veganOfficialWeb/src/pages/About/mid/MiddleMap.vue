@@ -1,26 +1,32 @@
 <template>
-    <div class="midContainer" :class="currBacImg">
+    <div class="midContainer" :class="currBacImg"
+        ref="midContainer">
         <h1>
             ACCESS
         </h1>
 
         <main>
             <div class="map">
-                <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3614.6186188906545!2d121.51571906579045!3d25.047013701133956!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a9727e339109%3A0xc34a31ce3a4abecb!2z5Y-w5YyX!5e0!3m2!1szh-TW!2stw!4v1735629135146!5m2!1szh-TW!2stw"
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"
-                    v-show="currTab == 0"></iframe>
-                <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3640.9814927181997!2d120.68229735891396!3d24.13728808206625!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x34693d1438fb3d3f%3A0xb7b4ebd02f1906b6!2z6Ie65Lit54Gr6LuK56uZ!5e0!3m2!1szh-TW!2stw!4v1735629700952!5m2!1szh-TW!2stw"
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"
-                    v-show="currTab == 1"></iframe>
-                <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3682.3831910081417!2d120.30000271014075!3d22.639497330430878!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x346e04f4871d07a7%3A0xccb9296f1ea5e649!2z6auY6ZuE6LuK56uZ!5e0!3m2!1szh-TW!2stw!4v1735629737060!5m2!1szh-TW!2stw"
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"
-                    v-show="currTab == 2"></iframe>
+                <transition-group name="tab">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3614.6186188906545!2d121.51571906579045!3d25.047013701133956!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a9727e339109%3A0xc34a31ce3a4abecb!2z5Y-w5YyX!5e0!3m2!1szh-TW!2stw!4v1735629135146!5m2!1szh-TW!2stw"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        v-show="currTab == 0"
+                        key="0"></iframe>
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3640.9814927181997!2d120.68229735891396!3d24.13728808206625!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x34693d1438fb3d3f%3A0xb7b4ebd02f1906b6!2z6Ie65Lit54Gr6LuK56uZ!5e0!3m2!1szh-TW!2stw!4v1735629700952!5m2!1szh-TW!2stw"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        v-show="currTab == 1"
+                        key="1"></iframe>
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3682.3831910081417!2d120.30000271014075!3d22.639497330430878!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x346e04f4871d07a7%3A0xccb9296f1ea5e649!2z6auY6ZuE6LuK56uZ!5e0!3m2!1szh-TW!2stw!4v1735629737060!5m2!1szh-TW!2stw"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        v-show="currTab == 2"
+                        key="2"></iframe>
+                </transition-group>
             </div>
 
             <div class="detail">
@@ -104,6 +110,7 @@
                     <img v-for="(item, index) in list"
                         :key="index" :src="item.imgUrl"
                         alt="" v-show="index == currTab">
+
                 </div>
             </div>
         </main>
@@ -112,6 +119,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { positionStore } from '../store/usePagePosition'
 
 
 
@@ -138,6 +146,7 @@ const list = ref([
 
 // current tab
 const currTab = ref<null | number>(null);
+const lastTab = ref(0);
 function selectTab(tab: number) {
     currTab.value = tab;
 }
@@ -146,11 +155,14 @@ function selectTab(tab: number) {
 const currBacImg = computed(() => {
     switch (currTab.value) {
         case 0:
-            return 'store1'
+            return ['store1']
         case 1:
-            return 'store2'
+            if (lastTab.value == 0) {
+                return ['store2']
+            }
+            return ['store2']
         default:
-            return 'store3'
+            return ['store3']
     }
 })
 
@@ -174,9 +186,13 @@ function getPosition(index: number) {
 }
 
 
-watch(currTab, (nVal) => {
+watch(currTab, (nVal, oVal) => {
     if (typeof nVal === 'number' || nVal) {
         getPosition(nVal);
+
+    }
+    if (oVal !== null) {
+        lastTab.value = oVal;
     }
 })
 
@@ -189,8 +205,18 @@ const btnMarkerStyle = computed(() => {
     }
 })
 
+// position store
+const midContainer = useTemplateRef('midContainer');
+function exposePosition() {
+    if (midContainer.value) {
+        const { top } = midContainer.value.getBoundingClientRect();
+        positionStore.setPosition('middle', top);
+    }
+}
+
 onMounted(() => {
-    selectTab(0)
+    selectTab(0);
+    exposePosition();
 })
 
 </script>
@@ -216,6 +242,11 @@ onMounted(() => {
     padding-top: 60px;
     min-height: 100vh;
     position: relative;
+    z-index: 0;
+
+    &::after {
+        transition: opacity .5s;
+    }
 
     h1 {
         font-size: 3rem;
@@ -232,24 +263,102 @@ onMounted(() => {
     }
 }
 
-.store1 {
+@keyframes leftInSlider {
+    from {
+        background-position: right 40%;
+    }
+
+    to {
+        background-position: center;
+    }
+}
+
+@keyframes rightInSlider {
+    from {
+        background-position: left 40%;
+    }
+
+    to {
+        background-position: center;
+    }
+}
+
+.slideRightIn {
+    // animation: rightInSlider .5s forwards;
+}
+
+.slideLeftIn {
+    // animation: leftInSlider .5s forwards;
+}
+
+@keyframes pseudo_bac0 {
+    from {
+        opacity: .25;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pseudo_bac1 {
+    from {
+        opacity: .25;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pseudo_bac2 {
+    from {
+        opacity: .25;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.store1::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    animation: pseudo_bac0 2.5s forwards;
     background:
         linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('/imgs/about/midStore1.webp') no-repeat center/cover;
-
 }
 
-.store2 {
+.store2::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    animation: pseudo_bac1 2.5s forwards;
     background:
         linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('/imgs/about/midStore2.webp') no-repeat center/cover;
-
 }
 
-.store3 {
+.store3::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    animation: pseudo_bac2 2.5s forwards;
     background:
         linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('/imgs/about/midStore3.webp') no-repeat center/cover;
-
 }
-
 
 main {
     display: flex;
@@ -267,6 +376,7 @@ main {
 .map {
     border-radius: 1rem;
     overflow: hidden;
+    position: relative;
 
     iframe {
         width: 100%;
@@ -359,6 +469,7 @@ main {
         margin: 0 3.5rem;
         overflow: hidden;
         border-radius: 1rem;
+        position: relative;
 
         img {
             // transform: scale(1.1) translateX(-2%);
@@ -375,5 +486,21 @@ main {
     to {
         transform: scale(1.2) translateX(-5%);
     }
+}
+
+.tab-enter-active,
+.tab-leave-active {
+    transition: opacity .3s;
+    position: absolute;
+}
+
+.tab-enter-from,
+.tab-leave-to {
+    opacity: 0;
+}
+
+.tab-enter-to,
+.tab-leave-from {
+    opacity: 1;
 }
 </style>

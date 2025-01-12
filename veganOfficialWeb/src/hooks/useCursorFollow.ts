@@ -29,21 +29,28 @@ export function useCursorFollow(container: Ref) {
     let requestAnimationID: number | null = null;
     let containerRect = null;
 
-    function cursorPosition(e: MouseEvent) {
+    function cursorPosition(e: MouseEvent | Event) {
         if (!setCursorStyle.enable) return
         if (!requestAnimationID) { requestAnimationID = requestAnimationFrame(animateCursor); }
-        containerRect = container.value.getBoundingClientRect()
-        const mouseX = e.clientX - containerRect.left
-        const mouseY = e.clientY - containerRect.top
-        if (mouseX >= 0 && mouseX <= containerRect.width &&
-            mouseY >= 0 && mouseY <= containerRect.height) {
-            setCursorStyle.show = true;
-        } else {
-            setCursorStyle.opacity = 1
-            setCursorStyle.show = false;
+        if (e instanceof MouseEvent) {
+            containerRect = container.value.getBoundingClientRect()
+            const mouseX = e.clientX - containerRect.left
+            const mouseY = e.clientY - containerRect.top
+            if (mouseX >= 0 && mouseX <= containerRect.width &&
+                mouseY >= 0 && mouseY <= containerRect.height) {
+                setCursorStyle.show = true;
+            } else {
+                setCursorStyle.opacity = 1
+                setCursorStyle.show = false;
+            }
+            coordinate.targetX = e.clientX
+            coordinate.targetY = e.clientY
         }
-        coordinate.targetX = e.clientX
-        coordinate.targetY = e.clientY
+
+        if (e instanceof Event) {
+            // coordinate.targetX += e.
+        }
+
     }
 
     function animateCursor() {
@@ -74,18 +81,20 @@ export function useCursorFollow(container: Ref) {
         cursor: [
             { event: 'mouseenter', handler: cursorPosition },
             { event: 'mousemove', handler: cursorPosition },
-            // { event: 'mouseover', handler: cursorPosition },
+            { event: 'mouseover', handler: cursorPosition },
             { event: 'mouseleave', handler: cursorLeave },
         ]
     }
 
     onMounted(() => {
-        useListener(container.value, 'add', events.cursor)
+        useListener(container.value, 'add', events.cursor);
+        // useListener(window, 'add', events.cursor)
         requestAnimationID = requestAnimationFrame(animateCursor);
     })
 
     onUnmounted(() => {
-        useListener(container.value, 'remove', events.cursor)
+        // useListener(window, 'remove', events.cursor);
+        useListener(container.value, 'remove', events.cursor);
         stopAnimation();
     })
 

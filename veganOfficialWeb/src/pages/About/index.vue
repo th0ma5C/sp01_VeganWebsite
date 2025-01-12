@@ -1,17 +1,41 @@
 <template>
     <div>
-        <!-- <UpperPart></UpperPart> -->
-        <UpperPart2></UpperPart2>
-        <MiddleMap></MiddleMap>
-        <BottomFAQ></BottomFAQ>
+        <UpperPart ref="upper"></UpperPart>
+        <MiddleMap ref="middle"></MiddleMap>
+        <BottomFAQ ref="bottom"></BottomFAQ>
     </div>
 </template>
 
 <script setup lang="ts">
 import UpperPart from './top/UpperPart.vue';
-import UpperPart2 from './top/UpperPart2.vue';
 import MiddleMap from './mid/MiddleMap.vue';
 import BottomFAQ from './bottom/BottomFAQ.vue';
+import { onBeforeMount, onMounted, useTemplateRef, computed, nextTick, watch, ref } from 'vue';
+import { positionStore } from './store/usePagePosition'
+import { useRoute, useRouter } from 'vue-router';
+
+// position store
+const positionState = computed(() => {
+    return positionStore.getPosition();
+})
+
+// home 跳轉
+const router = useRouter();
+const route = useRoute();
+
+function homeRedirect() {
+    if (route.query.scroll) {
+        const { bottom } = positionState.value;
+        window.scroll({
+            top: bottom,
+            behavior: 'smooth'
+        })
+    }
+}
+
+onMounted(() => {
+    homeRedirect()
+})
 </script>
 
 <style scoped lang="scss"></style>

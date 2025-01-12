@@ -643,7 +643,6 @@ onUnmounted(() => {
 }
 
 .processBar {
-    flex: 1;
 
     .bar {
         @include WnH(100%, 6px);
@@ -659,7 +658,6 @@ onUnmounted(() => {
             position: absolute;
             top: 0;
             left: 0;
-
             transition: width .75s ease;
         }
     }
@@ -739,6 +737,7 @@ $alertColor: #b3261e;
 .QNR_content {
     // @include flex-center-center;
     display: flex;
+    // padding-top: 2rem;
     margin-top: 2rem;
     height: calc(100% - 70px);
     // transform: translateX(-100%);

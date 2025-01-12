@@ -1,63 +1,72 @@
 <template>
-    <div class="container relative z-[1]" ref="container"
-        :style="[bgSize]"
-        @mousedown.prevent="down($event); dragClick = 'grabbing'"
-        @mouseup="dragClick = 'grab'">
-        <div class="cursor" ref="cursor"
-            :style="cursorStyle"
-            v-show="setCursorStyle.show"
-            @animationend="setCursorStyle.opacity = 0"
-            @transitionend="setCursorStyle.show = false;">
-            <SvgIcon name="LocationArrow_L" width="100px"
-                height="24px" color="white"
-                class="cursorArrow">
-            </SvgIcon>
-            <p>DRAG</p>
-            <SvgIcon name="LocationArrow_R" width="100px"
-                height="24px" color="white"
-                class="cursorArrow">
-            </SvgIcon>
-        </div>
+    <div class="container relative z-[1]" ref="locationRef">
+        <Teleport to=".location" defer>
+            <div class="cursor" ref="cursor"
+                :style="cursorStyle"
+                v-show="setCursorStyle.show"
+                @animationend="setCursorStyle.opacity = 0"
+                @transitionend="setCursorStyle.show = true;">
+                <SvgIcon name="LocationArrow_L"
+                    width="100px" height="24px"
+                    color="white" class="cursorArrow">
+                </SvgIcon>
+                <p>DRAG</p>
+                <SvgIcon name="LocationArrow_R"
+                    width="100px" height="24px"
+                    color="white" class="cursorArrow">
+                </SvgIcon>
+            </div>
+        </Teleport>
+
         <transition name="bgFilter">
             <div class="bgFilter absolute content-none"
-                v-show="bg.width == 1905">
+                ref="bgFilter">
             </div>
         </transition>
         <SvgIcon name="LocationTW" class="TW" width=""
             height="450" color="white">
         </SvgIcon>
-        <div class="mainPart" ref="wrapper"
-            :class="{ 'dragging': isDown }"
-            :style="branchStyle"
-            @transitionend="cloneList();">
-            <!-- <transition-group name="carousel" tag="div"
-                class="carousel"> -->
-            <div class="carousel"
-                v-for="(item, index) in showList"
-                :key="index">
+
+        <swiper-container class="mainPart" ref="swiperRef"
+            :loop="true" :speed="1000" :parallax="true"
+            grab-cursor="true">
+            <swiper-slide
+                v-for="(item, index) in branchList"
+                :key="index" class="carousel">
                 <div class="content">
-                    <transition name='fadeIn'>
-                        <div class="point" :style="delayVar"
-                            :class="pointClass[index]"
-                            ref="point"
-                            v-show="count == index">
-                        </div>
-                    </transition>
+                    <div class="mapWrapper" ref="point">
+                        <SvgIcon name="LocationTW"
+                            class="TWAnchor" width=""
+                            height="450" color="white">
+                        </SvgIcon>
+                        <div class="point" ref="point"
+                            :class="{
+                                north: item.position == '北部分店',
+                                central: item.position == '中部分店',
+                                south: item.position == '南部分店',
+                            }"></div>
+                    </div>
                     <div class="branchName"
                         ref="branchNames">
                         <p>{{ item.position }}</p>
                         <h1>
                             {{ item.branch }}
+                            <span class="prevBranch">
+                                {{
+                                    previewBranchName(item.branch)[0]
+                                }}
+                            </span>
+                            <span class="nextBranch">
+                                {{
+                                    previewBranchName(item.branch)[1]
+                                }}
+                            </span>
                         </h1>
-                        <!-- <transition name="branch"> -->
-                        <h1 :style="branchNameClass[index]"
-                            v-show="index == count - 1 || index == count + 1">
-                            {{ item.branch }}
-                        </h1>
-                        <!-- </transition> -->
-                        <div>
-                            <a @mouseenter="setIconClass($event); dragClick = 'pointer'"
-                                @mouseleave="setIconClass($event); dragClick = 'grab'">
+                        <div @mouseenter="setIconClass($event);"
+                            @mouseleave="setIconClass($event);"
+                            @click="mapBtn(item.branch)"
+                            class="btnWrapper">
+                            <a>
                                 查看地圖
                             </a>
                             <SvgIcon name="LocationArrow"
@@ -66,26 +75,21 @@
                             </SvgIcon>
                         </div>
                     </div>
-                    <transition name="fadeIn">
-                        <div class="position"
-                            :style="[{ left: `${index * 100 + 15}%` }, delayVar]"
-                            v-show="index == count">
-                            <SvgIcon name="Location"
-                                color="white" width="24"
-                                height="24">
-                            </SvgIcon>
-                            <p>{{ item.addr }}</p>
-                        </div>
-                    </transition>
+                    <div class="position" v-show="true"
+                        data-swiper-parallax="-1000">
+                        <SvgIcon name="Location"
+                            color="white" width="24"
+                            height="24">
+                        </SvgIcon>
+                        <p>{{ item.addr }}</p>
+                    </div>
                 </div>
-            </div>
-            <!-- </transition-group> -->
-        </div>
+            </swiper-slide>
+        </swiper-container>
     </div>
 </template>
 
 <script setup lang="ts">
-
 // TODO: 整體代碼優化
 /**
  * //無法點按鈕(pointer-event or z-index)
@@ -93,50 +97,25 @@
  * //左下字用切換顯示
  * //下一分店名靠前、淡化
  * //游標跟隨可以不用requestAnimationFrame，透過不斷移除animation、新增animation達成平滑移動
- * * 頭尾兩張clone時會閃爍，不時出現，原因未知
- * ? 封裝游標跟隨
+ * // 頭尾兩張clone時會閃爍，不時出現，原因未知
+ * // 封裝游標跟隨
  * ? 取消游標跟隨mouseover，不確定影響
  */
 
 
 
-import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpdated, watchEffect } from 'vue';
+import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpdated, watchEffect, useTemplateRef } from 'vue';
 import type { Ref } from 'vue';
 import debounce from 'lodash/debounce';
 import useListener from '@/hooks/useListener';
 import { useCursorFollow } from '@/hooks/useCursorFollow';
 import useArrowFly from '@/hooks/useArrowFly';
+import emitter from '@/utils/eventBus';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import type { SwiperContainer } from 'swiper/element';
+import type { Swiper, SwiperEvents } from 'swiper/types';
 
-
-//背景
-let bg = reactive({
-    width: 952,
-    height: 460
-});
-let scrollY = ref();
-let deltaY = ref(0);
-let ticking = false;
-watch(scrollY, (nVal, oVal = 0) => {
-    if (bg.width == 1905 || ticking) return;
-    deltaY.value = nVal - oVal;
-    window.requestAnimationFrame(() => {
-        ticking = false;
-        if (scrollY.value >= 1400) {
-            bg.width = Math.min(Math.max(bg.width + deltaY.value, 952), 1905);
-            bg.height = Math.min(Math.max(bg.height + deltaY.value, 460), 920);
-        }
-    })
-    ticking = true;
-})
-let bgSize = computed(() => ({
-    width: `${bg.width}px`,
-    height: `${bg.height}px`,
-    cursor: dragClick.value
-}))
-function bgScroll() {
-    if (bg.width == 1905 || ticking) return;
-    scrollY.value = window.scrollY;
-}
 
 // location swiper
 let branchList = [
@@ -158,313 +137,144 @@ let branchList = [
         addr: 'Sanmin Dist., Kaohsiung City',
         bacUrl: ''
     }
-]
+] as const;
 
-let pointClass = computed(() => {
-    return showList.value.map((_, index) => {
-        switch (index) {
-            case 1:
-                return 'cloneSouth';
-            case 2:
-                return 'north';
-            case 3:
-                return 'central';
-            case 4:
-                return 'south';
-            case 5:
-                return 'cloneNorth';
-            default:
-                return '';
-        }
-    })
-})
+let swiperRef = useTemplateRef<SwiperContainer>('swiperRef');
 
-let delaySpeed = ref(1)
-let delayVar = computed(() => {
-    return {
-        '--delaySpeed': `${delaySpeed.value}s`
-    }
-})
-
-let count = ref(2), translateX = ref(0), transition = ref('transform 0s ease'),
-    isDown = ref(false), wrapper = ref<HTMLDivElement | null>(),
-    divWidth: number,
-    breakPoint: number,
-    dragClick = ref('grab'),
-    branchStyle = computed(() => ({
-        transform: `translateX(calc(-${count.value * 100}% + ${translateX.value}px))`,
-        transition: `${transition.value}`
-    }));
-
-let frontTag = branchList.slice(0, 2), rearTag = branchList.slice(-2),
-    showList = ref([...rearTag, ...branchList, ...frontTag])
-
-function changeSwiper(direction: -1 | 1) {
-    // if (count.value == 1 && direction == -1) return
-    // if (count.value == 3 && direction == 1) return
-    count.value += direction;
-    transition.value = 'transform 0.75s ease';
-    delaySpeed.value = 1;
-}
-
-function cloneList() {
-    transition.value = 'transform 0s';
-    if (count.value == (showList.value.length - 2)) {
-        count.value = 2;
-    } else if (count.value == 1) {
-        count.value = showList.value.length - 3;
-    }
-    delaySpeed.value = 0.15;
-    isDown.value = false;
-}
-
+// handle window resize
 function resize() {
-    if (wrapper.value) {
-        divWidth = wrapper.value.clientWidth;
+    if (swiperRef.value) {
+        swiperRef.value.swiper.update();
+    }
+    ScrollTrigger.killAll();
+    createScrollTrigger();
+    ScrollTrigger.refresh();
+    const scaler = ScrollTrigger.getById('scaler');
+    if (scaler && scaler.progress !== 1) {
+        scaler?.enable();
     }
 }
-// let dragTimer: (number | null | NodeJS.Timeout);
-function down(e: MouseEvent) {
-    if (isDown.value) return;
-    e.preventDefault();
-    isDown.value = true;
-    breakPoint = 0;
-    useListener(window, 'add', events.drag);
-}
-
-function move(e: MouseEvent) {
-    translateX.value += e.movementX;
-    breakPoint += e.movementX;
-    branchX.value += e.movementX
-}
-
-function up() {
-    if (translateX.value == 0) {
-        isDown.value = false;
-        useListener(window, 'remove', events.drag);
-        return
-    }
-    if (breakPoint < -(divWidth / 5)) {
-        changeSwiper(1);
-    } else if (breakPoint > (divWidth / 5)) {
-        changeSwiper(-1);
-    }
-    transition.value = 'transform 0.75s ease';
-    translateX.value = 0;
-    useListener(window, 'remove', events.drag);
-}
-
-// 店名靠前
-let branchNames = ref()
-let branchX = ref(0)
-let branchNameStyle = computed(() => {
-    //   
-    return {
-        // transform: `translateX(calc(${translateX.value * -0.5}px))`,
-        // transition: `${transition.value}`
-    }
-})
-let prevBranch = computed(() => ({
-    position: 'absolute',
-    top: 'calc(570px)',
-    right: `calc(-160px - ${(count.value - 1) * 1905}px)`,
-    opacity: '0.5',
-}))
-let currBranch = computed(() => ({
-    display: 'none',
-}))
-let nextBranch = computed(() => ({
-    position: 'absolute',
-    top: 'calc(570px)',
-    right: `calc(-200px - ${(count.value) * 1905}px)`,
-    opacity: '0.5',
-}))
-
-let branchNameClass = computed(() => {
-    return showList.value.map((_, index) => {
-        switch (index) {
-            case count.value - 1:
-                return prevBranch.value;
-            case count.value:
-                return currBranch.value;
-            case count.value + 1:
-                return nextBranch.value;
-            default:
-                return {};
-        }
-    })
-})
 
 //icon hover
-//#region 
-// let iconClass = ref('in');
-// let timers: (ReturnType<typeof setTimeout> | null)[] = [];
-
-// function hoverDebounce(target: Ref<string>) {
-//     let timer: ReturnType<typeof setTimeout> | null = null;
-//     let timeStamp: number | null = null;
-//     return function (e: MouseEvent) {
-//         e.type === 'mouseenter' ? dragClick.value = 'pointer' : dragClick.value = 'grab';
-//         if (!timeStamp) {
-//             timeStamp = Date.now();
-//             e.type === 'mouseenter' ? target.value = 'out' : target.value = 'in';
-//             timer = setTimeout(() => {
-//                 timeStamp = null;
-//             }, 500 - (Date.now() - timeStamp))
-//             return
-//         }
-//         if (timer) {
-//             clearTimeout(timer);
-//             const index = timers.indexOf(timer);
-//             if (index !== -1) {
-//                 timers.splice(index, 1);
-//             }
-//         }
-//         timeStamp = Date.now();
-//         timer = setTimeout(() => {
-//             e.type === 'mouseenter' ? target.value = 'out' : target.value = 'in';
-//             timeStamp = null;
-//         }, 500 - (Date.now() - timeStamp));
-//         timers.push(timer);
-//     }
-// }
-
-// const setIconClass = hoverDebounce(iconClass);
-//#endregion
-
 let { iconClass, setIconClass, timers } = useArrowFly();
 
-// watch(iconClass, (nVal) => {
-//     nVal == 'in' ? dragClick.value = 'pointer' : dragClick.value = 'grab';
-// })
-
-//游標跟隨
-//#region 
-// let container = ref(), cursor = ref();
-// let cursorX = ref<number | null>(null), cursorY = ref<number | null>(null);
-// let targetX = ref<number | null>(null), targetY = ref<number | null>(null);
-// let requestAnimationID: number | null = null;
-// let cursorShow = ref(false), enable = ref(false);
-// let cursorStyle = computed(() => ({
-//     transform: `translate3d(calc(${cursorX.value}px - 50%),calc(${cursorY.value}px - 62px), 0)`,
-//     opacity: cursorOpacity.value,
-// }))
-
-// let containerRect = null;
-// let cursorTimer: (number | null | NodeJS.Timeout) = null, cursorOpacity = ref(1)
-
-
-
-// let handleCursorStyle = (function () {
-
-//     function opacity(n: number) {
-//         cursorOpacity.value = n
-//     }
-//     function show() {
-//         cursorShow.value = false
-//     }
-//     return { opacity, show }
-// })();
-
-// function cursorLeave() {
-//     handleCursorStyle.show();
-//     handleCursorStyle.opacity(1);
-//     stopAnimation();
-// }
-
-// function cursorPosition(e: MouseEvent) {
-//     if (!enable.value) return
-//     if (!requestAnimationID) { requestAnimationID = requestAnimationFrame(animateCursor); }
-//     containerRect = container.value.getBoundingClientRect()
-//     const mouseX = e.clientX - containerRect.left
-//     const mouseY = e.clientY - containerRect.top
-//     if (mouseX >= 0 && mouseX <= containerRect.width &&
-//         mouseY >= 0 && mouseY <= containerRect.height) {
-//         cursorShow.value = true;
-//     } else {
-//         cursorOpacity.value = 1
-//         cursorShow.value = false;
-//     }
-//     targetY.value = e.clientY
-//     targetX.value = e.clientX
-// }
-
-// function animateCursor() {
-//     if (targetX.value !== null && targetY.value !== null) {
-//         if (cursorX.value === null) cursorX.value = targetX.value;
-//         if (cursorY.value === null) cursorY.value = targetY.value;
-
-//         const deltaX = targetX.value - cursorX.value;
-//         const deltaY = targetY.value - cursorY.value;
-
-//         cursorX.value += Math.round(deltaX * 0.3 * 10) / 10;
-//         cursorY.value += Math.round(deltaY * 0.3 * 10) / 10;
-//     }
-//     requestAnimationID = requestAnimationFrame(animateCursor);
-// }
-// function stopAnimation() {
-//     if (requestAnimationID) {
-//         cancelAnimationFrame(requestAnimationID);
-//         requestAnimationID = null;
-//     }
-// }
-//#endregion
-
-let container = ref()//, cursor = ref();
+const locationRef = useTemplateRef('locationRef');
 let cursorStyle = computed(() => ({
     transform: `translate3d(calc(${coordinate.X}px - 50%),calc(${coordinate.Y}px - 62px), 0)`,
     opacity: setCursorStyle.opacity,
 }))
+
+
+// cursor follow
+let { coordinate, setCursorStyle } = useCursorFollow(locationRef)
+const isScrollerFinish = ref(true);
 watchEffect(() => {
-    if (bg.width >= 1905) {
+    if (isScrollerFinish.value) {
         setCursorStyle.enable = true
     }
 })
 
-let { coordinate, setCursorStyle } = useCursorFollow(container)
-
 const events = {
     window: [
         { event: 'resize', handler: resize },
-    ],
-    dom: [
-        { event: 'mousedown', handler: down },
-    ],
-    drag: [
-        { event: 'mousemove', handler: move },
-        { event: 'mouseup', handler: up },
-    ],
-    scroll: [
-        { event: 'scroll', handler: bgScroll }
-    ],
-    // cursor: [
-    //     { event: 'mouseenter', handler: cursorPosition },
-    //     { event: 'mousemove', handler: cursorPosition },
-    //     // { event: 'mouseover', handler: cursorPosition },
-    //     { event: 'mouseleave', handler: cursorLeave },
-    // ]
+    ]
+}
+
+// sticky top
+gsap.registerPlugin(ScrollTrigger);
+
+function createScrollTrigger() {
+    gsap.fromTo(locationRef.value,
+        {
+            scale: .5,
+            transformOrigin: "top",
+        },
+        {
+            scale: 1,
+            transformOrigin: "top",
+            scrollTrigger: {
+                id: 'scaler',
+                trigger: locationRef.value,
+                start: 'top-=400 center',
+                end: 'top-=200 center',
+                scrub: .5,
+            },
+            onComplete: () => {
+                ScrollTrigger.refresh()
+                isScrollerFinish.value = true;
+
+                const scaler = ScrollTrigger.getById('scaler');
+                if (scaler && scaler.progress) {
+                    scaler.disable(false);
+                } else if (scaler) {
+                    scaler.enable();
+                }
+            },
+        }
+    )
+    ScrollTrigger.create({
+        trigger: locationRef.value,
+        pin: locationRef.value,
+        start: 'top top',
+        end: '+=100',
+    })
+}
+
+// refactor with swiper js
+function previewBranchName(curr: string) {
+    const currIndex = branchList.findIndex((item) => {
+        return item.branch == curr
+    })
+
+    let preview;
+    switch (currIndex) {
+        case 0:
+            return preview = [branchList[2].branch, branchList[1].branch];
+        case 1:
+            return preview = [branchList[0].branch, branchList[2].branch];
+        default:
+            return preview = [branchList[1].branch, branchList[0].branch];
+    }
+}
+
+// btn on click
+function mapBtn(target: typeof branchList[number]['branch']) {
+    let url = null;
+    switch (target) {
+        case '台北車站店':
+            url = 'https://maps.app.goo.gl/RzqLDnduTMCyxphr7';
+            window.open(url, '_blank')?.focus();
+            break;
+        case '台中車站店':
+            url = 'https://maps.app.goo.gl/R2YvnkB4MHfmwt7t5';
+            window.open(url, '_blank')?.focus();
+            break;
+        default:
+            url = 'https://maps.app.goo.gl/uGHbjoCbm5EZq5nB9';
+            window.open(url, '_blank')?.focus();
+            break;
+    }
 }
 
 onMounted(() => {
-    scrollY.value = window.scrollY;
-    useListener(window, 'add', events.scroll);
     useListener(window, 'add', events.window);
-    // useListener(container.value, 'add', events.cursor)
-})
-onUpdated(() => {
-    resize();
+    createScrollTrigger();
 })
 onUnmounted(() => {
     timers.forEach(timer => {
         if (timer) clearTimeout(timer);
     })
-    useListener(window, 'remove', events.scroll);
     useListener(window, 'remove', events.window);
+    ScrollTrigger.killAll();
 })
 
 </script>
 
 <style scoped lang="scss">
+* {
+    // outline: 1px solid black;
+}
+
 @keyframes cursor {
     0% {
         stroke-dashoffset: 100;
@@ -486,36 +296,24 @@ onUnmounted(() => {
 }
 
 .container {
+    @extend %fixContainer;
     background: url('@assets/img/Home/Location/shop.jpg') fixed no-repeat center/cover;
     transition: width 0.2s ease, height 0.2s ease;
-    cursor: grab;
+    margin-inline: auto;
 
-    .cursor {
-        @include WnH(100px);
-        position: fixed;
-        left: 0;
-        top: 0;
-        z-index: 2;
-        transition: opacity 0.75s ease;
-        pointer-events: none;
-        // background-color: black;
+    .mapWrapper {
+        position: absolute;
+        top: 5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 1;
 
-        p {
-            color: $primaryBacColor;
-            text-align: center;
-            margin: 0.5rem auto;
+        .TWAnchor {
+            opacity: 0;
         }
-
-        .cursorArrow {
-            stroke-dasharray: 100;
-            stroke-dashoffset: 100;
-            animation: cursor 1.5s 0.5s ease-out forwards;
-        }
-
     }
 
     .TW {
-        // padding-top: 5rem;
         position: absolute;
         top: 5rem;
         left: 50%;
@@ -562,6 +360,7 @@ onUnmounted(() => {
 
 .mainPart {
     @include WnH(100%);
+    height: 100vh;
     display: inline-flex;
     color: $primaryBacColor;
     filter: brightness(2);
@@ -570,44 +369,34 @@ onUnmounted(() => {
 
 
     .carousel {
-        max-width: 1905px;
-        padding-top: calc(530px + 1rem);
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10%;
 
         .content {
             @include flex-center-center;
-            width: 1905px;
-            // flex: none;
+            width: 100%;
 
             .point {
                 @include WnH(8px);
                 border-radius: 50%;
                 background-color: white;
                 position: absolute;
-            }
-
-            .cloneSouth {
-                top: calc(435px);
-                left: calc(870px + 100%);
+                top: -4px;
+                left: -4px;
+                transition: opacity .3s 1s;
             }
 
             .north {
-                top: calc(114px);
-                left: calc(1012px + 200%);
+                transform: translate(210px, 32.5px);
             }
 
             .central {
-                top: calc(236px);
-                left: calc(910px + 300%);
+                transform: translate(108px, 154.5px);
             }
 
             .south {
-                top: calc(435px);
-                left: calc(870px + 400%);
-            }
-
-            .cloneNorth {
-                top: calc(114px);
-                left: calc(1012px + 500%);
+                transform: translate(70px, 360px);
             }
 
             .fadeIn-enter-active,
@@ -627,23 +416,39 @@ onUnmounted(() => {
 
             .branchName {
                 @include flex-center-center;
-                width: 360px;
+                // width: 100%;
+                // width: 360px;
                 flex-direction: column;
-                // position: absolute;
-                // transition: transform 0.5s;
-                // animation: branchAnimation 0.5s ease forwards;
-
+                position: absolute;
+                top: 70%;
+                left: 50%;
+                transform: translate(-50%, -50%);
 
                 h1 {
                     font-size: 4rem;
                     font-variation-settings: 'wght' 500;
                     letter-spacing: 0.5rem;
+                    position: relative;
+
+                    span {
+                        position: absolute;
+                        text-wrap: nowrap;
+                        opacity: .5;
+                    }
+
+                    .prevBranch {
+                        right: 50vw;
+                    }
+
+                    .nextBranch {
+                        left: 50vw;
+                    }
                 }
 
-                &>div {
+                .btnWrapper {
                     @include flex-center-center;
                     align-self: flex-end;
-                    margin-right: 0.5rem;
+                    cursor: pointer;
                     font-size: 1.5rem;
                     gap: 0.5rem;
                     position: relative;
@@ -654,6 +459,20 @@ onUnmounted(() => {
 
                     .out {
                         animation: flyOut 0.5s ease-in forwards;
+                    }
+
+                    &:hover a {
+                        outline-color: $primaryBacColor ;
+                        opacity: 1;
+                    }
+
+                    a {
+                        padding: .25rem .5rem;
+                        border-radius: 1rem;
+                        position: relative;
+                        outline: 1px solid transparent;
+                        opacity: .75;
+                        transition: outline-color .3s, opacity .3s;
                     }
                 }
             }
@@ -668,48 +487,15 @@ onUnmounted(() => {
                 }
             }
 
-            // .prevBranch {
-            //     position: absolute;
-            //     top: calc(530px + 1rem);
-            //     right: -10vw;
-            //     // transform: translateX(50vw)
-            // }
-
-            // .currBranch {
-            //     position: absolute;
-            //     top: calc(530px + 1rem);
-            //     // transform: translateX(0)
-            // }
-
-            // .nextBranch {
-            //     position: absolute;
-            //     top: calc(530px + 1rem);
-            //     right: -110vw;
-            //     // transform: translateX(-50vw)
-            // }
-
-            // .branch-enter-active,
-            // .branch-leave-active {
-            //     transition: opacity 0.5s 1s;
-            // }
-
-            // .branch-enter-to,
-            // .branch-leave-from {
-            //     opacity: 0.5;
-            // }
-
-            // .branch-enter-from,
-            // .branch-leave-to {
-            //     opacity: 0;
-            // }
-
             .position {
                 @include flex-center-center;
                 gap: 0.25rem;
                 position: absolute;
-                bottom: 5%;
-                // left: 115%;
-                text-wrap: nowrap
+                bottom: 15%;
+                left: 12%;
+                text-wrap: nowrap;
+                line-height: 36px;
+                padding: .25rem .5rem;
             }
         }
     }
@@ -718,22 +504,62 @@ onUnmounted(() => {
         transition: none !important;
     }
 
-
-
     // 北
     // 25.047893811483274,
     // 121.51709051510576 top: calc(114px);
     // left: calc(1012px);
-    // x 209 y 32
+    // x 210 y 32.5
 
     // 中 24.137131307709268,
     // 120.68668906182916 top: calc(236px);
     // left: calc(910px);
-    // x 107 y 154
+    // x 108 y 154.5
 
     // 南 22.639888449163326,
     // 120.30226114031127 top: calc(435px);
     // left: calc(863px);
-    // x 60 y 352
+    // x 61 y 353
+}
+
+swiper-slide:not(.swiper-slide-active) {
+
+    .prevBranch,
+    .nextBranch {
+        opacity: 0 !important;
+    }
+
+    .point {
+        opacity: 0;
+    }
+}
+
+swiper-slide:is(.swiper-slide-active) {
+
+    .point {
+        opacity: 1;
+    }
+}
+
+.cursor {
+    @include WnH(100px);
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    transition: opacity 0.75s ease;
+    pointer-events: none;
+
+    p {
+        color: $primaryBacColor;
+        text-align: center;
+        margin: 0.5rem auto;
+    }
+
+    .cursorArrow {
+        stroke-dasharray: 100;
+        stroke-dashoffset: 100;
+        animation: cursor 1s 0.5s ease-out forwards;
+    }
+
 }
 </style>

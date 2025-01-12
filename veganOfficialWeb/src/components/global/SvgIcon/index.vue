@@ -25,7 +25,7 @@ const { prefix, name, color } = defineProps({
     height: {
         type: String,
         default: '100px'
-    },
+    }
 })
 
 const symbolID = computed(() => `#${prefix}-${name}`);

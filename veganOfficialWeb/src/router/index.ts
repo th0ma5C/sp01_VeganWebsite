@@ -1,8 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-// import routes from './config'
 import Home from '@pages/Home/index.vue'
-import Questionnaire from '@pages/Questionnaire/index.vue'
-import QNR_result from '@/pages/Questionnaire/result/QNR_result.vue'
 import Menu from '@pages/Menu/index.vue'
 import About from '@pages/About/index.vue'
 import Checkout from '@/pages/Cart/Checkout.vue'
@@ -10,9 +7,6 @@ import Profile from '@pages/Profile/index.vue'
 import Product from "@/pages/Menu/product/Product.vue";
 import type { RouteLocationNormalized, NavigationGuardNext, NavigationGuardReturn } from 'vue-router'
 import { useUserStore } from '@/store/userStore'
-import { useNewsStore } from "@/store/newsStore";
-import { useMenuStore } from "@/store/menuStore";
-import { storeToRefs } from "pinia";
 import { reqGetUser, reqRedirectLogin } from "@/api/userAuth";
 import { jwtDecode } from "jwt-decode";
 import { useToastStore } from "@/store/toastStore";
@@ -88,7 +82,7 @@ const routes = [
     },
     {
         path: '/about',
-        component: About
+        component: About,
     },
     {
         path: '/Checkout',
@@ -161,12 +155,6 @@ const routes = [
                             return
                         }
                     }
-                    // const userStore = useUserStore();
-                    // if (userStore.isAuth) {
-                    //     return true
-                    // } else {
-                    //     return router.replace('/profile')
-                    // }
                 },
                 meta: {
                     hideParent: true,
@@ -181,15 +169,15 @@ const router = createRouter({
     history: createWebHistory(),
     routes,
     scrollBehavior(to, from, savePosition) {
-        // if (to.path == '/about') return
-
+        if (to.query.scroll) {
+            return false
+        }
         return { top: 0 }
     }
 })
 
 
 router.beforeEach(async (to, from) => {
-    // if (to.path == '/profile' && to.query.token) return true;
     NProgress.start();
 
     const userStore = useUserStore();

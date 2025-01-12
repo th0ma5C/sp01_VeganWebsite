@@ -25,12 +25,13 @@
                         <transition-group name="tab"
                             @enter="hideSlide = true"
                             @after-enter="hideSlide = false">
-                            <li v-for="({ date, label, title, _id }) in newsList.showNews"
+                            <li v-for="({ date, label, title, _id }, index) in newsList.showNews"
                                 :key="tab" ref="li"
                                 v-show="tab == newsList.tab"
                                 @mouseenter="setHover(_id!, $event)"
                                 @mouseleave="setHover(null, $event)"
-                                @mousemove="setStalkerPosition($event)">
+                                @mousemove="setStalkerPosition($event)"
+                                @click="tabOnclick(index)">
                                 <div class="date">
                                     {{ date }}
                                 </div>
@@ -60,7 +61,7 @@
 
             </div>
         </div>
-        <div class="botBtn">
+        <!-- <div class="botBtn">
             <button>
                 <div class="cube" data-cubeBot="更多資訊">
                     <span>
@@ -73,7 +74,7 @@
                     </Svg-icon>
                 </div>
             </button>
-        </div>
+        </div> -->
         <transition name="marquee">
             <div class="marquee" v-show="enter">
                 <span>
@@ -85,16 +86,54 @@
             </div>
         </transition>
     </div>
-    <!-- <div class="conceptContainer">
+    <div class="dialogWrapper" ref="dialogRef"
+        v-if="dialogContent && isDialogOpen">
+        <div class="conceptContainer">
+            <SvgIcon class="cancelBtn" name="cancel"
+                width="24px" height="24px" color="black"
+                @click="closeDialog">
+            </SvgIcon>
 
-    </div> -->
+            <div class="labelWrapper">
+                <div class="bac">
+                    <img src="@assets/icons/ConceptLabel.svg"
+                        alt="">
+                </div>
+
+                <div class="text">
+                    {{
+                        dialogContent.label
+                    }}
+                </div>
+            </div>
+
+            <div class="title">
+                <h1>
+                    <!-- <span class="text"> -->
+                    <!-- </span> -->
+                    {{ dialogContent.title }}
+                </h1>
+                <p>
+                    {{ dialogContent.date }}
+                </p>
+            </div>
+
+            <div class="content">
+                <p>
+                    {{ showNewsLorem }}
+                </p>
+            </div>
+        </div>
+    </div>
+
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeMount, onMounted, onUnmounted, reactive, ref, watch, watchEffect } from 'vue';
+import { computed, nextTick, onBeforeMount, onMounted, onUnmounted, reactive, ref, useTemplateRef, watch, watchEffect } from 'vue';
 import { useNewsStore } from '@/store/newsStore';
 import type { Ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { LoremIpsum, loremIpsum } from 'lorem-ipsum';
 
 //
 /**
@@ -163,6 +202,9 @@ let showBac = (entries: IntersectionObserverEntry[] | undefined) => {
     if (entries) {
         entries.forEach(entry => {
             enter.value = entry.isIntersecting;
+            if (!entry.isIntersecting) {
+                isDialogOpen.value = entry.isIntersecting;
+            }
         })
     }
 }
@@ -192,9 +234,47 @@ let stalkerStyle = computed(() => ({
 function setStalkerPosition(e: MouseEvent) {
     let X = e.clientX;
     stalkerX.value = X;
-    // console.log(e);
 }
 
+// 彈出視窗
+const showNewsIndex = ref<null | number>(null);
+const showNewsLorem = ref('');
+const isDialogOpen = ref(false)
+
+const dialogContent = computed(() => {
+    if (showNewsIndex.value == null) return
+    return newsList.showNews[showNewsIndex.value]
+})
+
+watch(showNewsIndex, (nVal) => {
+    if (typeof nVal == 'number') {
+        showNewsLorem.value = lorem.generateParagraphs(1)
+    }
+})
+
+function tabOnclick(index: number) {
+    showNewsIndex.value = index;
+    isDialogOpen.value = true
+}
+
+function closeDialog() {
+    isDialogOpen.value = false
+}
+
+// 隨機字數lorem
+const lorem = new LoremIpsum({
+    sentencesPerParagraph: {
+        max: 8,
+        min: 4
+    },
+    wordsPerSentence: {
+        max: 16,
+        min: 4
+    }
+})
+
+// 離開關閉dialog
+const dialogRef = useTemplateRef('dialogRef');
 
 onMounted(() => {
     observer.observe(tabContainer.value);
@@ -207,6 +287,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+* {
+    // outline: 1px solid black;
+}
+
 // hover畫底線
 @mixin pseudoLine($speed) {
     &::after {
@@ -644,5 +728,99 @@ onUnmounted(() => {
 .tab-enter-to,
 .tab-leave-from {
     opacity: 1;
+}
+
+.dialogWrapper {
+    @include flex-center-center;
+    // @include WnH(100vw, 100vh);
+    height: 100%;
+    position: fixed;
+    top: 0;
+    z-index: 99;
+}
+
+.conceptContainer {
+    min-height: 50%;
+    min-width: 50%;
+    // max-width: 75%;
+    display: flex;
+    flex-direction: column;
+    margin: 2rem calc(12% + 6rem);
+    padding: 1rem 2rem;
+    background-color: $primaryBacColor;
+    border: 1px solid $secondBacColor;
+    border-radius: 1rem;
+    box-shadow: 2px 2px 6px 2px gray;
+    position: relative;
+
+
+    h1 {
+        font-size: 1.75rem;
+        font-variation-settings: 'wght' 500;
+    }
+
+    .labelWrapper {
+        position: absolute;
+        top: 1rem;
+        left: 2rem;
+
+        width: 2.5rem;
+
+        transform: translate(-15%, 25%);
+
+        .bac {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            max-width: 3rem;
+        }
+
+        .text {
+            font-size: .75rem;
+            padding-left: .5rem;
+        }
+    }
+
+    .title {
+        display: flex;
+        gap: 1rem;
+        // align-items: center;
+        margin-bottom: 2rem;
+        position: relative;
+        text-wrap: nowrap;
+
+        p {
+            font-size: .8rem;
+            font-variation-settings: 'wght' 500;
+            align-self: flex-end;
+        }
+
+        &::after {
+            @include WnH(100%, 2px);
+            background-color: $secondBacColor;
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            // transform: translateX(-100%);
+        }
+    }
+
+    .content {
+        font-size: 1.25rem;
+        text-indent: 1.75rem;
+        margin-bottom: 4rem;
+
+        p {
+            text-align: justify;
+            text-wrap: pretty;
+        }
+    }
+
+    .cancelBtn {
+        align-self: flex-end;
+        cursor: pointer;
+        opacity: .75;
+    }
 }
 </style>

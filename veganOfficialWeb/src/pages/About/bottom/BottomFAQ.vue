@@ -1,5 +1,5 @@
 <template>
-    <div class="botContainer">
+    <div class="botContainer" ref="botContainer">
         <h1>
             FAQ
         </h1>
@@ -35,7 +35,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, useTemplateRef } from 'vue';
+import { positionStore } from '../store/usePagePosition';
 
 
 const list = reactive([
@@ -90,6 +91,19 @@ function toggleAnsOpen(list_index: number, content_index: number) {
     const open = list[list_index].content[content_index].isOpen;
     list[list_index].content[content_index].isOpen = !open;
 }
+
+// position store
+const botContainer = useTemplateRef('botContainer');
+function exposePosition() {
+    if (botContainer.value) {
+        const { top } = botContainer.value.getBoundingClientRect();
+        positionStore.setPosition('bottom', top);
+    }
+}
+
+onMounted(() => {
+    exposePosition();
+})
 
 </script>
 
