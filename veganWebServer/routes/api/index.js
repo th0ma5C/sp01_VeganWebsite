@@ -12,6 +12,7 @@ const checkout = require('./checkout/checkout');
 const oauth = require('./oauth/OAuth');
 const cart = require('./cart/cart.js');
 const order = require('./order');
+const emailSubscribe = require('./subscribe/subscribe.js');
 
 // 使用路由模块
 router.use('/menu', menu);
@@ -47,6 +48,9 @@ router.use('/checkout', checkout);
 router.use('/OAuth', oauth);
 
 // 購物車
-router.use('/cart', cart)
+router.use('/cart', cart);
+
+// 訂閱
+router.use('/subscribe', emailSubscribe);
 
 module.exports = router;

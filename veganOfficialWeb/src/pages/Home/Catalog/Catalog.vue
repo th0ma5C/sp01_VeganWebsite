@@ -49,9 +49,11 @@
                     <swiper-container ref="swiperRef"
                         :class="{ 'menuSwiper0': index == 0, 'menuSwiper1': index == 1 }"
                         :thumbs-swiper="`.menuSubSwiper${index}`"
-                        speed="750" :rewind="true"
-                        :effect="'fade'" :cross-fade="true"
-                        :injectStyles="injectStyles"
+                        speed="750" :rewind="false"
+                        :loop="true" :effect="'fade'"
+                        :fadeEffect="{
+                            crossFade: true
+                        }" :injectStyles="injectStyles"
                         :navigation-prev-el="index == 0 ? '.prevBtn0' : '.prevBtn1'"
                         :navigation-next-el="index == 0 ? '.nextBtn0' : '.nextBtn1'">
                         <swiper-slide
@@ -59,7 +61,7 @@
                             :key="index">
                             <a href="" @click.prevent>
                                 <img :src="fileName!" alt=""
-                                    @click="gotoProductPage(name)"
+                                    @click="gotoProductPage(name ?? '')"
                                     @load="imgCounter"
                                     v-show="isLoaded">
                                 <div class="imgSkeleton"
@@ -83,8 +85,27 @@
                                 </div>
                             </div>
                         </swiper-slide>
+                        <template
+                            v-if="index == 0 || index == 1">
+                            <div
+                                :class="['prevBtn', `prevBtn${index}`]">
+                                <SvgIcon name="Previous"
+                                    width="36px"
+                                    height="36px"
+                                    color="#0d731e">
+                                </SvgIcon>
+                            </div>
+                            <div
+                                :class="['nextBtn', `nextBtn${index}`]">
+                                <SvgIcon name="Next"
+                                    width="36px"
+                                    height="36px"
+                                    color="#0d731e">
+                                </SvgIcon>
+                            </div>
+                        </template>
                     </swiper-container>
-                    <template
+                    <!-- <template
                         v-if="index == 0 || index == 1">
                         <div
                             :class="['prevBtn', `prevBtn${index}`]">
@@ -99,7 +120,7 @@
                                 color="#0d731e">
                             </SvgIcon>
                         </div>
-                    </template>
+                    </template> -->
                     <swiper-container
                         :class="{ 'menuSubSwiper0': index == 0, 'menuSubSwiper1': index == 1 }"
                         space-between="2"
@@ -159,12 +180,14 @@ let menu = reactive([
         icon: 'CatalogNew',
         title: '當季新品',
         list: Array(5).fill('')
+        // list: [] as MenuItem[]
     },
     {
         name: 'hot',
         icon: 'CatalogTrendingUp',
         title: '熱銷排行',
-        list: [] as MenuItem[]
+        list: Array(5).fill('')
+        // list: [] as MenuItem[]
     },
     {
         name: 'vip',
@@ -284,7 +307,6 @@ watch(show, (newVal, oldVal) => {
 
 // 路由跳轉
 /**
- * doing 圖片導航商品頁
  * ?todo hot new list 儲存到Store
  */
 // const { getInfoByName } = useMenuStore();
@@ -307,6 +329,11 @@ async function fetchMenuList() {
     try {
         [menu[0].list, menu[1].list] = await Promise.all([fetchNewList(), fetchHotList()]);
         isLoaded.value = true;
+        if (swiperRef.value) {
+            swiperRef.value.forEach((container) => {
+                container.swiper.update();
+            })
+        }
     } catch (error) {
         console.log(fetchMenuList.name, error);
     }
@@ -314,6 +341,7 @@ async function fetchMenuList() {
 
 
 onMounted(() => {
+    console.log(swiperRef.value);
     fetchMenuList();
 })
 </script>
@@ -330,7 +358,7 @@ onMounted(() => {
     display: flex;
     align-items: normal;
     justify-content: flex-start;
-    gap: 5rem;
+    gap: 3rem;
     // height: 898px;
     min-height: 100%;
     flex-direction: column;
@@ -614,28 +642,36 @@ onMounted(() => {
 
                 .prevBtn,
                 .nextBtn {
+                    height: fit-content;
                     position: absolute;
-                    top: 30%;
+                    bottom: 0;
+                    left: 50%;
                     z-index: 2;
-                    transform: translate(-50%, -50%);
+                    // transform: translate(-50%, -50%);
                     transform-origin: left top;
                     transition: scale .2s;
+                    translate: -50% 50%;
 
                     &:hover {
                         scale: 1.15;
                     }
 
                     &:active {
-                        transform: translate(calc(-50% + 1px), calc(-50% + 1px));
+                        translate: calc(-50% + 1px) calc(50% + 1px);
+                        // transform: translate(calc(-50% + 1px), calc(50% + 1px));
                     }
                 }
 
                 .prevBtn {
-                    left: 15%;
+                    left: 45%;
+                    // translate: -50% -50%;
+                    // translate: -60%
                 }
 
                 .nextBtn {
-                    right: 15%;
+                    left: 55%;
+                    // translate: 50% -50%;
+                    // translate: 60%
                 }
 
                 .menuSubSwiper0,
@@ -729,4 +765,43 @@ onMounted(() => {
         opacity: 0;
     }
 }
-</style>
+
+swiper-container::part(container) {
+    overflow: visible;
+}
+
+@include large {
+    // .tabContainer .tabsContainer .tabs .tab .prevBtn {
+    //     // left: 10%;
+    //     translate: -50% -50%;
+    // }
+
+    // .tabContainer .tabsContainer .tabs .tab .nextBtn {
+    //     // right: 10%;
+    //     translate: 50% -50%;
+    // }
+}
+
+@include medium($width: 1024px) {
+    // .tabContainer .tabsContainer .tabs .tab .prevBtn {
+    //     // left: 1rem;
+    //     translate: -50% -50%;
+    // }
+
+    // .tabContainer .tabsContainer .tabs .tab .nextBtn {
+    //     // right: 1rem;
+    //     translate: 50% -50%;
+    // }
+}
+
+// @include large {
+//     .tabContainer .tabsContainer .tabs .tab .prevBtn {
+//         left: 10%;
+//         translate: -50% -50%;
+//     }
+
+//     .tabContainer .tabsContainer .tabs .tab .nextBtn {
+//         right: 10%;
+//         translate: 50% -50%;
+//     }
+// }</style>

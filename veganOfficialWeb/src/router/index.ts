@@ -26,11 +26,16 @@ const routes = [
     {
         path: '/',
         redirect: '/home',
+        meta: {
+        }
     },
     {
         path: '/home',
         component: Home,
         name: 'Home',
+        meta: {
+            searchKeys: ['首頁', 'home']
+        }
     },
     {
         path: '/questionnaire',
@@ -40,7 +45,10 @@ const routes = [
                 path: 'result',
                 component: () => import('@/pages/Questionnaire/result/QNR_result.vue'),
             }
-        ]
+        ],
+        meta: {
+            searchKeys: ['專屬分析', '分析', '問卷', '測驗', 'questionnaire']
+        }
     },
     {
         path: '/menu',
@@ -56,7 +64,8 @@ const routes = [
                     title: '菜單',
                     link: 'Menu'
                 }
-            ]
+            ],
+            searchKeys: ['美味菜單', '菜單', '商品', '沙拉', '果昔', 'menu']
         }
     },
     {
@@ -77,16 +86,19 @@ const routes = [
                     title: '菜單',
                     link: 'Menu'
                 }
-            ]
+            ],
         },
     },
     {
         path: '/about',
         component: About,
+        meta: {
+            searchKeys: ['關於果漾', '關於', 'about']
+        }
     },
     {
         path: '/Checkout',
-        component: Checkout
+        component: Checkout,
     },
     {
         path: '/profile',
@@ -102,20 +114,49 @@ const routes = [
             }
             return true
         },
+        meta: {
+            searchKeys: ['登入', 'login']
+        },
         children: [
             {
                 path: 'forgetPassword',
                 component: () => import('@/pages/Profile/forgetPassword/ForgetPassword.vue'),
                 meta: {
-                    hideParent: true
-                }
+                    hideParent: true,
+                    searchKeys: ['忘記密碼', 'forgetPassword']
+                },
+                beforeEnter: (
+                    to: RouteLocationNormalized,
+                    from: RouteLocationNormalized
+                ) => {
+                    const userStore = useUserStore();
+                    const toastStore = useToastStore();
+                    if (userStore.isAuth) {
+                        toastStore.addNotification('請先登出')
+                        return '/profile/account'
+                    }
+                    return true
+                },
             },
             {
                 path: 'signUp',
                 component: () => import('@/pages/Profile/signup/Signup.vue'),
                 meta: {
-                    hideParent: true
-                }
+                    hideParent: true,
+                    searchKeys: ['註冊', 'signUp']
+                },
+                beforeEnter: (
+                    to: RouteLocationNormalized,
+                    from: RouteLocationNormalized
+                ) => {
+                    const userStore = useUserStore();
+                    const toastStore = useToastStore();
+                    if (userStore.isAuth) {
+                        toastStore.addNotification('請先登出')
+                        return '/profile/account'
+                    }
+                    return true
+                },
             },
             {
                 name: 'EmailVerify',
@@ -123,13 +164,17 @@ const routes = [
                 component: () => import('@/pages/Profile/emailVerify/EmailVerify.vue'),
                 props: true,
                 meta: {
-                    hideParent: true
+                    hideParent: true,
                 },
                 beforeEnter: () => {
                     const userStore = useUserStore();
                     if (!userStore.user.email) {
                         return '/profile'
                     }
+                    if (userStore.isAuth) {
+                        return '/profile/account'
+                    }
+                    return true
                 }
             },
             {
@@ -158,7 +203,9 @@ const routes = [
                 },
                 meta: {
                     hideParent: true,
-                    requireAuth: true
+                    requireAuth: true,
+                    searchKeys: ['會員', '購買清單', 'account']
+
                 }
             }
         ]

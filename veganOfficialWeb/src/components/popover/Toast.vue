@@ -5,17 +5,11 @@
                 <li v-for="(item, index) in notificationList"
                     ref="itemList" v-show="item.show"
                     :key="item.content">
-                    <!-- <div class="countdownBarTrack">
-                        <div class="bar" :style="{
-                            transform: `scaleX(${item.countdownBar_width}%)`
-                        }">
-                        </div>
-                    </div> -->
-
                     <div class="content">
                         <SvgIcon name="cancel" width="20px"
                             height="20px" color="black"
-                            class="cancel">
+                            class="cancel"
+                            @click="clearNotification(item.index)">
                         </SvgIcon>
 
                         <div class="text">
@@ -25,10 +19,6 @@
                 </li>
             </transition-group>
         </ul>
-        <!-- <button @click="bar"
-            style="position: fixed; top: 1rem; left: 1rem;z-index: 99; background-color: white;">測試+</button>
-        <button @click="pop"
-            style="position: fixed; top: 3rem; left: 1rem;z-index: 99; background-color: white;">測試-</button> -->
     </div>
 </template>
 
@@ -40,7 +30,7 @@ import { useToastStore } from '@/store/toastStore';
 
 const toastStore = useToastStore();
 const { notificationList } = storeToRefs(toastStore);
-const { addNotification, pop } = toastStore;
+const { addNotification, clearNotification } = toastStore;
 
 
 function bar() {

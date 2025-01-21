@@ -31,7 +31,6 @@
         <div class="menuWrapper">
             <div class="title">
                 <div class="breadCrumb">
-                    <!-- 麵包屑/麵包屑/麵包屑 -->
                     <Breadcrumbs>
                     </Breadcrumbs>
                 </div>
@@ -45,7 +44,7 @@
                             <div class="summary"
                                 @click="showFilter">
                                 <span>
-                                    食材種類
+                                    營養種類
                                 </span>
                                 <SvgIcon
                                     name="ListArrowDown"
@@ -69,7 +68,8 @@
                                             <input
                                                 type="text"
                                                 placeholder="篩選條件"
-                                                v-model.trim="searchFilterWord">
+                                                v-model.trim="searchFilterWord"
+                                                @keydown.enter.prevent>
                                             <SvgIcon
                                                 name="Search02"
                                                 width="18px"
@@ -97,7 +97,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                }}</span>
+                                                    }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -318,7 +318,7 @@
                                 <div class="description">
                                     <span>{{
                                         items.description
-                                    }}</span>
+                                        }}</span>
                                 </div>
                             </div>
                             <h3>{{ items.name }}</h3>
@@ -1069,18 +1069,18 @@ onBeforeMount(() => {
 onMounted(() => {
     if (!isLoaded.value) {
         fetchMenu();
+        // fetchIngredients();
+    }
+    if (ingredientsList.value.length <= 1) {
         fetchIngredients();
     }
     window.addEventListener('resize', handleResize);
-    // console.log('menu mounted');
 })
 
 onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
     emitter.off('navEvent', () => {
-        // console.log('menu off event');
     })
-    // console.log('menu unmounted');
 })
 
 </script>

@@ -1,5 +1,5 @@
 <template>
-    <div class="svgWrapper">
+    <div class="svgWrapper" ref="iconRef">
         <svg :style="{ width, height, color }">
             <use :href="symbolID"></use>
         </svg>
@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, useTemplateRef, type Ref } from 'vue'
 const { prefix, name, color } = defineProps({
     prefix: {
         type: String,
@@ -29,6 +29,15 @@ const { prefix, name, color } = defineProps({
 })
 
 const symbolID = computed(() => `#${prefix}-${name}`);
+
+// 暴露 DOM
+const iconRef = useTemplateRef('iconRef');
+
+defineExpose<{
+    iconRef: Ref<HTMLElement | null>;
+}>({
+    iconRef,
+});
 
 </script>
 

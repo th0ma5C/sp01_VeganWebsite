@@ -87,8 +87,10 @@
         </transition>
     </div>
     <div class="dialogWrapper" ref="dialogRef"
-        v-if="dialogContent && isDialogOpen">
-        <div class="conceptContainer">
+        v-if="dialogContent && isDialogOpen"
+        @click="closeDialog">
+        <div class="conceptContainer" @click.stop
+            ref="dialogContentRef">
             <SvgIcon class="cancelBtn" name="cancel"
                 width="24px" height="24px" color="black"
                 @click="closeDialog">
@@ -134,6 +136,7 @@ import { useNewsStore } from '@/store/newsStore';
 import type { Ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { LoremIpsum, loremIpsum } from 'lorem-ipsum';
+import gsap from 'gsap';
 
 //
 /**
@@ -224,6 +227,7 @@ function setHover(index: number | string | null, e?: MouseEvent) {
     hoverItem.value = index;
     if (!e) return
     setStalkerPosition(e);
+    setDialogPosition(e)
 }
 
 // 游標高亮
@@ -239,7 +243,15 @@ function setStalkerPosition(e: MouseEvent) {
 // 彈出視窗
 const showNewsIndex = ref<null | number>(null);
 const showNewsLorem = ref('');
-const isDialogOpen = ref(false)
+const isDialogOpen = ref(false);
+const dialogPosition = reactive<Record<string, null | number>>({
+    x: null,
+    y: null
+})
+// const dialogStyle = computed(() => ({
+//     top: `${dialogPosition.y}px`,
+//     left: `${dialogPosition.x}px`,
+// }))
 
 const dialogContent = computed(() => {
     if (showNewsIndex.value == null) return
@@ -254,11 +266,41 @@ watch(showNewsIndex, (nVal) => {
 
 function tabOnclick(index: number) {
     showNewsIndex.value = index;
-    isDialogOpen.value = true
+    isDialogOpen.value = true;
+    nextTick(() => {
+        setDialogGsap();
+    })
 }
 
 function closeDialog() {
     isDialogOpen.value = false
+}
+
+function setDialogPosition(e: MouseEvent) {
+    const target = e.target as HTMLLIElement;
+    const { top, left, width, height } = target.getBoundingClientRect();
+    dialogPosition.x = left + width / 2;
+    dialogPosition.y = top + height / 2;
+}
+
+// gsap
+const dialogContentRef = useTemplateRef('dialogContentRef');
+function setDialogGsap() {
+    gsap.fromTo(dialogContentRef.value,
+        {
+            top: dialogPosition.y || 0,
+            left: dialogPosition.x || 0,
+            scale: .5,
+            opacity: 0,
+        },
+        {
+            top: '50%',
+            left: '50%',
+            scale: 1,
+            opacity: 1,
+            duration: .25,
+        }
+    )
 }
 
 // 隨機字數lorem
@@ -734,25 +776,38 @@ onUnmounted(() => {
     @include flex-center-center;
     // @include WnH(100vw, 100vh);
     height: 100%;
+    width: 100%;
     position: fixed;
     top: 0;
     z-index: 99;
+
+    &::before {
+        @include WnH(100%);
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 0;
+        cursor: pointer;
+    }
 }
 
 .conceptContainer {
     min-height: 50%;
-    min-width: 50%;
-    // max-width: 75%;
+    max-width: 50%;
     display: flex;
     flex-direction: column;
-    margin: 2rem calc(12% + 6rem);
+    // margin: 2rem calc(12% + 6rem);
     padding: 1rem 2rem;
     background-color: $primaryBacColor;
     border: 1px solid $secondBacColor;
     border-radius: 1rem;
     box-shadow: 2px 2px 6px 2px gray;
-    position: relative;
-
+    position: fixed;
+    z-index: 1;
+    // top: 50%;
+    // left: 50%;
+    transform: translate(-50%, -50%);
 
     h1 {
         font-size: 1.75rem;
@@ -762,8 +817,8 @@ onUnmounted(() => {
     .labelWrapper {
         position: absolute;
         top: 1rem;
-        left: 2rem;
-
+        left: 4rem;
+        // padding-inline: 2rem;
         width: 2.5rem;
 
         transform: translate(-15%, 25%);
@@ -778,6 +833,7 @@ onUnmounted(() => {
         .text {
             font-size: .75rem;
             padding-left: .5rem;
+            text-wrap: nowrap;
         }
     }
 
@@ -785,7 +841,8 @@ onUnmounted(() => {
         display: flex;
         gap: 1rem;
         // align-items: center;
-        margin-bottom: 2rem;
+        padding-inline: 2rem;
+        margin-bottom: 1.5rem;
         position: relative;
         text-wrap: nowrap;
 
@@ -810,6 +867,7 @@ onUnmounted(() => {
         font-size: 1.25rem;
         text-indent: 1.75rem;
         margin-bottom: 4rem;
+        padding-inline: 2rem;
 
         p {
             text-align: justify;
@@ -820,7 +878,14 @@ onUnmounted(() => {
     .cancelBtn {
         align-self: flex-end;
         cursor: pointer;
-        opacity: .75;
+        opacity: .5;
+        transition: opacity .15s, box-shadow .15s;
+        border-radius: .5rem;
+
+        &:hover {
+            opacity: 1;
+            box-shadow: 0 0 0 1px black;
+        }
     }
 }
 </style>

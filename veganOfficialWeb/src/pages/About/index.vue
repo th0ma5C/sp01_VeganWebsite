@@ -26,6 +26,7 @@ const route = useRoute();
 function homeRedirect() {
     if (route.query.scroll) {
         const { bottom } = positionState.value;
+        console.log(bottom);
         window.scroll({
             top: bottom,
             behavior: 'smooth'
@@ -33,6 +34,18 @@ function homeRedirect() {
     }
 }
 
+function resetWindowScroll() {
+    if (route.query.scroll) {
+        window.scroll({
+            top: 0,
+            behavior: 'instant'
+        })
+    }
+}
+
+onBeforeMount(() => {
+    resetWindowScroll();
+})
 onMounted(() => {
     homeRedirect()
 })

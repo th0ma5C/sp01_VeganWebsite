@@ -1,5 +1,5 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const OAuthToken = require('@models/OAuthTokenModel');
 
 const googleOAuth2Client = require('@root/config/googleOAth2Client');

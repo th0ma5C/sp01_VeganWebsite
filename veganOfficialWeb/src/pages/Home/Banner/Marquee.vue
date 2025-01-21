@@ -95,10 +95,11 @@ function titleOnclick(target: string) {
     @extend %headerPseudo;
 
     flex-direction: column;
+    overflow: hidden;
 
     .marquee {
         @include flex-center-center;
-        max-width: 1888px;
+        max-width: 100%;
         margin: 0 1rem;
         position: relative;
         justify-content: space-between;
@@ -107,6 +108,8 @@ function titleOnclick(target: string) {
         button {
             border: none;
             background-color: $primaryBacColor;
+            height: 100%;
+            top: 0;
         }
 
         .btn-prev {
@@ -122,16 +125,25 @@ function titleOnclick(target: string) {
         }
 
         .carousel {
-            will-change: transform;
-            display: flex;
-            position: relative;
             cursor: pointer;
+            max-width: 100%;
+            min-height: 3rem;
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            will-change: transform;
 
             p {
+                display: block;
                 text-align: center;
+                // text-wrap: nowrap;
                 margin: 0;
+                width: 100%;
                 min-width: 100%;
-                line-height: 3rem;
+                padding-inline: 2rem;
+                overflow: hidden;
+                font-variation-settings: 'wght' 400;
             }
 
             p:first-child,
@@ -146,6 +158,26 @@ function titleOnclick(target: string) {
             .dragging {
                 transition: none !important;
             }
+        }
+    }
+}
+
+@include medium {
+    .container .marquee .carousel {
+        min-height: 2.75rem;
+
+        p {
+            font-size: 14px;
+        }
+    }
+}
+
+@include small {
+    .container .marquee .carousel {
+        min-height: 2.5rem;
+
+        p {
+            font-size: 12px;
         }
     }
 }

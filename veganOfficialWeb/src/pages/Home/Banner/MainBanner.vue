@@ -6,8 +6,8 @@
         :centeredSlides="true" :autoplay="{
             delay: 7750,
             disableOnInteraction: false,
-        }" :injectStyles="injectStyles" class="mainBanner"
-        @swipertouchmove="swiperOndrag"
+        }" :injectStyles="'injectStyles'"
+        class="mainBanner" @swipertouchmove="swiperOndrag"
         @swipertouchend="swiperEndDrag">
         <swiper-slide v-for="(img, index) in imgs"
             :key="index">
@@ -63,15 +63,15 @@ const imgs = [
         text: '下載我們的APP，一鍵下單更方便'
     },
 ];
-let injectStyles = [
-    `
-    :host{
-        --swiper-pagination-bullet-width: 10px;
-        --swiper-pagination-bullet-height: 10px;
-        --swiper-pagination-color: #FCFAF2;    
-    }
-    `
-];
+// let injectStyles = [
+//     `
+//     :host{
+//         --swiper-pagination-bullet-width: 10px;
+//         --swiper-pagination-bullet-height: 10px;
+//         --swiper-pagination-color: #FCFAF2;    
+//     }
+//     `
+// ];
 
 // store
 const toastStore = useToastStore();
@@ -160,15 +160,15 @@ onMounted(() => {
     padding: 0 1rem;
     margin: 0 auto;
     max-width: $primaryWidth;
-    height: 872px;
+    // height: 872px;
 }
 
 .title {
     z-index: 2;
     color: $primaryBacColor;
     position: absolute;
-    top: 10%;
-    left: 5%;
+    top: 5%;
+    left: 3%;
     border-radius: 1rem;
     padding: .25rem .5rem;
 
@@ -201,7 +201,7 @@ onMounted(() => {
 
         a,
         img {
-            height: 776px;
+            // height: 776px;
         }
     }
 
@@ -210,6 +210,123 @@ onMounted(() => {
         width: 100%;
         object-fit: cover;
         object-position: center;
+    }
+}
+
+swiper-container {
+    &::part(bullet) {}
+
+    &::part(bullet-active) {
+        background-color: #FCFAF2;
+        width: 10px;
+        height: 10px;
+    }
+}
+
+.swiper-pagination-bullet {
+    width: 4px;
+    height: 4px;
+}
+
+@include XLarge {
+    .title {
+
+        h1 {
+            font-size: 5rem;
+        }
+
+        p {
+            font-size: 2rem;
+        }
+    }
+}
+
+@include large {
+    .title {
+
+        h1 {
+            font-size: 3.5rem;
+        }
+
+        p {
+            // font-size: 1.75rem;
+        }
+    }
+}
+
+@include medium {
+
+    swiper-container {
+        &::part(bullet-active) {
+            background-color: #FCFAF2;
+            width: 8px;
+            height: 8px;
+        }
+    }
+
+    .title {
+
+        h1 {
+            font-size: 3rem;
+        }
+
+        p {
+            font-size: 1rem;
+        }
+    }
+}
+
+@include small {
+    swiper-container {
+        &::part(bullet-active) {
+            background-color: #FCFAF2;
+            width: 6px;
+            height: 6px;
+        }
+    }
+
+    .title {
+        top: 5%;
+        left: 0%;
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        p {
+            font-size: .75rem;
+        }
+    }
+}
+
+@include small($width: 430px) {
+
+    .title {
+        left: -2%;
+
+        h1 {
+            font-size: 1.5rem;
+        }
+
+        p {
+            font-size: .5rem;
+        }
+    }
+}
+
+@include small($width: 320px) {
+
+    .title {
+        top: 4%;
+        left: -4%;
+
+        h1 {
+            font-size: 1.25rem;
+        }
+
+        p {
+            font-size: .5rem;
+        }
     }
 }
 </style>

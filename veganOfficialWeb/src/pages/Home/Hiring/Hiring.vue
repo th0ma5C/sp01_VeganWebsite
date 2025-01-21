@@ -14,7 +14,7 @@
                     height="50" class="arrow"></SvgIcon>
             </div>
         </div>
-        <div class="btnWrapper">
+        <div class="btnWrapper" @click="btnOnclick">
             <button>Join Us</button>
         </div>
     </div>
@@ -23,47 +23,39 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 
+// btn on click
+function btnOnclick() {
+    let url = null;
+    url = 'https://www.104.com.tw/';
+    window.open(url, '_blank')?.focus();
+}
 
-onMounted(() => {
-    // window.addEventListener('scrollend', (e) => {
-    //     console.log(window.scrollY);
-    // })
-})
 </script>
 
 <style scoped lang="scss">
-// @font-face {
-//     font-family: 'MrDafoe';
-//     src: url('@assets/fonts/Mr_Dafoe/MrDafoe-Regular.woff2') format('woff2');
-// }
-
 .container {
     @include main-part;
     @include flex-center-center;
-    @include WnH(1200px, 500px);
+    min-height: 500px;
     position: relative;
     margin: 200px auto;
 
-    // gap: 3rem;
-    // justify-content: space-evenly;
-    // border-top: 1px solid black;
-    // border-bottom: 1px solid black;
     &::before {
         content: '';
-        height: 1px;
-        width: 1201px;
+        height: 2px;
+        width: 70%;
         position: absolute;
         top: 0;
-        background-color: black;
+        background-color: $secondBacColor;
     }
 
     &::after {
         content: '';
-        height: 1px;
-        width: 1201px;
+        height: 2px;
+        width: 70%;
         position: absolute;
         bottom: 0;
-        background-color: black;
+        background-color: $secondBacColor;
     }
 
     .content {
@@ -86,13 +78,24 @@ onMounted(() => {
 
     .imgWrapper {
         position: relative;
+        margin-right: 1rem;
+        z-index: 2;
 
         img {
             @include WnH(128px);
             display: block;
-            // transform: rotateZ(8deg);
-            margin-right: 1rem;
-            filter: drop-shadow(2px 2px 2px black);
+            transition: transform 0.2s ease-out, box-shadow .2s ease-out;
+            will-change: transform;
+        }
+
+        &::after {
+            @include WnH(100%);
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: -1;
+            background-color: $btnBacColor;
         }
 
         .marker {
@@ -101,7 +104,7 @@ onMounted(() => {
             top: -50%;
             display: flex;
             flex-direction: column;
-            transform: rotate(10deg);
+            transform: rotate(10deg) translateX(1rem);
 
             p {
                 margin-bottom: 0;
@@ -128,11 +131,6 @@ onMounted(() => {
             color: $primaryBacColor;
             background-color: $btnBacColor;
             transition: transform 0.2s ease-out;
-
-            &:hover {
-                transform: translate(4px, 4px);
-            }
-
         }
 
         &::after {
@@ -144,8 +142,33 @@ onMounted(() => {
             z-index: -1;
             background-color: $btnBacColor;
             border-radius: 1rem;
+            box-shadow:
+                2px 2px 3px rgba(0, 0, 0, 0.5);
+            transition: box-shadow .3s ease-out;
         }
     }
 
+    &:has(button:hover) {
+        .imgWrapper>img {
+            transform: translate(-4px, -4px);
+            box-shadow:
+                1px 1px 1px green,
+                2px 2px 1px green,
+                3px 3px 1px green,
+                4px 4px 1px green,
+                5px 5px 4px black;
+
+        }
+
+        .btnWrapper {
+            button {
+                transform: translate(4px, 4px);
+            }
+
+            &::after {
+                box-shadow: none;
+            }
+        }
+    }
 }
 </style>

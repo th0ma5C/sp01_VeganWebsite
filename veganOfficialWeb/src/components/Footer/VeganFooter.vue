@@ -6,24 +6,54 @@
                 <p>成為我們的VIP！訂閱我們的電子報，即刻獲得獨家優惠、新菜品消息和特別活動邀請。
                     每週精選的美味直送您的信箱！
                 </p>
-                <form action="" class="submitForm">
-                    <input id="subEmail" type='email'
-                        name="submitEmail"
-                        placeholder="E-mail">
-                    <button
-                        @click.prevent="setArrowState('out')">
-                        <transition name="rightArrow">
-                            <div class="wrapper"
-                                v-show="arrowState == ''">
-                                <SvgIcon name="rightArrow"
-                                    color="#FCFAF2"
-                                    width="24px"
-                                    height="24px">
-                                </SvgIcon>
-                            </div>
-                        </transition>
-                    </button>
-                </form>
+                <VForm as=""
+                    v-slot="{ meta, isSubmitting, handleSubmit, submitCount }"
+                    :validation-schema="Schema">
+                    <form action="" class="submitForm"
+                        @submit="handleSubmit($event, fetchSubscribe)">
+                        <VField id="subEmail" name="email"
+                            type="email"
+                            placeholder="E-mail">
+                        </VField>
+                        <ErrorMessage as="div"
+                            class="errorMsg" name="email"
+                            v-slot="{ message }" :style="{
+                                opacity: submitCount > 0 ? 1 : 0
+                            }">
+                            <SvgIcon name="QNR_alert"
+                                width="18" height="18"
+                                color="#b3261e">
+                            </SvgIcon>
+                            <span>
+                                {{ message }}
+                            </span>
+                        </ErrorMessage>
+                        <button
+                            :disabled="isSubmitting || isReqConfirm">
+                            <transition name="rightArrow">
+                                <div class="wrapper"
+                                    v-show="arrowState == ''">
+                                    <SvgIcon
+                                        name="rightArrow"
+                                        color="#FCFAF2"
+                                        width="24px"
+                                        height="24px">
+                                    </SvgIcon>
+                                </div>
+                            </transition>
+                            <transition name="check">
+                                <div class=""
+                                    v-show="isReqConfirm">
+                                    <SvgIcon name="Check"
+                                        color="#FCFAF2"
+                                        width="24px"
+                                        height="24px">
+                                    </SvgIcon>
+                                </div>
+                            </transition>
+                        </button>
+                    </form>
+                </VForm>
             </div>
             <div class="app">
                 <div class="content">
@@ -32,24 +62,19 @@
                         即刻下載，立即掌握美味的滋味～獨享訂單優惠、專屬菜單推薦，輕鬆預訂、方便外帶，尊享美食新體驗！
                     </p>
                     <div class="download">
-                        <button>下載APP</button>
+                        <button
+                            @click="appLinkOnclick">下載APP</button>
                     </div>
                 </div>
                 <div class="phone">
                     <img src="@assets/img/InfoFooter/app.png"
                         alt="" class="info-phone">
-                    <!-- <div class="screen"
-                        style="font-size: 5rem;color: #00430b;">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div> -->
                 </div>
             </div>
         </div>
         <div class="mid">
             <nav>
-                <ul v-for="({ title, content }, listIndex) in footerList"
+                <ul v-for="({ title, content, routeTo }, listIndex) in footerList"
                     :key="title">
                     <li>
                         <h2>
@@ -59,7 +84,8 @@
                     <li v-for="(item, contentIndex) in content"
                         :key="item"
                         @mouseenter="handleMouseEnter(listIndex, contentIndex)"
-                        @mouseleave="handleMouseLeave(listIndex, contentIndex)">
+                        @mouseleave="handleMouseLeave(listIndex, contentIndex)"
+                        @click="routeTo(item)">
                         {{ item }}
                         <SvgIcon name="ConceptArrow"
                             width="18px" height="18px"
@@ -69,10 +95,10 @@
                     </li>
                 </ul>
                 <div class="socialLink">
-                    <a href=""
+                    <a target="_blank"
                         v-for="(item, index) in iconList"
-                        :key="index">
-                        <SvgIcon :name="item" width="20px"
+                        :key="index" :href="item">
+                        <SvgIcon :name="index" width="20px"
                             height="20px" class="linkIcon">
                         </SvgIcon>
                     </a>
@@ -107,29 +133,87 @@ import useArrowFly from '@/hooks/useArrowFly';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/store/cartStore';
+import {
+    Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
+    useField, useForm, type SubmissionHandler,
+    type FormContext,
+    type FormMeta,
+    type SubmissionContext
+} from 'vee-validate';
+import * as yup from 'yup';
+import { reqSubscribe } from '@/api/subscribe/subscribe';
+import { useRouter } from 'vue-router';
+
 
 
 
 let footerList = reactive([
     {
         title: '快速連結',
-        content: ['開始專屬分析', '菜單', '關於果漾', '我的帳戶']
+        content: ['開始專屬分析', '菜單', '關於果漾', '我的帳戶'],
+        routeTo: (item: string) => {
+            switch (item) {
+                case '開始專屬分析':
+                    router.push('/questionnaire')
+                    break;
+                case '菜單':
+                    router.push('/menu')
+                    break;
+                case '關於果漾':
+                    router.push('/about')
+                    break;
+                case '我的帳戶':
+                    router.push('/profile')
+                    break;
+                default:
+                    break;
+            }
+        }
     },
     {
         title: '顧客服務',
-        content: ['常見問題', '付款與寄送流程', '果漾會員制度', '聯絡我們']
+        content: ['常見問題', '付款與寄送流程', '果漾會員制度'],
+        routeTo: () => {
+            router.push({
+                path: '/about',
+                query: {
+                    scroll: "FAQ"
+                }
+            })
+        }
     },
     {
         title: '聲明條款',
-        content: ['隱私權服務', '服務條款', '退貨政策', '反詐騙公告']
+        content: ['隱私權服務', '服務條款', '退貨政策', '反詐騙公告'],
+        routeTo: () => {
+            router.push({
+                path: '/about',
+                query: {
+                    scroll: "FAQ"
+                }
+            })
+        }
     },
     {
         title: '果漾蔬食',
-        content: ['信箱', '官方LINE', '客服專線', '服務時間']
+        content: ['信箱', '客服專線', '服務時間'],
+        routeTo: () => {
+            router.push({
+                path: '/about',
+                query: {
+                    scroll: "FAQ"
+                }
+            })
+        }
     },
 ]);
 
-let iconList = reactive(['Fb', 'Ig', 'LINE', 'Twitter']);
+const iconList = reactive({
+    Fb: 'https://www.facebook.com/',
+    Ig: 'https://www.instagram.com/',
+    LINE: 'https://www.line.me/tw/',
+    Twitter: 'https://x.com/',
+})
 
 // li icon hover
 const iconStates = reactive(footerList.map(section =>
@@ -198,9 +282,68 @@ function setArrowState(state: string) {
 
 // QNR_store
 const { QNR_IsLoaded } = storeToRefs(useQuestionnaireStore());
-
 const { isCheckout } = storeToRefs(useCartStore());
 
+// email subscribe
+const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+yup.addMethod(yup.string, 'email', function validateEmail(message) {
+    return this.matches(emailRegex, {
+        message: '請輸入正確信箱格式',
+        name: 'email',
+        excludeEmptyString: true,
+    });
+});
+const Schema = yup.object({
+    email: yup.string().trim().required('此欄不能空白').email(),
+})
+
+type ReqForm = yup.InferType<typeof Schema>;
+const isReqConfirm = ref(false);
+async function fetchSubscribe(form: Record<string, any>, ctx: SubmissionContext) {
+    if (isReqConfirm.value) return
+    const data = form as ReqForm;
+    try {
+        const params = {
+            recipient: data.email
+        }
+        const result = await reqSubscribe(params);
+        if (result.state == 'confirm') {
+            setArrowState('out')
+            isReqConfirm.value = true
+            ctx.resetForm()
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// app btn
+function appLinkOnclick() {
+    const url = 'https://www.microsoft.com/zh-tw/store/top-free/apps/pc';
+    window.open(url, '_blank')?.focus();
+}
+
+// list btn
+const router = useRouter();
+
+function listOnclick(item: string) {
+    switch (item) {
+        case '開始專屬分析':
+            router.push('/questionnaire')
+            break;
+        case '菜單':
+            router.push('/menu')
+            break;
+        case '關於果漾':
+            router.push('/about')
+            break;
+        case '我的帳戶':
+            router.push('/profile')
+            break;
+        default:
+            break;
+    }
+}
 
 onMounted(() => {
 })
@@ -211,22 +354,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-// TODO: 整理樣式
-/**
-** 右下角加商標 ✅
-** line height ✅
-** email width placeholder ✅
-** nav li margin ✅
-** nav li icon hover ❗ -> ⭕
-** app marquee ❌
-** hover transition ✅
-** top bot 分隔線 ✅
-** 訂閱改箭頭 ✅
-** btn 顏色 ✅
-** 轉場時間 ❓
- */
-
-
 %default {
     width: calc(80% - 6rem);
     margin: 0 auto;
@@ -268,6 +395,19 @@ onUnmounted(() => {
             // border-radius: 2rem;
         }
 
+    }
+
+    .errorMsg {
+        @include flex-center-center;
+        flex-direction: row;
+        gap: .5rem;
+        color: #b3261e;
+        text-wrap: nowrap;
+        position: absolute;
+        bottom: -85%;
+        left: 50%;
+        transform: translate(-35%, -50%);
+        // padding-left: 1.5rem;
     }
 }
 
@@ -418,8 +558,6 @@ onUnmounted(() => {
                     right: calc(153px + 1rem);
                     transform: translateX(0);
 
-
-
                     button {
                         @include WnH(7rem, 3rem);
                         background-color: #0d731e;
@@ -567,6 +705,7 @@ onUnmounted(() => {
         align-items: flex-start;
         justify-content: center;
         overflow: hidden;
+        user-select: none;
 
         svg {
             width: 95vw;
@@ -574,6 +713,71 @@ onUnmounted(() => {
             font-size: 200px;
             fill: #FCFAF2;
             transform: translateY(-13%);
+        }
+    }
+}
+
+.check-enter-active,
+.check-leave-active {
+    transition: opacity .3s .3s;
+}
+
+.check-enter-from,
+.check-leave-to {
+    opacity: 0;
+}
+
+.check-enter-to,
+.check-leave-from {
+    opacity: 1;
+}
+
+@include large {}
+
+@include medium {
+    .container {
+        &>div {
+            padding: 0;
+        }
+
+        .top {
+
+            .sub,
+            .app {
+                padding: 0;
+            }
+        }
+
+        .mid nav {
+            padding: 0;
+
+            .socialLink {
+                gap: 0;
+            }
+        }
+    }
+}
+
+@include small {
+    %topLayout {
+        padding: 0;
+    }
+
+    .container {
+        &>div {
+            padding: 0;
+        }
+
+        .top>div {
+            padding: 0;
+        }
+
+        .mid nav {
+            padding: 0;
+
+            .socialLink {
+                gap: 0;
+            }
         }
     }
 }

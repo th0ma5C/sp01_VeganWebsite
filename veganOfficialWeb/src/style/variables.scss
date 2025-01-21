@@ -48,3 +48,34 @@ $large-screen: 1440px;
     width: $width;
     height: $height;
 }
+
+@mixin XLarge {
+    @media screen and (min-width: 1920px) {
+        @content;
+    }
+}
+
+@mixin large {
+    @media screen and (max-width: 1366px) {
+        @content;
+    }
+}
+
+@mixin medium($width: 768px) {
+    @media screen and (max-width: $width) {
+        @content;
+    }
+}
+
+@mixin small ($width: 576px) {
+    @media screen and (max-width: $width) {
+        @content;
+    }
+}
+
+/*
+@include XLarge {}
+@include large {}
+@include medium {}
+@include small {}
+*/

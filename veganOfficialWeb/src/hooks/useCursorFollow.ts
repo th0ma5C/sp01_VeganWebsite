@@ -98,6 +98,6 @@ export function useCursorFollow(container: Ref) {
         stopAnimation();
     })
 
-    return { coordinate, setCursorStyle }
+    return { coordinate, setCursorStyle, cursorLeave }
 }
 

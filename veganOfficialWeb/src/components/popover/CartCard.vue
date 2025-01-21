@@ -226,7 +226,10 @@ onMounted(() => {
 }
 
 .drawer {
-    @include WnH(25%, 100%);
+    // @include WnH('fit-content', 100%);
+    height: 100%;
+    width: max-content;
+    max-width: 100%;
     background-color: $primaryBacColor;
     padding: 1.5rem 1rem;
     display: flex;

@@ -31,7 +31,6 @@ import Hiring from './Hiring/Hiring.vue';
 <style scoped lang="scss">
 .banner {
     overflow: hidden;
-    min-height: 1290px;
 
     &,
     &~div {

@@ -5,6 +5,7 @@ interface Notification {
     content: string,
     show: boolean,
     countdownBar_width: number,
+    index: number
 }
 
 export const useToastStore = defineStore('toast', () => {
@@ -12,13 +13,14 @@ export const useToastStore = defineStore('toast', () => {
     const count = ref(0);
 
     function addNotification(str: string) {
-        count.value += 1
 
         const notification = {
             content: str,
             show: true,
             countdownBar_width: 100,
+            index: count.value
         }
+        count.value += 1
         notificationList.value.push(notification);
         notificationCountdown(notificationList.value.length);
     }
@@ -43,10 +45,15 @@ export const useToastStore = defineStore('toast', () => {
         count.value -= 1
     }
 
+    function clearNotification(index: number) {
+        const clearing = notificationList.value.find(e => e.index == index);
+        if (!clearing) return
+        clearing.show = false;
+    }
 
     return {
         notificationList,
         addNotification,
-        pop
+        clearNotification
     }
 })

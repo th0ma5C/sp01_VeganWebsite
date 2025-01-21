@@ -5,7 +5,7 @@
                 :style="cursorStyle"
                 v-show="setCursorStyle.show"
                 @animationend="setCursorStyle.opacity = 0"
-                @transitionend="setCursorStyle.show = true;">
+                @transitionend="">
                 <SvgIcon name="LocationArrow_L"
                     width="100px" height="24px"
                     color="white" class="cursorArrow">
@@ -62,7 +62,7 @@
                                 }}
                             </span>
                         </h1>
-                        <div @mouseenter="setIconClass($event);"
+                        <div @mouseenter="handleCheckMapMouserEnter"
                             @mouseleave="setIconClass($event);"
                             @click="mapBtn(item.branch)"
                             class="btnWrapper">
@@ -166,7 +166,7 @@ let cursorStyle = computed(() => ({
 
 
 // cursor follow
-let { coordinate, setCursorStyle } = useCursorFollow(locationRef)
+let { coordinate, setCursorStyle, cursorLeave } = useCursorFollow(locationRef)
 const isScrollerFinish = ref(true);
 watchEffect(() => {
     if (isScrollerFinish.value) {
@@ -178,6 +178,11 @@ const events = {
     window: [
         { event: 'resize', handler: resize },
     ]
+}
+function handleCheckMapMouserEnter(e: MouseEvent) {
+    setIconClass(e);
+    cursorLeave();
+    setCursorStyle.opacity = 0;
 }
 
 // sticky top

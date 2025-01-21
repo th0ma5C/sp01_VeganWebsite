@@ -7,6 +7,24 @@
                 </h1>
 
                 <div class="navContainer">
+                    <button v-for="(item, index) in btnList"
+                        :key="index"
+                        @click="clickScroll(item)">
+                        <div class="cube"
+                            :data-cubeBot="item">
+                            <span>
+                                {{ item }}
+                            </span>
+                        </div>
+                        <div class="wrapper arrowIcon">
+                            <SvgIcon class="arrow"
+                                name="rightArrow"
+                                width="16px" height="16px">
+                            </SvgIcon>
+                        </div>
+                    </button>
+                </div>
+                <!-- <div class="navContainer">
                     <div class="nav"
                         v-for="(item, index) in btnList"
                         :key="index"
@@ -27,7 +45,7 @@
                             </SvgIcon>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
 
             <div class="page2" ref="upperContainer">
@@ -94,8 +112,6 @@
                 :autoplay="{
                     delay: 3000
                 }" :speed="1000"
-                :pagination="{ clickable: true }"
-                pagination-dynamic-bullets="true"
                 :injectStyles="injectStyles">
                 <swiper-slide
                     v-for="(item, index) in imgList"
@@ -306,58 +322,166 @@ onMounted(() => {
 }
 
 .navContainer {
-    display: flex;
+    @include flex-center-center;
     gap: 2rem;
+    transition: border-color 0.5s ease;
 
-    .nav {
+    button {
         cursor: pointer;
         display: flex;
         align-items: center;
         gap: .5rem;
-        // overflow: hidden;
 
-        span {
-            display: block;
-            color: $btnBacColor;
-            font-variation-settings: 'wght' 600;
-            user-select: none;
+
+        .cube {
+            backface-visibility: hidden;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.4s ease-out;
+            transform-origin: top;
+
+            position: relative;
+
+            span {
+                transform: translateZ(5px);
+                opacity: 1;
+                transition: opacity 0.3s ease-out, transform 0.4s ease;
+
+                display: block;
+                color: $btnBacColor;
+                font-variation-settings: 'wght' 600;
+                user-select: none;
+            }
+
+            &::after {
+                content: attr(data-cubeBot);
+                position: absolute;
+                left: 0px;
+                top: 0;
+                transform: rotateX(-90deg) translateZ(5px) translateY(50%);
+                opacity: 0;
+                transition: opacity 0.3s ease-out, transform 0.4s ease;
+
+                color: $btnBacColor;
+                font-variation-settings: 'wght' 600;
+                user-select: none;
+            }
+        }
+
+        .wrapper {
+            @include flex-center-center;
+            position: relative;
+
+            .arrow {
+                color: $btnBacColor;
+                transition: color 0.5s ease;
+                position: absolute;
+                z-index: 2;
+            }
+
+            &::after {
+                @include WnH(100%);
+                content: '';
+                background-color: $btnBacColor;
+                border-radius: 36px;
+                scale: 0;
+                transition: scale 0.5s ease;
+                position: absolute;
+                left: 0px;
+                top: 0px;
+                z-index: 1;
+            }
+        }
+
+        .arrowIcon {
+            @include WnH(18px);
+            transform: rotate(90deg);
+
+            display: flex;
+            justify-content: center;
+            border-radius: 100%;
             transition: transform .3s;
         }
 
-        span:nth-of-type(2) {
-            position: absolute;
-            top: 100%;
-            left: 0;
-        }
-
-        .textWrapper {
-            position: relative;
-            overflow: hidden;
-        }
-
         &:hover {
-            .textWrapper span {
-                transform: translateY(-100%)
+            border-color: $secondBacColor;
+
+            .wrapper {
+                .arrow {
+                    color: white;
+                }
+
+                &::after {
+                    scale: 1;
+                }
             }
 
-            .arrowIcon {
-                transform: scale(1.2) rotate(90deg);
+            .cube {
+                transform: rotateX(90deg);
+
+                span {
+                    opacity: 0;
+                }
+
+                &::after {
+                    opacity: 1;
+                }
             }
         }
     }
 
-    .arrowIcon {
-        @include WnH(18px);
-        background-color: $btnBacColor;
-        transform: rotate(90deg);
+    // display: flex;
+    // gap: 2rem;
 
-        display: flex;
-        justify-content: center;
+    // .nav {
+    //     cursor: pointer;
+    //     display: flex;
+    //     align-items: center;
+    //     gap: .5rem;
+    //     // overflow: hidden;
 
-        border-radius: 100%;
+    //     span {
+    //         display: block;
+    //         color: $btnBacColor;
+    //         font-variation-settings: 'wght' 600;
+    //         user-select: none;
+    //         transition: transform .3s;
+    //     }
 
-        transition: transform .3s;
-    }
+    //     span:nth-of-type(2) {
+    //         position: absolute;
+    //         top: 100%;
+    //         left: 0;
+    //     }
+
+    //     .textWrapper {
+    //         position: relative;
+    //         overflow: hidden;
+    //     }
+
+    //     &:hover {
+    //         .textWrapper span {
+    //             transform: translateY(-100%)
+    //         }
+
+    //         .arrowIcon {
+    //             transform: scale(1.2) rotate(90deg);
+    //         }
+    //     }
+    // }
+
+    // .arrowIcon {
+    //     @include WnH(18px);
+    //     background-color: $btnBacColor;
+    //     transform: rotate(90deg);
+
+    //     display: flex;
+    //     justify-content: center;
+
+    //     border-radius: 100%;
+
+    //     transition: transform .3s;
+    // }
 }
 
 .right {
