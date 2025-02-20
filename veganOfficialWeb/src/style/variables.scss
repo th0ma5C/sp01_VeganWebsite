@@ -76,6 +76,9 @@ $large-screen: 1440px;
 /*
 @include XLarge {}
 @include large {}
+@include medium($width:1024px) {}
 @include medium {}
 @include small {}
+@include small($width: 430px) {}
+@include small($width: 320px) {}
 */

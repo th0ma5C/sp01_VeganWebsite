@@ -52,7 +52,7 @@ onMounted(() => {
         if (newValue == false) {
             setTimeout(() => {
                 document.body.style.overflow = 'auto';
-            }, 2500)
+            }, 0)
         }
     });
 
@@ -72,18 +72,31 @@ onUnmounted(() => {
 @use "./style/index.scss" as *;
 @use './style/fonts.scss' as *;
 
+* {
+    // outline: 1px solid black;
+}
 
 body {
-    // overflow: hidden;
+    overflow: hidden;
 }
 
 // .flyToCartContainer {}
 
 #app {
     background-color: $primaryBacColor;
+    min-width: 320px;
     // overflow: hidden;
 }
 
+main {
+    margin-inline: auto;
+    // max-width: 1920px;
+}
+
+footer {
+    // background-color: $secondBacColor;
+    // position: relative;
+}
 
 .app-enter-active {
     transform-origin: top center;
@@ -117,16 +130,11 @@ body {
     // display: none;
 }
 
-footer {
-    background-color: $secondBacColor;
-    position: relative;
 
-}
 
-@include XLarge {
-    #app>div {
-        margin-inline: auto;
-        max-width: 1920px;
-    }
-}
-</style>
+// @include XLarge {
+//     #app>div {
+//         margin-inline: auto;
+//         max-width: 1920px;
+//     }
+// }</style>

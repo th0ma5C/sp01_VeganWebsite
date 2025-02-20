@@ -14,7 +14,7 @@
             <div class="gptRes" :class="{
                 unClickable: isAnalyzing
             }">
-                <transition name="spinner">
+                <!-- <transition name="spinner">
                     <Spinner v-show="isAnalyzing"></Spinner>
                 </transition>
 
@@ -50,9 +50,9 @@
                             key="1">
                         </SvgIcon>
                     </transition>
-                </div>
+                </div> -->
 
-                <!-- 
+
                 <div class="content" ref="analyzeResult">
                     <h2>營養建議</h2>
                     <p>鷹村先生，根據您選擇的完全素食飲食習慣、清爽的口味偏好，以及Omega-3、抗氧化物、維生素的需求，我們為您提供以下建議：
@@ -78,11 +78,27 @@
                     <h2>每日卡路里建議</h2>
                     <p>根據您的每日卡路里需求（1800卡），建議選擇低卡且富含營養的食材，並適當控制油脂和糖分的攝取。多食用蔬果及全穀類食材，以達到均衡飲食的效果。
                     </p>
-                </div> -->
+                </div>
+                <div class="svgWrapper">
+                    <transition name="copySvg"
+                        mode="out-in">
+                        <SvgIcon name="Copy" width="24px"
+                            height="24px" color="black"
+                            v-if="!isCopied" class="copySvg"
+                            @click="copyGPTResponse" key="0"
+                            title="複製">
+                        </SvgIcon>
+                        <SvgIcon name="Check" width="24px"
+                            height="24px" color="black"
+                            class="checkSvg"
+                            v-else-if="isCopied" key="1">
+                        </SvgIcon>
+                    </transition>
+                </div>
             </div>
 
             <div class="guideContent">
-                根據分析結果，推薦以下最佳搭配給您~
+                根據分析結果，<br> 推薦以下最佳搭配給您~
             </div>
         </div>
 
@@ -143,6 +159,82 @@
                     :cartEl="viewCart"
                     v-show="rankComplete && index != 0">
                 </Product_template>
+            </div>
+
+            <div class="salad mobileList"
+                ref="mobileSaladContainer" :style="{
+                    opacity: showRecommendList ? '1' : '0'
+                }">
+                <swiper-container class="itemWrapper"
+                    ref="itemListRef" spaceBetween="16"
+                    slidesPerView="auto" scrollBar="true"
+                    free-mode="true" grabCursor="true"
+                    observer="true" observeParents="true"
+                    :injectStyles="scrollBarStyle"
+                    :breakpoints="{
+                        320: {
+                            spaceBetween: 16
+                        },
+                        430: {
+                            spaceBetween: 18
+                        },
+                        768: {
+                            spaceBetween: 20
+                        }
+                    }">
+                    <swiper-slide
+                        v-for="(item, index) in saladRank"
+                        :key="index">
+                        <Product_template :item="item"
+                            v-show="isLoaded" ref="COMList">
+                        </Product_template>
+                    </swiper-slide>
+                </swiper-container>
+
+                <!-- <Product_template
+                    v-for="(item, index) in saladRank"
+                    :key="index" :item="item"
+                    :cartEl="viewCart"
+                    v-show="rankComplete && index != 0">
+                </Product_template> -->
+
+            </div>
+
+            <div class="smoothies mobileList"
+                ref="mobileSmoothiesContainer" :style="{
+                    opacity: showRecommendList ? '1' : '0'
+                }">
+                <swiper-container class="itemWrapper"
+                    ref="itemListRef" slidesPerView="auto"
+                    spaceBetween="16" scrollBar="true"
+                    free-mode="true" grabCursor="true"
+                    observer="true" observeParents="true"
+                    :injectStyles="scrollBarStyle"
+                    :breakpoints="{
+                        320: {
+                            spaceBetween: 16
+                        },
+                        430: {
+                            spaceBetween: 18
+                        },
+                        768: {
+                            spaceBetween: 20
+                        }
+                    }">
+                    <swiper-slide
+                        v-for="(item, index) in smoothiesRank"
+                        :key="index">
+                        <Product_template :item="item"
+                            v-show="isLoaded" ref="COMList">
+                        </Product_template>
+                    </swiper-slide>
+                </swiper-container>
+                <!-- <Product_template
+                    v-for="(item, index) in smoothiesRank"
+                    :key="index" :item="item"
+                    :cartEl="viewCart"
+                    v-show="rankComplete && index != 0">
+                </Product_template> -->
             </div>
 
             <!-- <swiper-container class="foo" loop="true"
@@ -239,7 +331,7 @@
 import Product_template from '@/components/Product/Product_template.vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { useMenuStore } from '@/store/menuStore';
-import { ref, onMounted, watch, computed, reactive, nextTick, onBeforeMount, watchEffect, useTemplateRef } from 'vue';
+import { ref, onMounted, watch, computed, reactive, nextTick, onBeforeMount, watchEffect, useTemplateRef, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
@@ -250,6 +342,8 @@ import useListener from '@/hooks/useListener';
 import { useCartStore } from '@/store/cartStore';
 import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
 import { getGPTAnalyze } from '@/api/questionnaire';
+import emitter from '@/utils/eventBus';
+import debounce from 'lodash/debounce';
 
 // questionnaireStore
 const questionnaireStore = useQuestionnaireStore();
@@ -459,6 +553,9 @@ watch([saladRank, smoothiesRank], (nVal) => {
     }
 }, { immediate: true })
 
+// expose rank list
+
+
 // 顯示動畫
 const bestCombContainer = ref<null | HTMLDivElement>(null);
 const saladContainer = ref<null | HTMLDivElement>(null);
@@ -543,9 +640,12 @@ function createListScrollTrigger() {
             showRecommendList.value = true;
             showListAnimate();
         },
-        // markers: true,
         once: true
     })
+}
+
+function scrollTriggerOnResize() {
+
 }
 
 
@@ -566,6 +666,37 @@ const showMainCart = ref(true);
 const resultContainer = ref<HTMLElement>();
 gsap.registerPlugin(ScrollTrigger);
 
+function setViewCartSize() {
+    const vw = window.innerWidth;
+    let { width, height, right } = vw <= 768 ?
+        {
+            width: 200,
+            height: 36,
+            right: '10%'
+        } :
+        {
+            width: 300,
+            height: 48,
+            right: '5%'
+        };
+
+    right = vw <= 430 ? '15%' : '10%'
+
+    if (showMainCart.value) {
+        gsap.set(viewCart.value!, {
+            width,
+            height,
+            right: "50%"
+        });
+    } else {
+        gsap.set(viewCart.value!, {
+            width: 48,
+            height: 48,
+            right,
+        });
+    }
+}
+
 function switchViewCartBtn() {
     if (!viewCart.value) return
     showMainCart.value = !showMainCart.value;
@@ -574,20 +705,20 @@ function switchViewCartBtn() {
         duration: .3,
         onComplete() {
             if (!viewCart.value) return
-            if (showMainCart.value) {
-                gsap.set(viewCart.value, {
-                    width: 300,
-                    height: 48,
-                    right: "50%"
-                });
-            } else {
-                gsap.set(viewCart.value, {
-                    width: 48,
-                    height: 48,
-                    right: "5%"
-                });
-            }
-
+            // if (showMainCart.value) {
+            //     gsap.set(viewCart.value, {
+            //         width: 300,
+            //         height: 48,
+            //         right: "50%"
+            //     });
+            // } else {
+            //     gsap.set(viewCart.value, {
+            //         width: 48,
+            //         height: 48,
+            //         right: "5%"
+            //     });
+            // }
+            setViewCartSize();
             gsap.to(viewCart.value, {
                 opacity: 1,
                 duration: .3,
@@ -599,6 +730,7 @@ function switchViewCartBtn() {
 
 function createViewCartScrollTrigger() {
     ScrollTrigger.create({
+        id: 'ViewCart',
         trigger: resultContainer.value,
         start: "bottom-=3.5% bottom",
         onToggle: () => {
@@ -704,7 +836,10 @@ async function copyGPTResponse() {
     if (analyzeResult.value) {
         try {
             await navigator.clipboard.writeText(analyzeResult.value.innerHTML);
-            alert('複製')
+            setTimeout(() => {
+                isCopied.value = false
+            }, 5000)
+            // alert('複製')
         } catch (error) {
             console.log(error);
         }
@@ -734,25 +869,49 @@ function checkResultState() {
     }
 }
 
+const scrollBarStyle = [
+    `
+        .swiper-scrollbar-drag {
+            background: #0d731e;
+        }
+    `
+]
+
+// on resize
+let currWidth = 0;
+function onResize() {
+    if (window.innerWidth == currWidth) return
+    nextTick(() => {
+        ScrollTrigger.refresh();
+        currWidth = window.innerWidth;
+    })
+}
+
+const debounceResize = debounce(onResize, 1000);
+
 // 生命週期
 onBeforeMount(() => {
     checkResultState();
 })
 
 onMounted(() => {
-    // console.log(saladRank.value);
     setTimeout(() => {
         if (!viewCart.value) return
         switchViewCartBtn();
     }, 2000);
 
+    window.addEventListener('resize', debounceResize)
+
     // nextTick(() => {
     createViewCartScrollTrigger();
     createListScrollTrigger();
-    fetchGPTAnalyze();
+    // fetchGPTAnalyze();
     // });
 })
 
+onUnmounted(() => {
+    window.removeEventListener('resize', debounceResize)
+})
 
 </script>
 
@@ -765,10 +924,12 @@ onMounted(() => {
     // @include WnH(100%, calc(100% - 100px));
     width: 100%;
     background-color: $primaryBacColor;
-    position: absolute;
-    top: 100px;
-    left: 0;
+    position: relative;
+    // top: 100px;
     // text-align: center;
+    // left: 50%;
+    // translate: -50% 0;
+    max-width: 90rem;
 }
 
 .restart {
@@ -778,6 +939,7 @@ onMounted(() => {
     text-align: center;
     opacity: .5;
     transition: opacity .2s ease;
+    margin-top: .5rem;
     margin-left: 1rem;
 
     &:hover {
@@ -806,14 +968,19 @@ onMounted(() => {
 
     h1 {
         font-size: 2rem;
+        font-size: 1.5rem;
+        font-size: clamp(1.5rem, 1.1428571428571428rem + 1.7857142857142856vw, 2rem);
         font-weight: 600;
+        padding-inline: 1rem;
     }
 
     .gptRes {
         border: 1px solid black;
         border-radius: 1rem;
         background-color: white;
-        width: 60%;
+        width: clamp(0px, 80%, 1440px);
+        max-height: 80vh;
+        overflow: auto;
         margin: 2rem auto;
         padding: 1rem 2rem;
         position: relative;
@@ -853,23 +1020,41 @@ onMounted(() => {
         flex-direction: column;
         text-align: start;
         text-wrap: pretty;
-        gap: .5rem;
+        // gap: .5rem;
         min-height: 7rem;
 
         h2 {
             font-size: 1.25rem;
-            font-weight: 450;
-            margin-bottom: .5rem;
+            font-size: 1rem;
+            font-size: clamp(1rem, 0.8214285714285714rem + 0.8928571428571428vw, 1.25rem);
+            font-weight: 550;
+            margin-top: .5rem;
+
+            &:first-of-type {
+                margin-top: 0rem;
+            }
         }
 
         h3 {
             padding-left: 1rem;
-            font-variation-settings: 'wght' 450;
+            font-variation-settings: 'wght' 550;
         }
 
         p {
-            padding-left: 2rem;
+            font-size: 0.75rem;
+            font-size: clamp(0.75rem, 0.5714285714285714rem + 0.8928571428571428vw, 1rem);
+            padding-left: 1rem;
             font-variation-settings: 'wght' 450;
+        }
+
+        strong {
+            font-variation-settings: 'wght' 500;
+        }
+
+        li {
+            padding-left: 1rem;
+            font-size: 0.75rem;
+            font-size: clamp(0.75rem, 0.5714285714285714rem + 0.8928571428571428vw, 1rem);
         }
 
         &>*:not(.spinner) {
@@ -905,7 +1090,15 @@ onMounted(() => {
     .guideContent {
         margin-top: 1rem;
         font-size: 1.5rem;
+        font-size: 1.25rem;
+        font-size: clamp(1.25rem, 1.0714285714285714rem + 0.8928571428571428vw, 1.5rem);
         font-variation-settings: 'wght' 500;
+        padding-inline: 1rem;
+        // text-align: start;
+
+        br {
+            display: none;
+        }
     }
 }
 
@@ -926,11 +1119,9 @@ onMounted(() => {
 
 .copySvg-enter-active,
 .copySvg-leave-active {
-    transition: opacity .15s;
+    transition: opacity .3s;
     // position: absolute;
 }
-
-.copySvg-leave-active {}
 
 .copySvg-enter-from,
 .copySvg-leave-to {
@@ -993,7 +1184,7 @@ onMounted(() => {
     .bestComb {
         @include flex-center-center;
         flex-wrap: wrap;
-        min-height: 400px;
+        // min-height: 400px;
         gap: 2rem;
     }
 
@@ -1008,6 +1199,7 @@ onMounted(() => {
             // transform: translateX(-5%);
             background-color: $primaryBacColor;
             position: relative;
+            font-weight: 500;
         }
 
         & ::after,
@@ -1044,7 +1236,7 @@ onMounted(() => {
         // }
 
         @include flex-center-center;
-
+        flex-wrap: wrap;
 
 
         // justify-content: start;
@@ -1052,8 +1244,8 @@ onMounted(() => {
         margin-right: auto;
         // width: fit-content;
         // width: 60%;
-        gap: 2rem;
-        padding: 0 3rem;
+        gap: 1rem;
+        padding: 0 2rem;
         // overflow-x: scroll;
 
         @include recList_rwd1000() {
@@ -1097,11 +1289,13 @@ onMounted(() => {
 .viewBtnWrapper {
     // width: 100%;
     font-size: 1.5rem;
+    font-size: 1.25rem;
+    font-size: clamp(1.25rem, 1.1363636363636362rem + 0.5681818181818182vw, 1.5rem);
     display: flex;
     align-items: center;
     position: fixed;
     right: 50%;
-    bottom: 7%;
+    bottom: 5%;
     transform: translate(50%, -50%);
     z-index: 10;
 
@@ -1142,6 +1336,7 @@ onMounted(() => {
 
     span {
         display: inline-block;
+        font-variation-settings: 'wght' 450;
     }
 
     .main {
@@ -1160,7 +1355,7 @@ onMounted(() => {
 
 .cartBtn-enter-active,
 .cartBtn-leave-active {
-    transition: opacity .3s ease;
+    transition: opacity .3s .15s;
 }
 
 .cartBtn-enter-from,
@@ -1171,5 +1366,114 @@ onMounted(() => {
 .cartBtn-enter-to,
 .cartBtn-leave-from {
     opacity: 1;
+}
+
+.recommendList .mobileList {
+    display: none;
+    width: 100%;
+    transition: opacity .3s;
+
+    swiper-container {
+        position: relative;
+
+        swiper-slide {
+            width: min-content;
+        }
+
+        &::part(container) {
+            // overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        &::part(scrollbar) {
+            // opacity: 0;
+            // bottom: -2.5%;
+        }
+    }
+}
+
+@include XLarge {}
+
+@include large {}
+
+@include medium {}
+
+@include medium {
+    .topText {
+        margin-top: 2rem;
+
+        .gptRes {
+            margin-block: 1.5rem;
+            width: clamp(0px, 90%, 1440px);
+        }
+    }
+
+    .recommendList {
+        .bestComb {
+            margin-top: 2rem;
+        }
+
+        .salad,
+        .smoothies {
+            display: none;
+        }
+
+        .mobileList {
+            display: block;
+            margin-top: 1.5rem;
+        }
+    }
+
+    .cartBtn {
+        span {}
+
+        .main {
+            width: 200px;
+            height: 36px;
+            line-height: 36px;
+        }
+    }
+}
+
+@include small {
+    .topText {
+        margin-top: 1rem;
+    }
+
+    .recommendList .bestComb {
+        margin-top: 1.5rem;
+    }
+
+    .viewBtnWrapper {
+        bottom: 3%;
+    }
+}
+
+@include small($width: 430px) {
+    .topText {
+        .gptRes {
+            padding: .75rem 1.5rem;
+        }
+
+        .guideContent {
+            br {
+                display: inline;
+            }
+        }
+    }
+
+    .recommendList .bestComb {
+        gap: 1.5rem;
+    }
+}
+
+@include small($width: 320px) {
+    .recommendList .bestComb {
+        gap: .75rem;
+    }
+
+    .cartBtn .main {
+        // width: 150px;
+    }
 }
 </style>

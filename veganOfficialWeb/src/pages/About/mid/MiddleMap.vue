@@ -92,15 +92,28 @@
                         </li>
                         <li>
                             <p>
-                                週一至週五：11:00 AM - 10:00
-                                PM
+                                <span>
+                                    週一至週五：
+                                </span>
+                                <span>
+                                    11:00 AM - 10:00 PM
+                                </span>
                             </p>
                             <p>
-                                週六至週日：10:00 AM - 11:00
-                                PM
+                                <span>
+                                    週六至週日：
+                                </span>
+                                <span>
+                                    10:00 AM - 11:00 PM
+                                </span>
                             </p>
                             <p>
-                                國定假日：依公告調整
+                                <span>
+                                    國定假日：
+                                </span>
+                                <span>
+                                    依公告調整
+                                </span>
                             </p>
                         </li>
                     </ul>
@@ -118,8 +131,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
 import { positionStore } from '../store/usePagePosition'
+import debounce from 'lodash/debounce';
 
 
 
@@ -214,9 +228,24 @@ function exposePosition() {
     }
 }
 
+// on resize
+let currWidth = window.innerWidth;
+function onResize() {
+    if (window.innerWidth == currWidth) return
+    getPosition(currTab.value || 0);
+    currWidth = window.innerWidth;
+}
+
+const debounceResize = debounce(onResize, 500);
+
 onMounted(() => {
     selectTab(0);
     exposePosition();
+    window.addEventListener('resize', debounceResize);
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', debounceResize);
 })
 
 </script>
@@ -239,10 +268,16 @@ onMounted(() => {
 
 .midContainer {
     padding: 0 8rem;
-    padding-top: 60px;
+    // padding-top: 60px;
     min-height: 100vh;
     position: relative;
     z-index: 0;
+    top: 100px;
+    padding-inline: 1.5rem;
+    padding-inline: clamp(1.5rem, 0.19999999999999996rem + 6.5vw, 8rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 
     &::after {
         transition: opacity .5s;
@@ -250,6 +285,8 @@ onMounted(() => {
 
     h1 {
         font-size: 3rem;
+        font-size: 2.5rem;
+        font-size: clamp(2.5rem, 2.4rem + 0.5vw, 3rem);
         position: relative;
         margin-bottom: 3rem;
         font-family: "EB Garamond", serif;
@@ -363,7 +400,7 @@ onMounted(() => {
 main {
     display: flex;
     gap: 1rem;
-    max-height: 800px;
+    // max-height: 800px;
     // height: 800px;
     // height: calc(100% - 9rem);
     // height: 100%;
@@ -405,76 +442,87 @@ main {
     }
 
     li:has(p) {
-        text-indent: 2.5rem;
+        // text-indent: 2.5rem;
+        padding-left: 2.5rem;
+        flex-direction: column;
+        align-items: start;
     }
 
-    .branch {
-        padding-left: 1rem;
+    p {
+        display: inline-flex;
+        align-items: start;
+        flex-wrap: wrap;
+    }
+}
 
-        .tabBtn {
-            display: flex;
-            gap: 1rem;
-            padding: 1rem 0;
-            padding-left: 2.5rem;
-            font-size: 1.25rem;
-            position: relative;
+.branch {
+    padding-left: 1rem;
+}
+
+.tabBtn {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    padding-left: 2.5rem;
+    font-size: 1.25rem;
+    position: relative;
 
 
-            &::after {
-                @extend %pseudo_line;
-                height: 1px;
-            }
+    &::after {
+        @extend %pseudo_line;
+        height: 1px;
+    }
 
-            button {
-                padding: .25rem;
-                border-radius: .5rem;
-                transition: font-variation-settings .15s, color .3s;
+    button {
+        padding: .25rem;
+        border-radius: .5rem;
+        transition: font-variation-settings .15s, color .3s;
 
-                &:hover:not(.isSelect) {
-                    // color: $primaryBacColor;
-                    opacity: 1;
-                    font-variation-settings: 'wght' 600;
-                }
-            }
-
-            .isSelect {
-                // background-color: $btnBacColor;
-                color: $primaryBacColor;
-                z-index: 2;
-            }
-
-            .unselect {
-                // opacity: .5;
-                color: $secondBacColor;
-                background-color: transparent;
-                z-index: 2;
-            }
-
-            .btnMarker {
-                position: absolute;
-                // z-index: -1;
-                border-radius: .5rem;
-                background-color: $btnBacColor;
-                transition: left .3s;
-            }
+        &:hover:not(.isSelect) {
+            // color: $primaryBacColor;
+            opacity: 1;
+            font-variation-settings: 'wght' 600;
         }
     }
+}
 
-    .content {
-        margin-top: 1rem;
-        padding: 0 1rem;
-    }
+.isSelect {
+    // background-color: $btnBacColor;
+    color: $primaryBacColor;
+    z-index: 2;
+}
 
-    .imgWrapper {
-        margin: 0 3.5rem;
-        overflow: hidden;
-        border-radius: 1rem;
-        position: relative;
+.unselect {
+    // opacity: .5;
+    color: $secondBacColor;
+    background-color: transparent;
+    z-index: 2;
+}
 
-        img {
-            // transform: scale(1.1) translateX(-2%);
-            animation: imgSlider 15s infinite alternate;
-        }
+.btnMarker {
+    position: absolute;
+    // z-index: -1;
+    border-radius: .5rem;
+    background-color: $btnBacColor;
+    transition: left .3s;
+}
+
+.content {
+    margin-top: 1rem;
+    padding: 0 1rem;
+}
+
+.imgWrapper {
+    margin: 0 2.5rem;
+    overflow: hidden;
+    border-radius: 1rem;
+    position: relative;
+    // min-height: 150px;
+    // min-width: 300px;
+
+    img {
+        // transform: scale(1.1) translateX(-2%);
+        animation: imgSlider 15s infinite alternate;
     }
 }
 
@@ -503,4 +551,51 @@ main {
 .tab-leave-from {
     opacity: 1;
 }
+
+@include XLarge {}
+
+@include large {}
+
+@include medium($width: 1024px) {}
+
+@include medium {
+    main {
+        flex-direction: column;
+    }
+
+    .map,
+    iframe {
+        min-height: 30vh;
+    }
+
+    .detail ul {
+        line-height: 2.5;
+    }
+
+    .imgWrapper {
+        margin: 0;
+        margin-top: 1rem;
+    }
+}
+
+@include small {}
+
+@include small($width: 430px) {
+    .tabBtn {
+        padding: .5rem 0;
+        justify-content: center;
+    }
+}
+
+@include small($width: 375px) {
+    .detail ul {
+        line-height: 2;
+
+        li {
+            margin-top: .5rem;
+        }
+    }
+}
+
+@include small($width: 320px) {}
 </style>

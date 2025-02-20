@@ -44,12 +44,12 @@ const list = reactive([
         title: '產品與成分',
         content: [
             {
-                question: 'Q：沙拉和果席的食材都是新鮮的嗎？',
-                answer: '是的，我們所有的沙拉和果席均選用當日新鮮採購的蔬果，並在下單後立即製作，確保食材新鮮度與品質。',
+                question: 'Q：沙拉和果昔的食材都是新鮮的嗎？',
+                answer: '是的，我們所有的沙拉和果昔均選用當日新鮮採購的蔬果，並在下單後立即製作，確保食材新鮮度與品質。',
                 isOpen: false
             },
             {
-                question: 'Q：你們的沙拉或果席是否含有過敏原（如堅果、乳製品）？',
+                question: 'Q：你們的沙拉或果昔是否含有過敏原（如堅果、乳製品）？',
                 answer: '部分產品可能含有堅果或乳製品。我們會在每個產品頁面詳細標示成分，如有特殊需求，請於訂單備註或聯繫我們訂製專屬沙拉。',
                 isOpen: false
             },
@@ -59,13 +59,13 @@ const list = reactive([
         title: '配送與保存',
         content: [
             {
-                question: 'Q：蔬食沙拉與果席多久可以送達？',
+                question: 'Q：蔬食沙拉與果昔多久可以送達？',
                 answer: '一般配送時間為下單後的 7 天內。若需特定時間送達，請於結帳時選擇配送時段或提前一天預訂。',
                 isOpen: false
             },
             {
-                question: 'Q：沙拉和果席如何保存？保存期限是多久？',
-                answer: '請將沙拉和果席置於冷藏 4°C 以下保存，並在開封後 24 小時內食用完畢，以確保最佳口感與安全。',
+                question: 'Q：沙拉和果昔如何保存？保存期限是多久？',
+                answer: '請將沙拉和果昔置於冷藏 4°C 以下保存，並在開封後 24 小時內食用完畢，以確保最佳口感與安全。',
                 isOpen: false
             },
         ]
@@ -74,8 +74,8 @@ const list = reactive([
         title: '訂購與客製化',
         content: [
             {
-                question: 'Q：可以客製化沙拉或果席嗎？',
-                answer: '可以！您可以在客製化專區選擇您喜愛的蔬菜、蛋白質和醬料，搭配出專屬的健康沙拉或果席。',
+                question: 'Q：可以客製化沙拉或果昔嗎？',
+                answer: '可以！您可以在客製化專區選擇您喜愛的蔬菜、蛋白質和醬料，搭配出專屬的健康沙拉或果昔。',
                 isOpen: false
             },
             {
@@ -128,6 +128,7 @@ onMounted(() => {
     margin-top: 4rem;
     min-height: 100vh;
     position: relative;
+    top: 100px;
 
     display: grid;
     grid-template-columns: 1fr 3fr;
@@ -135,6 +136,8 @@ onMounted(() => {
 
     h1 {
         font-size: 3rem;
+        font-size: 2.5rem;
+        font-size: clamp(2.5rem, 2.4rem + 0.5vw, 3rem);
         font-family: "EB Garamond", serif;
         font-variation-settings: 'wght' 450;
         position: relative;

@@ -10,7 +10,7 @@
         </transition>
 
 
-        <div class="questionnaire">
+        <div class="questionnaire" v-show="!QNR_isDone">
             <div class="processBar">
                 <div class="bar">
                     <div class="progressPercent"
@@ -157,29 +157,6 @@
                                 </span>
                             </div>
                         </fieldset>
-
-                        <!-- <fieldset>
-                            <h3>飲食習慣</h3>
-                            <div class="habit">
-                                <select name="habit" id=""
-                                    v-model.lazy="QNR_form.info.habit">
-                                    <option value="">
-                                    </option>
-                                    <option value="full">
-                                        全素
-                                    </option>
-                                    <option value="half">
-                                        蛋奶素
-                                    </option>
-                                    <option value="like">
-                                        健康飲食但非素食
-                                    </option>
-                                    <option value="normal">
-                                        無特別偏好
-                                    </option>
-                                </select>
-                            </div>
-                        </fieldset> -->
                     </form>
 
                     <button
@@ -208,7 +185,8 @@
                         </div>
                     </div>
 
-                    <button @click="turnPage('+')">
+                    <button
+                        @click="turnPage('+', tag as QNRFormKeys)">
                         {{
                             currPage !== QNR_pagesCount ?
                                 'NEXT' :
@@ -319,6 +297,7 @@ const {
     setQNR_result,
     initQNR,
     setQNRtoStorage,
+    checkQuestionIsANswered
 } = QuestionnaireStore;
 
 
@@ -441,7 +420,14 @@ function setAlertClass(formVal: string | boolean) {
 const QNR_container = ref();
 const QNR_pagesCount = computed(() => showQuestionnaire.value.length + 1)
 
-function turnPage(signs: '+' | '-') {
+function turnPage(signs: '+' | '-', question?: QNRFormKeys) {
+    if (question && !checkQuestionIsANswered(question)) {
+        console.log(question);
+        console.log(QNR_result.value[question]);
+        console.log(checkQuestionIsANswered(question));
+        return
+    }
+
     if ((currPage.value == 1 && signs == '-') ||
         (currPage.value == QNR_pagesCount.value && signs == '+')) {
         showResult();
@@ -451,7 +437,6 @@ function turnPage(signs: '+' | '-') {
     formPageTranslateX.value += signs == '+' ? -100 : +100;
     currPage.value += signs == '+' ? 1 : -1;
 }
-
 
 // progress bar
 const progressPercent = computed(() => ({
@@ -574,7 +559,12 @@ onUnmounted(() => {
 
     flex-direction: column;
     justify-content: normal;
-    min-height: 100vh;
+    min-height: calc(100vh - 100px);
+    min-width: 320px;
+
+    &::before {
+        display: none;
+    }
 }
 
 @keyframes iconMaskScan {
@@ -588,17 +578,16 @@ onUnmounted(() => {
 }
 
 .loading {
-    // @include absoluteCenterTLXY($top: 0px, $Y: 0%);
     @include WnH(100%);
     @include flex-center-center;
     position: absolute;
+    top: 0;
     z-index: 100;
     background-color: $primaryBacColor;
 
     .iconMask {
         @include WnH(200px);
         mask-image: url('@assets/icons/Logo.svg');
-        // background: linear-gradient(to top, blue 0 49%, transparent 50%);
         position: relative;
         overflow: hidden;
 
@@ -630,16 +619,10 @@ onUnmounted(() => {
 }
 
 .questionnaire {
-    // display: flex;
-    // flex-direction: column;
     width: 100%;
     height: calc(100vh - 100px);
     overflow: hidden;
-    // overflow-x: scroll;
 
-    // &::-webkit-scrollbar {
-    //     width: 0;
-    // }
 }
 
 .processBar {
@@ -670,7 +653,6 @@ onUnmounted(() => {
 
         .prev {
             @include WnH(4rem, 24px);
-            // border-radius: 12px;
             user-select: none;
             cursor: pointer;
             text-align: center;
@@ -698,14 +680,8 @@ onUnmounted(() => {
         left: 1rem;
         top: 50%;
         transform: translateY(-50%);
-        transition: transform .3s ease-in-out;
+        transition: transform .3s ease-in-out, top .3s;
         transform-origin: left;
-    }
-}
-
-@mixin btn_rwd {
-    @media (max-width:1440px) {
-        @content
     }
 }
 
@@ -714,47 +690,50 @@ $alertColor: #b3261e;
 
 %QNR_nextButton {
     @include WnH(90px, 48px);
-    background-color: $primaryBacColor;
+    background-color: $btnBacColor_light;
     border: 1px solid rgba(128, 128, 128, 0.5);
     border-radius: 23rem;
     box-shadow: 1px 1px 2px gray;
+    color: $primaryBacColor;
     margin: 0 auto;
     position: sticky;
-    bottom: calc($btn_position / 2);
+    bottom: 0;
+    // bottom: calc($btn_position / 2);
+    transform: translateY(-200%);
     min-height: 48px;
-    transition: border-color .2s ease, box-shadow .2s ease;
-
-    @include btn_rwd {
-        // bottom: calc($btn_position / 3);
-    }
+    transition: border-color .2s, box-shadow .2s, opacity .2s;
+    font-variation-settings: 'wght' 600;
 
     &:hover {
         border: 1px solid black;
         box-shadow: 1px 1px 2px black;
     }
+
+    &:active {
+        translate: 2px 2px;
+    }
 }
 
 .QNR_content {
-    // @include flex-center-center;
     display: flex;
-    // padding-top: 2rem;
     margin-top: 2rem;
     height: calc(100% - 70px);
-    // transform: translateX(-100%);
     transition: transform .75s ease-in-out;
     position: relative;
 
     &>div {
         @include flex-center-center;
         justify-content: normal;
-        // height: 100%;
-        min-width: 100vw;
+        min-width: 100%;
         position: relative;
 
         h2 {
+            padding-inline: 1rem;
             text-align: center;
             font-size: 2.5rem;
             margin-bottom: 2.5rem;
+            font-size: 1.75rem;
+            font-size: clamp(1.75rem, 1.2142857142857144rem + 2.6785714285714284vw, 2.5rem);
 
             small {
                 font-size: 60%;
@@ -765,21 +744,47 @@ $alertColor: #b3261e;
     .page_info {
         flex-direction: column;
         opacity: 0;
+        overflow-y: auto;
 
         h2 {
             text-align: center;
             font-size: 2.5rem;
             margin-bottom: 2.5rem;
+            font-size: 1.75rem;
+            font-size: clamp(1.75rem, 1.2142857142857144rem + 2.6785714285714284vw, 2.5rem);
         }
 
         button {
             @extend %QNR_nextButton;
         }
+
+        // &:not(:has(.answer)) button {
+        //     opacity: .75;
+
+        //     &:hover {
+        //         border: 1px solid rgba(128, 128, 128, 0.5);
+        //         box-shadow: 1px 1px 2px gray;
+        //         cursor: not-allowed;
+        //     }
+
+        //     &:active {
+        //         translate: 0;
+        //     }
+        // }
+
+        // &::-webkit-scrollbar {
+        //     width: 0;
+        // }
     }
 
     .page_info>form {
+        display: flex;
+        flex-direction: column;
         height: 100%;
         margin-bottom: 3rem;
+        width: max-content;
+        max-width: 100%;
+        padding-inline: 1rem;
 
         fieldset {
             display: flex;
@@ -787,28 +792,33 @@ $alertColor: #b3261e;
             margin-bottom: 2rem;
 
             &>div {
-                margin-left: 2rem;
+                width: 100%;
                 position: relative;
+                min-height: 45px;
 
                 select {
                     cursor: pointer;
                 }
 
                 select:focus {
-                    border: 2px solid black;
+                    outline: 2px solid black;
                 }
             }
 
             h3 {
                 font-size: 1.5rem;
+                font-size: 1.25rem;
+                font-size: clamp(1.25rem, 1.0714285714285714rem + 0.8928571428571428vw, 1.5rem);
                 width: 100px;
-                // text-align: center;
             }
         }
 
         select,
         input {
-            @include WnH(110px, 45px);
+            width: 100%;
+            width: 30%;
+            height: 100%;
+            min-height: 45px;
             border: 1px solid gray;
             border-radius: .5rem;
             padding: 0 1rem;
@@ -817,6 +827,11 @@ $alertColor: #b3261e;
             option:empty {
                 display: none;
             }
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-size: clamp(0.75rem, 0.5714285714285714rem + 0.8928571428571428vw, 1rem);
         }
 
         .alertText {
@@ -837,6 +852,7 @@ $alertColor: #b3261e;
         .gender {
             @extend %inputTextLabel;
             cursor: pointer;
+            height: 100%;
 
             label {
                 user-select: none;
@@ -847,10 +863,6 @@ $alertColor: #b3261e;
         .userName {
             @extend %inputTextLabel;
 
-            input {
-                width: 189px;
-            }
-
             label {
                 user-select: none;
                 cursor: text;
@@ -859,10 +871,11 @@ $alertColor: #b3261e;
 
         .birthday {
             display: flex;
-            gap: 1.5rem;
+            justify-content: space-between;
 
             .birthInput {
                 @extend %inputTextLabel;
+                flex: .3;
 
                 label {
                     user-select: none;
@@ -871,6 +884,11 @@ $alertColor: #b3261e;
                     &:is([for="birthYear"], [for="birthDate"]) {
                         cursor: text;
                     }
+                }
+
+                select,
+                input {
+                    width: 100%;
                 }
             }
         }
@@ -886,7 +904,10 @@ $alertColor: #b3261e;
         // }
 
         :is(.userName, .birthInput, .gender):is(:focus-within, :has(input:valid, select:valid))>label {
-            transform: translateY(calc(-100% - 10px)) scale(0.8);
+            // transform: translateY(calc(-100% - 10px)) scale(0.8);
+            top: 0;
+            transform: translateY(-50%), scale(.8);
+            translate: 0 0px;
             background-color: $primaryBacColor;
         }
     }
@@ -897,15 +918,25 @@ $alertColor: #b3261e;
         flex-direction: column;
         position: relative;
         z-index: 0;
-        overflow-y: scroll;
+        overflow-y: auto;
         opacity: 0;
-
-        &::-webkit-scrollbar {
-            width: 0;
-        }
 
         button {
             @extend %QNR_nextButton;
+        }
+
+        &:not(:has(.answer)) button {
+            opacity: .75;
+
+            &:hover {
+                border: 1px solid rgba(128, 128, 128, 0.5);
+                box-shadow: 1px 1px 2px gray;
+                cursor: not-allowed;
+            }
+
+            &:active {
+                translate: 0;
+            }
         }
     }
 
@@ -925,15 +956,12 @@ $alertColor: #b3261e;
     }
 
     .questionWrapper {
-        width: 15%;
+        // width: 15%;
+        min-width: 15%;
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
         margin-bottom: 6rem;
-
-        @include btn_rwd {
-            // margin-bottom: 50px;
-        }
 
         .question {
             $height: 50px;
@@ -942,11 +970,16 @@ $alertColor: #b3261e;
             text-align: center;
             line-height: $height;
 
+            padding-inline: 2rem;
             border: 1px solid gray;
             border-radius: 10px;
             cursor: pointer;
-            transition: box-shadow .2s ease;
+            transition: box-shadow .2s;
             user-select: none;
+
+            font-variation-settings: 'wght' 450;
+
+            transition: background-color .5s;
         }
 
         .question:not(.answer):hover {
@@ -962,10 +995,64 @@ $alertColor: #b3261e;
         .answer {
             cursor: pointer;
             box-shadow: 1px 1px 3px black inset;
-            background-color: $btnBacColor_light;
-            color: $primaryBacColor;
+            // background-color: $btnBacColor_light;
+            background-color: #fff6d6;
+            // color: $primaryBacColor;
+            // color: #00430b;
             transform: translate(1px, 1px);
         }
     }
 }
+
+@include XLarge {}
+
+@include large {}
+
+
+@include medium {}
+
+@include medium {
+    .QNR_content .questionWrapper .question {
+        &:not(.answer):hover {
+            box-shadow: none;
+        }
+
+        &:hover:active {
+            transform: translate(0);
+            box-shadow: none;
+        }
+    }
+}
+
+@include small {
+    .QNR_content .page_info h2 {
+        margin-bottom: 1.75rem;
+    }
+
+    .QNR_content>div h2 {
+        // margin-bottom: 1.5rem;
+    }
+
+    .QNR_content .page_info>form {
+
+
+        fieldset {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: .5rem;
+            margin-bottom: 1.75rem;
+
+            div {
+                margin-left: 0;
+            }
+        }
+
+        .birthday {
+            // gap: 1rem;
+        }
+    }
+}
+
+@include small {}
 </style>

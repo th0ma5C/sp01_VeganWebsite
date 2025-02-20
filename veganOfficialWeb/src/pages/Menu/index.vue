@@ -1,8 +1,7 @@
 <template>
-    <!-- <router-view></router-view> -->
-    <div class="container" ref="main" @click="closePop">
+    <div class="container" @click="closePop">
         <div class="analystTop">
-            <div class="imgWrapper">
+            <div class="analystImgWrapper">
                 <swiper-container effect="fade" speed="700"
                     autoplay-delay="4000"
                     :fadeEffect="{ crossFade: true }"
@@ -19,14 +18,19 @@
                 </swiper-container>
             </div>
             <div class="textWrapper">
-                <h1>
-                    <span
-                        class="subTitle">您做過專屬個人診斷了嗎?</span>
-                    <span
-                        class="text">Relation-Ship</span>團隊的專業分析，為您打造專屬菜單
-                </h1>
+                <div class="titleWrapper" :style="{
+                    translate: `0 -${subTitleTranslate}px`
+                }">
+                    <span class="subTitle"
+                        ref="subTitleRef">您做過專屬個人分析了嗎?</span>
+                    <h1>
+                        <span
+                            class="text">Relation-Ship</span>團隊的專業分析，為您打造專屬菜單
+                    </h1>
+                </div>
+
+                <button @click="routerToQNR">開始分析</button>
             </div>
-            <button @click="routerToQNR">開始診斷</button>
         </div>
         <div class="menuWrapper">
             <div class="title">
@@ -42,52 +46,74 @@
                         <span>篩選：</span>
                         <div class="details">
                             <div class="summary"
-                                @click="showFilter">
+                                @click="handleShowList('filter')">
                                 <span>
                                     營養種類
                                 </span>
                                 <SvgIcon
                                     name="ListArrowDown"
-                                    width="21px"
-                                    height="21px"
+                                    width="24px"
+                                    height="24px"
                                     class="filterArrow"
-                                    :class="{ rotateArrow: filterIsShow }">
+                                    :class="{ rotateArrow: listOpening == 'filter' }">
                                 </SvgIcon>
                             </div>
                             <transition name="filter">
                                 <div class="listWrapper"
-                                    v-show="filterIsShow">
-                                    <SvgIcon name="cancel"
-                                        width="20"
-                                        height="20"
-                                        class="exit"
-                                        @click="showFilter">
-                                    </SvgIcon>
+                                    v-show="listOpening == 'filter'">
                                     <div class="listHeader">
-                                        <form action="">
-                                            <input
-                                                type="text"
-                                                placeholder="篩選條件"
-                                                v-model.trim="searchFilterWord"
-                                                @keydown.enter.prevent>
-                                            <SvgIcon
-                                                name="Search02"
-                                                width="18px"
-                                                height="18px"
-                                                color="black"
-                                                class="searchIcon">
-                                            </SvgIcon>
-                                        </form>
-                                        <div>
-                                            已選取
-                                            {{
-                                                selectIngredient.length
-                                            }}
-                                            項
-                                        </div>
-                                        <div>
-                                            <button
-                                                @click="resetFilterSelect">重置</button>
+                                        <SvgIcon
+                                            name="cancel"
+                                            width="20"
+                                            height="20"
+                                            class="exit"
+                                            @click="closePop">
+                                        </SvgIcon>
+                                        <div
+                                            class="inputWrapper">
+                                            <form action="">
+                                                <input
+                                                    type="text"
+                                                    placeholder="篩選條件"
+                                                    v-model.trim="searchFilterWord"
+                                                    @keydown.enter.prevent>
+                                                <SvgIcon
+                                                    name="Search02"
+                                                    width="18px"
+                                                    height="18px"
+                                                    color="black"
+                                                    class="searchIcon">
+                                                </SvgIcon>
+                                            </form>
+                                            <div
+                                                class="selectCount">
+                                                已選取
+                                                {{
+                                                    selectIngredient.length
+                                                }}
+                                                項
+                                            </div>
+                                            <div
+                                                class="resetBtn">
+                                                <button
+                                                    @click="resetFilterSelect">重置</button>
+                                            </div>
+                                            <div
+                                                class="mobileContent">
+                                                <div
+                                                    class="selectCount">
+                                                    已選取
+                                                    {{
+                                                        selectIngredient.length
+                                                    }}
+                                                    項
+                                                </div>
+                                                <div
+                                                    class="resetBtn">
+                                                    <button
+                                                        @click="resetFilterSelect">重置</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="fieldset">
@@ -97,7 +123,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                    }}</span>
+                                                }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -125,7 +151,7 @@
                                             </li>
                                             <div v-show="showIngredientList.length == 0"
                                                 class="empty">
-                                                <span>找不到唷</span>
+                                                <span>無此項目</span>
                                             </div>
                                         </ul>
                                     </div>
@@ -136,11 +162,12 @@
                     <!-- <div>
                         選中
                     </div> -->
-                    <div class="sort" @click.stop>
+                    <div class="sort">
                         <span>排序：</span>
-                        <div class="sortWrapper">
+                        <div class="sortWrapper"
+                            @click.stop>
                             <div class="header"
-                                @click="showSort">
+                                @click="handleShowList('sort')">
                                 <span>{{ sorting }}</span>
                                 <SvgIcon name="sortDown"
                                     width='16' height="16"
@@ -149,15 +176,15 @@
                                 </SvgIcon>
                                 <SvgIcon
                                     name="ListArrowDown"
-                                    width="21px"
-                                    height="21px"
-                                    :class="{ sortIcon: !sortIsShow }">
+                                    width="24px"
+                                    height="24px"
+                                    :class="{ sortIcon: listOpening !== 'sort' }">
                                 </SvgIcon>
                             </div>
                             <transition name="sort">
                                 <ul class="sortList"
-                                    @click="showSort"
-                                    v-show="sortIsShow">
+                                    @click="closePop"
+                                    v-show="listOpening == 'sort'">
                                     <li v-for="(item, index) in sortList"
                                         :key="index"
                                         @click="setSortDirection(item)">
@@ -211,233 +238,226 @@
                     v-show="filteredSalad.includes(item) && index < showMenuLimit && isLoaded"
                     ref="COMList">
                 </Product_template>
-
-                <!-- <div class="item"
-                    v-for="(item, index) in sortedSalad"
-                    :key="item.id ? item.id : index" :class="{
-                        hideItem: index > (showMenuLimit - 1),
-                    }"
-                    v-show="filteredSalad.includes(item) && index < showMenuLimit && isLoaded"
-                    ref="elList">
-                    <div class="menuImg">
-                        <img :src="item.fileName!" alt="商品">
-                        <p>{{ item.price }}元</p>
-                        <div class="description">
-                            <span>{{ item.description
-                                }}</span>
-                        </div>
-                    </div>
-                    <h3>{{ item.name }}</h3>
-                    <div class="ingredients">
-                        <span
-                            v-for="(el) in item.ingredients"
-                            :key="el">
-                            {{ el }}
-                        </span>
-                    </div>
-                    <div class="btnWrapper">
-                        <button
-                            class="cart-btn">加入購物車</button>
-                        <button
-                            @click="routerPush(item.name!, item.id)"
-                            class="info-btn">詳細資訊</button>
-                        <div class="btnBackground">
-                            <svg width="260" height="48"
-                                viewBox="0 0 260 48"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <g id="btnBac"
-                                    filter="url('#btn')">
-                                    <rect id="center" y="21"
-                                        width="117.52"
-                                        height="6"
-                                        fill="currentColor" />
-                                    <path id="left"
-                                        d="M0 0H26.5417H53.0833H79.625H117.553L130 48H0V0Z"
-                                        fill="currentColor" />
-                                    <path id="right"
-                                        d="M260 48L233.458 48L206.917 48L180.375 48L142.447 48L130 4.93616e-06L260 1.5864e-05L260 48Z"
-                                        fill="currentColor" />
-                                </g>
-                                <filter id="btn">
-                                    <feGaussianBlur
-                                        in="SourceGraphic"
-                                        result="blur"
-                                        stdDeviation="5" />
-                                    <feColorMatrix in="blur"
-                                        mode="matrix"
-                                        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
-                                        result="btn" />
-                                </filter>
-                            </svg>
-                        </div>
-                    </div>
-                </div> -->
-                <!-- </transition-group> -->
             </div>
             <div class="showFullMenuBtn" :class="{
                 onUnloaded: !isLoaded
             }" v-show="true">
                 <span>{{ currShow }} of {{
                     saladList.length }}</span>
-                <!-- <transition name="showFullMenuBtn" -->
-                <!-- type="animation"> -->
                 <button @click="setFullMenu"
                     v-show="isShowBtn">
                     展開
                 </button>
-                <!-- </transition> -->
-            </div>
-            <div class="smoothieMenu">
-                <div class="title">
-                    SMOOTHIES <span></span>
-                </div>
-                <div class="itemWrapper" ref="itemWrapper"
-                    :style="itemWrapperStyle">
-                    <div class="skeletonWrapper"
-                        v-show="!isLoaded">
-                        <Skeleton class="skeleton"
-                            v-for="(item, index) in 6"
-                            :key="index"></Skeleton>
-                    </div>
-                    <swiper-container slides-per-view="auto"
-                        :loopAddBlankSlides="true"
-                        ref="smoothieSwiper"
-                        grabCursor="true"
-                        :space-between="32"
-                        :loop="loopProps" speed="5000"
-                        :autoplay="false">
-                        <swiper-slide class="item"
-                            v-for="(items, index) in sortedSmoothies"
-                            v-show="filteredSmoothie.includes(items)"
-                            :key="index">
-                            <div class="imgWrapper"
-                                @click="routerToProduct(items.name)">
-                                <img :src="items.fileName!"
-                                    alt="商品">
-                                <div class="description">
-                                    <span>{{
-                                        items.description
-                                        }}</span>
-                                </div>
-                            </div>
-                            <h3>{{ items.name }}</h3>
-                            <p>{{ items.price }}元</p>
-                            <div class="ingredients">
-                                <span
-                                    v-for="(item) in items.ingredients"
-                                    :key="item">
-                                    {{ item }}
-                                </span>
-                            </div>
-                            <div class="btnWrapper">
-                                <button
-                                    @click="clickSmoothiesBtn(items, $event)"
-                                    class="cart-btn">加入購物車</button>
-                                <button
-                                    @click="routerToProduct(items.name)"
-                                    class="info-btn">詳細資訊</button>
-                                <div class="btnBackground">
-                                    <svg width="260"
-                                        height="48"
-                                        viewBox="0 0 260 48"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <g id="btnBac"
-                                            filter="url('#btn')">
-                                            <rect
-                                                id="center"
-                                                y="21"
-                                                width="117.52"
-                                                height="6"
-                                                fill="currentColor" />
-                                            <path id="left"
-                                                d="M0 0H26.5417H53.0833H79.625H117.553L130 48H0V0Z"
-                                                fill="currentColor" />
-                                            <path id="right"
-                                                d="M260 48L233.458 48L206.917 48L180.375 48L142.447 48L130 4.93616e-06L260 1.5864e-05L260 48Z"
-                                                fill="currentColor" />
-                                        </g>
-                                        <filter id="btn">
-                                            <feGaussianBlur
-                                                in="SourceGraphic"
-                                                result="blur"
-                                                stdDeviation="5" />
-                                            <feColorMatrix
-                                                in="blur"
-                                                mode="matrix"
-                                                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
-                                                result="btn" />
-                                        </filter>
-                                    </svg>
-                                </div>
-                            </div>
-                            <Teleport
-                                :to="'.flyToCartContainer'">
-                                <div class="flyToCart"
-                                    ref="flyToCartEl"
-                                    v-if="true">
-                                    <img :src="smoothiesPlane.imgURL.value"
-                                        alt="">
-                                </div>
-                            </Teleport>
-                        </swiper-slide>
-                    </swiper-container>
-                </div>
             </div>
         </div>
-        <div class="analystBot">
-            <swiper-container effect="fade" speed="700"
-                :fadeEffect="{ crossFade: true }" :autoplay="{
-                    delay: 4000,
-                    pauseOnMouseEnter: true
-                }" :allowTouchMove="false">
-                <swiper-slide
-                    v-for="({ title, name, intro, avatarURL }, index) in docData"
-                    :key="index">
-                    <div class="analystSwiper">
-                        <div class="imgWrapper">
-                            <img :src="avatarURL" alt="">
-                            <span>
-                                {{ title }}
+        <div class="smoothieMenu">
+            <div class="title">
+                SMOOTHIES <span></span>
+            </div>
+            <div class="itemWrapper" ref="itemWrapper"
+                :class="{
+                    isSelecting: selectIngredient.length !== 0
+                }">
+                <div class="skeletonWrapper"
+                    v-show="!isLoaded">
+                    <Skeleton class="skeleton"
+                        v-for="(item, index) in 6"
+                        :key="index"></Skeleton>
+                </div>
+                <swiper-container ref="smoothieSwiper"
+                    scrollbar-hide="true"
+                    slides-per-view="auto"
+                    :loopAddBlankSlides="true"
+                    grabCursor="true" :loop="loopProps"
+                    speed="3000" :autoplay="{
+                        pauseOnMouseEnter: true
+                    }" :injectStyles="scrollBarStyle"
+                    :breakpoints="{
+                        320: {
+                            spaceBetween: 16
+                        },
+                        430: {
+                            spaceBetween: 24
+                        },
+                        768: {
+                            spaceBetween: 32
+                        }
+                    }">
+                    <swiper-slide class="item"
+                        v-for="(items, index) in sortedSmoothies"
+                        v-show="filteredSmoothie.includes(items)"
+                        :key="index">
+                        <div class="imgWrapper"
+                            @click="routerToProduct(items.name)">
+                            <img :src="items.fileName!"
+                                alt="商品">
+                            <div class="description">
+                                <span>{{
+                                    items.description
+                                }}</span>
+                            </div>
+                        </div>
+                        <h3>{{ items.name }}</h3>
+                        <p>{{ items.price }}元</p>
+                        <div class="ingredients">
+                            <span
+                                v-for="(item) in items.ingredients"
+                                :key="item">
+                                {{ item }}
                             </span>
                         </div>
-                        <div class="content">
-                            <h2>{{ name }}</h2>
-                            <p>
-                                {{ intro }}
-                            </p>
-                            <button @click="routerToQNR">
-                                開始診斷
+                        <div class="btnWrapper">
+                            <button
+                                @click="clickSmoothiesBtn(items, $event)"
+                                class="cart-btn">加入購物車</button>
+                            <button
+                                @click="routerToProduct(items.name)"
+                                class="info-btn">詳細資訊</button>
+                            <div class="btnBackground">
+                                <svg width="260" height="48"
+                                    viewBox="0 0 260 48"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <g id="btnBac"
+                                        filter="url('#btn')">
+                                        <rect id="center"
+                                            y="21"
+                                            width="117.52"
+                                            height="6"
+                                            fill="currentColor" />
+                                        <path id="left"
+                                            d="M0 0H26.5417H53.0833H79.625H117.553L130 48H0V0Z"
+                                            fill="currentColor" />
+                                        <path id="right"
+                                            d="M260 48L233.458 48L206.917 48L180.375 48L142.447 48L130 4.93616e-06L260 1.5864e-05L260 48Z"
+                                            fill="currentColor" />
+                                    </g>
+                                    <filter id="btn">
+                                        <feGaussianBlur
+                                            in="SourceGraphic"
+                                            result="blur"
+                                            stdDeviation="5" />
+                                        <feColorMatrix
+                                            in="blur"
+                                            mode="matrix"
+                                            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
+                                            result="btn" />
+                                    </filter>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="btnWrapper mobileBtn"
+                            ref="btnWrapper">
+                            <button class="cart-btn"
+                                ref="cartBtnEl"
+                                @click="clickSmoothiesBtn(items, $event)">
+                                加入購物車
+                            </button>
+                            <button class="info-btn"
+                                @click="routerToProduct(items.name)">
+                                詳細資訊
                             </button>
                         </div>
+                        <Teleport
+                            :to="'.flyToCartContainer'">
+                            <div class="flyToCart"
+                                ref="flyToCartEl"
+                                v-if="true">
+                                <img :src="smoothiesPlane.imgURL.value"
+                                    alt="">
+                            </div>
+                        </Teleport>
+                    </swiper-slide>
+                </swiper-container>
+            </div>
+        </div>
+        <div class="analystBot" ref="analystBotRef">
+            <div>
+
+                <div class="botTitle">
+                    <h2>
+                        <span class="text">Relation-Ship
+                        </span>
+                        and analysts team
+                    </h2>
+                </div>
+                <swiper-container effect="fade" speed="700"
+                    :fadeEffect="{ crossFade: true }"
+                    :autoplay="{
+                        delay: 4000,
+                        pauseOnMouseEnter: true
+                    }" :allowTouchMove="false"
+                    observer="true" observeParents="true"
+                    ref="deskSwiper">
+                    <swiper-slide
+                        v-for="({ title, name, intro, avatarURL }, index) in docData"
+                        :key="index">
+                        <div class="analystSwiper">
+                            <div class="imgWrapper">
+                                <img :src="avatarURL"
+                                    alt="">
+                                <span>
+                                    {{ title }}
+                                </span>
+                            </div>
+                            <div class="content">
+                                <h2>{{ name }}</h2>
+                                <p>
+                                    {{ intro }}
+                                </p>
+                                <button
+                                    @click="routerToQNR">
+                                    開始分析
+                                </button>
+                            </div>
+                        </div>
+                    </swiper-slide>
+                </swiper-container>
+
+                <swiper-container effect="fade" speed="700"
+                    :fadeEffect="{ crossFade: true }"
+                    :autoplay="{
+                        delay: 4000,
+                        pauseOnMouseEnter: true
+                    }" :allowTouchMove="false"
+                    observer="true" observeParents="true"
+                    class="mobileBot" ref="mobileSwiper">
+                    <swiper-slide
+                        v-for="({ title, name, intro, avatarURL }, index) in docData"
+                        :key="index" class="docList">
+                        <div>
+                            <div class="docImgWrapper">
+                                <img :src="avatarURL"
+                                    alt="">
+                                <span>
+                                    {{ title }}
+                                </span>
+                            </div>
+
+                            <div class="content">
+                                <h2>
+                                    {{ name }}
+                                </h2>
+                                <p>
+                                    {{ intro }}
+                                </p>
+                            </div>
+                        </div>
+                    </swiper-slide>
+                    <div slot="container-end"
+                        class="buttonWrapper">
+                        <button @click="routerToQNR">
+                            開始分析
+                        </button>
                     </div>
-                </swiper-slide>
-            </swiper-container>
-            <div class="analystSwiper cloneSwiper">
-                <div class="imgWrapper">
-                    <img :src="docData[0].avatarURL" alt="">
-                    <span>
-                        {{ docData[0].title }}
-                    </span>
-                </div>
-                <div class="content">
-                    <h2>{{ docData[0].name }}</h2>
-                    <p>
-                        {{ docData[0].intro }}
-                    </p>
-                    <button class="target"
-                        @click="routerToQNR">
-                        開始診斷
-                    </button>
-                </div>
+                </swiper-container>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick, onBeforeUpdate, inject, toRefs, onUnmounted } from 'vue';
+import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick, onBeforeUpdate, inject, toRefs, onUnmounted, useTemplateRef, onUpdated } from 'vue';
 import type { ComputedRef, Ref, WritableComputedRef } from 'vue';
 import Skeleton from '@components/skeleton/skeleton.vue';
 import Product_template from '@/components/Product/Product_template.vue';
@@ -454,6 +474,10 @@ import { log } from 'console';
 import { useCartStore } from '@/store/cartStore';
 import emitter from '@/utils/eventBus';
 import FlyToCart from '@/hooks/useFlyToCart';
+import debounce from 'lodash/debounce';
+import type { SwiperContainer } from 'swiper/element';
+import { LoremIpsum } from 'lorem-ipsum';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 
 //DOING salad圖ps改成一致
@@ -466,75 +490,27 @@ import FlyToCart from '@/hooks/useFlyToCart';
  * --------------
  * !整理樣式
  * !整理腳本
- * !RWD
- * //!讀取中 menu沒被撐開
- * //!排序 篩選時會閃爍
- * //!篩選多個時 展開按鈕有錯誤 => 改setFullMenu limit 為原數據數量
  * --------------
  * ? localStorage、ETag緩存
- * //? grid轉場效果使用不順 gsap解決
- * //? 加入購物車改為右上角icon
- * //? mongodb 聚合管道
  * --------------
- * 麵包屑
- * //salad圖大小不一致
- * //畫面縮放後更新smoothie marquee
- * //篩選後減少可選選項
- * //篩選下方篩選標籤
- * //初始化轉場(數據初次返回時)
- * //排序精選無轉場
- * //篩選、排序邏輯
- * //菜單響應
- * //營養改在store補足6個
- * //果昔跑馬燈
- * //菜單摺疊區塊
- * //篩選、排序箭頭轉場
- * //縮畫面會有白邊->max width: 100%
- * //menu改4行 WrapperMargin調整 grid space around
- * //top分析改排版
- * //menu 按鈕樣式
- * //服務端導入資源
- * //api 建構
- * //req 編寫 
- * //bottom 診斷圖片 用頭貼輪播
- * //圖片路徑
- * //res 導入 pinia
  */
 
 // -----篩選、排序樣式-----
 // 下拉顯示
-function handleShowList() {
-    let isShow = ref(false);
-
-    function setShow() {
-        isShow.value = !isShow.value;
-    }
-
-    return { isShow, setShow }
+const listOpening = ref<null | 'filter' | 'sort'>(null);
+function handleShowList(target: 'filter' | 'sort') {
+    listOpening.value = target
 }
-
-let { isShow: filterIsShow, setShow: showFilter } = handleShowList();
-let { isShow: sortIsShow, setShow: showSort } = handleShowList();
 
 // 點擊空白關閉 點擊排序後關閉
 function closePop() {
-    if (filterIsShow.value || sortIsShow.value) {
-        filterIsShow.value = false;
-        sortIsShow.value = false;
-    }
+    listOpening.value = null
 }
 
 // -----menu store 數據-----
 const menuStore = useMenuStore();
 const { fetchIngredients, fetchMenu } = menuStore;
 const { fullMenu, saladList, smoothieList, ingredientsList, isLoaded } = storeToRefs(menuStore);
-
-// menuStore.$subscribe((_, state) => {
-//     if (state.isLoaded) {
-//         // fillListToSix(saladList.value);
-//         // fillListToSix(smoothieList.value);
-//     }
-// })
 
 // -----篩選、排序功能-----
 // 排序
@@ -628,36 +604,7 @@ function sort(el: Ref<MenuItem[]>) {
     return [...el.value].sort(compareFn(key, isAsc));
 }
 
-// ingredients補足6個 => CSS解決
-// function fillListToSix(list: MenuItem[]) {
-//     list.forEach((item) => {
-//         while (item.ingredients.length < 6) {
-//             item.ingredients.push('');
-//         }
-//     })
-// }
-
 // 篩選資料去重
-// interface ingredientsList {
-//     ingredients: string[] | null
-// }
-// function removeDuplicates(list: Ref<ingredientsList[]>) {
-//     let set = new Set();
-
-//     for (let i of list.value) {
-//         i.ingredients!.forEach((ingredient) => {
-//             if (ingredient != '') {
-//                 set.add(ingredient);
-//             }
-//         })
-//     }
-
-//     return [...set]
-// }
-
-menuStore.$subscribe((_, state) => {
-    // console.log(state.ingredientsList);
-})
 let ingredientSet = computed<Set<string>>(() => {
     if (!isLoaded.value || !ingredientsList.value || ingredientsList.value.length <= 1) return new Set();
     let set = new Set<string>();
@@ -683,7 +630,7 @@ function handleFilterSelect(n: string) {
     setFullMenu();
     if (!filteredIngredient.value.includes(n)) return
     if (selectIngredient.value.includes(n)) {
-        selectIngredient.value = selectIngredient.value.filter(item => item !== n)
+        selectIngredient.value = selectIngredient.value.filter(item => item !== n);
         return
     }
     selectIngredient.value.push(n)
@@ -715,8 +662,6 @@ let showIngredientList = computed(() => {
     })
 })
 
-
-
 // 篩選重置
 function resetFilterSelect() {
     if (selectIngredient.value.length == 0) return
@@ -731,26 +676,25 @@ function filter(el: Ref<MenuItem[]>) {
     const selectedSet = new Set(selectIngredient.value);
     return el.value.filter(item => item.ingredients.some(ing => selectedSet.has(ing)))
 }
-// function filter(el: Ref<MenuItem[]>) {
-//     if (selectIngredient.value.length === 0) return [...el.value]
-
-//     let list = el.value.filter((item) => {
-//         for (let factor of selectIngredient.value) {
-//             if (item.ingredients.some(el => el == factor)) {
-//                 return true
-//             }
-//         }
-//         return false
-//     })
-
-//     return list
-// }
 
 // -----menu 摺疊-----
-let isShowFullMenu = computed(() => showMenuLimit.value == filteredSalad.value.length);
+// let isShowFullMenu = computed(() => showMenuLimit.value == filteredSalad.value.length);
+const isShowFullMenu = ref(false)
 let isShowBtn = computed(() => showMenuLimit.value < filteredSalad.value.length)
 
-let showMenuLimit = ref(8);
+const showMenuLimit = ref(8);
+
+const columnsLimit = ref(0);
+function getColumnsLimit() {
+    if (!saladContainer.value) return
+    const containerWidth = saladContainer.value.getBoundingClientRect().width;
+    const itemWidth = saladContainer.value.children[1].getBoundingClientRect().width
+    columnsLimit.value = Math.floor(containerWidth / itemWidth);
+    if (!isShowFullMenu.value) {
+        showMenuLimit.value = Math.floor(containerWidth / itemWidth) * 2;
+    }
+}
+
 
 let currShow = computed(() => {
     let length = filteredSalad.value.length;
@@ -761,8 +705,25 @@ let currShow = computed(() => {
     return length
 })
 
-function setFullMenu() {
+function setFullMenu(e?: Event) {
+    if (isShowBtn.value && e) {
+        gsap.fromTo('.hideItem',
+            {
+                opacity: 0
+            },
+            {
+                opacity: 1,
+                duration: .3,
+                clearProps: 'all'
+            }
+        )
+    }
     showMenuLimit.value = saladList.value.length;
+    isShowFullMenu.value = true;
+
+    nextTick(() => {
+        setGridRows()
+    })
 }
 
 // let skeletonIsShow = ref(true); //初始化時待skeleton消失
@@ -772,8 +733,10 @@ function setFullMenu() {
 
 
 // -----smoothie marquee-----
-let smoothieSwiper = ref();
-let itemWrapper = ref();
+let smoothieSwiper = useTemplateRef<SwiperContainer>('smoothieSwiper');
+const deskSwiper = useTemplateRef<SwiperContainer>('deskSwiper');
+const mobileSwiper = useTemplateRef<SwiperContainer>('mobileSwiper');
+let itemWrapper = useTemplateRef('itemWrapper');
 let loopProps = computed(() => {
     if (selectIngredient.value.length === 0) {
         return {
@@ -782,29 +745,22 @@ let loopProps = computed(() => {
         }
     }
     return false
-})
+});
 
-let itemWrapperStyle = computed(() => {
-    let translateX = ref(0);
-    if (itemWrapper.value) {
-        let { left } = itemWrapper.value.getBoundingClientRect();
-        let width = itemWrapper.value.offsetWidth;
-        // console.log(itemWrapper);
-        translateX.value = left > 336 ? 336 : left;
-        // translateX.value = left;
-    }
-
-    return {
-        // transform: `translateX(-${translateX.value}px)`
-    }
-})
+const scrollBarStyle = [
+    `
+        .swiper-scrollbar-drag {
+            background: #0d731e;
+        }
+    `
+]
 
 watch(isLoaded, (nVal) => {
-    if (nVal == true) {
+    if (nVal) {
         showMenuLimit.value = 8
         nextTick(() => {
             handleSwiperSlide('start');
-        })
+        });
     }
 }, { once: true })
 
@@ -824,39 +780,55 @@ watch(selectIngredient, (nVal) => {
 
 
 function handleSwiperSlide(action: "start" | "stop" | "update") {
-    // const actionsMap = {
-    //     start: () => smoothieSwiper.value.swiper.autoplay.start(),
-    //     stop: () => smoothieSwiper.value.swiper.autoplay.stop(),
-    //     update: () => {
-    //         smoothieSwiper.value.swiper.update();
-    //         smoothieSwiper.value.swiper.slideToLoop(0, 1000);
-    //     }
-    // };
+    if (!smoothieSwiper.value) return
+    const actionsMap = {
+        start: () => {
+            smoothieSwiper.value!.swiper.autoplay.start();
+        },
+        stop: () => smoothieSwiper.value!.swiper.autoplay.stop(),
+        update: () => {
+            smoothieSwiper.value!.swiper.update();
+            smoothieSwiper.value!.swiper.slideToLoop(0, 1000);
+            nextTick(() => {
+                refreshTrigger()
+            })
+        }
+    };
+    const actionHandler = actionsMap[action];
+    actionHandler();
 
-    // const actionHandler = actionsMap[action];
-
-    // actionHandler();
 }
+// prevent url bar resize
+let currWidth = 0;
 
 async function handleResize() {
+    if (currWidth == window.innerWidth) return
     await nextTick();
-    handleSwiperSlide('update');
+    // handleSwiperSlide('update');
+    getSubTitleTranslate();
+    getColumnsLimit();
+    setGridRows();
+    getDocumentWidth();
+    await nextTick();
+    refreshTrigger();
+    currWidth = window.innerWidth;
 }
+
+const debounceResize = debounce(handleResize, 500)
 
 // -----menu GSAP-----
 gsap.registerPlugin(Flip);
-let saladContainer = ref();
+const saladContainer = useTemplateRef('saladContainer');
 
-const COMList = ref<InstanceType<typeof Product_template>[]>();
+const COMList = useTemplateRef<InstanceType<typeof Product_template>[]>('COMList');
+watch([COMList, isLoaded], (nVal) => {
+    if (nVal[1]) {
+        nextTick(() => {
+            getColumnsLimit()
+        })
+    }
+})
 function getProductElState() {
-    // let list: HTMLElement[] = [];
-    // if (isLoaded.value && COMList.value) {
-    //     COMList.value.forEach((component) => {
-    //         list.push(component.productEl)
-    //         // console.log(component.productEl);
-    //     })
-    // }
-    // return list
     return isLoaded.value && COMList.value ? COMList.value.map(component => component.productEl) : []
 }
 
@@ -876,38 +848,24 @@ function setSaladGSAP(state: Flip.FlipState) {
             return gsap.fromTo(elements,
                 { opacity: 1 },
                 { opacity: 0, duration: 1 })
-        }
+        },
     });
 }
 
 // ----- show數據 -----
 
-let filteredSalad = computed(() => {
-
-    let elList = getProductElState()
-    const state = Flip.getState(elList);
-
+const filteredSalad = computed(() => {
     let salad = filter(saladList);
-
-    nextTick(() => {
-        setSaladGSAP(state);
-    })
     return salad
 })
 
 let sortedSalad = computed<MenuItem[]>(() => {
     if (!isLoaded.value) return Array(8).fill(saladList.value);
-
     let list = sort(saladList);
-
-    // for (let i of list) {
-    //     console.log(i);
-    // }
-
     return list
 });
 
-watch(sortedSalad, (nVal) => {
+watch([filteredSalad, sortedSalad], (nVal) => {
     let elList = getProductElState()
     const state = Flip.getState(elList);
     nextTick(() => {
@@ -950,43 +908,80 @@ let filteredIngredient = computed(() => {
 
     return [...set]
 })
-// watch(filteredIngredient, () => {
-// console.log(filteredIngredient.value);
-// })
 
 // menu min height minmax(0, 200px)
 let gridRow = ref(2);
-let saladMenuStyle = computed(() => ({
-    'grid-template-rows': `repeat(${gridRow.value}, minmax(0, 450px))`
-}))
-watch(selectIngredient, (nVal) => {
-    if (nVal.length == 0) return
-    let rowNum = Math.ceil(filteredSalad.value.length / 4);
-    gridRow.value = rowNum;
+const documentWidth = ref(0);
+function getDocumentWidth() {
+    documentWidth.value = document.documentElement.offsetWidth;
+}
+let saladMenuStyle = computed(() => {
+    let rowHeight = 410;
 
+    if (documentWidth.value <= 768) {
+        rowHeight = 340
+    }
+
+    if (documentWidth.value <= 576) {
+        rowHeight = 320
+    }
+
+    if (documentWidth.value <= 430) {
+        rowHeight = 310
+    }
+
+    if (documentWidth.value <= 375) {
+        rowHeight = 290
+    }
+
+    if (documentWidth.value <= 320) {
+        rowHeight = 280
+    }
+
+    return {
+        'grid-template-rows': `repeat(${gridRow.value}, minmax(0, ${rowHeight}px))`
+    }
+})
+function setGridRows() {
+    let rowNum = Math.ceil(filteredSalad.value.length / (columnsLimit.value));
+    gridRow.value = isShowFullMenu.value ? rowNum : 2
+}
+watch(selectIngredient, (nVal) => {
+    nextTick(() => {
+        setGridRows()
+    })
 }, { deep: true })
 
 
 // -----bot swiper-----
 let docAvatarUrl = useConcatImgPath(['doc01.png', 'doc02.png'], 'Menu');
+const lorem = new LoremIpsum({
+    sentencesPerParagraph: {
+        max: 5,
+        min: 4
+    },
+    wordsPerSentence: {
+        max: 10,
+        min: 10
+    }
+});
 let docData = [
     {
         title: '營養分析',
         name: '李醫師',
-        intro: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque ipsa eveniet similique tenetur laboriosam culpa maxime aspernatur incidunt aut saepe.',
+        intro: lorem.generateParagraphs(1),
         avatarURL: docAvatarUrl[0]
     },
     {
         title: '配方分析',
         name: '張營養師',
-        intro: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Maxime velit totam, nulla dicta ea accusamus.',
+        intro: lorem.generateParagraphs(1),
         avatarURL: docAvatarUrl[1]
     }
 ];
 
 // 路由跳轉
 const router = useRouter();
-const route = useRoute();
 
 function routerToProduct(name: string, id?: string) {
     router.push({
@@ -1062,10 +1057,44 @@ async function clickSmoothiesBtn(target: MenuItem, e: Event) {
     }
 }
 
+// css
+const subTitleRef = useTemplateRef('subTitleRef');
+const subTitleTranslate = ref(0);
+function getSubTitleTranslate() {
+    if (!subTitleRef.value) return
+    subTitleTranslate.value = subTitleRef.value.getBoundingClientRect().height / 2 || 0
+}
+
+// analystBot scroll trigger
+gsap.registerPlugin(ScrollTrigger);
+const analystBotRef = useTemplateRef('analystBotRef');
+function setAnalystBotScrollTrigger() {
+    gsap.fromTo(analystBotRef.value,
+        {
+            backgroundColor: '#FCFAF2',
+        },
+        {
+            backgroundColor: '#fff6d6',
+            scrollTrigger: {
+                trigger: analystBotRef.value,
+                start: 'top 60%',
+                end: 'top 30%',
+                scrub: .5,
+            }
+        }
+    )
+}
+function refreshTrigger() {
+    ScrollTrigger.refresh();
+}
 
 // -----生命週期-----
 onBeforeMount(() => {
 })
+
+onUpdated(() => {
+})
+
 onMounted(() => {
     if (!isLoaded.value) {
         fetchMenu();
@@ -1074,11 +1103,14 @@ onMounted(() => {
     if (ingredientsList.value.length <= 1) {
         fetchIngredients();
     }
-    window.addEventListener('resize', handleResize);
+    getSubTitleTranslate();
+    getDocumentWidth()
+    window.addEventListener('resize', debounceResize);
+    setAnalystBotScrollTrigger()
 })
 
 onUnmounted(() => {
-    window.removeEventListener('resize', handleResize);
+    window.removeEventListener('resize', debounceResize);
     emitter.off('navEvent', () => {
     })
 })
@@ -1089,6 +1121,10 @@ onUnmounted(() => {
 $imgContainer_width: 250px;
 $menuItemContainer_height: 405px;
 
+* {
+    // outline: 1px solid black;
+}
+
 .container {
     @extend %fixContainer;
     @extend %headerPseudo;
@@ -1096,27 +1132,6 @@ $menuItemContainer_height: 405px;
     flex-direction: column;
     position: relative;
     overflow: hidden;
-
-
-    &>div {
-        max-width: 100%;
-        width: 1440px;
-        padding: 0 6rem;
-        // margin: 1rem auto;
-        margin-top: 4rem;
-
-        // &:nth-child(1),
-        // &:last-child {
-        //     padding-left: 6rem;
-        //     padding-right: 6rem;
-        // }
-    }
-
-    // .menuWrapper {
-    //     padding: 0 6rem;
-    // }
-
-
 }
 
 %analystBtn {
@@ -1133,86 +1148,77 @@ $menuItemContainer_height: 405px;
 }
 
 .analystTop {
-    // @include flex-center-center;
+    --padding: clamp(2rem, -0.8571428571428568rem + 14.285714285714285vw, 12rem);
+    width: calc(100% - var(--padding));
+    max-width: 90rem;
+    margin-top: 2rem;
+    margin-top: clamp(2rem, 1.4285714285714286rem + 2.857142857142857vw, 4rem);
     display: flex;
-    // justify-content: space-around;
+    align-items: center;
     flex-direction: row;
-    // margin-top: 4rem;
-    // border: 1px solid black;
     border-radius: 1rem;
-    // background-color: white;
-    // box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
     position: relative;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+    border-radius: 1rem;
+}
 
+.analystImgWrapper {
+    @include WnH(125px);
+    margin: 1rem 1rem 1rem 2rem;
+    border-radius: 100%;
+    overflow: hidden;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+    background-color: white;
 
-    &::after {
-        @include WnH(calc(100% - 12rem), 100%);
-        content: '';
-        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
-        border-radius: 1rem;
-        pointer-events: none;
-        position: absolute;
-        top: 0;
-        left: 6rem;
+    img {
+        @include WnH(100%);
     }
+}
 
-    .imgWrapper {
-        @include WnH(125px);
-        margin: 1rem 1rem 1rem 2rem;
-        // margin-left: 2rem;
-        border-radius: 100%;
-        overflow: hidden;
-        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
-        background-color: white;
+.textWrapper {
+    flex: 1;
+    margin-left: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-block: 2rem;
 
-        img {
-            @include WnH(100%);
-            // background-color: white;
-        }
-    }
-
-
-
-    .textWrapper {
-        margin-left: 1rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-
-        p {
-            // font-size: 1rem;
-
-        }
-
-        h1 {
-            font-size: 2rem;
-            margin-top: 0.5rem;
-            line-height: 2rem;
-            position: relative;
-
-            .subTitle {
-                font-size: 1rem;
-                line-height: 24px;
-                position: absolute;
-                top: -100%;
-            }
-
-            .text {
-                font-size: 2.5rem;
-                margin-right: 0.5rem;
-                font-family: "Mr Dafoe", cursive;
-            }
-        }
+    h1 {
+        font-size: 1.5rem;
+        font-size: clamp(1.5rem, 1.3571428571428572rem + 0.7142857142857143vw, 2rem);
+        line-height: 1.25;
+        position: relative;
+        // display: flex;
+        font-weight: 450;
+        text-align: justify;
     }
 
     button {
         @include WnH(9rem, 3rem);
         @extend %analystBtn;
-        // margin-top: 1rem;
         margin: 0 auto;
         align-self: center;
     }
 }
+
+.titleWrapper {}
+
+.subTitle {
+    font-size: 1rem;
+    font-variation-settings: 'wght' 450;
+    translate: 0% -.5rem;
+}
+
+.text {
+    font-size: 1.75rem;
+    font-size: clamp(1.75rem, 1.5357142857142856rem + 1.0714285714285714vw, 2.5rem);
+    margin-right: 0.5rem;
+    font-family: "Mr Dafoe", cursive;
+    text-wrap: nowrap;
+}
+
+
 
 %hoverBotLine {
     &::before {
@@ -1233,1059 +1239,1103 @@ $menuItemContainer_height: 405px;
     }
 }
 
+%menuItem {
+    @include flex-center-center;
+    flex-direction: column;
+
+    .menuImg {
+        @include flex-center-center;
+        @include WnH(250px);
+        background: no-repeat url('@assets/img/Menu/bac_wood.jpg') center/contain;
+        cursor: pointer;
+        border-radius: 2.5rem;
+        position: relative;
+
+        img {
+            @include WnH(85%);
+            filter: drop-shadow(4px 4px 4px black);
+            transition: transform 0.15s linear;
+            transform-origin: center;
+        }
+
+        p {
+            @include WnH(60px, 35px);
+            background: $primaryBacColor;
+            border-radius: 0.5rem 0 0 0;
+            position: absolute;
+            right: -1px;
+            bottom: -1px;
+            z-index: 2;
+            text-align: center;
+            line-height: 35px;
+            font-variation-settings: 'wght' 700;
+            color: $secondBacColor;
+        }
+
+        .description {
+            @include WnH(100%);
+            @include flex-center-center;
+            color: $primaryBacColor;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 2.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+
+            span {
+                padding: 1rem;
+            }
+        }
+
+        &:hover {
+            img {
+                transform: scale(1.1);
+            }
+
+            .description {
+                opacity: 1;
+            }
+        }
+    }
+
+    &>h3 {
+        font-size: 1.5rem;
+        font-variation-settings: 'wght' 600;
+        color: $secondBacColor;
+        margin-top: 0.5rem;
+    }
+
+    .ingredients {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        justify-content: center;
+        justify-items: center;
+        column-gap: 3px;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+
+        span {
+            @include WnH(100%, 24px);
+            background-color: $btnBacColor_light;
+            color: $primaryBacColor;
+            display: inline-block;
+            font-size: 14px;
+            font-variation-settings: 'wght' 500;
+            line-height: 24px;
+            text-align: center;
+            // padding-inline: .25rem;
+
+            &:nth-of-type(1) {
+                border-radius: 0.5rem 0 0 0;
+                margin-bottom: 3px;
+            }
+
+            &:nth-of-type(2) {
+                margin-bottom: 3px;
+            }
+
+            &:nth-of-type(3) {
+                border-radius: 0 0.5rem 0 0;
+                margin-bottom: 3px;
+            }
+
+            &:nth-of-type(4) {
+                border-radius: 0 0 0 .5rem;
+            }
+
+            &:nth-of-type(6) {
+                border-radius: 0 0 .5rem 0;
+            }
+        }
+
+        &::after {
+            @include WnH(100%);
+            content: '';
+            background-color: $btnBacColor_light;
+            border-radius: 0 0 .5rem 0;
+            // grid-column: span 1;
+            // grid-row: span 1;
+        }
+
+        &>span:nth-child(6)~ ::after {
+            // display: none;
+        }
+    }
+
+    .btnWrapper {
+        display: flex;
+        justify-content: center;
+        white-space: nowrap;
+        width: 100%;
+        height: 32px;
+        overflow: hidden;
+        position: relative;
+        // border: 1px solid rgb(0, 0, 0, 0.25);
+        border-radius: 8px;
+        box-shadow: 2px 2px 8px rgb(0, 0, 0, 0.5);
+        z-index: 0;
+        margin-top: 1.25rem;
+
+        * {
+            // border: 1px solid black;
+        }
+
+        &>button {
+            width: 50%;
+            overflow: hidden;
+            transition: color 0.3s ease;
+            font-variation-settings: 'wght' 500;
+
+            &:hover {
+                color: $primaryBacColor;
+            }
+        }
+
+        .cart-btn {
+            color: $primaryBacColor;
+        }
+
+        &:has(.info-btn:hover) {
+
+            &>.cart-btn {
+                color: black;
+            }
+
+            &>.btnBackground {
+
+                #center {
+                    transform: translateX(137px);
+                }
+
+                #left {
+                    scale: 0;
+                }
+
+                #right {
+                    scale: 1;
+                }
+            }
+        }
+
+        .btnBackground {
+            transform: translateY(-15%);
+            position: absolute;
+            z-index: -1;
+
+
+            g>* {
+                fill: $btnBacColor;
+                // transition: scale 0.5s ease, transform 0.5s ease;
+                transform-origin: center;
+            }
+
+            #right {
+                scale: 0;
+                transition: scale 0.4s ease-in-out;
+            }
+
+            #center {
+                transition: transform 0.5s ease-in-out;
+            }
+
+            #left {
+                transition: scale 0.4s ease-in-out;
+            }
+
+        }
+    }
+}
+
 .menuWrapper {
-    // margin-top: 4rem;
+    width: 100%;
+    max-width: 90rem;
+    padding-inline: 1rem;
+    padding-inline: clamp(1rem, -0.4285714285714284rem + 7.142857142857142vw, 6rem);
+    // margin-inline: 0;
+    margin-top: 4rem;
 
     .title {
         .breadCrumb {
-            font-size: 0.75rem;
+            font-size: 14px;
+            // font-size: 0.75rem;
         }
 
         .titleText {
-            font-size: 1.75rem;
+            font-size: 2rem;
             font-family: "EB Garamond", 'Noto Sans';
             font-variation-settings: 'wght' 750;
             margin-bottom: 1rem;
         }
-
-        .filterWrapper {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            position: relative;
-
-
-            &>div {
-                display: flex;
-                align-items: center;
-            }
-
-            .filter {
-
-                .details {
-                    margin-left: 1rem;
-                    position: relative;
-
-                    .summary {
-                        cursor: pointer;
-                        font-size: 14px;
-                        display: flex;
-                        gap: 0.25rem;
-                        user-select: none;
-                        position: relative;
-                        overflow: hidden;
-
-                        span {
-                            position: relative;
-                            @extend %hoverBotLine;
-
-                            &::before {
-                                width: 102%;
-                            }
-                        }
-
-                        .filterArrow {
-                            transform: rotateZ(-90deg);
-                            transition: transform 0.3s ease;
-                        }
-
-                        .rotateArrow {
-                            transform: rotateZ(0deg);
-                        }
-
-
-                    }
-
-                    &:hover .summary>span::before {
-                        transform: translateX(0);
-                    }
-
-                    .listWrapper {
-                        @include WnH(375px, 400px);
-                        background-color: $primaryBacColor;
-                        // border: 1px solid black;
-                        border-radius: 7px;
-                        box-shadow: 1px 1px 4px black;
-                        position: absolute;
-                        top: 150%;
-                        overflow-y: scroll;
-                        z-index: 3;
-                        transition: transform 0.3s ease;
-
-                        &::-webkit-scrollbar-thumb {
-                            // background: transparent;
-                            background: #c1c1c1;
-                            border-radius: 10px !important;
-                        }
-
-                        &::-webkit-scrollbar-thumb:hover {
-                            background: #a8a8a8;
-                        }
-
-                        // &::-webkit-scrollbar-track {
-                        //     background: #e6e6e6;
-                        //     // border-left: 1px solid transparent;
-                        //     border-radius: 10px !important;
-                        // }
-
-                        &::-webkit-scrollbar {
-                            // height: 90%;
-                            width: 0.5rem;
-                            scroll-behavior: smooth !important;
-                        }
-
-                        .exit {
-                            // width: 20px;
-                            background-color: $primaryBacColor;
-                            cursor: pointer;
-                            position: sticky;
-                            top: 0px;
-                            z-index: 2;
-                            padding-top: 5px;
-                            padding-left: calc(100% - 36px);
-                            color: gray;
-
-                            &:hover {
-                                color: black;
-                            }
-                        }
-
-                        .listHeader {
-                            width: 100%;
-                            // height: 90px;
-                            display: flex;
-                            // margin: 8px 14px 0 14px;
-                            padding: 1rem 1.5rem 1.5rem 1.5rem;
-                            justify-content: space-between;
-                            align-items: center;
-                            // box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.552);
-                            // border-radius: calc(1rem - 12px);
-                            position: sticky;
-                            top: 25px;
-                            background-color: $primaryBacColor;
-                            z-index: 1;
-                            // outline: 1px solid black;
-                            // border-bottom: 1px solid rgba(0, 0, 0, 0.25);
-
-                            form {
-                                position: relative;
-                                display: flex;
-                                justify-content: center;
-                                align-items: center;
-
-                                input {
-                                    // box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.551);
-                                    // border: 2px inset rgba(0, 0, 0, 0.45);
-                                    border-radius: 1rem;
-                                    padding-left: 0.75rem;
-                                    box-shadow: 1px 1px 4px inset rgba(0, 0, 0, 0.5);
-                                    background-color: $primaryBacColor;
-                                    line-height: 32px;
-                                    transition: background-color 0.15s ease;
-
-                                    &::placeholder {
-                                        transition: opacity 0.15s ease;
-                                    }
-
-                                    &:focus {
-                                        // border: 2px solid gray;
-                                        transition: background-color 0.15s ease;
-                                        outline: none;
-                                        background-color: white;
-
-                                        &::placeholder {
-                                            opacity: 0;
-                                        }
-                                    }
-                                }
-
-                                .searchIcon {
-                                    cursor: pointer;
-                                    position: absolute;
-                                    top: 50%;
-                                    right: 8px;
-                                    transform: translateY(-50%);
-                                }
-                            }
-
-                            button {
-                                @include WnH(45px, 24px);
-                                border: 1px solid rgb(0, 0, 0, 0.5);
-                                border-radius: 0.5rem;
-                                transition: border-color 0.3s ease;
-
-                                &:hover {
-                                    border-color: black;
-                                }
-
-                                &:active {
-                                    transform: translateY(1px);
-                                }
-                            }
-
-                            &::after {
-                                @include WnH(100%, 2px);
-                                content: '';
-                                position: absolute;
-                                left: 0;
-                                bottom: 0px;
-                                background-color: rgba(0, 0, 0, 0.25);
-                            }
-                        }
-
-
-                        .fieldset>ul {
-                            height: 100%;
-                            margin: 1rem calc(20px + 0.75rem);
-
-                            .select {
-                                border: 2px inset rgba(0, 0, 0, 1);
-                                box-shadow: inset 2px 2px 3px rgba(0, 0, 0, 0.5);
-                                background-color: $btnBacColor_light;
-
-                                span {
-                                    color: white;
-                                    // text-shadow: 0px 0px 0px white;
-                                    // -webkit-text-stroke: 1px white;
-                                    // text-shadow: 1px white;
-                                }
-
-                                &:hover {
-                                    box-shadow: inset 2px 2px 3px rgba(0, 0, 0);
-                                }
-
-                                &:active {
-                                    transform: translateY(1px);
-                                }
-                            }
-
-                            .unSelect {
-                                cursor: not-allowed;
-                                user-select: none;
-                                opacity: 0.3;
-
-                                &:not(.select):hover {
-                                    &:hover {
-                                        box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
-                                    }
-
-                                    &:active {
-                                        transform: none;
-                                    }
-                                }
-                            }
-
-                            li {
-                                cursor: pointer;
-                                padding: 0.25rem 0.25rem;
-                                margin: 6px 0;
-                                border: 2px outset rgba(0, 0, 0, 1);
-                                border-radius: 0.25rem;
-                                box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
-                                position: relative;
-                                text-align: center;
-                                // // color: white;
-                                // background-color: green;
-                                transition: box-shadow 0.2s ease, opacity 0.2s ease;
-
-                                label {
-                                    display: none;
-                                }
-
-                                span {
-                                    font-size: 1rem;
-                                    font-variation-settings: 'wght' 500;
-                                }
-
-                                &:not(.select):hover {
-                                    &:hover {
-                                        box-shadow: 2px 2px 3px rgba(0, 0, 0);
-                                    }
-
-                                    &:active {
-                                        transform: translateY(1px);
-                                    }
-                                }
-                            }
-
-                            .selectAll {
-                                background-color: #fef7d7;
-                            }
-
-                            .empty {
-                                display: flex;
-                                justify-content: center;
-                                font-size: 1rem;
-                                font-variation-settings: 'wght' 400;
-                                height: 100%;
-                                opacity: 0.25;
-                            }
-                        }
-
-                        // &::before {
-                        //     @include WnH(100%, 77px);
-                        //     content: '';
-                        //     display: block;
-                        //     // border-bottom: 1px solid black;
-                        // }
-
-                        &::after {
-                            @include WnH(30%);
-                            content: '';
-                            position: absolute;
-                            top: -6%;
-                            left: 0;
-                            z-index: -1;
-
-                        }
-                    }
-
-                    .filter-enter-active,
-                    .filter-leave-active {
-                        transition: transform 0.3s ease, opacity 0.3s ease;
-                    }
-
-                    .filter-enter-from,
-                    .filter-leave-to {
-                        opacity: 0;
-                        transform: translateY(-5%);
-                    }
-
-                    .filter-enter-to,
-                    .filter-leave-from {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-            }
-
-            .sort {
-                user-select: none;
-
-                &>span {
-                    margin-right: 1rem;
-                }
-
-                .sortWrapper {
-                    // $listWidth: 80px;
-                    position: relative;
-                    cursor: pointer;
-                    // width: $listWidth;
-                    // display: flex;
-                    // gap: 0.25rem;
-
-                    .header {
-                        display: flex;
-                        gap: 0.25rem;
-                        overflow: hidden;
-                        width: 74px;
-                        position: relative;
-
-                        span {
-                            // padding-left: 14px;
-                            text-wrap: nowrap;
-                            text-align: center;
-                            position: relative;
-                            @extend %hoverBotLine;
-                        }
-
-                        div {
-                            transition: transform 0.3s ease;
-                        }
-
-                        .sortDirIcon {
-                            // transform: rotate();
-                            transition: transform 0.3s ease;
-                        }
-
-                        .sortIcon {
-                            transform: rotateZ(-90deg);
-                        }
-                    }
-
-                    &:hover .header>span::before {
-                        transform: translateX(0);
-                    }
-
-                    .sortList {
-                        @include flex-center-center;
-                        background-color: $primaryBacColor;
-                        // border: 1px solid black;
-                        border-radius: 7px;
-                        box-shadow: 1px 1px 4px black;
-                        flex-direction: column;
-                        // width: calc(63px + 0.25rem);
-                        width: 100%;
-                        position: absolute;
-                        top: 150%;
-                        z-index: 3;
-
-                        li {
-                            @include flex-center-center;
-                            width: 100%;
-                            margin-top: 0.5rem;
-                            text-align: center;
-                            text-wrap: nowrap;
-                            transition: box-shadow 0.15s ease;
-
-
-
-                            &:last-of-type {
-                                margin-bottom: 0.5rem;
-                            }
-
-                            button {
-                                border-radius: 4px;
-                                width: 80%;
-                                position: relative;
-                                // text-align: center;
-
-                                &:hover {
-                                    box-shadow: 0 0 3px black;
-                                }
-
-                                &:active {
-                                    outline: 1px solid black;
-                                }
-
-                                &::after {
-                                    @include WnH(100%, 1px);
-                                    background-color: gray;
-                                    content: '';
-                                    position: absolute;
-                                    left: 0;
-                                    bottom: -4px;
-                                }
-                            }
-
-                            &:last-of-type>button::after {
-                                display: none;
-                            }
-                        }
-
-                        &::before {
-                            @include WnH(100%);
-                            content: '';
-                            position: absolute;
-                            top: -5%;
-                            left: 0;
-                            z-index: -1;
-                            // background-color: black;
-                        }
-                    }
-
-                    .sort-enter-active,
-                    .sort-leave-active {
-                        transition: transform 0.3s ease, opacity 0.3s ease;
-                    }
-
-                    .sort-enter-from,
-                    .sort-leave-to {
-                        opacity: 0;
-                        transform: translateY(-5%);
-                    }
-
-                    .sort-enter-to,
-                    .sort-leave-from {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-
-                .sortCount {
-                    margin-left: 1rem;
-                }
-            }
-        }
-
-        .filterTagWrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 1rem;
-            min-height: 28px;
-
-
-            .tag {
-                border: 1px solid gray;
-                background-color: transparent;
-                display: flex;
-                gap: .5rem;
-                padding: 0 0.5rem 0 12px;
-                border-radius: 2rem;
-                position: relative;
-                transition: border-color 0.3s ease, box-shadow 0.3s ease;
-                white-space: nowrap;
-
-                &:hover {
-                    cursor: pointer;
-                    border-color: black;
-                    box-shadow: 0 0 2px black;
-                }
-
-                &:active {
-                    transform: translate(1px, 1px);
-                }
-
-                span {
-                    padding: 1px 0;
-                    user-select: none;
-                }
-            }
-
-            .cancelSelect {
-                cursor: pointer;
-                margin-left: 0.5rem;
-
-                span {
-                    line-height: 27px;
-                    border-bottom: 1px solid black;
-                    transition: box-shadow 0.3s ease;
-                    white-space: nowrap;
-                }
-
-                &:hover {
-                    span {
-                        box-shadow: 0 1px 0 black;
-                    }
-                }
-
-                &:active {
-                    transform: translate(1px, 1px);
-                }
-            }
-        }
-
     }
+}
 
-    %menuItem {
-        @include flex-center-center;
-        flex-direction: column;
-        // gap: 1rem;
-        // width: 100%;
-
-        .menuImg {
-            @include flex-center-center;
-            @include WnH(250px);
-            background: no-repeat url('@assets/img/Menu/bac_wood.jpg') center/contain;
-            // border-radius: 3rem 40% 1rem 1rem;
-            cursor: pointer;
-            border-radius: 2.5rem;
-            position: relative;
-            // margin-top: 1rem;
-            // overflow: hidden;
-
-            img {
-                @include WnH(85%);
-                filter: drop-shadow(4px 4px 4px black);
-                transition: transform 0.15s linear;
-                transform-origin: center;
-            }
-
-            p {
-                @include WnH(60px, 35px);
-                background: $primaryBacColor;
-                border-radius: 0.5rem 0 0 0;
-                // display: block;
-                position: absolute;
-                right: -1px;
-                bottom: -1px;
-                z-index: 2;
-                text-align: center;
-                line-height: 35px;
-                font-variation-settings: 'wght' 700;
-                color: $secondBacColor;
-            }
-
-            .description {
-                @include WnH(100%);
-                @include flex-center-center;
-                color: $primaryBacColor;
-                position: absolute;
-                top: 0;
-                left: 0;
-                background-color: rgba(0, 0, 0, 0.5);
-                border-radius: 2.5rem;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-
-                span {
-                    padding: 1rem;
-                }
-            }
-
-            &:hover {
-                img {
-                    // scale: 1.1;
-                    transform: scale(1.1);
-                }
-
-                .description {
-                    opacity: 1;
-                }
-            }
-        }
-
-        &>h3 {
-            font-size: 1.5rem;
-            font-variation-settings: 'wght' 600;
-            color: $secondBacColor;
-            margin-top: 0.5rem;
-        }
-
-        .ingredients {
-            width: 90%;
-            display: grid;
-            grid-template-columns: 30% 30% 30%;
-            justify-content: center;
-            justify-items: center;
-            gap: 3px;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-top: 0.5rem;
+.filterWrapper {
+    width: 100%;
+    display: flex;
+    // justify-content: space-between;
+    font-size: 16px;
+    font-variation-settings: 'wght' 450;
+    position: relative;
 
 
-            span {
-                @include WnH(100%, 24px);
-                // border: 2px solid $primaryBacColor;
-                background-color: $btnBacColor_light;
-                color: $primaryBacColor;
-                display: inline-block;
-                font-size: 14px;
-                font-variation-settings: 'wght' 500;
-                line-height: 24px;
-                text-align: center;
-
-                &:nth-of-type(1) {
-                    border-radius: 0.5rem 0 0 0;
-                }
-
-                &:nth-of-type(3) {
-                    border-radius: 0 0.5rem 0 0;
-                }
-
-                &:nth-of-type(4) {
-                    border-radius: 0 0 0 .5rem;
-                }
-
-                &:nth-of-type(6) {
-                    border-radius: 0 0 .5rem 0;
-                }
-            }
-
-            &::after {
-                @include WnH(100%);
-                content: '';
-                background-color: $btnBacColor_light;
-                border-radius: 0 0 .5rem 0;
-                grid-column: span 1;
-                grid-row: span 1;
-            }
-
-            &>span:nth-child(6)~ ::after {
-                display: none;
-            }
-        }
-
-        .btnWrapper {
-            display: flex;
-            justify-content: center;
-            white-space: nowrap;
-            width: 100%;
-            height: 32px;
-            overflow: hidden;
-            position: relative;
-            // border: 1px solid rgb(0, 0, 0, 0.25);
-            border-radius: 8px;
-            box-shadow: 2px 2px 8px rgb(0, 0, 0, 0.5);
-            z-index: 0;
-            margin-top: 1.25rem;
-
-            * {
-                // border: 1px solid black;
-            }
-
-            &>button {
-                width: 50%;
-                overflow: hidden;
-                transition: color 0.3s ease;
-                font-variation-settings: 'wght' 500;
-
-                &:hover {
-                    color: $primaryBacColor;
-                }
-            }
-
-            .cart-btn {
-                color: $primaryBacColor;
-            }
-
-            &:has(.info-btn:hover) {
-
-                &>.cart-btn {
-                    color: black;
-                }
-
-                &>.btnBackground {
-
-                    #center {
-                        transform: translateX(137px);
-                    }
-
-                    #left {
-                        scale: 0;
-                    }
-
-                    #right {
-                        scale: 1;
-                    }
-                }
-            }
-
-            .btnBackground {
-                transform: translateY(-15%);
-                position: absolute;
-                z-index: -1;
-
-
-                g>* {
-                    fill: $btnBacColor;
-                    // transition: scale 0.5s ease, transform 0.5s ease;
-                    transform-origin: center;
-                }
-
-                #right {
-                    scale: 0;
-                    transition: scale 0.4s ease-in-out;
-                }
-
-                #center {
-                    transition: transform 0.5s ease-in-out;
-                }
-
-                #left {
-                    transition: scale 0.4s ease-in-out;
-                }
-
-            }
-        }
+    &>div {
+        display: flex;
+        align-items: center;
     }
+}
 
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(5%);
-        }
+.details {
+    margin-left: 1rem;
+    position: relative;
 
-        to {
-            opacity: 1;
-            transform: translateY(0)
-        }
+    &:hover .summary>span::before {
+        transform: translateX(0);
     }
+}
 
+.summary {
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    gap: 0.25rem;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
 
-    // .saladMenu-enter-active,
-    // .saladMenu-leave-active {
-    //     transition: opacity 0.8s ease;
-    // }
-
-    // .saladMenu-enter-from,
-    // .saladMenu-leave-to {
-    //     opacity: 0;
-    // }
-
-    // .saladMenu-enter-to,
-    // .saladMenu-leave-from {
-    //     opacity: 1;
-    // }
-
-    .saladMenu {
-        // overflow: hidden;
-        // margin-top: 1rem;
-        padding: 1rem 0rem;
-        display: grid;
-        justify-content: space-between;
-        grid-template-columns: 20% 20% 20% 20%;
-        grid-template-rows: repeat(auto, minmax(0, 450px));
-        row-gap: 2rem;
-        // transition: opacity 0.5s ease;
+    span {
         position: relative;
-        // opacity: 1;
+        @extend %hoverBotLine;
 
-
-        .item {
-            // @extend %menuItem;
-            // transition: top 0.5s ease,
-            //     left 0.5s ease;
-            // transition: transform 0.5s ease;
+        &::before {
+            width: 102%;
         }
+    }
 
-        .hideItem {
-            // display: none;
-            // height: 0;
-            // overflow: hidden;
-            // opacity: 0;
-        }
+    .filterArrow {
+        transform: rotateZ(-90deg);
+        transition: transform 0.3s ease;
+    }
 
-        // @keyframes onUnloaded {
-        //     from {
-        //         opacity: 0;
-        //     }
+    .rotateArrow {
+        transform: rotateZ(0deg);
+    }
+}
 
-        //     to {
-        //         opacity: 1;
-        //     }
-        // }
+.listWrapper {
+    @include WnH(375px, 400px);
+    background-color: $primaryBacColor;
+    // border: 1px solid black;
+    border-radius: 7px;
+    box-shadow: 1px 1px 4px black;
+    position: absolute;
+    top: 150%;
+    overflow-y: scroll;
+    z-index: 3;
+    transition: transform 0.3s ease;
 
+    &::-webkit-scrollbar-thumb {
+        // background: transparent;
+        background: #c1c1c1;
+        border-radius: 10px !important;
+    }
 
-        .skeleton-enter-active,
-        .skeleton-leave-active {
-            transition: opacity .75s ease;
-        }
+    &::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
 
-        .skeleton-enter-from,
-        .skeleton-leave-to {
-            opacity: 0;
-        }
+    // &::-webkit-scrollbar-track {
+    //     background: #e6e6e6;
+    //     // border-left: 1px solid transparent;
+    //     border-radius: 10px !important;
+    // }
 
-        .skeleton-enter-to,
-        .skeleton-leave-from {
-            opacity: 1;
-        }
+    &::-webkit-scrollbar {
+        // height: 90%;
+        width: 0.5rem;
+        scroll-behavior: smooth !important;
+    }
 
-        .skeleton {
-            // opacity: 0.5;
-            @include WnH(110%, 100%);
+    // &::before {
+    //     @include WnH(100%, 77px);
+    //     content: '';
+    //     display: block;
+    //     // border-bottom: 1px solid black;
+    // }
+
+    &::after {
+        @include WnH(30%);
+        content: '';
+        position: absolute;
+        top: -6%;
+        left: 0;
+        z-index: -1;
+
+    }
+}
+
+.listHeader {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    background-color: $primaryBacColor;
+    z-index: 1;
+}
+
+.exit {
+    // width: 20px;
+    background-color: $primaryBacColor;
+    cursor: pointer;
+    // position: sticky;
+    // top: 0px;
+    z-index: 2;
+    // margin-top: 5px;
+    // margin-left: calc(100% - 36px);
+    // padding-top: 5px;
+    // padding-left: calc(100% - 36px);
+    color: gray;
+    align-self: flex-end;
+    margin: 8px 8px 0 0;
+
+    &:hover {
+        color: black;
+    }
+}
+
+.inputWrapper {
+    width: 100%;
+    // height: 90px;
+    display: flex;
+    gap: .5rem;
+    // margin: 8px 14px 0 14px;
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+    justify-content: space-between;
+    align-items: center;
+    // box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.552);
+    // border-radius: calc(1rem - 12px);
+    position: sticky;
+    top: 25px;
+    background-color: $primaryBacColor;
+    z-index: 1;
+    // outline: 1px solid black;
+    // border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+
+    &::after {
+        @include WnH(100%, 2px);
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0px;
+        background-color: rgba(0, 0, 0, 0.25);
+    }
+
+    form {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        input {
+            // box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.551);
+            // border: 2px inset rgba(0, 0, 0, 0.45);
+            border-radius: 1rem;
+            padding-left: 0.75rem;
+            box-shadow: 1px 1px 4px inset rgba(0, 0, 0, 0.5);
             background-color: $primaryBacColor;
-            padding: 0 4rem;
-            display: grid;
-            justify-content: space-between;
-            grid-template-columns: repeat(4, 20%);
-            // grid-template-rows: 1fr 1fr;
-            grid-template-rows: repeat(auto, minmax(0, 450px));
-            row-gap: 2rem;
-            position: absolute;
-            top: 0;
-            left: -5%;
-            z-index: 5;
+            line-height: 32px;
+            transition: background-color 0.15s ease;
 
-            &:deep(.wrapper) {
-                flex-direction: column;
+            &::placeholder {
+                transition: opacity 0.15s ease;
+            }
+
+            &:focus {
+                // border: 2px solid gray;
+                transition: background-color 0.15s ease;
+                outline: none;
+                background-color: white;
+
+                &::placeholder {
+                    opacity: 0;
+                }
             }
         }
-
-        // .loadingScene {
-        //     display: none;
-        //     @include WnH(100%);
-        //     position: absolute;
-        //     z-index: 3;
-        //     left: 0;
-        //     top: 0;
-        //     background-color: hsla(47, 60%, 97%, 0.3)
-        // }
     }
 
-    .onUnloaded {
-        min-height: 80px;
-        opacity: 0;
-    }
+    button {
+        @include WnH(45px, 24px);
+        border: 1px solid rgb(0, 0, 0, 0.5);
+        border-radius: 0.5rem;
+        transition: border-color 0.3s ease;
 
-    .showFullMenuBtn {
-        // @include absoluteCenterTLXY(calc(100% - 5rem), 50%);
-        @include flex-center-center;
-        flex-direction: column;
-        gap: 1rem;
-        margin: 4rem 0;
-        font-variation-settings: 'wght' 500;
-        // overflow: hidden;
-        // grid-column: 2 / span 2;
+        &:hover {
+            border-color: black;
+        }
+
+        &:active {
+            transform: translateY(1px);
+        }
+    }
+}
+
+.selectCount {
+    font-size: 12px;
+    text-wrap: nowrap;
+}
+
+.searchIcon {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+}
+
+
+.fieldset>ul {
+    height: 100%;
+    margin: 1rem calc(20px + 0.75rem);
+
+    li {
+        cursor: pointer;
+        padding: 0.25rem 0.25rem;
+        margin: 6px 0;
+        border: 2px outset rgba(0, 0, 0, 1);
+        border-radius: 0.25rem;
+        box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+        position: relative;
+        text-align: center;
+        // // color: white;
+        // background-color: green;
+        transition: box-shadow 0.2s ease, opacity 0.2s ease;
+
+        label {
+            display: none;
+        }
 
         span {
-            text-align: center
+            font-size: 1rem;
+            font-variation-settings: 'wght' 500;
         }
 
-        button {
-            @include WnH(75px, 40px);
-            border: 1px solid rgba(0, 0, 0, 0.5);
-            border-radius: 40px;
-            position: relative;
-            z-index: 0;
-            overflow: hidden;
-            transition: box-shadow 10s ease;
-            box-shadow: 1px 1px 3px black;
-
+        &:not(.select):hover {
             &:hover {
-                box-shadow: 1px 1px 6px black;
+                box-shadow: 2px 2px 3px rgba(0, 0, 0);
             }
 
             &:active {
-                box-shadow: 0px 0px 3px black;
+                transform: translateY(1px);
             }
         }
     }
+}
 
-    .expandMenu {
-        min-height: 1750px;
+.select {
+    border: 2px inset rgba(0, 0, 0, 1);
+    box-shadow: inset 2px 2px 3px rgba(0, 0, 0, 0.5);
+    background-color: $btnBacColor_light;
+
+    span {
+        color: white;
+        // text-shadow: 0px 0px 0px white;
+        // -webkit-text-stroke: 1px white;
+        // text-shadow: 1px white;
     }
 
-    .smoothieMenu {
-        margin-top: 2rem;
-        display: flex;
-        flex-direction: column;
+    &:hover {
+        box-shadow: inset 2px 2px 3px rgba(0, 0, 0);
+    }
+
+    &:active {
+        transform: translateY(1px);
+    }
+}
+
+.unSelect {
+    cursor: not-allowed;
+    user-select: none;
+    opacity: 0.3;
+
+    &:not(.select):hover {
+        &:hover {
+            box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        &:active {
+            transform: none;
+        }
+    }
+}
+
+.selectAll {
+    background-color: #fef7d7;
+}
+
+.empty {
+    display: flex;
+    justify-content: center;
+    font-size: 1rem;
+    font-variation-settings: 'wght' 400;
+    height: 100%;
+    opacity: 0.25;
+}
+
+.filter-enter-active,
+.filter-leave-active {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.filter-enter-from,
+.filter-leave-to {
+    opacity: 0;
+    transform: translateY(-5%);
+}
+
+.filter-enter-to,
+.filter-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+.sort {
+    user-select: none;
+    // align-self: flex-end;
+    margin-left: auto;
+
+    &>span {
+        margin-right: 1rem;
+    }
+}
+
+.sortWrapper {
+    // $listWidth: 80px;
+    position: relative;
+    cursor: pointer;
+    // width: $listWidth;
+    // display: flex;
+    // gap: 0.25rem;
+
+    &:hover .header>span::before {
+        transform: translateX(0);
+    }
+}
+
+.header {
+    display: flex;
+    gap: 0.25rem;
+    overflow: hidden;
+    width: 74px;
+    position: relative;
+
+    span {
+        @extend %hoverBotLine;
+        // padding-left: 14px;
+        text-wrap: nowrap;
+        text-align: center;
+        position: relative;
+    }
+
+    div {
+        transition: transform 0.3s ease;
+    }
+
+    .sortDirIcon {
+        // transform: rotate();
+        transition: transform 0.3s ease;
+    }
+
+    .sortIcon {
+        transform: rotateZ(-90deg);
+    }
+}
+
+
+
+.sortList {
+    @include flex-center-center;
+    background-color: $primaryBacColor;
+    // border: 1px solid black;
+    border-radius: 7px;
+    box-shadow: 1px 1px 4px black;
+    flex-direction: column;
+    // width: calc(63px + 0.25rem);
+    width: 100%;
+    position: absolute;
+    top: 150%;
+    z-index: 3;
+
+    li {
+        @include flex-center-center;
+        width: 100%;
+        margin-top: 0.5rem;
+        text-align: center;
+        text-wrap: nowrap;
+        transition: box-shadow 0.15s ease;
+
+
+
+        &:last-of-type {
+            margin-bottom: 0.5rem;
+        }
+
+        button {
+            border-radius: 4px;
+            width: 80%;
+            position: relative;
+            // text-align: center;
+
+            &:hover {
+                box-shadow: 0 0 3px black;
+            }
+
+            &:active {
+                outline: 1px solid black;
+            }
+
+            &::after {
+                @include WnH(100%, 1px);
+                background-color: gray;
+                content: '';
+                position: absolute;
+                left: 0;
+                bottom: -4px;
+            }
+        }
+
+        &:last-of-type>button::after {
+            display: none;
+        }
+    }
+
+    &::before {
+        @include WnH(100%);
+        content: '';
+        position: absolute;
+        top: -5%;
+        left: 0;
+        z-index: -1;
+        // background-color: black;
+    }
+}
+
+
+.sort-enter-active,
+.sort-leave-active {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.sort-enter-from,
+.sort-leave-to {
+    opacity: 0;
+    transform: translateY(-5%);
+}
+
+.sort-enter-to,
+.sort-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+.sortCount {
+    margin-left: 1rem;
+    // align-self: flex-end;
+    // text-align: end;
+}
+
+.filterTagWrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+    min-height: 28px;
+}
+
+.tag {
+    border: 1px solid gray;
+    background-color: transparent;
+    display: flex;
+    gap: .5rem;
+    padding: 0 0.5rem 0 12px;
+    border-radius: 2rem;
+    position: relative;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    white-space: nowrap;
+
+    &:hover {
+        cursor: pointer;
+        border-color: black;
+        box-shadow: 0 0 2px black;
+    }
+
+    &:active {
+        transform: translate(1px, 1px);
+    }
+
+    span {
+        padding: 1px 0;
+        user-select: none;
+    }
+}
+
+.cancelSelect {
+    cursor: pointer;
+    margin-left: 0.5rem;
+
+    span {
+        line-height: 27px;
+        border-bottom: 1px solid black;
+        transition: box-shadow 0.3s ease;
+        white-space: nowrap;
+    }
+
+    &:hover {
+        span {
+            box-shadow: 0 1px 0 black;
+        }
+    }
+
+    &:active {
+        transform: translate(1px, 1px);
+    }
+}
+
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(5%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
+
+.saladMenu {
+    // margin-top: 1rem;
+    padding: 1rem 0rem;
+    display: grid;
+    // justify-content: space-between;
+    justify-content: space-around;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 20%));
+    // grid-template-columns: 20% 20% 20% 20%;
+    // grid-template-rows: 1fr 1fr 0 0;
+    // grid-template-rows: repeat(auto-fill, minmax(0, 450px));
+    // clip-path: inset(0 0 48% 0);
+    row-gap: 2rem;
+    // transition: grid-template-rows 0.5s ease;
+    position: relative;
+    // opacity: 1;
+
+
+    .item {
+        // @extend %menuItem;
+        // transition: top 0.5s ease,
+        //     left 0.5s ease;
+        // transition: transform 0.5s ease;
+        // overflow: hidden;
+    }
+
+    .hideItem {
+        // display: none;
+        // height: 0;
+        // overflow: hidden;
+        // opacity: 0;
+    }
+
+    // @keyframes onUnloaded {
+    //     from {
+    //         opacity: 0;
+    //     }
+
+    //     to {
+    //         opacity: 1;
+    //     }
+    // }
+
+
+    .skeleton-enter-active,
+    .skeleton-leave-active {
+        transition: opacity .75s ease;
+    }
+
+    .skeleton-enter-from,
+    .skeleton-leave-to {
+        opacity: 0;
+    }
+
+    .skeleton-enter-to,
+    .skeleton-leave-from {
+        opacity: 1;
+    }
+
+    .skeleton {
+        // opacity: 0.5;
+        @include WnH(110%, 100%);
+        background-color: $primaryBacColor;
+        padding: 0 4rem;
+        display: grid;
+        justify-content: space-between;
+        grid-template-columns: repeat(4, 20%);
+        // grid-template-rows: 1fr 1fr;
+        grid-template-rows: repeat(auto, minmax(0, 450px));
+        row-gap: 2rem;
+        position: absolute;
+        top: 0;
+        left: -5%;
+        z-index: 5;
+
+        &:deep(.wrapper) {
+            flex-direction: column;
+        }
+    }
+
+    // .loadingScene {
+    //     display: none;
+    //     @include WnH(100%);
+    //     position: absolute;
+    //     z-index: 3;
+    //     left: 0;
+    //     top: 0;
+    //     background-color: hsla(47, 60%, 97%, 0.3)
+    // }
+}
+
+.onUnloaded {
+    min-height: 80px;
+    opacity: 0;
+}
+
+.showFullMenuBtn {
+    // @include absoluteCenterTLXY(calc(100% - 5rem), 50%);
+    @include flex-center-center;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 4rem 0;
+    font-variation-settings: 'wght' 500;
+    // overflow: hidden;
+    // grid-column: 2 / span 2;
+
+    span {
+        text-align: center
+    }
+
+    button {
+        @include WnH(75px, 40px);
+        border: 1px solid rgba(0, 0, 0, 0.5);
+        border-radius: 40px;
         position: relative;
         z-index: 0;
-        // overflow: hidden;
+        overflow: hidden;
+        transition: box-shadow 10s ease;
+        box-shadow: 1px 1px 3px black;
 
-        &::after {
-            @include WnH(100vw, 100%);
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 0;
-            transform: translateX(-50%);
-            z-index: -1;
-            // background-color: #FFEDA4;
+        &:hover {
+            box-shadow: 1px 1px 6px black;
         }
 
-        .title {
-            font-size: 1.75rem;
-            font-family: "EB Garamond", 'Noto Sans';
-            font-variation-settings: 'wght' 750;
-            // margin-bottom: 1rem;
+        &:active {
+            box-shadow: 0px 0px 3px black;
+        }
+    }
+}
+
+.expandMenu {
+    // min-height: 1750px;
+    // grid-template-rows: 1fr 1fr 1fr 1fr;
+}
+
+.smoothieMenu {
+    width: 100%;
+    // max-width: 1440px;
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 0;
+    // overflow: hidden;
+
+    &::after {
+        @include WnH(100vw, 100%);
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 0;
+        transform: translateX(-50%);
+        z-index: -1;
+        // background-color: #FFEDA4;
+    }
+
+    .title {
+        width: 100%;
+        max-width: 90rem;
+        padding-inline: 1rem;
+        padding-inline: clamp(1rem, -0.4285714285714284rem + 7.142857142857142vw, 6rem);
+        // width: 100vw;
+        // max-width: 90rem;
+        font-size: 1.75rem;
+        font-family: "EB Garamond", 'Noto Sans';
+        font-variation-settings: 'wght' 750;
+        margin-inline: auto;
+        // margin-bottom: 1rem;
+    }
+
+    .itemWrapper {
+        // width: clamp(100%, 100vw, 1920px);
+        // width: 100vw;
+        width: 100%;
+        margin: 3rem 0;
+        padding: 0 1rem;
+        // padding-left: 1rem;
+        display: flex;
+        gap: 2rem;
+        flex-direction: row;
+        gap: 2rem;
+        position: relative;
+        // transform: translateX(-336px);
+    }
+
+    swiper-container {
+        width: 100%;
+
+        &::part(container) {
+            overflow: visible;
         }
 
-        .itemWrapper {
-            width: clamp(100%, 100vw, 1920px);
-            // width: 100vw;
-            margin: 3rem 0;
-            padding: 0 1rem;
-            // padding-left: 1rem;
-            display: flex;
-            flex-direction: row;
-            gap: 2rem;
-            position: relative;
-            // transform: translateX(-336px);
+        &::part(wrapper) {}
 
-            swiper-container {
-                width: 100%;
+        &::part(scrollbar) {
+            opacity: 0;
+            bottom: -5%;
+        }
+    }
 
-                &::part(container) {
-                    overflow: visible;
-                }
+    .isSelecting {
+        max-width: 90rem;
+        padding-inline: 1rem;
+        padding-inline: clamp(1rem, -0.4285714285714284rem + 7.142857142857142vw, 6rem);
+        margin-inline: auto;
 
-                &::part(wrapper) {
-                    // transition-timing-function: linear;
-                }
+        swiper-container::part(scrollbar) {
+            opacity: 1;
+        }
+    }
+
+    .item {
+        @extend %menuItem;
+        @include WnH(300px, 100%);
+        // flex-shrink: 0;
+        // width: auto;
+        flex: 0 0 auto;
+        padding: 28px 1.5rem 1.5rem 1.5rem;
+        border: 1px solid $secondBacColor;
+        border-radius: 150px 150px 1rem 1rem;
+        box-shadow:
+            1px 0px 0px $secondBacColor,
+            3px -1px 0px $secondBacColor,
+            5px -2px 0px $secondBacColor,
+            7px -4px 0px $secondBacColor,
+            7px -6px 7px black;
+        overflow: hidden;
+
+        &>p {
+            font-variation-settings: 'wght' 700;
+            color: $secondBacColor;
+        }
+    }
+
+    .item .btnWrapper {
+        box-shadow: 1px 0px 5px black;
+
+        .btnBackground {
+            transform: translateY(-10%);
+            scale: 1.5;
+        }
+    }
+
+    .imgWrapper {
+        @include WnH(250px);
+        @include flex-center-center;
+        position: relative;
+        overflow: hidden;
+        border-radius: 50% 50% 1rem 1rem;
+        box-shadow: 1px 0px 10px black;
+        // padding: 1rem;
+
+        img {
+            @include WnH(100%);
+            transition: transform 0.15s ease;
+            // border-radius: 7rem 7rem 1rem 1rem;
+            // box-shadow: 2px 2px 3px black;
+        }
+
+        &:hover {
+            img {
+                // scale: 1.05;
+                transform: scale(1.05);
             }
 
-            .item {
-                @extend %menuItem;
-                @include WnH(300px, 100%);
-                // flex-shrink: 0;
-                // width: auto;
-                flex: 0 0 auto;
-                padding: 1rem;
-                padding-top: 28px;
-                border: 1px solid black;
-                border-radius: 150px 150px 1rem 1rem;
-                box-shadow: 8px -5px 0px $secondBacColor, 10px -7px 7px black;
-                overflow: hidden;
-
-                &>p {
-                    font-variation-settings: 'wght' 700;
-                    color: $secondBacColor;
-                }
-
-                .btnWrapper {
-                    box-shadow: 1px 0px 5px black;
-
-                    .btnBackground {
-                        transform: translateY(-10%);
-                        scale: 1.5;
-                    }
-                }
-
-                .imgWrapper {
-                    @include WnH(250px);
-                    @include flex-center-center;
-                    position: relative;
-                    overflow: hidden;
-                    border-radius: 134px 134px 1rem 1rem;
-                    box-shadow: 1px 0px 10px black;
-                    // padding: 1rem;
-
-                    img {
-                        @include WnH(100%);
-                        transition: transform 0.15s ease;
-                        // border-radius: 7rem 7rem 1rem 1rem;
-                        // box-shadow: 2px 2px 3px black;
-                    }
-
-                    .description {
-                        @include WnH(100%);
-                        @include flex-center-center;
-                        color: $primaryBacColor;
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        background-color: rgba(0, 0, 0, 0.5);
-                        border-radius: 7rem 7rem 1rem 1rem;
-                        opacity: 0;
-                        transition: opacity 0.3s ease;
-
-                        span {
-                            transform: translateY(20%);
-                            padding: 1rem
-                        }
-                    }
-
-                    &:hover {
-                        img {
-                            // scale: 1.05;
-                            transform: scale(1.05);
-                        }
-
-                        .description {
-                            opacity: 1;
-                        }
-                    }
-                }
-
-
+            .description {
+                opacity: 1;
             }
         }
+    }
 
-        .skeletonWrapper {
-            @include absoluteCenterTLXY($top: 0, $Y: 0);
-            // background-color: $primaryBacColor;
-            // margin: 1.5rem 0;
-            // padding: 0 1rem;
-            padding-left: 1rem;
-            display: flex;
-            flex-direction: row;
-            gap: 2rem;
-            height: 100%;
-            // position: absolute;
-            // left: 50%;
-            // top: 0;
-            z-index: 5;
+    .description {
+        @include WnH(100%);
+        @include flex-center-center;
+        color: $primaryBacColor;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 7rem 7rem 1rem 1rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
 
-
-            // &:deep(.wrapper) {
-            //     flex-direction: column;
-            // }
-
-            .skeleton {
-                width: 300px;
-                background-color: $primaryBacColor;
-                border: 1px solid black;
-                border-radius: 150px 150px 1rem 1rem;
-                box-shadow: 8px -5px 0px $secondBacColor, 10px -7px 7px black;
-                overflow: hidden;
-                flex-direction: column;
-            }
+        span {
+            transform: translateY(20%);
+            padding: 1rem
         }
+    }
+}
+
+.skeletonWrapper {
+    @include absoluteCenterTLXY($top: 0, $Y: 0);
+    // background-color: $primaryBacColor;
+    // margin: 1.5rem 0;
+    // padding: 0 1rem;
+    padding-left: 1rem;
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    height: 100%;
+    // position: absolute;
+    // left: 50%;
+    // top: 0;
+    z-index: 5;
+
+
+    // &:deep(.wrapper) {
+    //     flex-direction: column;
+    // }
+
+    .skeleton {
+        width: 300px;
+        background-color: $primaryBacColor;
+        border: 1px solid black;
+        border-radius: 150px 150px 1rem 1rem;
+        box-shadow: 8px -5px 0px $secondBacColor, 10px -7px 7px black;
+        overflow: hidden;
+        flex-direction: column;
     }
 }
 
@@ -2303,22 +2353,76 @@ $menuItemContainer_height: 405px;
 }
 
 .analystBot {
+    min-height: 60vh;
+    width: 100%;
+    // max-width: 90rem;
+    padding-inline: 1rem;
+    padding-inline: clamp(1rem, -0.4285714285714284rem + 7.142857142857142vw, 6rem);
+    // margin-inline: 0;
+    // margin-block: 4rem 0;
+    padding-block: 2rem 4rem;
     // display: flex;
     // margin-bottom: 4rem;
     position: relative;
     z-index: 0;
+    display: flex;
+    flex-direction: column;
+    // align-items: center;
+    // background-color: #fff6d6;
+
+    &>div {
+        width: 100%;
+        max-width: 90rem;
+        margin-inline: auto;
+        padding-inline: 1rem;
+        padding-inline: clamp(1rem, -0.4285714285714284rem + 7.142857142857142vw, 6rem);
+    }
+
+    .botTitle {
+        margin-bottom: 2rem;
+        width: max-content;
+        position: relative;
+
+        h2 {
+            font-size: 1rem;
+            font-size: clamp(1rem, 0.7142857142857143rem + 1.4285714285714286vw, 2rem);
+            font-family: "EB Garamond", "Noto Sans";
+            font-variation-settings: "wght" 750;
+        }
+
+        span {
+            font-size: 1.75rem;
+            font-size: clamp(1.75rem, 1.3928571428571428rem + 1.7857142857142856vw, 3rem);
+            margin-right: .25rem;
+        }
+
+        &::after {
+            // content: '';
+            // position: absolute;
+            // width: 160%;
+            // height: 2px;
+            // background-color: black;
+            // bottom: 15px;
+            // left: -30%;
+        }
+    }
 
     swiper-container {
         width: 100%;
     }
 
     .analystSwiper {
+        --contentHeight: 320px;
         display: flex;
+        align-items: center;
+        gap: 3rem;
         // margin-bottom: 4rem;
-        margin: 4rem 1rem 8rem 1rem;
+        // margin: 4rem 1rem 8rem 1rem;
+        padding: .5rem;
+        height: 100%;
 
         .imgWrapper {
-            @include WnH(300px);
+            @include WnH(var(--contentHeight));
             flex-shrink: 0;
             // border: 1px solid black;
             box-shadow: 1px 1px 5px black;
@@ -2326,6 +2430,8 @@ $menuItemContainer_height: 405px;
             // overflow: hidden;
             position: relative;
             z-index: 0;
+            margin-block: auto;
+            background-color: $primaryBacColor;
 
             img {
                 // @include WnH(100%);
@@ -2335,7 +2441,7 @@ $menuItemContainer_height: 405px;
 
             span {
                 @include WnH(140px, 40px);
-                background-color: #FFEDA4;
+                background-color: $primaryBacColor;
                 border: 1px solid black;
                 border-radius: 30px;
                 font-size: 1.5rem;
@@ -2351,28 +2457,35 @@ $menuItemContainer_height: 405px;
         }
 
         .content {
-
-            // padding: 3rem 8rem 0 8rem;
-            margin: auto 5rem;
-            padding: 2rem 3rem;
+            // margin: auto 5rem;
+            // padding: 2rem 2rem;
+            padding-inline: 2rem;
+            padding-top: 2rem;
+            padding-top: 3rem;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            // align-items: center;
-            // gap: 1.5rem;
+            // justify-content: space-between;
             border-radius: 2rem;
-            box-shadow: 1px 1px 5px black;
+            // box-shadow: 1px 1px 5px black;
+            // margin-block: auto;
+            height: calc(1.3 * var(--contentHeight));
+            // max-height: calc(1.5 * var(--contentHeight));
 
             h2 {
                 font-variation-settings: 'wght' 600;
-                font-size: 2rem;
+                // font-size: 2rem;
+                font-size: 1.5rem;
+                font-size: clamp(1.5rem, 1.3571428571428572rem + 0.7142857142857143vw, 2rem);
             }
 
             p {
-                font-size: 1.25rem;
-                margin-top: 0.75rem;
+                text-indent: 2rem;
+                font-size: 1rem;
+                font-size: clamp(1rem, 0.9285714285714286rem + 0.35714285714285715vw, 1.25rem);
+                // font-size: 1.25rem;
                 // min-height: 90px;
-                height: 120px;
+                // height: 120px;
+                margin-top: .5rem;
                 overflow: hidden;
             }
 
@@ -2381,8 +2494,10 @@ $menuItemContainer_height: 405px;
                 @extend %analystBtn;
                 font-size: 1.5rem;
                 align-self: center;
-                margin-top: 1rem;
+                margin-top: auto;
+                margin-bottom: 1.75rem;
                 // visibility: hidden;
+                box-shadow: 1px 1px 4px black;
             }
         }
     }
@@ -2405,21 +2520,515 @@ $menuItemContainer_height: 405px;
     }
 }
 
-@media only screen and (min-width: ($large-screen)) {
-    .saladMenu {
-        min-height: 930px;
+.analystBot {
+    // width: 100%;
+    // max-width: 90rem;
+    // padding-inline: 1rem;
+    // padding-inline: clamp(1rem, -0.4285714285714284rem + 7.142857142857142vw, 6rem);
+    // margin-block: 4rem;
+    // position: relative;
+    // z-index: 0;
+}
+
+.mobileBot {
+    display: none;
+    flex-direction: column;
+    gap: 1rem;
+
+    .title {
+        width: max-content;
+        font-size: 3rem;
+        margin-inline: auto;
+        position: relative;
+
+        span {
+            font-size: 4rem;
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            width: 160%;
+            height: 2px;
+            background-color: black;
+            bottom: 15px;
+            left: -30%;
+        }
     }
 
-    .expandMenu {
-        // min-height: 1750px;
+    .buttonWrapper {
+        display: flex;
+        justify-content: center;
     }
 
-    .smoothieMenu .itemWrapper {
-        min-height: 475px
+    button {
+        @include WnH(10rem, 4rem);
+        @extend %analystBtn;
+        font-size: 1.75rem;
+        border-radius: 6rem;
+    }
+
+}
+
+.docList {
+    // display: flex;
+    // justify-content: space-evenly;
+
+    &>div {
+        // width: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .content {
+        // margin: auto 5rem;
+        padding: 2rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 2rem;
+        // box-shadow: 1px 1px 5px black;
+        margin-block: 1rem;
+        flex: 1;
+
+        h2 {
+            font-variation-settings: 'wght' 600;
+            // font-size: 2rem;
+            font-size: 2rem;
+            font-size: clamp(1.5rem, 1.3571428571428572rem + 0.7142857142857143vw, 2rem);
+        }
+
+        p {
+            text-indent: 2rem;
+            font-size: 1rem;
+            font-size: clamp(1rem, 0.9285714285714286rem + 0.35714285714285715vw, 1.25rem);
+            // font-size: 1.25rem;
+            margin-top: 0.75rem;
+            // min-height: 90px;
+            // height: 120px;
+            overflow: hidden;
+            text-align: justify;
+        }
+
+
     }
 }
 
-@media only screen and (min-width: ($medium-screen + 1)) and (max-width: $large-screen) {}
+.docImgWrapper {
+    @include WnH(250px);
+    flex-shrink: 0;
+    box-shadow: 1px 1px 5px black;
+    border-radius: 100%;
+    position: relative;
+    z-index: 0;
+    margin-block: auto;
+    background-color: $primaryBacColor;
+    margin-top: 4px;
 
-@media only screen and (max-width: $medium-screen) {}
+    img {
+        border-radius: 100%;
+    }
+
+    span {
+        @include WnH(140px, 40px);
+        background-color: $primaryBacColor;
+        border: 1px solid black;
+        border-radius: 30px;
+        font-size: 1.5rem;
+        font-variation-settings: 'wght' 600;
+        position: absolute;
+        left: 50%;
+        bottom: -5%;
+        transform: translateX(-50%);
+        text-align: center;
+        line-height: 40px;
+        z-index: 1;
+    }
+}
+
+.mobileContent {
+    display: none;
+}
+
+.smoothieMenu .item .mobileBtn {
+    display: none;
+}
+
+@include XLarge {}
+
+@include large {}
+
+@include medium($width: 1024px) {
+    .analystTop {
+        flex-direction: column;
+    }
+
+    .analystImgWrapper {
+        @include WnH(150px);
+        margin: 0;
+        margin-block: 1rem;
+    }
+
+    .textWrapper {
+        flex-direction: column;
+        margin-left: 0;
+        padding-inline: 2rem;
+        padding-block: 1rem;
+        gap: 0rem;
+
+        h1 {
+            // margin-top: 0.25rem;
+        }
+    }
+
+    .analystBot {
+
+        swiper-container {
+            display: none;
+        }
+
+        .mobileBot {
+            display: flex;
+        }
+
+        // .analystSwiper {
+        //     margin-inline: .5rem;
+
+        //     .content {
+        //         margin-inline: 2.5rem;
+        //         // height: 225px;
+        //     }
+
+        //     .imgWrapper {
+        //         @include WnH(225px);
+        //     }
+        // }
+    }
+}
+
+@include medium {
+    .analystImgWrapper {
+        @include WnH(125px);
+    }
+
+    .textWrapper {
+        padding-inline: 1.5rem;
+
+        h1 {
+            margin-top: 0.25rem;
+        }
+    }
+
+    .saladMenu {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 20%));
+    }
+
+    .showFullMenuBtn {
+        margin-block: 2rem;
+    }
+
+    .filterTagWrapper {
+        min-height: 0;
+    }
+
+    .smoothieMenu {
+        .itemWrapper {
+            margin-block: 2rem;
+        }
+
+        .item {
+            width: 250px;
+            padding: 24px 1rem 1rem 1rem;
+
+            .btnWrapper {
+                display: none;
+
+                &>button {
+
+                    &:is(.info-btn):hover {
+                        color: black;
+                    }
+                }
+
+                &:has(.info-btn:hover) {
+                    &>.cart-btn {
+                        color: $primaryBacColor;
+                    }
+                }
+            }
+
+            .ingredients span {
+                font-size: 13px
+            }
+        }
+
+        .imgWrapper {
+            @include WnH(200px);
+        }
+
+        .description {
+            display: none;
+        }
+    }
+
+    .smoothieMenu .item .mobileBtn {
+        display: flex;
+        align-items: center;
+        // flex-direction: column;
+        // gap: .5rem;
+        margin-top: 1rem;
+        height: max-content;
+        box-shadow: none;
+        // overflow: visible;
+        box-shadow: 2px 2px 8px rgb(0, 0, 0, 0.5);
+
+        button {
+            // width: max-content;
+            padding-block: .25rem;
+            // border-radius: .5rem;
+            // transition: translate .15s;
+            user-select: none;
+
+            &:active {
+                // translate: 2px 2px;
+            }
+        }
+
+        &:has(.cart-btn:active) {
+            &::before {
+                filter: brightness(.6);
+            }
+        }
+
+        &:has(.info-btn:active) {
+            &::after {
+                filter: brightness(.8);
+            }
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            left: 0%;
+            top: 0;
+            width: 55%;
+            height: 100%;
+            z-index: -1;
+            border-bottom: 32px solid $btnBacColor;
+            border-right: 8px solid transparent;
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            right: -2.5%;
+            top: 0;
+            width: 55%;
+            height: 100%;
+            z-index: -1;
+            border-top: 32px solid $primaryBacColor;
+            border-left: 8px solid transparent;
+        }
+
+        .cart-btn {
+            background-color: transparent;
+            position: relative;
+            z-index: 1;
+
+        }
+
+        .info-btn {
+            padding-inline: .5rem;
+            position: relative;
+            z-index: 0;
+        }
+    }
+
+    .docImgWrapper {
+        @include WnH(200px);
+    }
+}
+
+@include small {
+    .textWrapper {
+        padding-inline: 1.25rem;
+        gap: .5rem;
+    }
+
+    .saladMenu {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 20%));
+        // row-gap: 1.5rem;
+        // justify-content: space-between;
+    }
+
+    .smoothieMenu {
+        .itemWrapper {
+            margin-block: 1.5rem;
+        }
+
+        .item {
+            width: 230px;
+            padding-top: 24px;
+
+            .btnWrapper {
+                margin-top: 1rem;
+            }
+
+            .ingredients span {
+                font-size: 12px
+            }
+        }
+
+        .imgWrapper {
+            @include WnH(180px);
+        }
+    }
+
+    .smoothieMenu .item .mobileBtn {
+        margin-top: .75rem;
+        font-size: 14px;
+    }
+
+    .docImgWrapper {
+        @include WnH(175px);
+    }
+}
+
+@include small($width: 430px) {
+    .listWrapper {
+        width: 225px;
+    }
+
+    .selectCount,
+    .resetBtn {
+        display: none;
+    }
+
+    .filterWrapper {
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .filter {
+        width: max-content;
+    }
+
+    .sort {
+        margin-left: 0;
+    }
+
+    .sortCount {
+        margin-left: auto;
+    }
+
+    .inputWrapper {
+        padding-block: .5rem 1rem;
+        flex-direction: column;
+        gap: .5rem;
+        // padding-inline: .5rem;
+        // display: grid;
+
+        input {
+            width: 100%;
+        }
+    }
+
+    .mobileContent {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-inline: .5rem 0;
+        width: 100%;
+
+        .selectCount,
+        .resetBtn {
+            display: block;
+        }
+
+        .selectCount {
+            height: 100%;
+            line-height: 25px;
+        }
+    }
+
+    .saladMenu {
+        grid-template-columns: repeat(auto-fill, minmax(155px, 20%));
+        // justify-content: space-between;
+        row-gap: 1.5rem;
+    }
+
+    .smoothieMenu {
+        .item {
+            width: 200px;
+            padding: 20px .75rem .75rem .75rem;
+
+            .ingredients span {
+                font-size: 12px
+            }
+        }
+
+        .imgWrapper {
+            @include WnH(155px);
+        }
+    }
+
+    .docList .content {
+        // margin-block: 0;
+        padding-block: 1rem;
+    }
+
+    .mobileBot button {
+        @include WnH(8rem, 3.5rem);
+        font-size: 1.25rem;
+    }
+}
+
+@include small($width: 375px) {
+    .saladMenu {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 20%));
+        row-gap: 1rem;
+    }
+
+    // .smoothieMenu {
+    //     .item {
+    //         width: 200px;
+    //         padding: 20px .75rem .75rem .75rem;
+
+    //         .ingredients span {
+    //             font-size: 12px
+    //         }
+    //     }
+
+    //     .imgWrapper {
+    //         @include WnH(155px);
+    //     }
+    // }
+}
+
+@include small($width: 320px) {
+    .saladMenu {
+        grid-template-columns: repeat(auto-fill, minmax(135px, 20%));
+        // row-gap: 1rem;
+    }
+
+    .smoothieMenu {
+        .item {
+            // width: 175px;
+            // padding: 0rem .5rem .5rem .5rem;
+
+            .ingredients span {
+                font-size: 12px
+            }
+        }
+
+        .imgWrapper {
+            // @include WnH(160px);
+        }
+    }
+
+    .docList .content p {
+        text-align: left;
+    }
+}
 </style>

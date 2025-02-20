@@ -30,7 +30,7 @@
                                 v-show="tab == newsList.tab"
                                 @mouseenter="setHover(_id!, $event)"
                                 @mouseleave="setHover(null, $event)"
-                                @mousemove.stop="setStalkerPosition($event)"
+                                @mousemove="setStalkerPosition($event)"
                                 @click="tabOnclick(index, $el)">
                                 <div class="infoWrapper">
                                     <div class="date">
@@ -70,6 +70,20 @@
 
             </div>
         </div>
+        <!-- <div class="botBtn">
+            <button>
+                <div class="cube" data-cubeBot="更多資訊">
+                    <span>
+                        More
+                    </span>
+                </div>
+                <div class="wrapper">
+                    <Svg-icon name="ConceptArrow" width="24"
+                        height="24" class="arrow">
+                    </Svg-icon>
+                </div>
+            </button>
+        </div> -->
         <transition name="marquee">
             <div class="marquee" v-show="enter">
                 <span>
@@ -139,7 +153,6 @@ import { storeToRefs } from 'pinia';
 import { LoremIpsum, loremIpsum } from 'lorem-ipsum';
 import gsap from 'gsap';
 import { Flip } from 'gsap/Flip';
-import debounce from 'lodash/debounce';
 
 //
 /**
@@ -243,20 +256,8 @@ let stalkerX = ref(0)
 let stalkerStyle = computed(() => ({
     transform: `translateX(calc(${stalkerX.value}px - 50%))`
 }))
-const tabs = useTemplateRef('tabs');
-const tabsLeft = ref(0);
-// prevent url bar resize
-let currWidth = 0;
-
-function initTabsLeft() {
-    if (currWidth == window.innerWidth) return
-    tabsLeft.value = tabs.value?.getBoundingClientRect().left || 0;
-    currWidth = window.innerWidth;
-}
-const debounceGetLeft = debounce(initTabsLeft, 500);
-
 function setStalkerPosition(e: MouseEvent) {
-    let X = e.clientX - tabsLeft.value;
+    let X = e.clientX;
     stalkerX.value = X;
 }
 
@@ -351,14 +352,11 @@ const lorem = new LoremIpsum({
 // const dialogRef = useTemplateRef('dialogRef');
 
 onMounted(() => {
-    debounceGetLeft();
-    window.addEventListener('resize', debounceGetLeft);
     observer.observe(tabContainer.value);
     fetchNews();
 })
 
 onUnmounted(() => {
-    window.removeEventListener('resize', debounceGetLeft)
     observer.disconnect();
 })
 </script>
@@ -488,12 +486,10 @@ onUnmounted(() => {
 .newsContainer {
     @include main-part;
     @include flex-center-center;
-    // margin: 1rem auto;
-    max-width: none;
-    margin-inline: 0;
+    margin: 1rem auto;
     flex-direction: column;
-    margin-top: 1rem;
-    margin-top: clamp(1rem, 0rem + 5vw, 6rem);
+    margin-top: 96px;
+    // height: 888px;
     height: 100vh;
     max-height: 920px;
     position: relative;
@@ -582,6 +578,104 @@ onUnmounted(() => {
         animation: cursor 1.5s 0.5s ease-out forwards;
     }
 }
+
+// .botBtn {
+//     @include flex-center-center;
+//     @include WnH(160px, 52px);
+//     border: 1px solid rgba(0, 0, 0, 0.25);
+//     border-radius: 45px;
+//     font-size: 20px;
+//     margin: 2rem 15% 2rem auto;
+//     transition: border-color 0.5s ease;
+
+//     button {
+//         @include flex-center-center;
+//         justify-content: space-around;
+//         width: 100%;
+
+
+//         .cube {
+//             @include WnH(92px, 30px);
+//             backface-visibility: hidden;
+//             position: relative;
+//             transform-style: preserve-3d;
+//             transition: transform 0.4s ease-out;
+//             transform-origin: top;
+
+//             span {
+//                 margin-left: 12px;
+//                 transform: translateZ(15px);
+//                 opacity: 1;
+//                 transition: opacity 0.3s ease-out, transform 0.4s ease;
+//             }
+
+//             &::after {
+//                 content: attr(data-cubeBot);
+//                 position: absolute;
+//                 left: 12px;
+//                 top: 0;
+//                 transform: rotateX(-90deg) translateZ(13px) translateY(50%);
+//                 opacity: 0;
+//                 transition: opacity 0.3s ease-out, transform 0.4s ease;
+
+//             }
+
+//         }
+
+//         .wrapper {
+//             @include flex-center-center;
+//             @include WnH(30px);
+//             position: relative;
+
+
+//             .arrow {
+//                 color: black;
+//                 transition: color 0.5s ease;
+//                 position: absolute;
+//                 z-index: 2;
+//             }
+
+//             &::after {
+//                 @include WnH(36px);
+//                 background-color: $btnBacColor;
+//                 border-radius: 36px;
+//                 content: '';
+//                 scale: 0;
+//                 transition: scale 0.5s ease;
+//                 position: absolute;
+//                 left: -3px;
+//                 top: -3px;
+//                 z-index: 1;
+//             }
+//         }
+//     }
+// }
+
+// .botBtn:hover {
+//     border-color: $secondBacColor;
+
+//     .wrapper {
+//         .arrow {
+//             color: white;
+//         }
+
+//         &::after {
+//             scale: 1;
+//         }
+//     }
+
+//     .cube {
+//         transform: rotateX(90deg);
+
+//         span {
+//             opacity: 0;
+//         }
+
+//         &::after {
+//             opacity: 1;
+//         }
+//     }
+// }
 
 .tabHeader {
     @extend %tabHeader_fontSize;
@@ -1006,7 +1100,7 @@ onUnmounted(() => {
 
     .tab li {
         padding-inline: calc(12%);
-        // flex-basis: 15%;
+        flex-basis: 15%;
     }
 
     .conceptContainer {

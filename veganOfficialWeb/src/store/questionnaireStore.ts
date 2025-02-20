@@ -5,6 +5,9 @@ import type { Questionnaire } from '@/api/questionnaire/type'
 import type { Birth, Info, Form } from '@/store/type/QNR_type'
 import { useUserStore } from "./userStore";
 import { reqGetUser } from "@/api/userAuth";
+import { useAnalysisResult } from "@/hooks/useAnalysisResult";
+import type { MenuItem } from "@/api/menu/type";
+import { useMenuStore } from "./menuStore";
 
 
 const mockData = reactive({
@@ -22,8 +25,10 @@ const mockData = reactive({
 
 
 export const useQuestionnaireStore = defineStore('questionnaire', () => {
+    // user store
     const userStore = useUserStore();
     const { userToken, isAuth, user } = storeToRefs(userStore);
+
 
     const QNR_IsLoaded = ref(false);
 
@@ -76,7 +81,16 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         } else {
             QNR_result.value.info.userName = ''
         }
-    }, { immediate: true })
+    }, { immediate: true });
+
+    function checkQuestionIsANswered(question: keyof Omit<Form, 'info'>) {
+        if (Array.isArray(QNR_result.value[question])) {
+            return QNR_result.value[question].length !== 0
+        } else if (QNR_result.value[question]) {
+            return true
+        }
+        return false
+    }
 
     async function setQNR_result(obj?: Form) {
         if (!obj) {
@@ -206,7 +220,10 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         if (!userToken.value) return
         try {
             const { result } = await reqGetSavedResult();
-            if (result) surveyHasCompleted.value = true
+            if (result) {
+                surveyHasCompleted.value = true;
+                QNR_isDone.value = true;
+            }
             return result
         } catch (error) {
             console.log(error);
@@ -220,17 +237,28 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
             localStorage.removeItem(localStorageKey.value);
             QNR_isDone.value = false;
             currPage.value = 1;
-            surveyHasCompleted.value = false;
+            formPageTranslateX.value = (currPage.value - 1) * -100;
+
         } catch (error) {
             console.log(error);
         }
     }
 
-    // home page recommendation
-    const recommendList = ref<any[]>([]);
-    function setRecList(list: any[]) {
-        recommendList.value = [...list];
-    }
+    // analysis hook
+    // const { saladRank, smoothiesRank } = useAnalysisResult(QNR_result);
+
+    // const recommendList = computed(() => {
+    //     return [...saladRank.value.slice(0, 3), ...smoothiesRank.value.slice(0, 3)]
+    // })
+
+    const recommendList = ref<MenuItem[]>([]);
+    watch(() => QNR_result.value.habit, (nVal) => {
+        if (nVal) {
+            const { saladRank, smoothiesRank } = useAnalysisResult(QNR_result);
+            recommendList.value = [...saladRank.value.slice(0, 3), ...smoothiesRank.value.slice(0, 3)]
+        }
+    })
+
     function getRecList() {
         return recommendList.value
     }
@@ -251,6 +279,8 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         initQNR,
         memberSaveResult,
         memberGetResult,
-        clearSurveyData
+        clearSurveyData,
+        getRecList,
+        checkQuestionIsANswered
     }
 })

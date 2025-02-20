@@ -37,6 +37,7 @@ let getUrl = useConcatImgPath(imgUrl, folder);
 .container {
     padding: 1rem;
     padding-bottom: calc(1rem + 11.75px);
+    max-width: 1920px;
 
     img {
         @include WnH(100%);

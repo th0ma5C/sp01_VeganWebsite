@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start:dev": "concurrently \"npm run mongo\" \"npm run server-start\" \"wait-on http://localhost:3000 && npm run client-dev\"",
+    "start:host": "concurrently \"npm run mongo\" \"npm run server-start\" \"wait-on http://localhost:3000 && npm run client-dev:host\"",
     "server-start": "npm run start:dev --prefix veganWebServer",
     "client-dev": "npm run dev --prefix veganOfficialWeb",
+    "client-dev:host": "npm run dev:host --prefix veganOfficialWeb",
     "mongo": "start powershell -NoExit -Command mongod",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -207,6 +207,17 @@ export const useMenuStore = defineStore('menu', (() => {
         }
     }
 
+    const analysisList = ref<MenuItem[]>([]);
+
+    function setAnalysisList(saladList: MenuItem[], smoothiesList: MenuItem[]) {
+        analysisList.value = [...saladList.slice(0, 3), ...smoothiesList.slice(0, 3)];
+    }
+
+    function getAnalysisList() {
+        return analysisList.value
+    }
+
+
     return {
         fullMenu,
         saladList,
@@ -222,6 +233,8 @@ export const useMenuStore = defineStore('menu', (() => {
         fetchIngredients,
         getInfoByName,
         getSameStyleItem,
-        getImgURLbyName
+        getImgURLbyName,
+        setAnalysisList,
+        getAnalysisList
     }
 }))

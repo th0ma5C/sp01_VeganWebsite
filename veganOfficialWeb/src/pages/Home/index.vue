@@ -41,6 +41,6 @@ import Hiring from './Hiring/Hiring.vue';
 .location {}
 
 .hiring {
-    @include flex-center-center;
+    // @include flex-center-center;
 }
 </style>

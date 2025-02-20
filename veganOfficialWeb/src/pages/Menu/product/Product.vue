@@ -67,8 +67,9 @@
                                 :key="index">
                                 <SvgIcon class="amountIcon"
                                     :name="`productAmount${icon}`"
-                                    width="125px"
-                                    height="100px">
+                                    :width="`${amountBtnSize.width}px`"
+                                    :height="`${amountBtnSize.height}px`"
+                                    :key="`${amountBtnSize.height}`">
                                 </SvgIcon>
                                 <div class="selector">
                                     <input type="radio"
@@ -153,16 +154,21 @@
                         <div class="Wrapper"
                             v-for="({ title, content, classState }, index) in infoData"
                             :key="index">
-                            <h2 @click="setInfoOpen(index)">
+                            <div class="title"
+                                @click="setInfoOpen(index)">
                                 <SvgIcon
                                     name="ListArrowDown"
-                                    width="28px"
-                                    height="28px"
+                                    width="30px"
+                                    height="30px"
                                     color="black"
                                     :class="{ folderIcon: classState }">
                                 </SvgIcon>
-                                {{ title }}
-                            </h2>
+                                <h2>
+
+                                    {{ title }}
+                                </h2>
+                            </div>
+
                             <div class="folder"
                                 :class="{ folderText: classState }">
                                 <p>
@@ -176,9 +182,41 @@
         </div>
 
         <section class="socialMedia">
-            <div class="wrapper" v-for="(item, index) in 5"
-                :key="index">
-                <img src="@assets/img/IG temp.jpg" alt="">
+            <swiper-container slidesPerView="auto"
+                grabCursor="true"
+                :navigation-prev-el="'.prevBtn'"
+                :navigation-next-el="'.nextBtn'"
+                :breakpoints="{
+                    320: {
+                        spaceBetween: 16
+                    },
+                    430: {
+                        spaceBetween: 18
+                    },
+                    768: {
+                        spaceBetween: 20
+                    }
+                }">
+                <swiper-slide v-for="(item, index) in 10"
+                    :key="index" class="wrapper"
+                    lazy="true">
+                    <img src="@assets/img/IG temp.jpg"
+                        alt="" loading="lazy">
+                </swiper-slide>
+            </swiper-container>
+            <div class="prevBtn">
+                <SvgIcon name="Previous"
+                    :width="`${swiperBtnSize}px`"
+                    :height="`${swiperBtnSize}px`"
+                    :key="swiperBtnSize" color="#0d731e">
+                </SvgIcon>
+            </div>
+            <div class="nextBtn">
+                <SvgIcon name="Next"
+                    :width="`${swiperBtnSize}px`"
+                    :height="`${swiperBtnSize}px`"
+                    :key="swiperBtnSize" color="#0d731e">
+                </SvgIcon>
             </div>
         </section>
 
@@ -192,44 +230,80 @@
                     同款熱門
                 </h2>
 
-                <div class="itemWrapper">
-                    <Product_template
+                <swiper-container class="itemWrapper"
+                    ref="itemListRef" spaceBetween="16"
+                    slidesPerView="auto" scrollBar="true"
+                    free-mode="true" grabCursor="true"
+                    observer="true" observeParents="true"
+                    :injectStyles="scrollBarStyle"
+                    :breakpoints="{
+                        320: {
+                            spaceBetween: 16
+                        },
+                        430: {
+                            spaceBetween: 18
+                        },
+                        768: {
+                            spaceBetween: 20
+                        }
+                    }">
+                    <swiper-slide
                         v-for="(item, index) in similarList"
-                        :key="index" :item="item">
-                    </Product_template>
-                </div>
+                        :key="index">
+                        <Product_template :item="item"
+                            :flightDelay="hideNav ? .2 : 0"
+                            v-show="isLoaded" ref="COMList">
+                        </Product_template>
+                    </swiper-slide>
+                </swiper-container>
             </div>
 
             <div class="analyze">
                 <h2>
                     專屬推薦
                 </h2>
-                <ul>
-                    <li>
-                        1
-                    </li>
-                    <li>
-                        1
-                    </li>
-                    <li>
-                        1
-                    </li>
-                    <li>
-                        1
-                    </li>
-                </ul>
-            </div>
+                <swiper-container
+                    v-if="recList.length !== 0"
+                    class="itemWrapper" ref="recItemListRef"
+                    spaceBetween="16" slidesPerView="auto"
+                    scrollBar="true" free-mode="true"
+                    grabCursor="true" observer="true"
+                    observeParents="true"
+                    :injectStyles="scrollBarStyle"
+                    :breakpoints="{
+                        320: {
+                            spaceBetween: 16
+                        },
+                        430: {
+                            spaceBetween: 18
+                        },
+                        768: {
+                            spaceBetween: 20
+                        }
+                    }">
+                    <swiper-slide
+                        v-for="(item, index) in recList"
+                        :key="index">
+                        <Product_template :item="item"
+                            :flightDelay="hideNav ? .2 : 0"
+                            v-show="isLoaded" ref="COMList">
+                        </Product_template>
+                    </swiper-slide>
+                </swiper-container>
 
-            <div class="new">
-                <h2>
-                    熱門新品
-                </h2>
-
-                <div class="itemWrapper">
-                    <Product_template
-                        v-for="(item, index) in showHotList"
-                        :key="index" :item="item">
-                    </Product_template>
+                <div class="guestTab" :class="{
+                    isMember: recList.length !== 0
+                }">
+                    <Spinner v-show="!isResultCheck">
+                    </Spinner>
+                    <div class="analyzeLink"
+                        v-show="isResultCheck && !QNR_isDone">
+                        <router-link to="/questionnaire">
+                            <span>
+                                開始免費專屬分析
+                            </span>
+                        </router-link>
+                    </div>
                 </div>
             </div>
         </section>
@@ -272,7 +346,7 @@
  * //進路由去頁首
  */
 
-import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, onBeforeMount, onDeactivated, onActivated } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, onBeforeMount, onDeactivated, onActivated, useTemplateRef } from 'vue';
 import type { Ref } from 'vue';
 import { useMenuStore } from '@/store/menuStore';
 import type { MenuItem } from '@/api/menu/type';
@@ -287,6 +361,9 @@ import OrderCounter from '@/components/OrderCounter/OrderCounter.vue';
 import { useCartStore } from '@/store/cartStore';
 import FlyToCart from '@/hooks/useFlyToCart';
 import emitter from '@/utils/eventBus';
+import { useQuestionnaireStore } from '@/store/questionnaireStore';
+import type { SwiperContainer } from 'swiper/element';
+import { debounce } from 'lodash';
 
 // store數據
 const menuStore = useMenuStore();
@@ -314,7 +391,7 @@ async function initProductInfo(isInit: boolean) {
     //     replaceImgFileName(productInfo.value!);
     // }
     getSimilarList();
-    getHotList();
+    // getHotList();
     // nextTick(() => {
     //     console.log(mainImg);
     // })
@@ -544,25 +621,34 @@ async function getSimilarList() {
     similarList.value = getSameStyleItem(productInfo.value.ingredients, productInfo.value.category!);
 }
 
-// 熱門新品
-const showHotList = ref<MenuItem[]>([]);
-const apiParams = computed(() => {
-    let params;
-    if (productInfo.value) {
-        params = productInfo.value.category === 'salad' ?
-            { name: 'salad' } :
-            { name: 'smoothies' }
+watch(similarList, (nVal) => {
+    if (nVal?.length !== 0) {
+        nextTick(() => {
+            itemListRef.value?.swiper.update();
+        })
     }
-    return params
 })
 
-async function getHotList() {
-    // if (hotList.value.length == 0) {
-    // console.log(apiParams.value);
-    await fetchHotList(apiParams.value)
-    // }
-    showHotList.value = [...hotList.value];
-}
+
+// 熱門新品
+// const showHotList = ref<MenuItem[]>([]);
+// const apiParams = computed(() => {
+//     let params;
+//     if (productInfo.value) {
+//         params = productInfo.value.category === 'salad' ?
+//             { name: 'salad' } :
+//             { name: 'smoothies' }
+//     }
+//     return params
+// })
+
+// async function getHotList() {
+//     // if (hotList.value.length == 0) {
+//     // console.log(apiParams.value);
+//     await fetchHotList(apiParams.value)
+//     // }
+//     showHotList.value = [...hotList.value];
+// }
 
 // 大圖檔名
 function replaceImgFileName(info: MenuItem) {
@@ -727,6 +813,113 @@ const amountAlertStyle = computed(() => ({
     transform: `translateX(calc(-50% + ${amountAlertX.value}px))`
 }))
 
+//route to analyst result
+const questionnaireStore = useQuestionnaireStore();
+const { initQNR, getRecList } = questionnaireStore;
+const { QNR_isDone } = storeToRefs(questionnaireStore);
+const isResultCheck = ref(false);
+const recList = ref<MenuItem[]>([]);
+const recItemListRef = useTemplateRef<SwiperContainer>('recItemListRef');
+
+async function initVIPtab() {
+    if (!isLoaded.value) return
+    try {
+        await initQNR();
+        isResultCheck.value = true;
+        if (!QNR_isDone.value) return
+        recList.value = getRecList();
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+watch(isLoaded, (nVal) => {
+    if (nVal) {
+        initVIPtab();
+    }
+})
+
+watch(recList, (nVal) => {
+    if (nVal?.length !== 0 && nVal[0].name) {
+        nextTick(() => {
+            recItemListRef.value?.swiper.update();
+        })
+    }
+})
+
+// 訂閱nav event
+const hideNav = ref(false);
+emitter.on('navEvent', (e) => {
+    isFlightDelay.value = e as boolean
+    hideNav.value = e as boolean;
+})
+
+
+// response item list
+const COMList = useTemplateRef<InstanceType<typeof Product_template>[]>('COMList');
+const itemListRef = useTemplateRef<SwiperContainer>('itemListRef');
+const itemListWidth = ref(0)
+const columnsLimit = ref(0);
+
+function getItemListWidth() {
+    // itemListWidth.value = itemListRef.value!.getBoundingClientRect().width;
+}
+function getColumnsLimit() {
+    // if (!itemListRef.value) return
+    // console.dir(itemListRef.value.firstElementChild);
+    // const itemWidth = itemListRef.value.firstElementChild!.getBoundingClientRect().width
+    // columnsLimit.value = Math.floor(itemListWidth.value / itemWidth);
+    // console.log(columnsLimit.value);
+    // console.log(itemListWidth.value / 5);
+}
+
+const scrollBarStyle = [
+    `
+        .swiper-scrollbar-drag {
+            background: #0d731e;
+        }
+    `
+]
+
+watch([COMList, isLoaded], (nVal) => {
+    if (nVal[0]) {
+        nextTick(() => {
+            getColumnsLimit()
+        })
+    }
+})
+
+// swiper btn svg size
+const swiperBtnSize = ref(48);
+const amountBtnSize = reactive({
+    width: 125,
+    height: 100
+})
+// prevent url bar resize
+let currWidth = 0;
+
+function btnOnResize() {
+    if (currWidth == window.innerWidth) return
+    const vw = document.documentElement.offsetWidth;
+    if (vw <= 320) {
+        swiperBtnSize.value = 24;
+        amountBtnSize.height = 50;
+    } else if (vw <= 430) {
+        amountBtnSize.height = 75;
+    } else if (vw <= 768) {
+        swiperBtnSize.value = 32;
+    } else if (vw <= 1024) {
+        swiperBtnSize.value = 40;
+    } else {
+        amountBtnSize.height = 100;
+        swiperBtnSize.value = 48;
+    }
+    currWidth = window.innerWidth;
+}
+
+const debounceResize = debounce(() => {
+    btnOnResize();
+}, 500)
 
 // 生命週期
 onBeforeMount(() => {
@@ -738,8 +931,9 @@ onMounted(() => {
         isFlightDelay.value = e as boolean
     })
     initProductInfo(isLoaded.value);
-
-    // console.log('mounted');
+    initVIPtab();
+    getItemListWidth();
+    window.addEventListener('resize', debounceResize)
 })
 onActivated(() => {
     emitter.on('navEvent', (e) => {
@@ -747,13 +941,18 @@ onActivated(() => {
     })
 })
 onUnmounted(() => {
-    emitter.off('navEvent')
+    emitter.off('navEvent');
+    window.removeEventListener('resize', debounceResize)
     // console.log('unmounted');
 })
 
 </script>
 
 <style scoped lang="scss">
+* {
+    // outline: 1px solid black;
+}
+
 .container {
     @extend %fixContainer;
     @extend %headerPseudo;
@@ -761,24 +960,35 @@ onUnmounted(() => {
     flex-direction: column;
     width: 100%;
 
-    * {
-        // outline: 1px solid black;
-    }
-
     &>div,
     &>section {
         width: 100%;
-        max-width: 1440px;
+        max-width: 90rem;
+        padding-inline: 1rem;
+        padding-inline: clamp(1rem, -0.4285714285714284rem + 7.142857142857142vw, 6rem);
+        margin-inline: auto;
         margin-top: 2rem;
-
     }
 
     &>section {
+        // padding-inline: 4rem;
         margin-top: 4rem;
+        padding-inline: 1rem;
+        padding-inline: clamp(1rem, 0.1428571428571428rem + 4.285714285714286vw, 4rem);
+    }
+
+    .socialMedia {
+        // padding-left: 7rem;
+        // padding-inline: 1rem;
+        // padding-inline: clamp(1rem, 0.1428571428571428rem + 4.285714285714286vw, 4rem);
     }
 
     .breadCrumb {
-        padding-left: 2rem;
+        // padding-left: 4rem;
+    }
+
+    .buyMore {
+        margin-top: 5rem;
     }
 }
 
@@ -788,13 +998,12 @@ onUnmounted(() => {
     padding: 0 2rem;
     // height: calc(100vh - 188px);
 
-    &>div {
-        flex: 1;
+    &>div:not(.popUpImg) {
+        width: 50%;
+        // flex: 1;
         padding: 1.5rem;
         padding-top: 0;
     }
-
-
 }
 
 .mainImg-enter-active,
@@ -901,21 +1110,24 @@ onUnmounted(() => {
     padding: 0;
     position: fixed;
     top: 0;
+    left: 0;
     z-index: 100;
     background-color: $primaryBacColor;
 
-    .popUpImgCancelIcon {
-        cursor: pointer;
-        position: fixed;
-        right: 16px;
-        top: 16px;
-    }
-
     img {
         border-radius: 1rem;
-        height: 100%;
+        // height: 100%;
     }
 }
+
+.popUpImgCancelIcon {
+    cursor: pointer;
+    position: fixed;
+    right: 16px;
+    top: 16px;
+}
+
+
 
 .contentWrapper {
     h2 {
@@ -929,51 +1141,10 @@ onUnmounted(() => {
     // padding: 0 1rem;
 
     h1 {
-        font-size: 2.5rem;
+        font-size: 1.5rem;
+        font-size: clamp(1.5rem, 0.7857142857142858rem + 3.571428571428571vw, 2.5rem);
         margin-bottom: 1rem;
         font-weight: 450;
-    }
-
-    .ingredientWrapper {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-
-        span {
-            padding: 0 4px;
-            background-color: $secondBacColor;
-            border-radius: 0 6px 6px 0;
-            color: $primaryBacColor;
-            padding-right: 6px;
-            margin-right: 1rem;
-            position: relative;
-            z-index: 0;
-
-            &:first-of-type {
-                margin-left: 14px;
-            }
-
-            &::after {
-                @include WnH(100%, 0px);
-                content: '';
-                border-top: 12px solid transparent;
-                border-right: 13px solid $secondBacColor;
-                border-bottom: 12px solid transparent;
-                position: absolute;
-                top: 0;
-                left: -100%;
-                z-index: -1;
-
-            }
-
-            &::before {
-                @include WnH(3px);
-                @include absoluteCenterTLXY($left: -5px, $X: 0);
-                content: '';
-                border-radius: 100%;
-                background-color: white;
-            }
-        }
     }
 
     p {
@@ -983,6 +1154,48 @@ onUnmounted(() => {
         font-variation-settings: 'wght' 450;
     }
 }
+
+.ingredientWrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+
+    span {
+        padding: 0 4px;
+        background-color: $secondBacColor;
+        border-radius: 0 6px 6px 0;
+        color: $primaryBacColor;
+        padding-right: 6px;
+        margin-right: 1rem;
+        position: relative;
+        z-index: 0;
+        margin-left: 14px;
+
+        &::after {
+            @include WnH(100%, 0px);
+            content: '';
+            border-top: 12px solid transparent;
+            border-right: 13px solid $secondBacColor;
+            border-bottom: 12px solid transparent;
+            position: absolute;
+            top: 0;
+            left: -100%;
+            z-index: -1;
+
+        }
+
+        &::before {
+            @include WnH(3px);
+            @include absoluteCenterTLXY($left: -5px, $X: 0);
+            content: '';
+            border-radius: 100%;
+            background-color: white;
+        }
+    }
+}
+
+
 
 .detailWrapper {
     background-color: $primaryBacColor_dark;
@@ -1018,8 +1231,12 @@ onUnmounted(() => {
                 }
 
                 .selector {
-                    display: flex;
-                    justify-content: center;
+                    // display: flex;
+                    // justify-content: center;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    grid-template-rows: 1fr;
+                    align-items: center;
                     margin-top: 1rem;
 
                     input {
@@ -1031,7 +1248,8 @@ onUnmounted(() => {
                         background-color: $primaryBacColor;
                         border: 1px solid black;
                         border-radius: 8px;
-                        margin: 12px 6px 12px 6px;
+                        // margin: 12px 6px 12px 6px;
+                        margin-inline: auto;
                         position: relative;
                     }
 
@@ -1044,10 +1262,14 @@ onUnmounted(() => {
                             flex: 1;
                             display: block;
                             font-size: 1rem;
+                            font-size: 0.75rem;
+                            font-size: clamp(0.75rem, 0.5714285714285714rem + 0.8928571428571428vw, 1rem);
                             font-variation-settings: 'wght' 400;
 
                             &:first-of-type {
                                 font-size: 1.5rem;
+                                font-size: 1rem;
+                                font-size: clamp(1rem, 0.6428571428571429rem + 1.7857142857142856vw, 1.5rem);
                                 font-variation-settings: 'wght' 450;
                             }
                         }
@@ -1205,129 +1427,139 @@ onUnmounted(() => {
         }
 
     }
+}
 
-    .addCart {
-        margin-top: 1rem;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        padding: 0 1rem;
+.addCart {
+    margin-top: 1rem;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 0 1rem;
 
-        button {
-            @include WnH(100%, 46px);
-            background-color: #3EA350;
-            border: 1px solid rgba(0, 0, 0, 0.5);
-            border-radius: 23px;
-            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
-            color: #FCFAF2;
-            font-size: 20px;
-            line-height: 46px;
-            transition: box-shadow 0.15s ease;
+    button {
+        @include WnH(100%, 46px);
+        background-color: #3EA350;
+        border: 1px solid rgba(0, 0, 0, 0.5);
+        border-radius: 23px;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+        color: #FCFAF2;
+        font-size: 20px;
+        line-height: 46px;
+        transition: box-shadow 0.15s ease;
 
-            &:hover {
-                box-shadow: 3px 4px 6px rgba(0, 0, 0, 0.75);
-            }
-
-            &:active {
-                transform: translate(1px, 1px);
-            }
+        &:hover {
+            box-shadow: 3px 4px 6px rgba(0, 0, 0, 0.75);
         }
 
-        .amountAlert {
-            outline: 1px solid black;
-            background-color: $primaryBacColor;
-            border-radius: 6px;
-            padding: 0 1rem;
-            position: absolute;
-            top: -1.75rem;
-            left: 0;
-
-            span {
-                text-align: center;
-                line-height: 24px;
-                color: red;
-                font-size: .8rem;
-                font-variation-settings: 'wght' 500;
-            }
-        }
-    }
-
-    .amountAlert-enter-active,
-    .amountAlert-leave-active {
-        transition: opacity .3s ease;
-    }
-
-    .amountAlert-enter-from,
-    .amountAlert-leave-to {
-        opacity: 0;
-    }
-
-    .amountAlert-enter-to,
-    .amountAlert-leave-from {
-        opacity: 1;
-    }
-
-    %divideLine {
-        @include WnH(100%, 1px);
-        content: '';
-        background-color: rgba(0, 0, 0, .25);
-        display: block;
-        margin: .5rem 0 .5rem 0;
-    }
-
-    .infoFolder>.Wrapper {
-
-        h2 {
-            cursor: pointer;
-            display: flex;
-            color: rgba(0, 0, 0, 0.5);
-            transition: color 0.3s ease;
-            user-select: none;
-
-            &>div {
-                // outline: 1px solid black;
-                transform: rotate(-90deg);
-                transition: transform .2s linear;
-            }
-
-            .folderIcon {
-                transform: rotate(0deg);
-            }
-
-            &:has(.folderIcon) {
-                color: black;
-            }
-        }
-
-        .folder {
-            padding-left: 1.5rem;
-            overflow: hidden;
-            max-height: 0;
-            opacity: 0;
-            transition: max-height 0.5s ease, opacity 0.3s ease;
-
-            p {
-                color: rgba(0, 0, 0, 0.5);
-                padding: .5rem 1rem .5rem 24px;
-                text-align: justify;
-                transition: color 0.3s ease;
-            }
-        }
-
-        .folderText {
-            max-height: min(300px);
-            opacity: 1;
-
-            p {
-                color: black;
-            }
-        }
-
-        &::before {
-            @extend %divideLine;
+        &:active {
+            transform: translate(1px, 1px);
         }
     }
 }
+
+.amountAlert {
+    outline: 1px solid black;
+    background-color: $primaryBacColor;
+    border-radius: 6px;
+    padding: 0 1rem;
+    position: absolute;
+    top: -1.75rem;
+    left: 0;
+
+    span {
+        text-align: center;
+        line-height: 24px;
+        color: red;
+        font-size: .8rem;
+        font-variation-settings: 'wght' 500;
+    }
+}
+
+.amountAlert-enter-active,
+.amountAlert-leave-active {
+    transition: opacity .3s ease;
+}
+
+.amountAlert-enter-from,
+.amountAlert-leave-to {
+    opacity: 0;
+}
+
+.amountAlert-enter-to,
+.amountAlert-leave-from {
+    opacity: 1;
+}
+
+%divideLine {
+    @include WnH(100%, 1px);
+    content: '';
+    background-color: rgba(0, 0, 0, .25);
+    display: block;
+    margin: .5rem 0 .5rem 0;
+}
+
+.infoFolder>.Wrapper {
+    cursor: pointer;
+
+    h2 {
+        opacity: .5;
+        // color: rgba(0, 0, 0, 0.5);
+        transition: opacity 0.3s;
+        user-select: none;
+        margin-left: .5rem;
+    }
+
+    &::before {
+        @extend %divideLine;
+    }
+}
+
+.title {
+    display: flex;
+
+    &>div {
+        // outline: 1px solid black;
+        transform: rotate(-90deg);
+        transition: transform .2s linear;
+    }
+
+    &:has(.folderIcon) h2 {
+        opacity: 1;
+    }
+
+    .folderIcon {
+        transform: rotate(0deg);
+    }
+}
+
+
+
+.folder {
+    padding-left: 1.5rem;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .3s, padding-block .3s;
+
+    p {
+        overflow: hidden;
+        color: rgba(0, 0, 0, 0.5);
+        padding-inline: 1rem 1.5rem;
+        text-align: justify;
+    }
+}
+
+.folderText {
+    max-height: min(300px);
+    opacity: 1;
+    grid-template-rows: 1fr;
+    padding-block: .5rem;
+
+    p {
+        color: black;
+    }
+}
+
 
 .flyToCart {
     @include WnH(50px);
@@ -1344,22 +1576,80 @@ onUnmounted(() => {
 
 .socialMedia {
     // @include flex-center-center;
-    display: flex;
-    flex-direction: row;
+    // display: flex;
+    // flex-direction: row;
     // gap: 4rem;
-    overflow: hidden;
+    // overflow: hidden;
+    padding: 1rem;
+    position: relative;
+    z-index: 0;
+    margin-bottom: 2rem;
+    background-color: $primaryBacColor_dark;
+    border-radius: 1rem;
+
+    swiper-container {
+
+        &::part(container) {
+            // width: calc(100% - 2rem);
+        }
+
+        &::part(button-prev) {}
+
+        &::part(button-next) {}
+    }
 
     .wrapper {
-        @include WnH(300px, 430px);
+        // @include WnH(300px, 0px);
+        width: 300px;
+        border-radius: 1.5rem;
+        overflow: hidden;
         box-shadow: 3px 3px 6px gray;
-        flex: 1 0 auto;
-
-
+        margin-block: 1rem;
+        // flex: 1 0 auto;
 
         img {
-            // height: 100%;
+            height: 100%;
         }
     }
+}
+
+.prevBtn,
+.nextBtn {
+    height: fit-content;
+    position: absolute;
+    top: 107%;
+    z-index: 2;
+    // transform: translate(-50%, -50%);
+    // transform-origin: left top;
+    transform-origin: center;
+    transition: scale .2s, opacity .2s;
+
+    &:hover {
+        scale: 1.15;
+    }
+
+    &:active {
+        translate: calc(-50% + 1px) calc(-50% + 1px);
+        // transform: translate(calc(-50% + 1px), calc(50% + 1px));
+    }
+}
+
+.prevBtn {
+    left: 45%;
+    translate: -50% -50%;
+    // translate: -50% -50%;
+    // translate: -60%
+}
+
+.nextBtn {
+    left: 55%;
+    translate: -50% -50%;
+    // translate: 50% -50%;
+    // translate: 60%
+}
+
+.swiper-button-disabled {
+    opacity: .5;
 }
 
 .buyMore {
@@ -1369,7 +1659,9 @@ onUnmounted(() => {
     margin-bottom: 6rem;
 
     h1 {
-        font-size: 36px;
+        font-size: 1.5rem;
+        font-size: clamp(1.5rem, 0.7857142857142858rem + 3.571428571428571vw, 2.5rem);
+        // font-size: 36px;
         font-weight: 450;
     }
 
@@ -1389,10 +1681,183 @@ onUnmounted(() => {
         }
     }
 
-    .itemWrapper {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-evenly;
+    swiper-container {
+        position: relative;
+
+        swiper-slide {
+            width: min-content;
+        }
+
+        &::part(container) {
+            overflow-y: visible;
+            padding: 1rem 0;
+        }
+
+        &::part(scrollbar) {
+            // opacity: 0;
+            bottom: 0%;
+        }
+    }
+}
+
+.itemWrapper {
+    // display: flex;
+    // flex-direction: row;
+    // justify-content: space-evenly;
+    // overflow: hidden;
+    width: 100%;
+}
+
+
+
+.guestTab {
+    position: relative;
+    height: 100%;
+    margin-block: 6rem;
+}
+
+.isMember {
+    margin-block: 2rem;
+}
+
+.analyzeLink {
+    cursor: pointer;
+    position: relative;
+    // position: absolute;
+    width: max-content;
+    // top: 50%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    padding: .75rem 1rem;
+    border-radius: 1rem;
+    background-color: $secondBacColor;
+    filter: drop-shadow(2px 2px 1px black);
+    transition: scale .15s;
+    transform-origin: left top;
+
+    &:hover {
+        scale: 1.1;
+    }
+
+    &:active {
+        transform: translate(calc(-50% + 1px), calc(-50% + 1px));
+    }
+
+    span {
+        @include flex-center-center;
+        @include WnH(100%);
+        color: $primaryBacColor;
+        font-size: 1rem;
+        text-wrap: nowrap;
+    }
+}
+
+@include XLarge {}
+
+@include large {}
+
+@include medium($width: 1440px) {
+    .socialMedia {
+        border-radius: 0;
+    }
+}
+
+@include medium($width: 1024px) {
+    .socialMedia .wrapper {
+        width: 250px;
+    }
+}
+
+@include medium {
+    .container {
+        .buyMore {
+            margin-bottom: 4rem;
+        }
+    }
+
+    .productWrapper {
+        flex-direction: column;
+
+        &>div:not(.popUpImg) {
+            width: 100%;
+        }
+
+        .imgWrapper img {
+            width: 90%;
+        }
+    }
+
+    .socialMedia .wrapper {
+        width: 200px;
+    }
+
+    .prevBtn,
+    .nextBtn {
+        top: 110%;
+    }
+
+    .detailWrapper .sizeSelector .selectWrapper label .selector {
+        grid-template-columns: 1fr;
+        grid-template-rows: .5fr 1fr;
+        justify-items: center;
+    }
+}
+
+@include small {
+
+    .container {
+
+        .socialMedia {
+            margin-top: 3rem;
+        }
+
+        .buyMore {
+            margin-top: 4rem;
+        }
+
+    }
+
+    .socialMedia .wrapper {
+        width: 175px;
+    }
+
+    .guestTab {
+        margin-block: 4rem;
+    }
+}
+
+@include small($width: 430px) {
+    .container {
+
+        .socialMedia {
+            margin-top: 1rem;
+        }
+
+        .buyMore {
+            margin-top: 2rem;
+        }
+
+    }
+
+    .socialMedia .wrapper {
+        width: 155px;
+    }
+
+    .ingredientWrapper {
+        column-gap: 0;
+
+        sapn {}
+    }
+
+    .detailWrapper {
+        padding-inline: .5rem;
+        gap: .75rem;
+    }
+}
+
+@include small($width: 320px) {
+    .socialMedia .wrapper {
+        width: 140px;
     }
 }
 </style>

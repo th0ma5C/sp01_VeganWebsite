@@ -34,7 +34,7 @@ const routes = [
         component: Home,
         name: 'Home',
         meta: {
-            searchKeys: ['首頁', 'home']
+            searchKeys: ['首頁', 'home'],
         }
     },
     {

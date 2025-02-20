@@ -96,6 +96,8 @@ function titleOnclick(target: string) {
 
     flex-direction: column;
     overflow: hidden;
+    max-width: 1920px;
+    margin-inline: auto;
 
     .marquee {
         @include flex-center-center;

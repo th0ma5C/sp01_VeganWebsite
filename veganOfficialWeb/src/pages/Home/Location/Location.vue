@@ -74,14 +74,14 @@
                                 :class="iconClass">
                             </SvgIcon>
                         </div>
-                    </div>
-                    <div class="position" v-show="true"
-                        data-swiper-parallax="-1000">
-                        <SvgIcon name="Location"
-                            color="white" width="24"
-                            height="24">
-                        </SvgIcon>
-                        <p>{{ item.addr }}</p>
+                        <div class="position" v-show="true"
+                            data-swiper-parallax="-1000">
+                            <SvgIcon name="Location"
+                                color="white" width="24"
+                                height="24">
+                            </SvgIcon>
+                            <p>{{ item.addr }}</p>
+                        </div>
                     </div>
                 </div>
             </swiper-slide>
@@ -142,7 +142,12 @@ let branchList = [
 let swiperRef = useTemplateRef<SwiperContainer>('swiperRef');
 
 // handle window resize
+
+// prevent url bar resize
+let currWidth = window.innerWidth;
+
 function resize() {
+    if (currWidth == window.innerWidth) return
     if (swiperRef.value) {
         swiperRef.value.swiper.update();
     }
@@ -153,6 +158,7 @@ function resize() {
     if (scaler && scaler.progress !== 1) {
         scaler?.enable();
     }
+    currWidth = window.innerWidth;
 }
 
 //icon hover
@@ -218,10 +224,14 @@ function createScrollTrigger() {
         }
     )
     ScrollTrigger.create({
+        id: 'pin',
         trigger: locationRef.value,
-        pin: locationRef.value,
+        // pin: locationRef.value,
         start: 'top top',
         end: '+=100',
+        onLeave: () => {
+            // ScrollTrigger.getById('pin')?.disable(false);
+        }
     })
 }
 
@@ -302,15 +312,16 @@ onUnmounted(() => {
 
 .container {
     @extend %fixContainer;
+    --TW_position: 37%;
     background: url('@assets/img/Home/Location/shop.jpg') fixed no-repeat center/cover;
     transition: width 0.2s ease, height 0.2s ease;
     margin-inline: auto;
 
     .mapWrapper {
         position: absolute;
-        top: 5rem;
+        top: var(--TW_position);
         left: 50%;
-        transform: translateX(-50%);
+        transform: translate(-50%, -50%);
         opacity: 1;
 
         .TWAnchor {
@@ -320,9 +331,9 @@ onUnmounted(() => {
 
     .TW {
         position: absolute;
-        top: 5rem;
+        top: var(--TW_position);
         left: 50%;
-        transform: translateX(-50%);
+        transform: translate(-50%, -50%);
         opacity: 0.6;
     }
 
@@ -366,164 +377,168 @@ onUnmounted(() => {
 .mainPart {
     @include WnH(100%);
     height: 100vh;
+    // height: 920px;
+    max-height: 920px;
     display: inline-flex;
     color: $primaryBacColor;
     filter: brightness(2);
     position: relative;
     will-change: transform;
+}
 
+.carousel {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10%;
+}
 
-    .carousel {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 10%;
+.content {
+    @include flex-center-center;
+    width: 100%;
+}
 
-        .content {
-            @include flex-center-center;
-            width: 100%;
+.point {
+    @include WnH(8px);
+    border-radius: 50%;
+    background-color: white;
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    transition: opacity .3s 1s;
+}
 
-            .point {
-                @include WnH(8px);
-                border-radius: 50%;
-                background-color: white;
-                position: absolute;
-                top: -4px;
-                left: -4px;
-                transition: opacity .3s 1s;
-            }
+.north {
+    transform: translate(210px, 32.5px);
+}
 
-            .north {
-                transform: translate(210px, 32.5px);
-            }
+.central {
+    transform: translate(108px, 154.5px);
+}
 
-            .central {
-                transform: translate(108px, 154.5px);
-            }
+.south {
+    transform: translate(70px, 360px);
+}
 
-            .south {
-                transform: translate(70px, 360px);
-            }
+.fadeIn-enter-active,
+.fadeIn-leave-active {
+    transition: opacity 0.5s var(--delaySpeed);
+}
 
-            .fadeIn-enter-active,
-            .fadeIn-leave-active {
-                transition: opacity 0.5s var(--delaySpeed);
-            }
+.fadeIn-enter-to,
+.fadeIn-leave-from {
+    opacity: 1;
+}
 
-            .fadeIn-enter-to,
-            .fadeIn-leave-from {
-                opacity: 1;
-            }
+.fadeIn-enter-from,
+.fadeIn-leave-to {
+    opacity: 0;
+}
 
-            .fadeIn-enter-from,
-            .fadeIn-leave-to {
-                opacity: 0;
-            }
+.branchName {
+    @include flex-center-center;
+    // width: 100%;
+    // width: 360px;
+    flex-direction: column;
+    position: absolute;
+    top: calc(37% + 225px + 2rem);
+    // top: calc(7rem + 450px);
+    left: 50%;
+    transform: translate(-50%, 0);
 
-            .branchName {
-                @include flex-center-center;
-                // width: 100%;
-                // width: 360px;
-                flex-direction: column;
-                position: absolute;
-                top: 70%;
-                left: 50%;
-                transform: translate(-50%, -50%);
+    p {
+        font-size: 0.75rem;
+        font-size: clamp(0.75rem, 0.67rem + 0.35vw, 1rem);
+    }
 
-                h1 {
-                    font-size: 4rem;
-                    font-variation-settings: 'wght' 500;
-                    letter-spacing: 0.5rem;
-                    position: relative;
+    h1 {
+        // font-size: 4rem;
+        font-size: 1.5rem;
+        font-size: clamp(1.5rem, 0.78rem + 3.57vw, 4rem);
+        font-variation-settings: 'wght' 500;
+        letter-spacing: 0.5rem;
+        position: relative;
 
-                    span {
-                        position: absolute;
-                        text-wrap: nowrap;
-                        opacity: .5;
-                    }
-
-                    .prevBranch {
-                        right: 50vw;
-                    }
-
-                    .nextBranch {
-                        left: 50vw;
-                    }
-                }
-
-                .btnWrapper {
-                    @include flex-center-center;
-                    align-self: flex-end;
-                    cursor: pointer;
-                    font-size: 1.5rem;
-                    gap: 0.5rem;
-                    position: relative;
-
-                    .in {
-                        animation: flyIn 0.5s ease-out forwards;
-                    }
-
-                    .out {
-                        animation: flyOut 0.5s ease-in forwards;
-                    }
-
-                    &:hover a {
-                        outline-color: $primaryBacColor ;
-                        opacity: 1;
-                    }
-
-                    a {
-                        padding: .25rem .5rem;
-                        border-radius: 1rem;
-                        position: relative;
-                        outline: 1px solid transparent;
-                        opacity: .75;
-                        transition: outline-color .3s, opacity .3s;
-                    }
-                }
-            }
-
-            @keyframes branchAnimation {
-                from {
-                    opacity: 0;
-                }
-
-                to {
-                    opacity: 1;
-                }
-            }
-
-            .position {
-                @include flex-center-center;
-                gap: 0.25rem;
-                position: absolute;
-                bottom: 15%;
-                left: 12%;
-                text-wrap: nowrap;
-                line-height: 36px;
-                padding: .25rem .5rem;
-            }
+        span {
+            position: absolute;
+            text-wrap: nowrap;
+            opacity: .5;
         }
     }
+}
 
-    .dragging {
-        transition: none !important;
+.prevBranch {
+    right: 50vw;
+}
+
+.nextBranch {
+    left: 50vw;
+}
+
+.btnWrapper {
+    @include flex-center-center;
+    align-self: flex-end;
+    cursor: pointer;
+    // font-size: 1.5rem;
+    font-size: 0.75rem;
+    font-size: clamp(0.75rem, 0.53rem + 1.07vw, 1.5rem);
+    font-variation-settings: 'wght' 600;
+    gap: 0.5rem;
+    position: relative;
+
+    .in {
+        animation: flyIn 0.5s ease-out forwards;
     }
 
-    // 北
-    // 25.047893811483274,
-    // 121.51709051510576 top: calc(114px);
-    // left: calc(1012px);
-    // x 210 y 32.5
+    .out {
+        animation: flyOut 0.5s ease-in forwards;
+    }
 
-    // 中 24.137131307709268,
-    // 120.68668906182916 top: calc(236px);
-    // left: calc(910px);
-    // x 108 y 154.5
+    &:hover a {
+        outline-color: $primaryBacColor ;
+        opacity: 1;
+    }
 
-    // 南 22.639888449163326,
-    // 120.30226114031127 top: calc(435px);
-    // left: calc(863px);
-    // x 61 y 353
+    a {
+        padding: .25rem .5rem;
+        border-radius: 1rem;
+        position: relative;
+        outline: 1px solid transparent;
+        opacity: .75;
+        transition: outline-color .3s, opacity .3s;
+    }
+}
+
+.position {
+    @include flex-center-center;
+    gap: 0.25rem;
+    position: absolute;
+    bottom: 0%;
+    left: -100%;
+    translate: 50% 100%;
+    text-wrap: nowrap;
+    line-height: 36px;
+    padding: .25rem .5rem;
+
+    p {
+        font-size: 0.75rem;
+        font-size: clamp(0.75rem, 0.678rem + 0.357vw, 1rem);
+    }
+}
+
+.dragging {
+    transition: none !important;
+}
+
+
+
+@keyframes branchAnimation {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 swiper-slide:not(.swiper-slide-active) {
@@ -567,4 +582,77 @@ swiper-slide:is(.swiper-slide-active) {
     }
 
 }
-</style>
+
+@include XLarge {
+    .prevBranch {
+        right: 960px;
+    }
+
+    .nextBranch {
+        left: 960px;
+    }
+}
+
+@include large {}
+
+@include medium {
+
+    .container {
+        // --TW_position: 4rem;
+    }
+
+    .branchName {
+        top: calc(37% + 225px + 1.75rem);
+        // top: calc(5.5rem + 450px);
+    }
+
+    .position {
+        bottom: 5%;
+    }
+}
+
+@include small {
+    .container {
+        // --TW_position: 3rem;
+    }
+
+    .prevBranch {
+        right: 55vw;
+    }
+
+    .branchName {
+        top: calc(37% + 225px + 1.5rem);
+        // top: calc(4rem + 450px);
+    }
+
+    .nextBranch {
+        left: 55vw;
+    }
+}
+
+@include small($width: 320px) {
+    .prevBranch {
+
+        right: 60vw;
+    }
+
+    .nextBranch {
+        left: 60vw;
+    }
+}
+
+// 北
+// 25.047893811483274,
+// 121.51709051510576 top: calc(114px);
+// left: calc(1012px);
+// x 210 y 32.5
+
+// 中 24.137131307709268,
+// 120.68668906182916 top: calc(236px);
+// left: calc(910px);
+// x 108 y 154.5
+
+// 南 22.639888449163326,
+// 120.30226114031127 top: calc(435px);
+// left: calc(863px);
+// x 61 y 353</style>

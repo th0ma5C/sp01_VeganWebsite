@@ -5,9 +5,13 @@
             :key="index" :to="link" :class="{
                 breadcrumb: index != breadcrumbArr.length - 1,
                 lastBreadcrumb: index == breadcrumbArr.length - 1
-            }">{{
-                title
-            }}</router-link>
+            }">
+            <span>
+                {{
+                    title
+                }}
+            </span>
+        </router-link>
     </div>
 </template>
 
@@ -86,7 +90,7 @@ onUnmounted(() => {
 // }
 
 .breadcrumb {
-    color: $btnBacColor_light;
+    // color: $btnBacColor_light;
     position: relative;
 
     &::after {
@@ -99,25 +103,38 @@ onUnmounted(() => {
     &::before {
         @include WnH(calc(100% - 22px), 1px);
         content: '';
-        background-color: $btnBacColor_light;
+        background-color: black;
+        // background-color: $btnBacColor_light;
         position: absolute;
-        bottom: 2px;
-        left: 0;
+        bottom: 1px;
+        left: -1px;
         transform: translateX(-100%);
         transition: transform 0.2s ease;
     }
 
-    &:hover {
+    &:has(span:hover) {
         font-variation-settings: 'wght' 500;
 
         &::before {
-            transform: translateX(0%);
+            transform: translateX(1px);
         }
     }
 }
 
 .lastBreadcrumb {
     cursor: default;
+    color: $btnBacColor_light;
+    font-variation-settings: 'wght' 500;
+    position: relative;
     // color: black;
+
+    &::before {
+        @include WnH(100%, 1px);
+        content: '';
+        background-color: $btnBacColor_light;
+        position: absolute;
+        bottom: 1px;
+        left: 0;
+    }
 }
 </style>

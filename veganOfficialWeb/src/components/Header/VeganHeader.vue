@@ -6,7 +6,7 @@
             <label class="burger" for="burger" :class="{
                 foldBurgerBac: isBehind,
                 hideBurger: isSwitching
-            }" @click="foo">
+            }" @click="burgerOnclick">
                 <input type="checkbox" id="burger"
                     v-model="isBehind">
                 <span></span>
@@ -39,7 +39,7 @@
                 </Search>
             </div>
             <ul class="">
-                <li v-for="{ title, url } in navLink "
+                <li v-for="{ title, url } in navLink"
                     :key="title">
                     <RouterLink :to="url" href="">
                         <span>
@@ -48,7 +48,7 @@
                     </RouterLink>
                 </li>
                 <li class="mobileNavList"
-                    v-for="{ title, url } in navLink "
+                    v-for="{ title, url } in navLink"
                     :key="title" ref="combineListRef">
                     <RouterLink :to="url" href="">
                         <span>
@@ -98,7 +98,7 @@
             </router-link>
             <div @click.stop class="navIconWrapper">
                 <ul class="navLink">
-                    <li v-for="{ title, url } in navLink "
+                    <li v-for="{ title, url } in navLink"
                         :key="title">
                         <RouterLink :to="url" href="">
                             <span>
@@ -108,7 +108,7 @@
                     </li>
                 </ul>
                 <ul class="navIcon">
-                    <li v-for="{ icon } in navIcon "
+                    <li v-for="{ icon } in navIcon"
                         :key="icon" ref="iconList" :class="{
                             searchIcon: icon == 'Search'
                         }">
@@ -216,15 +216,17 @@
 
     <div class="QNR_header" v-else
         :class="{ 'hideNav': hideNav }">
-        <router-link :to="{ name: 'Home' }">
-            <SvgIcon name="Logo" height="65px"
-                color="black">
+        <main>
+            <router-link :to="{ name: 'Home' }">
+                <SvgIcon name="Logo" height="65px"
+                    color="#00430b">
+                </SvgIcon>
+            </router-link>
+            <SvgIcon name="cancel" width="32px"
+                class="cancelIcon" height="32px"
+                @click="prevPage">
             </SvgIcon>
-        </router-link>
-        <SvgIcon name="cancel" width="32px"
-            class="cancelIcon" height="32px"
-            @click="prevPage">
-        </SvgIcon>
+        </main>
     </div>
 </template>
 
@@ -377,7 +379,7 @@ const isBehind = ref(false);
 const isSwitching = ref(false);
 const isInit = ref(true);
 
-function foo() {
+function burgerOnclick() {
     isInit.value = false
 }
 
@@ -419,14 +421,19 @@ router.beforeEach(() => {
     return true
 })
 
+// prevent url bar resize
+let currWidth = 0;
+
 
 onMounted(() => {
     window.addEventListener('scroll', throttledOnScroll);
     // 暴露cart按鈕元素
     getHeaderCart(iconList.value[1]);
     window.addEventListener('resize', () => {
+        if (currWidth == window.innerWidth) return
         isInit.value = true;
         isSearchShow.value = false;
+        currWidth = window.innerWidth;
     })
 })
 
@@ -455,6 +462,13 @@ onBeforeUnmount(() => {
 
 .container {
     @extend %container;
+    // justify-content: center;
+    // margin-inline: auto;
+
+    &>div {
+        max-width: $primaryWidth;
+        margin-inline: auto;
+    }
 
     .front {
         @include flex-center-center;
@@ -538,9 +552,15 @@ onBeforeUnmount(() => {
 
 .QNR_header {
     @extend %container;
-    border-bottom: none;
-    width: 100%;
-    transition: all 0.2s linear;
+    position: relative;
+
+    main {
+        width: 100%;
+        max-width: 1920px;
+        margin-inline: auto;
+        transition: all 0.2s linear;
+        position: relative;
+    }
 
     a {
         display: block;
@@ -552,6 +572,7 @@ onBeforeUnmount(() => {
         opacity: 0.3;
         position: absolute;
         right: 2rem;
+        top: 1rem;
 
         &:hover {
             opacity: 1;
@@ -787,11 +808,17 @@ onBeforeUnmount(() => {
 
 @include XLarge {
     .container {
-        max-width: 1920px;
+        // max-width: 1920px;
     }
 }
 
 @include large {}
+
+@include medium($width: 1440px) {
+    .container .front {
+        padding-inline: 4rem;
+    }
+}
 
 @include medium($width: 1024px) {
     .foldNav {

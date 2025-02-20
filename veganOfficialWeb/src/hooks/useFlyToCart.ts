@@ -18,15 +18,15 @@ interface Crew {
 export default class FlyToCart {
     #item: MenuItem | null = null;
     #itemBtn: Ref<HTMLElement | null> = ref(null);
-    takeoffPoint = computed(() => {
-        if (!this.#itemBtn.value) return
-        const { left, top, width, height } = this.#itemBtn.value.getBoundingClientRect();
-        const originCoord = {
-            x: (left + width / 2) - 73,
-            y: (window.scrollY + top + height / 2) - 25
-        }
-        return originCoord
-    })
+    // takeoffPoint = computed(() => {
+    //     if (!this.#itemBtn.value) return
+    //     const { left, top, width, height } = this.#itemBtn.value.getBoundingClientRect();
+    //     const originCoord = {
+    //         x: (left + width / 2) - 73,
+    //         y: (window.scrollY + top + height / 2) - 25
+    //     }
+    //     return originCoord
+    // })
     #cartBtn;
     #flyingEl;
     imgURL = ref('');
@@ -37,6 +37,16 @@ export default class FlyToCart {
         this.#cartBtn = crew.cartBtn;
         this.#flyingEl = crew.flyingEl;
         this.#coordCompensation = crew.coordCompensation;
+    }
+
+    getTakeoffPoint = () => {
+        if (!this.#itemBtn.value) return
+        const { left, top, width, height } = this.#itemBtn.value.getBoundingClientRect();
+        const originCoord = {
+            x: (left + width / 2) - 73,
+            y: (window.scrollY + top + height / 2) - 25
+        }
+        return originCoord
     }
 
     getActiveItem = (target: MenuItem) => {
@@ -60,7 +70,7 @@ export default class FlyToCart {
     }
 
     initFlyState = () => {
-        const { x = 0, y = 0 } = this.takeoffPoint.value ?? {}
+        const { x = 0, y = 0 } = this.getTakeoffPoint() ?? {}
         gsap.set(this.#flyingEl.value, {
             x: x,
             y: y,
@@ -71,10 +81,10 @@ export default class FlyToCart {
     }
 
     takeoff = () => {
-        if (!this.takeoffPoint.value) return;
+        // if (!this.takeoffPoint.value) return;
         this.isFlying.value = true;
         this.initFlyState();
-        const { x: originX = 0, y: originY = 0 } = this.takeoffPoint.value ?? {}
+        const { x: originX = 0, y: originY = 0 } = this.getTakeoffPoint() ?? {}
         const { x: targetX = 0, y: targetY = 0 } = this.getLandingPoint() ?? {};
 
         const inflectX = originX < targetX ? 50 : -50;
@@ -97,6 +107,9 @@ export default class FlyToCart {
             ease: "power1.inOut",
             onComplete: () => {
                 this.isFlying.value = false;
+                gsap.set(this.#flyingEl.value, {
+                    clearProps: 'all'
+                })
             }
         });
     }

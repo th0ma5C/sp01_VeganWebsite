@@ -41,7 +41,7 @@
                             <div class="details">
                                 <h3>{{ key }}</h3>
                                 <small>${{ item.price
-                                    }}</small>
+                                }}</small>
                             </div>
 
                             <div class="itemSubtotal">
@@ -228,8 +228,7 @@ onMounted(() => {
 .drawer {
     // @include WnH('fit-content', 100%);
     height: 100%;
-    width: max-content;
-    max-width: 100%;
+    width: clamp(320px, 100%, 400px);
     background-color: $primaryBacColor;
     padding: 1.5rem 1rem;
     display: flex;
@@ -582,6 +581,12 @@ onMounted(() => {
 
     100% {
         transform: scale(1);
+    }
+}
+
+@include small {
+    .drawer {
+        width: 100%;
     }
 }
 </style>

@@ -1,6 +1,28 @@
 <template>
     <div class="upperContainer">
         <div class="left">
+            <div class="padPage">
+                <swiper-container :loop="true" effect="fade"
+                    :autoplay="{
+                        delay: 3000
+                    }" :speed="1000"
+                    :allowTouchMove="false"
+                    :injectStyles="injectStyles">
+                    <swiper-slide
+                        v-for="(item, index) in imgList"
+                        :key="index">
+                        <div class="imgSlider">
+                            <img :src="item.url" alt=""
+                                :class="{
+                                    objTop: item.url == imgList[2].url,
+                                    objCenter: item.url == imgList[1].url,
+                                    objBottom: item.url == imgList[0].url,
+                                }">
+                        </div>
+                    </swiper-slide>
+                </swiper-container>
+            </div>
+
             <div class="page1">
                 <h1>
                     About Us
@@ -50,7 +72,7 @@
 
             <div class="page2" ref="upperContainer">
                 <div class="top">
-                    <div v-for="(item, index) in 3"
+                    <div v-for="(item, index) in 2"
                         :key="index">
                         <div class="starWrapper">
                             <SvgIcon name="Star"
@@ -102,6 +124,25 @@
                             maxime minima recusandae
                             doloribus.
                         </p>
+                        <div v-if="index == 0"
+                            class="middleStar">
+                            <div class="starWrapper">
+                                <SvgIcon name="Star"
+                                    width="26px"
+                                    height="26px"
+                                    color="#0d731e"
+                                    v-for="(item, index) in 5"
+                                    :key="index"></SvgIcon>
+                            </div>
+                            <div class="middleText">
+                                <h2>
+                                    Lorem, ipsum.
+                                </h2>
+                                <p>
+                                    Lorem ipsum dolor sit.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -111,8 +152,9 @@
             <swiper-container :loop="true" effect="fade"
                 :autoplay="{
                     delay: 3000
-                }" :speed="1000"
-                :injectStyles="injectStyles">
+                }" :speed="1000" :allowTouchMove="false"
+                :injectStyles="injectStyles"
+                @swiperupdate="console.log('object');">
                 <swiper-slide
                     v-for="(item, index) in imgList"
                     :key="index">
@@ -218,108 +260,139 @@ onMounted(() => {
 
     display: flex;
     // gap: 1rem;
+    position: relative;
+    top: 100px;
 
     &>div {
         flex: 1;
+        max-width: 50%;
     }
 }
 
 .left {
-
-
     // background-color: $btnBacColor;
 
     h1 {
         font-family: "EB Garamond", serif;
         font-size: 5rem;
+        font-size: 3rem;
+        font-size: clamp(3rem, 2.428571428571429rem + 2.857142857142857vw, 5rem);
         font-variation-settings: 'wght' 800;
         font-style: italic;
         color: $secondBacColor;
     }
+}
 
-    .page1 {
-        min-height: 100vh;
 
+.page1 {
+    // min-height: 100vh;
+    height: calc(100vh - 100px);
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding-left: 3rem;
+    padding-left: clamp(3rem, -2.7142857142857135rem + 11.904761904761903vw, 8rem);
+    translate: 0 -50px;
+}
+
+.page2 {
+    min-height: 100vh;
+    padding-block: 1rem;
+    // padding-inline: 1.5rem;
+    // padding-inline: clamp(1.5rem, 0.19999999999999996rem + 6.5vw, 8rem);
+
+    h2 {
+        margin-bottom: 1.25rem;
+        font-size: 1.5rem;
+        font-variation-settings: 'wght' 400;
+    }
+}
+
+.top {
+    display: flex;
+    gap: 1rem;
+    width: min-content;
+    margin-inline: auto;
+
+    &>div {
+        padding: 1rem;
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        justify-content: center;
+        align-items: center;
+        flex: 1;
+        border-radius: 1rem;
+        overflow: hidden;
+        border: 2px solid $secondBacColor;
+        border-radius: 1rem;
+    }
+}
+
+.starWrapper {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0 .75rem 0;
+}
+
+.middleText {
+    text-align: center;
+
+    p {
+        font-size: .9rem;
+    }
+}
+
+.middleStar {
+    width: min-content;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 2px solid $secondBacColor;
+    border-radius: 1rem;
+    margin-inline: auto;
+    margin-top: 3rem;
+
+    .middleText p {
+        text-align: center;
+    }
+}
 
 
-        padding-left: 8rem;
+.content {
+    height: 100%;
+    padding: 3rem 2rem;
+    margin-inline: auto;
+
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+
+    p {
+        text-align: justify;
+        line-height: 2;
     }
 
-    .page2 {
-        min-height: 100vh;
-        padding: 1rem 6rem;
+    h2:has(.markIcon1) {
+        display: flex;
+        justify-content: center;
+        align-items: center;
 
-        h2 {
-            margin-bottom: 1.25rem;
-            font-size: 1.5rem;
-            font-variation-settings: 'wght' 400;
+        .markIcon1 {
+            margin-right: 1rem;
+            transform: translateY(2px);
         }
 
-        .top {
-            display: flex;
-            gap: 1rem;
-
-            &>div {
-                padding: 1rem;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                flex: 1;
-                border-radius: 1rem;
-                overflow: hidden;
-                border: 2px solid $secondBacColor;
-                border-radius: 1rem;
-            }
-
-            .starWrapper {
-                display: flex;
-                justify-content: center;
-                margin: 1rem 0 .75rem 0;
-            }
-
-            .middleText {
-                text-align: center;
-
-                p {
-                    font-size: .9rem;
-                }
-            }
-        }
-
-        .content {
-            height: 100%;
-            padding: 3rem 2rem;
-
-            display: flex;
-            flex-direction: column;
-            gap: 3rem;
-
-            p {
-                line-height: 2;
-            }
-
-            h2:has(.markIcon1) {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-
-                .markIcon1 {
-                    margin-right: 1rem;
-                    transform: translateY(2px);
-                }
-
-                .markIcon1:nth-of-type(2) {
-                    margin-left: 1rem;
-                    transform: rotate(180deg) translateY(-2px);
-                }
-            }
+        .markIcon1:nth-of-type(2) {
+            margin-left: 1rem;
+            transform: rotate(180deg) translateY(-2px);
         }
     }
 }
+
 
 .navContainer {
     @include flex-center-center;
@@ -331,7 +404,8 @@ onMounted(() => {
         display: flex;
         align-items: center;
         gap: .5rem;
-
+        // font-size: 0.75rem;
+        // font-size: clamp(0.75rem, 0.5714285714285714rem + 0.8928571428571428vw, 1rem);
 
         .cube {
             backface-visibility: hidden;
@@ -486,6 +560,7 @@ onMounted(() => {
 
 .right {
     max-height: calc(100vh);
+    // height: calc(100vh - 100px);
 
     position: sticky;
     top: 0;
@@ -496,20 +571,123 @@ onMounted(() => {
     swiper-container {
         height: 100%;
     }
+}
 
-    .imgSlider {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+.imgSlider {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
+    height: 100%;
+
+    overflow: hidden;
+
+    img {
+        max-width: none;
         height: 100%;
+    }
+}
 
-        overflow: hidden;
+.padPage {
+    display: none;
+}
+
+// @keyframes
+
+@include XLarge {}
+
+@include large {}
+
+@include medium($width: 1024px) {
+    .navContainer {
+        // gap: 1.25rem;
+    }
+}
+
+.objTop {
+    object-position: top;
+}
+
+.objCenter {
+    object-position: center;
+}
+
+.objBottom {
+    object-position: bottom;
+}
+
+@include medium {
+    .navContainer {}
+
+    .padPage {
+        display: block;
+
+        swiper-container {
+            width: 100%;
+            height: 40vh;
+        }
+
+        .imgSlider {
+            // width: 100%;
+            // height: 100%;
+        }
 
         img {
-            max-width: none;
-            height: 100%;
+            width: 100%;
+            max-width: 100%;
+            object-fit: cover;
+
         }
+    }
+
+    .page1 {
+        height: calc(60vh - 100px);
+        translate: 0;
+        width: max-content;
+    }
+
+    .upperContainer>div {
+        max-width: 100%;
+    }
+
+    .right {
+        display: none;
+    }
+}
+
+@include small {
+    .page1 {
+        padding-left: 2rem;
+    }
+
+    .content {
+        gap: 2rem;
+        padding-top: 2rem;
+    }
+
+    .middleStar {
+        margin-top: 2rem;
+    }
+}
+
+@include small($width: 430px) {
+    .navContainer {
+        gap: 1rem;
+    }
+
+    .top {
+        gap: .5rem;
+    }
+
+    .top>div,
+    .middleStar {
+        padding: .5rem;
+    }
+}
+
+@include small($width: 320px) {
+    .page1 {
+        padding-left: 1rem;
     }
 }
 </style>
