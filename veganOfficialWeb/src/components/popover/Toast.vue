@@ -47,14 +47,17 @@ function bar() {
 
 .toastContainer {
     --svg-opacity: 0;
+    --r: clamp(1rem, -0.4285714285714284rem + 7.142857142857142vw, 6rem);
     min-width: 180px;
     position: fixed;
     top: 80px;
-    right: 6rem;
+    right: 1rem;
+    right: clamp(1rem, -0.4285714285714284rem + 7.142857142857142vw, 6rem);
     z-index: 99;
 
 
     &>li {
+        max-width: 180px;
         min-width: 180px;
         min-height: 48px;
         padding: .5rem 1rem;
@@ -145,7 +148,30 @@ function bar() {
     }
 
     .text {
-        text-wrap: nowrap;
+        // text-wrap: nowrap;
     }
 }
+
+@include XLarge {
+    .toastContainer {
+        right: 1rem;
+        right: calc(50% - 960px + var(--r));
+    }
+}
+
+@include large {}
+
+@include medium($width: 1024px) {}
+
+@include medium {}
+
+@include small {
+    .toastContainer {
+        top: 90px;
+    }
+}
+
+@include small($width: 430px) {}
+
+@include small($width: 320px) {}
 </style>

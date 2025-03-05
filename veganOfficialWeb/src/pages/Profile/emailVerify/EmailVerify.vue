@@ -15,19 +15,18 @@
 
 <script setup lang="ts">
 import { reqSendVerifyEmail } from '@/api/userAuth';
+import { useToastStore } from '@/store/toastStore';
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
-import {
-    Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
-    useField, useForm, type SubmissionHandler,
-    type FormContext,
-    type FormMeta
-} from 'vee-validate';
 import { computed } from 'vue';
-import * as yup from 'yup';
 
 // user store
 const { user } = storeToRefs(useUserStore());
+
+// toast store
+const toastStore = useToastStore();
+const { addNotification } = toastStore;
+
 
 const showEmail = computed(() => {
     let raw = user.value.email;
@@ -42,7 +41,16 @@ async function verifyEmail() {
     const params = {
         to: user.value.email
     }
-    reqSendVerifyEmail(params);
+    try {
+        const res = await reqSendVerifyEmail(params);
+        if (res.state == 'confirm') {
+            addNotification('發送成功，請至信箱點擊驗證連結')
+        }
+        // console.log(res);
+    } catch (error) {
+        addNotification('發送失敗，請重試')
+        // console.error("驗證失敗：")
+    }
 }
 
 
@@ -56,9 +64,10 @@ async function verifyEmail() {
 .verifyContainer {
     flex: 1;
     text-align: center;
+    max-width: 100%;
 
     h1 {
-        font-size: 2.5rem;
+        font-size: 2rem;
         margin-bottom: .75rem;
     }
 }
@@ -72,6 +81,8 @@ async function verifyEmail() {
     p {
         font-size: 1.5rem;
         margin-bottom: 3rem;
+        word-break: break-word;
+        overflow-wrap: break-word;
     }
 
     button {

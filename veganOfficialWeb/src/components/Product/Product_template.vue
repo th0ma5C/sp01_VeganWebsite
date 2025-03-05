@@ -60,7 +60,7 @@
                 詳細資訊
             </button>
         </div>
-        <Teleport :to="'.flyToCartContainer'">
+        <Teleport :to="'.flyToCartContainer'" :defer="true">
             <div class="flyToCart" ref="flyToCartEl"
                 v-if="destinationPoint">
                 <img :src="flyToCartImg" alt="">
@@ -91,9 +91,10 @@ const { headerCart } = storeToRefs(cartStore)
 interface Props {
     item: MenuItem,
     cartEl?: HTMLElement | undefined,
-    flightDelay?: number
+    flightDelay?: number,
+    flyToCartDisError?: number
 }
-const { item, cartEl, flightDelay } = defineProps<Props>();
+const { item, cartEl, flightDelay, flyToCartDisError = 0 } = defineProps<Props>();
 
 const destinationPoint = computed(() => {
     return cartEl ?? headerCart.value
@@ -108,7 +109,7 @@ const router = useRouter();
 
 function routerPush(name: string, id?: string) {
     router.push({
-        name: 'Product',
+        path: '/product',
         query: {
             name,
         },
@@ -154,7 +155,7 @@ function getBtnCoord(target: HTMLElement) {
     const { left, top, width, height } = target.getBoundingClientRect();
     const originCoord = {
         x: (left + width / 2) - 73,
-        y: (window.scrollY + top + height / 2) - 25
+        y: (window.scrollY + top + flyToCartDisError + height / 2) - 25
     }
     return originCoord
 }
@@ -165,7 +166,7 @@ function getCartElCoord() {
 
     const targetCoord = {
         x: left + (width / 2) - (48 + 25), //padding + width/2,
-        y: window.scrollY + top,
+        y: window.scrollY + top + flyToCartDisError,
     }
     return targetCoord
 }

@@ -126,7 +126,7 @@ $strokeDashoffset: 600;
     top: 0;
     overflow: hidden;
     will-change: transform;
-    z-index: 99;
+    z-index: 999;
 
     .svgContainer {
         @include flex-center-center;

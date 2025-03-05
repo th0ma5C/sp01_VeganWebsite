@@ -41,7 +41,7 @@
                             <div class="details">
                                 <h3>{{ key }}</h3>
                                 <small>${{ item.price
-                                }}</small>
+                                    }}</small>
                             </div>
 
                             <div class="itemSubtotal">
@@ -326,6 +326,7 @@ onMounted(() => {
             border-radius: .5rem;
             grid-area: a;
             overflow: hidden;
+            justify-self: center;
 
             img {
                 @include WnH(100%);

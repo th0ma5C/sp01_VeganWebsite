@@ -13,7 +13,9 @@
             <nav>
                 <ul>
                     <li v-for="(tab, tabName, index) in tabs"
-                        :key="tabName">
+                        :key="tabName" :class="{
+                            orderList: index == 0
+                        }">
                         <h2 @click="switchTab(tabName)"
                             :class="{ unselected: tabName !== currTab }">
                             <SvgIcon
@@ -39,6 +41,12 @@
                                 }">
                                     {{ section }}
                                 </h3>
+                            </div>
+                            <div v-if="index == 0"
+                                class="mobilePseudoTrack">
+                                <div class="mobileSlider"
+                                    :style="mobileSliderTranslate">
+                                </div>
                             </div>
                         </div>
 
@@ -170,6 +178,22 @@ const sliderTranslate = computed(() => {
             }
     }
 })
+const mobileSliderTranslate = computed(() => {
+    switch (currBranch.value) {
+        case '待付款':
+            return {
+                left: 'calc((100% - 2rem)/3 + 1rem)'
+            }
+        case '已完成':
+            return {
+                left: 'calc((100% - 2rem)/3*2 + 2rem)'
+            }
+        default:
+            return {
+                left: '0'
+            }
+    }
+})
 
 // welcome words
 const welcomeWords = computed(() => {
@@ -241,7 +265,9 @@ onMounted(async () => {
     &>div {
         width: 100%;
         max-width: 1440px;
-        padding: 0 6rem;
+        // padding: 0 6rem;
+        padding-inline: 1.5rem;
+        padding-inline: clamp(1.5rem, 0.2142857142857144rem + 6.428571428571428vw, 6rem);
     }
 
     .listContainer {
@@ -258,6 +284,8 @@ onMounted(async () => {
     h1 {
         // padding-left: 1rem;
         font-size: 3rem;
+        font-size: 2rem;
+        font-size: clamp(2rem, 1.7142857142857144rem + 1.4285714285714286vw, 3rem);
         font-variation-settings: 'wght' 500;
     }
 
@@ -280,141 +308,137 @@ onMounted(async () => {
     display: flex;
     flex: 1;
     margin-bottom: 2rem;
+}
 
-    &>* {
-        // border: 1px solid black;
-    }
+.listContainer nav {
+    width: 125px;
 
-    nav {
-        width: 125px;
-
-        li {
-            overflow: hidden;
-            position: relative;
-            user-select: none;
-
-
-            h2 {
-                font-size: 1.25rem;
-                cursor: pointer;
-                height: 40px;
-                line-height: 40px;
-                user-select: none;
-                position: relative;
-
-                display: flex;
-                align-items: center;
-                flex-direction: row;
-                gap: .25rem;
-
-                transition: opacity .15s;
-
-                .tabIcon {
-                    transform: translateY(-2px);
-                }
-
-                &:hover {
-                    opacity: 1;
-                }
-            }
-
-            .selectedPseudoTrack {
-                background-color: rgba(0, 0, 0, 0.15);
-                width: 2px;
-                height: calc(100% - 58px);
-                position: absolute;
-                top: calc(40px + .5rem);
-                left: .75rem;
-
-                .slider {
-                    background-color: $btnBacColor;
-                    width: 2px;
-                    height: 22%;
-                    transform: translateY(0px);
-                    transition: transform .3s ease-in-out;
-                }
-            }
-        }
-
-        .branch {
-            // max-height: 0;
-            // transition: max-height .5s ease-in-out, opacity .5s;
-
-            h3 {
-                font-size: 1rem;
-                padding: .5rem 0;
-                padding-left: 2.5rem;
-                // cursor: pointer;
-                user-select: none;
-                // opacity: 0;
-                color: transparent;
-                // visibility: hidden;
-                transition: color .5s;
-
-                &:not(.emptyList) {
-                    cursor: pointer;
-                }
-            }
-        }
-
-        .emptyList {
-            // pointer-events: none;
-            cursor: not-allowed;
-        }
-
-        .selectedTab {
-            // max-height: 3rem;
-
-            h3 {
-                color: black;
-                padding-left: 2.5rem;
-                // visibility: visible;
-                // opacity: 1;
-            }
-        }
-
-        .collapseWrapper {
-            display: grid;
-            opacity: 0;
-            grid-template-rows: 0fr 0fr 0fr;
-            transition: grid-template-rows .5s, opacity .3s;
-
-            &>div {
-                overflow: hidden;
-            }
-        }
-
-        & li:has(.selectedTab) .collapseWrapper {
-            grid-template-rows: 1fr 1fr 1fr;
-            opacity: 1;
-        }
-    }
-
-    .tabContainer {
-        flex: 1;
-        // border: 1px solid black;
-        padding-left: 2rem;
-        border-radius: 0 1rem 1rem 1rem;
+    li {
+        overflow: hidden;
         position: relative;
+        user-select: none;
 
-        section {
-            height: 100%;
-            // position: relative;
-        }
-    }
 
-    .unselected {
+        h2 {
+            font-size: 1.25rem;
+            cursor: pointer;
+            height: 40px;
+            line-height: 40px;
+            user-select: none;
+            position: relative;
 
-        &:is(h2) {
-            opacity: .5;
-        }
+            display: grid;
+            grid-template-columns: auto 1fr;
+            grid-template-rows: 1fr;
+            text-wrap: nowrap;
+            justify-items: start;
+            // display: flex;
+            // align-items: center;
+            // flex-direction: row;
+            gap: .25rem;
 
-        &>h3 {
-            opacity: .5;
+            transition: opacity .15s;
 
-            &:not(.emptyList):hover {
+            .tabIcon {
+                transform: translateY(-1px);
+            }
+
+            &:hover {
                 opacity: 1;
             }
+        }
+    }
+
+    & li:has(.selectedTab) .collapseWrapper {
+        grid-template-rows: 1fr 1fr 1fr;
+        opacity: 1;
+    }
+}
+
+.selectedPseudoTrack {
+    background-color: rgba(0, 0, 0, 0.15);
+    width: 2px;
+    height: calc(100% - 58px);
+    position: absolute;
+    top: calc(40px + .5rem);
+    left: .75rem;
+}
+
+.slider {
+    background-color: $btnBacColor;
+    width: 2px;
+    height: 22%;
+    transform: translateY(0px);
+    transition: transform .3s ease-in-out;
+}
+
+.branch {
+
+    h3 {
+        font-size: 1rem;
+        padding: .5rem 0;
+        padding-left: 2.5rem;
+        user-select: none;
+        color: transparent;
+        transition: color .5s;
+
+        &:not(.emptyList) {
+            cursor: pointer;
+        }
+    }
+}
+
+.emptyList {
+    // pointer-events: none;
+    cursor: not-allowed;
+}
+
+.selectedTab {
+    // max-height: 3rem;
+
+    h3 {
+        color: black;
+        padding-left: 2.5rem;
+        // visibility: visible;
+        // opacity: 1;
+    }
+}
+
+.collapseWrapper {
+    display: grid;
+    opacity: 0;
+    grid-template-rows: 0fr 0fr 0fr;
+    transition: grid-template-rows .5s, opacity .3s;
+
+    &>div {
+        overflow: hidden;
+    }
+}
+
+.tabContainer {
+    flex: 1;
+    // border: 1px solid black;
+    padding-left: 2rem;
+    border-radius: 0 1rem 1rem 1rem;
+    position: relative;
+
+    section {
+        height: 100%;
+        // position: relative;
+    }
+}
+
+.unselected {
+
+    &:is(h2) {
+        opacity: .5;
+    }
+
+    &>h3 {
+        opacity: .5;
+
+        &:not(.emptyList):hover {
+            opacity: 1;
         }
     }
 }
@@ -435,4 +459,177 @@ onMounted(async () => {
 .switchTab-leave-from {
     opacity: 1;
 }
+
+.mobilePseudoTrack {
+    display: none;
+}
+
+.mobileSlider {
+    position: relative;
+    width: calc((100% - 2rem)/3);
+    height: 100%;
+    background-color: $btnBacColor;
+    transition: left .3s;
+}
+
+@include XLarge {}
+
+@include large {}
+
+@include medium($width: 1024px) {}
+
+@include medium {
+    .tabContainer {
+        padding-left: 0;
+    }
+
+    .listContainer {
+        flex-direction: column;
+        gap: 1.5rem;
+
+        nav {
+            width: 100%;
+
+            ul {
+                display: flex;
+                flex-direction: row;
+                gap: 2rem;
+            }
+
+            li {
+                display: flex;
+            }
+        }
+
+        .selectedPseudoTrack {
+            display: none;
+        }
+
+        .collapseWrapper {
+            grid-template-columns: 0fr 0fr 0fr;
+            // grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr;
+            opacity: 1;
+            gap: 1rem;
+            margin-inline: 1rem;
+            justify-items: center;
+            position: relative;
+            text-align: center;
+            transition: grid-template-columns .3s, margin-inline .3s;
+
+            &>div {
+                width: 100%;
+            }
+
+            &:not(:has(.selectedTab)) {
+                margin-inline: 0rem;
+                gap: 0;
+
+                .mobilePseudoTrack {
+                    opacity: 0;
+                }
+            }
+        }
+
+        .branch h3 {
+            padding-left: 0;
+            color: black;
+            text-wrap: nowrap;
+        }
+
+        nav li:has(.selectedTab) .collapseWrapper {
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr;
+        }
+    }
+
+    .collapseWrapper>div:not(.selectedTab) h3 {
+        opacity: .5;
+    }
+
+    .selectedTab h3 {
+        padding-left: 0;
+    }
+
+    .listContainer .collapseWrapper .mobilePseudoTrack {
+        display: block;
+        width: 100%;
+        height: 2px;
+        background-color: rgba(0, 0, 0, 0.15);
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        border-radius: 2px;
+        transition: opacity .3s;
+    }
+
+    .switchTab-enter-active,
+    .switchTab-leave-active {
+        width: 100%;
+    }
+}
+
+@include small {
+    .listContainer {
+        nav {
+
+            ul {
+                gap: 0rem;
+            }
+
+            li {
+                flex: 1;
+                position: relative;
+                overflow: inherit;
+                min-height: 40px;
+                transition: min-height .3s .15s;
+
+                &:has(.collapseWrapper>div:is(.selectedTab)) {
+                    min-height: 90px;
+                }
+
+                .unselected {}
+            }
+
+            .orderList {
+                flex: 1;
+            }
+        }
+
+
+        .collapseWrapper {
+            grid-template-columns: 1fr 1fr 1fr;
+            position: absolute;
+            top: 50%;
+            left: 27px;
+            z-index: 2;
+            margin-inline: 0;
+            visibility: hidden;
+            opacity: 0;
+
+            // grid-template-rows: 0fr;
+            grid-template-rows: 1fr;
+            transition: opacity .3s;
+            width: max-content;
+
+            &:not(:has(.selectedTab)) {
+                gap: 1rem;
+
+                .mobilePseudoTrack {
+                    opacity: 0;
+                }
+            }
+        }
+
+        nav li:has(.selectedTab) .collapseWrapper {
+            // grid-template-rows: 1fr;
+            visibility: visible;
+            opacity: 1;
+        }
+    }
+}
+
+@include small($width: 430px) {}
+
+@include small($width: 320px) {}
 </style>

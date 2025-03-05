@@ -18,6 +18,12 @@
                 </ul>
             </div>
             <div class="tabs" ref="tabs">
+                <transition name="spinner">
+                    <Spinner
+                        v-show="newsList.showNews.length == 0">
+                    </Spinner>
+                </transition>
+
                 <div class="tab"
                     v-for="(tab) in newsList.tabs"
                     :key="tab" v-show="tab == newsList.tab">
@@ -641,6 +647,8 @@ onUnmounted(() => {
     }
 
     li {
+        // min-height: 90px;
+        // height: calc((100vh - 90px) / 5);
         align-items: center;
         cursor: pointer;
         display: flex;
@@ -970,6 +978,21 @@ onUnmounted(() => {
     // width: 100%;
     // align-items: center;
     // justify-content: center;
+}
+
+.spinner-enter-active,
+.spinner-leave-active {
+    transition: opacity .3s;
+}
+
+.spinner-enter-from,
+.spinner-leave-to {
+    opacity: 0;
+}
+
+.spinner-enter-to,
+.spinner-leave-from {
+    opacity: 1;
 }
 
 @include XLarge {}

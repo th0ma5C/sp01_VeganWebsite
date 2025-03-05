@@ -94,15 +94,9 @@ function toggleAnsOpen(list_index: number, content_index: number) {
 
 // position store
 const botContainer = useTemplateRef('botContainer');
-function exposePosition() {
-    if (botContainer.value) {
-        const { top } = botContainer.value.getBoundingClientRect();
-        positionStore.setPosition('bottom', top);
-    }
-}
 
 onMounted(() => {
-    exposePosition();
+    positionStore.exposeElCoord('FAQ', botContainer.value)
 })
 
 </script>
@@ -123,16 +117,19 @@ onMounted(() => {
 }
 
 .botContainer {
-    padding: 0 8rem;
+    padding-inline: 1.5rem;
+    padding-inline: clamp(1.5rem, 0.19999999999999996rem + 6.5vw, 8rem);
     margin-bottom: 4rem;
     margin-top: 4rem;
     min-height: 100vh;
     position: relative;
-    top: 100px;
 
     display: grid;
     grid-template-columns: 1fr 3fr;
     grid-template-rows: min-content 1fr;
+
+    max-width: 1920px;
+    margin-inline: auto;
 
     h1 {
         font-size: 3rem;
@@ -143,9 +140,6 @@ onMounted(() => {
         position: relative;
         height: fit-content;
         width: fit-content;
-
-        // grid-column: 1 / 2;
-        // grid-row: 1 / 2;
 
         &::after {
             @extend %pseudo_line;
@@ -163,51 +157,108 @@ onMounted(() => {
             height: 1px;
         }
     }
-
-    main {
-        grid-column: 2 / 3;
-        grid-row: 2 / 3;
-    }
 }
 
 main {
     display: flex;
     flex-direction: column;
     padding-top: 1rem;
-
-    ul {}
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
 
     li {
         font-size: 1.25rem;
-        margin-bottom: 1.25rem;
+        margin-bottom: 2rem;
+    }
+}
+
+.question {
+    cursor: pointer;
+    font-variation-settings: 'wght' 450;
+    transition: transform .3s;
+
+    &:is(:first-child) {
+        margin-top: 2rem;
     }
 
-    .question {
-        cursor: pointer;
-        font-variation-settings: 'wght' 450;
-        transition: transform .3s;
+    &:hover {
+        transform: translateX(1.25rem);
+    }
 
-        &:is(:first-child) {
-            margin-top: 1.25rem;
-        }
 
-        &:hover {
-            transform: translateX(1.25rem);
-        }
+}
+
+.open+.answer {
+    grid-template-rows: 1fr;
+    margin-bottom: 2rem;
+}
+
+.answer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .3s, margin-bottom .3s;
+    margin-bottom: 0;
+
+    span {
+        overflow: hidden;
+    }
+}
+
+@include XLarge {}
+
+@include large {}
+
+@include medium($width: 1024px) {}
+
+@include medium {
+    .botContainer {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    main {
+        grid-column: auto;
+        padding-left: 1rem;
+    }
+
+    main li {
+        margin-bottom: 1.5rem;
     }
 
     .open+.answer {
-        grid-template-rows: 1fr;
+        margin-bottom: 1.5rem;
     }
 
-    .answer {
-        display: grid;
-        grid-template-rows: 0fr;
-        transition: grid-template-rows .3s;
+    .question:is(:first-child) {
+        margin-top: 1.5rem;
+    }
 
-        span {
-            overflow: hidden;
+    .question {
+        &:hover {
+            transform: none;
+        }
+
+        &:active {
+            backdrop-filter: brightness(.95);
         }
     }
 }
+
+@include small {}
+
+@include small($width: 430px) {
+    .question:is(:first-child) {
+        margin-top: 1rem;
+    }
+
+    main li {
+        margin-bottom: 1rem;
+    }
+
+    .open+.answer {
+        margin-bottom: 1rem;
+    }
+}
+
+@include small($width: 320px) {}
 </style>

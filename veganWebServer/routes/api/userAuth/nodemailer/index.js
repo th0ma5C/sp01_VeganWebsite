@@ -7,7 +7,16 @@ const mailOptions = {
     subject: '驗證你的信箱',
 };
 
+function setOptions(to, subject) {
+    return {
+        from: 'thomas29111@gmail.com',
+        to,
+        subject,
+    }
+}
+
 module.exports = {
     mailOptions,
+    setOptions,
     getTransporter
 }

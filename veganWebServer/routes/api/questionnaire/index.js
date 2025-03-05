@@ -35,7 +35,7 @@ router.post('/saveResult', authUser, async (req, res) => {
         const userId = tokenPayload.userID;
 
         if (!surveyResult || typeof surveyResult !== 'object' || !Object.keys(surveyResult).length) {
-            return res.status(400).json({ msg: 'Invalid survey result data', state: 'denied' });
+            return res.status(422).json({ msg: 'Invalid survey result data', state: 'denied' });
         }
         await SurveyResultModel.updateOne(
             { userId },
@@ -47,6 +47,7 @@ router.post('/saveResult', authUser, async (req, res) => {
             state: 'confirm'
         })
     } catch (error) {
+        console.log(error);
         res.status(400).json({ error: 'Internal server error' });
     }
 })

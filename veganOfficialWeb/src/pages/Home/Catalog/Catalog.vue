@@ -86,16 +86,20 @@
                                         <h2>{{ name }}</h2>
                                         <p>{{ description }}
                                         </p>
-
                                     </div>
                                     <div class="textSkeleton"
                                         v-show="!isLoaded">
                                         <h2>Lorem, ipsum.
                                         </h2>
-                                        <p>Lorem ipsum dolor
-                                            sit
-                                            amet.</p>
+                                        <p>
+                                            Lorem ipsum
+                                            dolor
+                                        </p>
                                     </div>
+                                </div>
+
+                                <div class="scanner"
+                                    v-show="!isLoaded">
                                 </div>
                             </swiper-slide>
 
@@ -606,8 +610,6 @@ onMounted(() => {
         position: absolute;
         top: 0;
         left: 0;
-        background: linear-gradient(115deg, transparent 40%, #FCFAF2 50%, transparent 52%);
-        animation: loadImg 2s infinite ease-in;
     }
 }
 
@@ -618,6 +620,7 @@ onMounted(() => {
         @include flex-center-center;
         gap: 1.5rem;
         background-color: $primaryBacColor;
+        position: relative;
     }
 
     a {
@@ -648,14 +651,13 @@ onMounted(() => {
     .textSkeleton {
         color: transparent;
 
+        h2 {
+            margin-bottom: .5rem;
+        }
+
         &>* {
             border-radius: 0.25rem;
-            background: linear-gradient(115deg,
-                    #036313 40%,
-                    transparent 50%,
-                    #036313 52%);
-            background-size: 300%;
-            animation: 2s infinite ease-in loadText;
+            background-color: #036313;
         }
     }
 }
@@ -881,6 +883,27 @@ swiper-container::part(pagination) {
     }
 }
 
+@keyframes loadImg {
+    0% {
+        translate: -50% 0;
+    }
+
+    100% {
+        translate: 100% 0;
+    }
+}
+
+.scanner {
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: linear-gradient(115deg, transparent 40%, #FCFAF2 50%, transparent 52%);
+    animation: loadImg 3s infinite ease-in;
+}
+
 @include large {}
 
 @include medium($width: 1024px) {
@@ -903,10 +926,14 @@ swiper-container::part(pagination) {
         }
     }
 
+    [class^=menuSwiper] .imgSkeleton {
+        @include WnH(225px);
+    }
+
     .nextBtn,
     .prevBtn {
-        bottom: -1.5rem;
-        transform: scale(.75);
+        bottom: -1.75rem;
+        transform: scale(.8);
     }
 }
 
@@ -939,6 +966,10 @@ swiper-container::part(pagination) {
         a {
             @include WnH(200px);
         }
+    }
+
+    [class^=menuSwiper] .imgSkeleton {
+        @include WnH(175px);
     }
 
     [class^="menuSubSwiper"] {
@@ -991,7 +1022,7 @@ swiper-container::part(pagination) {
     .nextBtn,
     .prevBtn {
         bottom: -1.5rem;
-        transform: scale(.5);
+        transform: scale(.8);
         translate: -50% 100%;
 
         &:active {
@@ -1003,7 +1034,16 @@ swiper-container::part(pagination) {
         a {
             @include WnH(150px);
         }
+
+        .imgSkeleton {
+            @include WnH(125px);
+        }
+
+        .textSkeleton {
+            width: 150px;
+        }
     }
+
 
     [class^="menuSubSwiper"] {
         display: none;
@@ -1049,6 +1089,10 @@ swiper-container::part(pagination) {
             flex-direction: column;
             gap: 0.5rem;
         }
+
+        .textSkeleton {
+            margin-bottom: .5rem;
+        }
     }
 
     .tabContent {
@@ -1072,7 +1116,7 @@ swiper-container::part(pagination) {
 
     .nextBtn,
     .prevBtn {
-        bottom: -9px;
+        bottom: -1rem;
     }
 
     .mobileMoreBtn {

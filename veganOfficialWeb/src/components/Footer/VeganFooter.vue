@@ -167,6 +167,7 @@ import * as yup from 'yup';
 import { reqSubscribe } from '@/api/subscribe/subscribe';
 import { useRouter } from 'vue-router';
 import debounce from 'lodash/debounce'
+import { useToastStore } from '@/store/toastStore';
 
 
 
@@ -320,6 +321,8 @@ const Schema = yup.object({
     email: yup.string().trim().required('此欄不能空白').email(),
 })
 
+const toastStore = useToastStore();
+
 type ReqForm = yup.InferType<typeof Schema>;
 const isReqConfirm = ref(false);
 async function fetchSubscribe(form: Record<string, any>, ctx: SubmissionContext) {
@@ -333,7 +336,8 @@ async function fetchSubscribe(form: Record<string, any>, ctx: SubmissionContext)
         if (result.state == 'confirm') {
             setArrowState('out')
             isReqConfirm.value = true
-            ctx.resetForm()
+            ctx.resetForm();
+            toastStore.addNotification('訂閱成功')
         }
     } catch (error) {
         console.log(error);

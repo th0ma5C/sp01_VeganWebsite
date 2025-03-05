@@ -12,10 +12,13 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
+    "@types/canvas-confetti": "^1.9.0",
     "@types/lodash": "^4.14.202",
     "@types/nprogress": "^0.2.3",
     "@vee-validate/yup": "^4.14.6",
     "axios": "^1.6.7",
+    "bcryptjs": "^3.0.2",
+    "canvas-confetti": "^1.9.3",
     "fast-glob": "^3.3.2",
     "fuse.js": "^7.0.0",
     "gsap": "^3.12.5",

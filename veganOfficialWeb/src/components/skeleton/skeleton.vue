@@ -3,17 +3,53 @@
         <div class="imgSkeleton" v-show="true">
             <!-- <img src="@assets/img/Home/Catalog/salad.svg"
                 alt=""> -->
-            <SvgIcon name="skeletonSalad" width="180"
-                height="180" color="#00430b"></SvgIcon>
+            <SvgIcon name="skeletonSalad"
+                :width="`${skeletonSize}px`"
+                :height="`${skeletonSize}px`"
+                color="#00430b" :key="skeletonSize">
+            </SvgIcon>
         </div>
         <div class="textSkeleton" v-show="true">
             <div></div>
             <div></div>
         </div>
+        <div class="scanner"></div>
     </div>
 </template>
 
 <script setup lang="ts">
+import debounce from 'lodash/debounce';
+import { onMounted, onUnmounted, ref } from 'vue';
+
+const breakpoint = [
+    { query: '(max-width: 320px)', size: 100 },
+    { query: '(max-width: 430px)', size: 120 },
+    { query: '(max-width: 576px)', size: 140 },
+    { query: '(max-width: 768px)', size: 160 },
+    { query: '(max-width: 1024px)', size: 180 },
+    { query: '(max-width: 1440px)', size: 180 },
+];
+
+const skeletonSize = ref(180);
+
+function onresize() {
+    for (let bp of breakpoint) {
+        if (window.matchMedia(bp.query).matches) {
+            skeletonSize.value = bp.size;
+            break
+        }
+    }
+}
+const debounceResize = debounce(onresize, 500);
+
+onMounted(() => {
+    window.addEventListener('resize', debounceResize);
+    // console.log(window.matchMedia('(max-width: 1440px)'));
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', debounceResize)
+})
 
 </script>
 
@@ -30,11 +66,11 @@
 
 @keyframes loadImg {
     0% {
-        left: -250%;
+        translate: -75% 0;
     }
 
     100% {
-        left: -50%;
+        translate: 150% 0;
     }
 }
 
@@ -51,24 +87,38 @@
     }
 
     &::after {
-        @include WnH(300%);
-        content: '';
-        pointer-events: none;
-        position: absolute;
-        top: 0;
-        left: 0;
-        background: linear-gradient(115deg, transparent 40%, #FCFAF2 50%, transparent 52%);
-        animation: loadImg 2s infinite ease-in;
+        // @include WnH(300%);
+        // content: '';
+        // pointer-events: none;
+        // position: absolute;
+        // top: 0;
+        // left: 0;
+        // background: linear-gradient(115deg, transparent 40%, #FCFAF2 50%, transparent 52%);
+        // animation: loadImg 2s infinite ease-in;
     }
 }
 
 .wrapper {
     @include flex-center-center;
     flex-direction: row;
+    height: max-content;
+    background-color: $primaryBacColor;
+    position: relative;
 }
 
 .imgSkeleton {
     @include skeleton;
+}
+
+.scanner {
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: linear-gradient(115deg, transparent 40%, #FCFAF2 50%, transparent 52%);
+    animation: loadImg 2.5s infinite ease-in;
 }
 
 .textSkeleton {
@@ -82,12 +132,30 @@
         width: 160px;
         height: 24px;
         border-radius: 0.25rem;
-        background: linear-gradient(115deg,
-                #036313 40%,
-                transparent 50%,
-                #036313 52%);
-        background-size: 300%;
-        animation: 2s infinite ease-in loadText;
+        background-color: #036313;
     }
 }
+
+@include XLarge {}
+
+@include large {}
+
+@include medium($width: 1024px) {}
+
+@include medium {}
+
+@include small {
+    // .imgSkeleton {
+    //     @include WnH(180px);
+    // }
+
+    // .textSkeleton>div {
+    //     width: 120px;
+    //     height: 22px;
+    // }
+}
+
+@include small($width: 430px) {}
+
+@include small($width: 320px) {}
 </style>

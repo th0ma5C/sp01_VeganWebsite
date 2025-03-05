@@ -38,8 +38,10 @@ const reqUserLogin = (params: LoginForm) => {
 
 const reqGetUser = () => request.get<any, AuthResData>('/api/auth/profile');
 
+const reqCheckUserVerified = () => request.get<any, AuthResData>('/api/auth/checkUserVerified');
+
 const reqSendVerifyEmail = (params?: any) => {
-    return request.post('/api/auth//send-verifyEmail', {
+    return request.post<any, AuthResData>('/api/auth//send-verifyEmail', {
         ...params
     })
 }
@@ -56,6 +58,18 @@ const reqRedirectLogin = (params: any) => {
     })
 }
 
+const reqForgetPasswordEmail = (params: Record<string, string>) => {
+    return request.post('api/auth/forgetPassword', {
+        ...params
+    })
+}
+
+const reqResetPassword = (params: Record<string, string>) => {
+    return request.patch('api/auth/resetPassword', {
+        ...params
+    })
+}
+
 
 export {
     reqUserRegister,
@@ -63,5 +77,8 @@ export {
     reqUserLogout,
     reqGetUser,
     reqSendVerifyEmail,
-    reqRedirectLogin
+    reqRedirectLogin,
+    reqForgetPasswordEmail,
+    reqResetPassword,
+    reqCheckUserVerified
 }

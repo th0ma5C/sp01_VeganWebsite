@@ -44,34 +44,45 @@
                             </ErrorMessage>
                         </div>
                     </fieldset>
-                </form>
+                    <div class="submitContainer">
+                        <div class="ResErrMsg"
+                            v-show="registerMsg">
+                            <SvgIcon name="QNR_alert"
+                                width="18" height="18"
+                                color="#b3261e">
+                            </SvgIcon>
+                            <span>
+                                {{ registerMsg }}
+                            </span>
+                        </div>
+                        <button>
+                            送出
+                        </button>
 
-                <div class="submitContainer">
-                    <button>
-                        送出
-                    </button>
-
-                    <div class="cancel">
-                        <router-link to="/profile">
-                            取消
-                        </router-link>
+                        <div class="cancel">
+                            <router-link to="/profile">
+                                取消
+                            </router-link>
+                        </div>
                     </div>
-                </div>
+                </form>
             </VForm>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-/**
- * todo: 查找資料庫是否有該帳號
- */
-
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import {
     Field as VField, Form as VForm, ErrorMessage
 } from 'vee-validate';
 import * as yup from 'yup';
+import { reqForgetPasswordEmail } from '@/api/userAuth';
+import { useToastStore } from '@/store/toastStore';
+import { useRoute, useRouter } from 'vue-router';
+import type { AxiosError } from 'axios';
+import { useLoaderStore } from '@/store/loader';
+import { storeToRefs } from 'pinia';
 
 // fix wrong element position when route leaving
 const forgetPasswordContainer = ref<HTMLElement>();
@@ -81,9 +92,35 @@ const containerStyle = computed(() => {
     return { top: `${top}px` }
 })
 
+// toast store
+const toastStore = useToastStore();
+const { addNotification } = toastStore;
+
+// loader store
+const loaderStore = useLoaderStore();
+const { loaderActivated } = storeToRefs(loaderStore);
+watch(loaderActivated, (nVal) => {
+    console.log(loaderActivated.value);
+    if (nVal == false) {
+    }
+}, { immediate: true })
+
+// 路由
+const router = useRouter();
+
+function redirectFormReset() {
+    const { msg } = window.history.state;
+    if (msg) {
+        addNotification(msg)
+    }
+}
+
 // 表單驗證
 interface LoginData {
     email?: string | null;
+}
+interface ErrorResponse {
+    message: string;
 }
 const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
 
@@ -98,12 +135,23 @@ yup.addMethod(yup.string, 'email', function validateEmail(message) {
 const loginSchema = yup.object({
     email: yup.string().trim().required('此欄不能空白').email(),
 })
-
-function onSubmit(values?: Record<string, any>) {
-    console.log(JSON.stringify(values, null, 2));
+const registerMsg = ref<string | null>(null);
+async function onSubmit(values?: Record<string, any>) {
+    try {
+        if (!values) return
+        const res = await reqForgetPasswordEmail(values);
+        console.log(res);
+        addNotification('重設密碼信件已發送，請至信箱確認')
+        await router.push('/profile');
+    } catch (error) {
+        const message = (error as AxiosError<ErrorResponse>).response?.data.message;
+        registerMsg.value = message ?? '未知錯誤'
+        // console.error("驗證失敗：", err.response?.data.message);
+    }
 }
 
 onMounted(() => {
+    redirectFormReset()
 })
 </script>
 
@@ -113,7 +161,9 @@ $container_width: 300px;
 .forgetPasswordContainer {
     text-align: center;
     flex: 1;
-    display: flow-root;
+    // display: flow-root;
+    width: 100%;
+    max-width: 320px;
 
     &>p {
         margin-top: .25rem;
@@ -138,7 +188,8 @@ h1 {
         }
 
         input {
-            width: $container_width;
+            // width: $container_width;
+            width: 100%;
             height: 48px;
             padding: 0 1rem;
             border: 1px solid gray;
@@ -199,6 +250,7 @@ h1 {
     justify-content: center;
     align-items: center;
     gap: .75rem;
+    position: relative;
 
     button {
         background-color: $btnBacColor_light;
@@ -237,6 +289,19 @@ h1 {
             &:hover {
                 opacity: 1;
             }
+        }
+    }
+
+    .ResErrMsg {
+        position: absolute;
+        top: 0rem;
+
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+
+        span {
+            color: $error_color;
         }
     }
 }

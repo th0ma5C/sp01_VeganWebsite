@@ -83,7 +83,7 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         }
     }, { immediate: true });
 
-    function checkQuestionIsANswered(question: keyof Omit<Form, 'info'>) {
+    function checkQuestionIsAnswered(question: keyof Omit<Form, 'info'>) {
         if (Array.isArray(QNR_result.value[question])) {
             return QNR_result.value[question].length !== 0
         } else if (QNR_result.value[question]) {
@@ -139,52 +139,40 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         return data
     }
 
-    // async function initQNR_() {
-    //     return new Promise<void>(async (resolve, reject) => {
-    //         let result;
-    //         const data = getDataFromStorage() as typeof QNR_state.value;
-    //         const cloudSurveyResult = await memberGetResult();
-    //         if (!data && !cloudSurveyResult) {
-    //             // currPage.value = 1;
-    //             formPageTranslateX.value = (currPage.value - 1) * -100;
-    //             // setQNR_result(QNR_result);
-    //             return reject(`${getDataFromStorage.name}failed`);
-    //         }
-    //         ({
-    //             currPage: currPage.value,
-    //             result: result,
-    //             completed: QNR_isDone.value,
-    //         } = data);
-    //         formPageTranslateX.value = (currPage.value - 1) * -100;
-    //         if (isAuth.value) {
-    //             result = cloudSurveyResult;
-    //         }
-    //         // setQNR_result(result);
-    //         Object.assign(QNR_result, { ...result });
-    //         setQNRtoStorage();
-    //         resolve();
-    //     }).catch((err) => {
-    //         console.log(err);
-    //     })
-    // }
+    function arrayIsSame<T>(arr1: T[], arr2: T[]) {
+        if (arr1.length !== arr2.length) return false
+        return arr1.every((item, index) => item === arr2[index])
+    }
 
     async function initQNR() {
         try {
+
             let storageResult;
+            let localTimeStamp;
             const localStorage = getDataFromStorage();
             if (localStorage) {
                 ({
                     currPage: currPage.value,
                     result: storageResult,
                     completed: QNR_isDone.value,
+                    timeStamp: localTimeStamp
                 } = localStorage);
             }
             formPageTranslateX.value = (currPage.value - 1) * -100;
+            const localHasFinished = QNR_isDone.value;
 
             const cloudResult = await memberGetResult();
             if (isAuth.value && cloudResult) {
-                const cloudStamp = new Date(cloudResult.createdAt).getTime();
-                if (cloudStamp > localStorage.timeStamp || !QNR_isDone.value) {
+                // const cloudStamp = new Date(cloudResult.createdAt).getTime();
+                const cloudUsername = cloudResult.info.userName;
+                const cloudBirth = cloudResult.info.birth;
+                const localBirth = storageResult.info.birth;
+                if ((cloudUsername !== storageResult.info.userName ||
+                    !arrayIsSame(cloudBirth, localBirth)) &&
+                    localHasFinished) {
+                    storageResult = cloudResult;
+                }
+                if (!localHasFinished) {
                     storageResult = cloudResult;
                 }
                 surveyHasCompleted.value = true;
@@ -192,7 +180,6 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
 
             QNR_result.value = storageResult ?? { ...QNR_empty.value };
             setQNRtoStorage();
-
             return
         } catch (error) {
             console.log(error);
@@ -245,12 +232,6 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
     }
 
     // analysis hook
-    // const { saladRank, smoothiesRank } = useAnalysisResult(QNR_result);
-
-    // const recommendList = computed(() => {
-    //     return [...saladRank.value.slice(0, 3), ...smoothiesRank.value.slice(0, 3)]
-    // })
-
     const recommendList = ref<MenuItem[]>([]);
     watch(() => QNR_result.value.habit, (nVal) => {
         if (nVal) {
@@ -281,6 +262,6 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         memberGetResult,
         clearSurveyData,
         getRecList,
-        checkQuestionIsANswered
+        checkQuestionIsAnswered
     }
 })

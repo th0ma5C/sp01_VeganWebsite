@@ -8,12 +8,12 @@
                     :allowTouchMove="false" class="test">
                     <swiper-slide>
                         <img src="@assets/img/Menu/doc01.png"
-                            alt="doc">
+                            alt="doctor A">
                     </swiper-slide>
                     <swiper-slide
                         data-swiper-autoplay="6000">
                         <img src="@assets/img/Menu/doc02.png"
-                            alt="doc">
+                            alt="doctor B">
                     </swiper-slide>
                 </swiper-container>
             </div>
@@ -73,6 +73,7 @@
                                             class="inputWrapper">
                                             <form action="">
                                                 <input
+                                                    id="searchFilterWord"
                                                     type="text"
                                                     placeholder="篩選條件"
                                                     v-model.trim="searchFilterWord"
@@ -217,14 +218,16 @@
                     </div>
                 </div>
             </div>
+
             <div class="saladMenu"
                 :class="{ expandMenu: isShowFullMenu }"
                 :style="saladMenuStyle"
                 ref="saladContainer">
                 <transition name="skeleton">
-                    <div class="skeleton"
-                        v-show="!isLoaded">
-                        <Skeleton v-for="(item, index) in 8"
+                    <div class="skeleton" v-show="!isLoaded"
+                        :style="saladMenuStyle">
+                        <Skeleton
+                            v-for="(item, index) in (columnsLimit * 2)"
                             :key="index"></Skeleton>
                     </div>
                 </transition>
@@ -358,7 +361,7 @@
                                 詳細資訊
                             </button>
                         </div>
-                        <Teleport
+                        <Teleport :defer="true"
                             :to="'.flyToCartContainer'">
                             <div class="flyToCart"
                                 ref="flyToCartEl"
@@ -453,6 +456,7 @@
                 </swiper-container>
             </div>
         </div>
+        <div class="flyToCartContainer"></div>
     </div>
 </template>
 
@@ -804,7 +808,7 @@ let currWidth = 0;
 async function handleResize() {
     if (currWidth == window.innerWidth) return
     await nextTick();
-    // handleSwiperSlide('update');
+    handleSwiperSlide('update');
     getSubTitleTranslate();
     getColumnsLimit();
     setGridRows();
@@ -913,7 +917,7 @@ let filteredIngredient = computed(() => {
 let gridRow = ref(2);
 const documentWidth = ref(0);
 function getDocumentWidth() {
-    documentWidth.value = document.documentElement.offsetWidth;
+    documentWidth.value = window.innerWidth;
 }
 let saladMenuStyle = computed(() => {
     let rowHeight = 410;
@@ -2061,43 +2065,6 @@ $menuItemContainer_height: 405px;
     //     }
     // }
 
-
-    .skeleton-enter-active,
-    .skeleton-leave-active {
-        transition: opacity .75s ease;
-    }
-
-    .skeleton-enter-from,
-    .skeleton-leave-to {
-        opacity: 0;
-    }
-
-    .skeleton-enter-to,
-    .skeleton-leave-from {
-        opacity: 1;
-    }
-
-    .skeleton {
-        // opacity: 0.5;
-        @include WnH(110%, 100%);
-        background-color: $primaryBacColor;
-        padding: 0 4rem;
-        display: grid;
-        justify-content: space-between;
-        grid-template-columns: repeat(4, 20%);
-        // grid-template-rows: 1fr 1fr;
-        grid-template-rows: repeat(auto, minmax(0, 450px));
-        row-gap: 2rem;
-        position: absolute;
-        top: 0;
-        left: -5%;
-        z-index: 5;
-
-        &:deep(.wrapper) {
-            flex-direction: column;
-        }
-    }
-
     // .loadingScene {
     //     display: none;
     //     @include WnH(100%);
@@ -2107,7 +2074,50 @@ $menuItemContainer_height: 405px;
     //     top: 0;
     //     background-color: hsla(47, 60%, 97%, 0.3)
     // }
+    .skeleton {
+        // opacity: 0.5;
+        @include WnH(100%, 100%);
+        background-color: $primaryBacColor;
+        // padding: 0 4rem;
+        display: grid;
+        // justify-content: space-between;
+        // grid-template-columns: repeat(4, 20%);
+        // grid-template-rows: 1fr 1fr;
+        grid-template-rows: repeat(auto-fill, minmax(max-content, 450px));
+        row-gap: 2rem;
+        position: absolute;
+        top: 0;
+        // left: -5%;
+        z-index: 5;
+
+        padding: 1rem 0rem;
+        justify-content: space-around;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 20%));
+        row-gap: 2rem;
+
+        &:deep(.wrapper) {
+            overflow: hidden;
+            flex-direction: column;
+        }
+    }
 }
+
+.skeleton-enter-active,
+.skeleton-leave-active {
+    transition: opacity .75s ease;
+}
+
+.skeleton-enter-from,
+.skeleton-leave-to {
+    opacity: 0;
+}
+
+.skeleton-enter-to,
+.skeleton-leave-from {
+    opacity: 1;
+}
+
+
 
 .onUnloaded {
     min-height: 80px;
@@ -2201,6 +2211,7 @@ $menuItemContainer_height: 405px;
         gap: 2rem;
         position: relative;
         // transform: translateX(-336px);
+        min-height: 483px;
     }
 
     swiper-container {
@@ -2309,7 +2320,7 @@ $menuItemContainer_height: 405px;
 }
 
 .skeletonWrapper {
-    @include absoluteCenterTLXY($top: 0, $Y: 0);
+    @include absoluteCenterTLXY($top: 0, $left: 0, $X: 0, $Y: 0);
     // background-color: $primaryBacColor;
     // margin: 1.5rem 0;
     // padding: 0 1rem;
@@ -2330,6 +2341,7 @@ $menuItemContainer_height: 405px;
 
     .skeleton {
         width: 300px;
+        height: 100%;
         background-color: $primaryBacColor;
         border: 1px solid black;
         border-radius: 150px 150px 1rem 1rem;
@@ -2720,8 +2732,15 @@ $menuItemContainer_height: 405px;
         }
     }
 
-    .saladMenu {
+    .saladMenu,
+    .saladMenu .skeleton {
         grid-template-columns: repeat(auto-fill, minmax(200px, 20%));
+    }
+
+    .saladMenu .skeleton:deep(.wrapper) {
+        .imgSkeleton {
+            @include WnH(200px);
+        }
     }
 
     .showFullMenuBtn {
@@ -2735,6 +2754,11 @@ $menuItemContainer_height: 405px;
     .smoothieMenu {
         .itemWrapper {
             margin-block: 2rem;
+            min-height: 417px;
+        }
+
+        .skeletonWrapper .skeleton {
+            width: 250px;
         }
 
         .item {
@@ -2856,15 +2880,32 @@ $menuItemContainer_height: 405px;
         gap: .5rem;
     }
 
-    .saladMenu {
+    .saladMenu,
+    .saladMenu .skeleton {
         grid-template-columns: repeat(auto-fill, minmax(180px, 20%));
         // row-gap: 1.5rem;
         // justify-content: space-between;
     }
 
+    .saladMenu .skeleton:deep(.wrapper) {
+        .imgSkeleton {
+            @include WnH(180px);
+        }
+
+        .textSkeleton>div {
+            width: 120px;
+            height: 22px;
+        }
+    }
+
     .smoothieMenu {
         .itemWrapper {
             margin-block: 1.5rem;
+            min-height: 390px;
+        }
+
+        .skeletonWrapper .skeleton {
+            width: 230px;
         }
 
         .item {
@@ -2952,13 +2993,45 @@ $menuItemContainer_height: 405px;
         }
     }
 
-    .saladMenu {
+    .saladMenu,
+    .saladMenu .skeleton {
         grid-template-columns: repeat(auto-fill, minmax(155px, 20%));
         // justify-content: space-between;
         row-gap: 1.5rem;
     }
 
+    .saladMenu .skeleton:deep(.wrapper) {
+        .imgSkeleton {
+            @include WnH(160px);
+        }
+
+        .textSkeleton>div {
+            width: 100px;
+            height: 20px;
+        }
+    }
+
     .smoothieMenu {
+
+        .itemWrapper {
+            min-height: 357px;
+        }
+
+        .skeletonWrapper .skeleton {
+            width: 200px;
+        }
+
+        .skeletonWrapper:deep(.wrapper) {
+            .imgSkeleton {
+                @include WnH(250px);
+            }
+
+            .textSkeleton>div {
+                width: 120px;
+                height: 20px;
+            }
+        }
+
         .item {
             width: 200px;
             padding: 20px .75rem .75rem .75rem;
@@ -2985,7 +3058,9 @@ $menuItemContainer_height: 405px;
 }
 
 @include small($width: 375px) {
-    .saladMenu {
+
+    .saladMenu,
+    .saladMenu .skeleton {
         grid-template-columns: repeat(auto-fill, minmax(140px, 20%));
         row-gap: 1rem;
     }
@@ -3004,15 +3079,40 @@ $menuItemContainer_height: 405px;
     //         @include WnH(155px);
     //     }
     // }
+
 }
 
 @include small($width: 320px) {
-    .saladMenu {
+
+    .saladMenu,
+    .saladMenu .skeleton {
         grid-template-columns: repeat(auto-fill, minmax(135px, 20%));
         // row-gap: 1rem;
     }
 
+    .saladMenu .skeleton:deep(.wrapper) {
+        .imgSkeleton {
+            @include WnH(140px);
+        }
+
+        .textSkeleton>div {
+            width: 80px;
+            height: 18px;
+        }
+    }
+
     .smoothieMenu {
+        .skeletonWrapper:deep(.wrapper) {
+            .imgSkeleton {
+                @include WnH(200px);
+            }
+
+            .textSkeleton>div {
+                width: 100px;
+                height: 20px;
+            }
+        }
+
         .item {
             // width: 175px;
             // padding: 0rem .5rem .5rem .5rem;

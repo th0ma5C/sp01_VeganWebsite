@@ -1,12 +1,11 @@
 // routes/auth.js
 const express = require('express');
 const router = express.Router();
-
 const User = require('@models/User');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const { validateRegister, validateLogin, authToken, authJWT, authUser } = require('@middlewares/userValidator');
-
-const { mailOptions, getTransporter } = require('./nodemailer');
+const { mailOptions, getTransporter, setOptions } = require('./nodemailer');
 
 async function isUserExist(username, email) {
     try {
@@ -95,7 +94,7 @@ router.get('/profile', authUser, async (req, res) => {
         const { userID } = req.user;
         const user = await User.findById(userID);
         const token = jwt.sign(
-            { username: user.username, email: user.email, userID: user._id },
+            { username: user.username, email: user.email, userID: user._id, verified: user.verified },
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );
@@ -131,21 +130,21 @@ router.post('/logout', async (req, res) => {
         res.status(400).json({ message: 'Invalid request' });
     }
 })
-
 router.post('/send-verifyEmail', async (req, res) => {
+    const subject = '驗證你的信箱'
     try {
         const { to } = req.body;
         const userID = await User.findOne({ email: to }).select('_id')
         const token = jwt.sign({ userID, email: to }, process.env.JWT_SECRET, { expiresIn: '1h' });
         const options = {
-            ...mailOptions,
+            ...setOptions(to, subject),
             text: `請點擊以下連結來驗證你的信箱(連結將在一小時後失效): ${to}`,
             html: `<p>請點擊以下連結來驗證你的信箱: <a href="http://localhost:3000/api/auth/verify?token=${token}">驗證連結</a></p>`,
         }
         const transporter = getTransporter();
         const info = await transporter.sendMail(options);
         console.log('郵件已發送: ', info.response);
-        res.status(200).send({ message: '郵件發送成功', options });
+        res.status(200).send({ message: '郵件發送成功', state: 'confirm' });
     } catch (error) {
         console.error('發送郵件時出錯:', error);
         res.status(500).send({ message: '郵件發送失敗' });
@@ -189,6 +188,99 @@ router.get('/verify', async (req, res) => {
     } catch (error) {
         console.error('驗證過程出錯:', error);
         res.status(400).send('驗證連結無效或已過期');
+    }
+})
+
+async function authResetEmail(req, res, next) {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(403).json({ message: '無此使用者，請輸入正確信箱', state: 'denied' });
+        }
+
+        req.body.user = user;
+        next();
+    } catch (error) {
+        res.status(403).json({ message: 'Unauthorized', state: 'denied' });
+    }
+}
+
+router.post('/forgetPassword', authResetEmail, async (req, res) => {
+    const subject = 'Relation-Ship 會員重設密碼'
+    try {
+        const { _id: userID, email } = req.body.user;
+        const token = jwt.sign({ userID }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const options = {
+            ...setOptions(email, subject),
+            html: `
+            <h1>
+            請點擊以下連結以重設密碼(連結將在一小時後失效)：
+            <a href="http://localhost:5173/profile/resetPassword?token=${token}">重設密碼</a>
+            </h1>
+            `,
+        }
+        const transporter = getTransporter();
+        await transporter.sendMail(options);
+        res.status(200).send({ message: '郵件發送成功', state: 'confirm' });
+    } catch (error) {
+        res.status(500).json({ message: '伺服器錯誤' });
+    }
+})
+
+function authResetToken(req, res, next) {
+    const token = req.body.token;
+    if (!token) return res.status(401).json({ message: 'Unauthorized', state: 'denied' })
+
+    try {
+        jwt.verify(token, process.env.JWT_SECRET);
+        // req.body.user = decoded;
+        next();
+    } catch (error) {
+        res.status(403).json({ message: 'Unauthorized', state: 'denied' });
+    }
+}
+
+async function comparePassword(nPassword, oPassword) {
+    return await bcrypt.compare(nPassword, oPassword);
+}
+
+router.patch('/resetPassword', authResetToken, async (req, res) => {
+    try {
+        const { userID, password: nPassword } = req.body;
+        const user = await User.findById(userID);
+        const isSamePassword = await comparePassword(nPassword, user.password)
+        if (isSamePassword) {
+            return res.status(409).json({ message: "新密碼不能與舊密碼相同", state: 'denied' });
+        }
+        user.password = nPassword;
+        await user.save();
+        res.status(201).json({ message: '重設成功', state: 'confirm' });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: '伺服器錯誤' });
+    }
+})
+
+router.get('/checkUserVerified', authUser, async (req, res) => {
+    try {
+        const { userID } = req.user;
+        const { verified } = await User.findById(userID);
+
+        if (verified) {
+            return res.status(200).json({
+                message: '已驗證',
+                state: 'confirm'
+            });
+        }
+        res.status(200).json({
+            message: '未驗證',
+            state: 'denied'
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Invalid request' });
     }
 })
 

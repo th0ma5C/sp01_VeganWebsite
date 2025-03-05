@@ -1,5 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
 import { computed, nextTick, reactive, ref, watch } from "vue";
+import { useLoaderStore } from "./loader";
 
 interface Notification {
     content: string,
@@ -9,6 +10,9 @@ interface Notification {
 }
 
 export const useToastStore = defineStore('toast', () => {
+    const loaderStore = useLoaderStore();
+    const { loaderActivated } = storeToRefs(loaderStore);
+
     const notificationList = ref<Notification[]>([]);
     const count = ref(0);
 
@@ -25,7 +29,19 @@ export const useToastStore = defineStore('toast', () => {
         notificationCountdown(notificationList.value.length);
     }
 
+
+
     function notificationCountdown(target: number) {
+        if (loaderActivated.value) {
+            watch(loaderActivated, (nVal) => {
+                if (nVal == false) {
+                    setTimeout(() => {
+                        notificationCountdown(target);
+                    }, 1000);
+                }
+            }, { once: true })
+            return
+        }
         const index = target - 1;
         // if (notificationList.value[index].countdownBar_width > 0) {
         //     notificationList.value[index].countdownBar_width -= .5;

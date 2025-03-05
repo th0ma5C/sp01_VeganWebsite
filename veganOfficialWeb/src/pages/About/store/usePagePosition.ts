@@ -1,29 +1,21 @@
 import { reactive } from "vue";
 
-type AnchorTarget = 'upper' | 'middle' | 'bottom';
+type AnchorTarget = 'CONCEPT' | 'ACCESS' | 'FAQ';
+type ELementGetter = () => number;
 
 export const positionStore = reactive({
-    upperAnchor: 0,
-    middleAnchor: 0,
-    bottomAnchor: 0,
-    setPosition(target: AnchorTarget, position: number) {
-        switch (target) {
-            case 'upper':
-                this.upperAnchor = position;
-                break;
-            case 'middle':
-                this.middleAnchor = position;
-                break;
-            default:
-                this.bottomAnchor = position;
-                break;
-        }
+    elFnMap: {} as Record<AnchorTarget, ELementGetter | null>,
+    setFn(target: AnchorTarget, fn: ELementGetter) {
+        this.elFnMap[target] = fn
     },
-    getPosition() {
-        return {
-            upper: this.upperAnchor,
-            middle: this.middleAnchor,
-            bottom: this.bottomAnchor,
-        }
+    getElPosition(target: AnchorTarget) {
+        const getter = this.elFnMap[target];
+        return getter ? getter() : null
+    },
+    exposeElCoord(target: AnchorTarget, el: HTMLDivElement | null) {
+        if (!el) return
+        this.setFn(target, () => {
+            return el.getBoundingClientRect().top
+        })
     }
 })

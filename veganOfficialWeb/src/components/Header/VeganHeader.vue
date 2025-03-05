@@ -33,9 +33,12 @@
                         </SvgIcon>
                     </a>
                 </transition>
-                <Search v-if="isSearchShow"
+                <!-- <Search v-if="isSearchShow"
                     :showSearch="isSearchShow"
                     @close="clickNavIcon('Search')">
+                </Search> -->
+                <Search v-if="isSearchShow"
+                    v-model="isSearchShow">
                 </Search>
             </div>
             <ul class="">
@@ -96,8 +99,8 @@
                     color="#00430b">
                 </SvgIcon>
             </router-link>
-            <div @click.stop class="navIconWrapper">
-                <ul class="navLink">
+            <div class="navIconWrapper">
+                <ul class="navLink" @click.stop>
                     <li v-for="{ title, url } in navLink"
                         :key="title">
                         <RouterLink :to="url" href="">
@@ -107,7 +110,7 @@
                         </RouterLink>
                     </li>
                 </ul>
-                <ul class="navIcon">
+                <ul class="navIcon" @click.stop>
                     <li v-for="{ icon } in navIcon"
                         :key="icon" ref="iconList" :class="{
                             searchIcon: icon == 'Search'
@@ -144,9 +147,13 @@
                         </CartCounter>
                         <Search
                             v-if="icon == 'Search' && isSearchShow"
+                            v-model="isSearchShow">
+                        </Search>
+                        <!-- <Search
+                            v-if="icon == 'Search' && isSearchShow"
                             :showSearch="isSearchShow"
                             @close="clickNavIcon('Search')">
-                        </Search>
+                        </Search> -->
                     </li>
                 </ul>
             </div>
@@ -330,21 +337,15 @@ const { isCheckout } = storeToRefs(cartStore);
 const { toggleCartCardOpen, getHeaderCart } = cartStore;
 
 function clickNavIcon(target: string) {
+    if (isSearchShow.value && target !== 'Search') clickNavIcon('Search');
+
     switch (target) {
         case 'Cart':
             toggleCartCardOpen()
-            if (isSearchShow.value) {
-                clickNavIcon('Search');
-            }
             break;
-
         case 'Person':
             Router.push('/profile/account')
-            if (isSearchShow.value) {
-                clickNavIcon('Search');
-            }
             break;
-
         default:
             isSearchShow.value = !isSearchShow.value
             break;

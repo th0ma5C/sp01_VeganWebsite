@@ -3,6 +3,34 @@
         :slides-per-view="1"
         :pagination="{ clickable: true }"
         pagination-dynamic-bullets="true" :speed="1000"
+        :centeredSlides="true"
+        :injectStyles="'injectStyles'" class="mainBanner"
+        @swipertouchmove="swiperOndrag"
+        @swipertouchend="swiperEndDrag">
+        <swiper-slide v-for="(img, index) in imgs"
+            :key="index">
+            <div class="swiper-wrapper"
+                @click="titleOnclick(img.title)">
+                <div class="swiper-slide">
+                    <div class="title"
+                        data-swiper-parallax="-500">
+                        <h1>{{ img.title }}</h1>
+                        <p>{{ img.text }}</p>
+                    </div>
+                </div>
+                <div class="text" data-swiper-parallax="0">
+                    <!-- <a href="" @click.prevent> -->
+                    <img :src="`/imgs/MainBanner/${img.url}.jpg`"
+                        alt="">
+                    <!-- </a> -->
+                </div>
+            </div>
+        </swiper-slide>
+    </swiper-container>
+    <!-- <swiper-container :parallax="true" :loop="true"
+        :slides-per-view="1"
+        :pagination="{ clickable: true }"
+        pagination-dynamic-bullets="true" :speed="1000"
         :centeredSlides="true" :autoplay="{
             delay: 7750,
             disableOnInteraction: false,
@@ -28,7 +56,7 @@
                 </div>
             </div>
         </swiper-slide>
-    </swiper-container>
+    </swiper-container> -->
 </template>
 <script lang="ts" setup>
 import { useToastStore } from '@/store/toastStore';
@@ -171,6 +199,7 @@ onMounted(() => {
     left: 3%;
     border-radius: 1rem;
     padding: .25rem .5rem;
+    max-width: 100%;
 
     h1 {
         font-size: 4rem;
@@ -196,21 +225,10 @@ onMounted(() => {
 }
 
 .text {
-
-    @media screen and (max-width: 1440px) {
-
-        a,
-        img {
-            // height: 776px;
-        }
-    }
-
-    a,
-    img {
-        width: 100%;
-        object-fit: cover;
-        object-position: center;
-    }
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
 }
 
 swiper-container {
@@ -290,12 +308,19 @@ swiper-container {
         left: 0%;
 
         h1 {
-            font-size: 2rem;
+            font-size: 2.5rem;
         }
 
         p {
-            font-size: .75rem;
+            // font-size: .75rem;
         }
+    }
+
+    .text img {
+        object-fit: cover;
+        object-position: center;
+        max-width: none;
+        max-height: 40vh;
     }
 }
 
@@ -305,11 +330,11 @@ swiper-container {
         left: -2%;
 
         h1 {
-            font-size: 1.5rem;
+            // font-size: 1.5rem;
         }
 
         p {
-            font-size: .5rem;
+            // font-size: .5rem;
         }
     }
 }
@@ -321,11 +346,11 @@ swiper-container {
         left: -4%;
 
         h1 {
-            font-size: 1.25rem;
+            // font-size: 1.25rem;
         }
 
         p {
-            font-size: .5rem;
+            // font-size: .5rem;
         }
     }
 }

@@ -1,13 +1,14 @@
 <template>
     <div class="upperContainer">
         <div class="left">
-            <div class="padPage">
+            <div class="padPage" v-if="is768">
                 <swiper-container :loop="true" effect="fade"
                     :autoplay="{
                         delay: 3000
                     }" :speed="1000"
                     :allowTouchMove="false"
-                    :injectStyles="injectStyles">
+                    :injectStyles="injectStyles"
+                    :observeParents="true">
                     <swiper-slide
                         v-for="(item, index) in imgList"
                         :key="index">
@@ -46,28 +47,6 @@
                         </div>
                     </button>
                 </div>
-                <!-- <div class="navContainer">
-                    <div class="nav"
-                        v-for="(item, index) in btnList"
-                        :key="index"
-                        @click="clickScroll(item)">
-                        <div class="textWrapper">
-                            <span>
-                                {{ item }}
-                            </span>
-                            <span>
-                                {{ item }}
-                            </span>
-                        </div>
-
-                        <div class="arrowIcon">
-                            <SvgIcon name="rightArrow"
-                                width="16px" height="16px"
-                                color="#FCFAF2">
-                            </SvgIcon>
-                        </div>
-                    </div>
-                </div> -->
             </div>
 
             <div class="page2" ref="upperContainer">
@@ -148,13 +127,13 @@
             </div>
         </div>
 
-        <div class="right">
+        <div class="right" v-if="!is768">
             <swiper-container :loop="true" effect="fade"
                 :autoplay="{
                     delay: 3000
                 }" :speed="1000" :allowTouchMove="false"
                 :injectStyles="injectStyles"
-                @swiperupdate="console.log('object');">
+                :observeParents="true">
                 <swiper-slide
                     v-for="(item, index) in imgList"
                     :key="index">
@@ -168,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
 import { positionStore } from '../store/usePagePosition'
 
 
@@ -196,51 +175,33 @@ let injectStyles = [
 
 // position store
 const upperContainer = useTemplateRef('upperContainer');
-function exposePosition() {
-    if (upperContainer.value) {
-        const { top } = upperContainer.value.getBoundingClientRect();
-        positionStore.setPosition('upper', top);
-    }
-}
 
 // position store
-const positionState = computed(() => {
-    return positionStore.getPosition();
-})
-
 const btnList = ref(['CONCEPT', 'ACCESS', 'FAQ'] as const)
 function clickScroll(target: typeof btnList.value[number]) {
-    switch (target) {
-        case 'CONCEPT':
-            const { upper } = positionState.value;
-            window.scroll({
-                top: upper,
-                behavior: 'smooth'
-            })
-            break;
-        case 'ACCESS':
-            const { middle } = positionState.value;
-            window.scroll({
-                top: middle,
-                behavior: 'smooth'
-            })
-            break;
-
-        default:
-            const { bottom } = positionState.value;
-            window.scroll({
-                top: bottom,
-                behavior: 'smooth'
-            })
-            break;
-    }
+    const y = positionStore.getElPosition(target);
+    window.scroll({
+        top: y ?? 0,
+        behavior: 'smooth'
+    })
 }
 
-// 
+// rwd
+const is768 = ref(false);
+
+function onResize() {
+    is768.value = window.matchMedia('screen and (max-width: 768px)').matches;
+}
+onResize();
 
 
 onMounted(() => {
-    exposePosition();
+    positionStore.exposeElCoord('CONCEPT', upperContainer.value);
+    window.addEventListener('resize', onResize)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', onResize)
 })
 
 </script>
@@ -251,17 +212,11 @@ onMounted(() => {
 }
 
 .upperContainer {
-    // height: 100vh;
-    // // min-height: 920px;
-    // max-height: 920px;
-
-    // // margin-top: 100px;
-    // // padding: 1rem;
 
     display: flex;
-    // gap: 1rem;
     position: relative;
-    top: 100px;
+    max-width: 1920px;
+    margin-inline: auto;
 
     &>div {
         flex: 1;
@@ -270,7 +225,6 @@ onMounted(() => {
 }
 
 .left {
-    // background-color: $btnBacColor;
 
     h1 {
         font-family: "EB Garamond", serif;
@@ -285,7 +239,6 @@ onMounted(() => {
 
 
 .page1 {
-    // min-height: 100vh;
     height: calc(100vh - 100px);
 
     display: flex;
@@ -300,8 +253,6 @@ onMounted(() => {
 .page2 {
     min-height: 100vh;
     padding-block: 1rem;
-    // padding-inline: 1.5rem;
-    // padding-inline: clamp(1.5rem, 0.19999999999999996rem + 6.5vw, 8rem);
 
     h2 {
         margin-bottom: 1.25rem;
@@ -364,7 +315,7 @@ onMounted(() => {
 
 .content {
     height: 100%;
-    padding: 3rem 2rem;
+    padding: 3rem 4rem;
     margin-inline: auto;
 
     display: flex;
@@ -404,8 +355,6 @@ onMounted(() => {
         display: flex;
         align-items: center;
         gap: .5rem;
-        // font-size: 0.75rem;
-        // font-size: clamp(0.75rem, 0.5714285714285714rem + 0.8928571428571428vw, 1rem);
 
         .cube {
             backface-visibility: hidden;
@@ -503,69 +452,14 @@ onMounted(() => {
             }
         }
     }
-
-    // display: flex;
-    // gap: 2rem;
-
-    // .nav {
-    //     cursor: pointer;
-    //     display: flex;
-    //     align-items: center;
-    //     gap: .5rem;
-    //     // overflow: hidden;
-
-    //     span {
-    //         display: block;
-    //         color: $btnBacColor;
-    //         font-variation-settings: 'wght' 600;
-    //         user-select: none;
-    //         transition: transform .3s;
-    //     }
-
-    //     span:nth-of-type(2) {
-    //         position: absolute;
-    //         top: 100%;
-    //         left: 0;
-    //     }
-
-    //     .textWrapper {
-    //         position: relative;
-    //         overflow: hidden;
-    //     }
-
-    //     &:hover {
-    //         .textWrapper span {
-    //             transform: translateY(-100%)
-    //         }
-
-    //         .arrowIcon {
-    //             transform: scale(1.2) rotate(90deg);
-    //         }
-    //     }
-    // }
-
-    // .arrowIcon {
-    //     @include WnH(18px);
-    //     background-color: $btnBacColor;
-    //     transform: rotate(90deg);
-
-    //     display: flex;
-    //     justify-content: center;
-
-    //     border-radius: 100%;
-
-    //     transition: transform .3s;
-    // }
 }
 
 .right {
     max-height: calc(100vh);
-    // height: calc(100vh - 100px);
 
     position: sticky;
     top: 0;
 
-    // margin-top: 100px;
     overflow: hidden;
 
     swiper-container {
@@ -592,16 +486,13 @@ onMounted(() => {
     display: none;
 }
 
-// @keyframes
 
 @include XLarge {}
 
 @include large {}
 
 @include medium($width: 1024px) {
-    .navContainer {
-        // gap: 1.25rem;
-    }
+    .navContainer {}
 }
 
 .objTop {
@@ -625,11 +516,6 @@ onMounted(() => {
         swiper-container {
             width: 100%;
             height: 40vh;
-        }
-
-        .imgSlider {
-            // width: 100%;
-            // height: 100%;
         }
 
         img {

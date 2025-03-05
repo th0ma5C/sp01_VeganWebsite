@@ -53,7 +53,7 @@ function authToken(req, res, next) {
         req.user = decoded;
         next();
     } catch (error) {
-        res.status(403).json({ message: '請重新登入', state: 'denied' });
+        res.status(403).json({ message: 'Unauthorized', state: 'denied' });
     }
 }
 

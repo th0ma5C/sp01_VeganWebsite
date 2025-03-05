@@ -1,5 +1,5 @@
 <template>
-    <div class="container" @click="clickOuter">
+    <div class="checkoutContainer" @click="clickOuter">
         <div class="wrapper">
             <div class="left" :class="{
                 loadingFilter: isFormInit
@@ -196,8 +196,8 @@
                                             @click="toggleOpenOptions"
                                             class="switchIcon"
                                             name="ListArrowDown"
-                                            width="24"
-                                            height="24"
+                                            width="22"
+                                            height="22"
                                             color="black"
                                             :class="{
                                                 optionOpen: isOptionsOpen
@@ -486,31 +486,6 @@
                                             </ErrorMessage>
                                         </div>
                                     </ul>
-
-                                    <Teleport to='main'>
-                                        <div class="storeAddrList"
-                                            v-show="openStoreAddrList">
-                                            <h2>
-                                                選擇分店
-                                            </h2>
-                                            <SvgIcon
-                                                name="cancel"
-                                                width="24px"
-                                                class="cancelIcon"
-                                                height="24px"
-                                                @click="toggleOpenStoreAddrList">
-                                            </SvgIcon>
-                                            <ul>
-                                                <li v-for="({ branch, addr }, index) in storeAddrList"
-                                                    :key="index"
-                                                    @click="pickSelectedStore({ branch, addr })">
-                                                    {{
-                                                        addr
-                                                    }}
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </Teleport>
                                 </div>
                             </div>
                         </fieldset>
@@ -582,6 +557,30 @@
                     </form>
                 </VForm>
             </div>
+            <transition name="storeAddrList">
+                <div class="storeAddrList"
+                    v-show="openStoreAddrList">
+                    <SvgIcon name="cancel" width="24px"
+                        class="cancelIcon" height="24px"
+                        @click="toggleOpenStoreAddrList">
+                    </SvgIcon>
+                    <h2>
+                        選擇分店
+                    </h2>
+                    <ul>
+                        <li v-for="({ branch, addr }, index) in storeAddrList"
+                            :key="index"
+                            @click="pickSelectedStore({ branch, addr })">
+                            <h3>
+                                {{ branch }}
+                            </h3>
+                            <p>
+                                {{ addr }}
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+            </transition>
 
             <div class="right">
                 <CheckCartList
@@ -593,28 +592,10 @@
 </template>
 
 <script setup lang="ts">
-//TODO: 金流api
+//TODO: 金流api 
 /**
  * doing: anonymous create order, 送出後轉至付款頁面
  * ------------------------------------------
- * //delivery payment bind value
- * //profile
- * //表單驗證(宅配、超取擇一)
- * //驗證電話
- * //postal code api
- * //right part list building
- * //郵遞區號驗證
- * //超商分店加入表單
- * //縣市選擇轉場
- * //縣市選擇spin 郵遞區號spin
- * //折扣碼
- * //label id for input
- * //折價券spinner位置不對 -> 類名衝突導致
- * //縣市選完後沒有關閉,選擇城市後選擇鄉鎮沒有移至頂端
- * //儲存結帳資訊的初始化
- * //重新整理信箱、姓名遺失->若登入過會顯示，若在結帳業重新整理會消失
- * //DB儲存user購物車
- * //購買清單組件
  */
 
 import CheckCartList from './CheckCartList/CheckCartList.vue';
@@ -634,6 +615,7 @@ import { onBeforeRouteLeave, useRouter } from 'vue-router';
 import { reqGetUser } from '@/api/userAuth';
 import { reqResetMemberCart } from '@/api/cart/CartRequest';
 import { useToastStore } from '@/store/toastStore';
+import { reqSubscribe } from '@/api/subscribe/subscribe';
 
 // 購物車
 const cartStore = useCartStore();
@@ -985,25 +967,32 @@ const newOrder = (shippingInfo: Record<string, any>) => {
 }
 
 // req create order
+const toastStore = useToastStore();
 const orderProcessing = ref(false);
 async function createOrder(form: Record<string, any>) {
-    const toastStore = useToastStore();
+    const isSub = form.subNews;
+    const params = { recipient: form.email }
     try {
         orderProcessing.value = true;
         const { state } = await reqCreateOrder(newOrder(form));
         if (state == 'confirm') {
             window.removeEventListener('beforeunload', handleRefreshAlert);
+            if (isSub) await reqSubscribe(params);
             await refreshMemberCart();
             await getUserOrderList();
             isAuth.value ?
                 await router.replace('/profile/account') :
                 await router.replace('/');
-            toastStore.addNotification(`訂單送出，請確認信箱`)
+            toastStore.addNotification('訂單送出，請至信箱確認訂單')
+        } else {
+            return toastStore.addNotification('連線問題，請重試')
         }
     } catch (error) {
         console.log(error);
     }
 }
+
+// 收到最新消息
 
 // 提示失去進度
 const formHasChanged = ref(false);
@@ -1046,7 +1035,7 @@ onUnmounted(() => {
     // outline: 1px solid black;
 }
 
-.container {
+.checkoutContainer {
     @extend %headerPseudo;
     @extend %fixContainer;
 
@@ -1057,46 +1046,57 @@ onUnmounted(() => {
         margin-bottom: 1rem;
     }
 
-    .left {
-        border-right: 1px solid gray;
-        position: relative;
-
-        &>*:not(.spinnerWrapper) {
-            filter: blur(2px);
-            transition: filter .3s;
-        }
+    &::before {
+        display: none;
     }
+}
 
-    .loadingFilter>*:not(.spinnerWrapper) {
-        filter: blur(0);
+.left {
+    border-right: 1px solid gray;
+    position: relative;
+
+    &>*:not(.spinnerWrapper) {
+        filter: blur(2px);
+        transition: filter .3s;
     }
+}
 
-    .spinnerWrapper {
-        @include WnH(100%, 100vh);
+.loadingFilter>*:not(.spinnerWrapper) {
+    filter: blur(0);
+}
 
-        cursor: not-allowed;
-        border-radius: 1rem;
-        position: absolute;
-        top: 0;
-        left: 50%;
-        // background-color: rgba(0, 0, 0, 0.2);
-        transform: translateX(-50%);
-        z-index: 2;
+.spinnerWrapper {
+    @include WnH(100%, 100vh);
 
-        &>div {
-            @include WnH(40px);
-        }
+    cursor: not-allowed;
+    border-radius: 1rem;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    // background-color: rgba(0, 0, 0, 0.2);
+    transform: translateX(-50%);
+    z-index: 2;
+
+    &>div {
+        @include WnH(40px);
     }
 }
 
 .wrapper {
-    width: calc(80% - 6rem);
+    width: 100%;
+    max-width: 1440px;
+    // width: calc(80% - 6rem);
     // padding-left: 3rem;
     display: flex;
 
     &>div {
         min-width: 50%;
-        padding: 3rem 4rem;
+        padding-block: 3rem;
+        padding-block: 1rem;
+        padding-block: clamp(1rem, 0.6rem + 2vw, 3rem);
+        padding-inline: 4rem;
+        padding-inline: 1rem;
+        padding-inline: clamp(1rem, 0.4rem + 3vw, 4rem);
     }
 }
 
@@ -1120,24 +1120,22 @@ onUnmounted(() => {
             background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
             // background-color: $primaryBacColor;
         }
-
     }
+}
 
-    .topContent {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+.topContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 
-        .loginLink {
-            cursor: pointer;
-            color: $btnBacColor_light;
-            font-size: .75rem;
-            margin-right: .5rem;
-            text-decoration: underline;
-            text-underline-offset: 3px;
-
-        }
-    }
+.loginLink {
+    cursor: pointer;
+    color: $btnBacColor_light;
+    font-size: .75rem;
+    margin-right: .5rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .formWrapper {
@@ -1223,123 +1221,123 @@ onUnmounted(() => {
     position: absolute;
     left: 0;
     top: 0;
+}
 
-    .showCity {
-        // padding-left: 1rem;
-        line-height: 48px;
-        user-select: none;
-    }
+.showCity {
+    // padding-left: 1rem;
+    line-height: 48px;
+    user-select: none;
+}
 
-    .switchIcon {
-        position: absolute;
-        right: .5rem;
-        top: 50%;
-        transform: translateY(-50%) rotate(-90deg);
-        transition: transform .3s ease;
-    }
+.switchIcon {
+    position: absolute;
+    right: .5rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transition: transform .3s ease;
+}
 
-    .optionOpen {
-        transform: translateY(-50%) rotate(0deg);
-    }
+.optionOpen {
+    transform: translateY(-50%) rotate(0deg);
+}
 
-    .optionsWrapper {
-        width: calc(100% + 1px);
-        height: 250px;
-        position: absolute;
-        top: calc(100% + 6px);
-        left: -1px;
-        z-index: 2;
-        background-color: white;
-        border: 1px solid black;
-        border-radius: .5rem;
+.optionsWrapper {
+    width: calc(100% + 1px);
+    height: 250px;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: -1px;
+    z-index: 2;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: .5rem;
 
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .title {
+        border-bottom: 1px solid black;
+        width: 100%;
         display: flex;
-        flex-direction: column;
-        overflow: hidden;
 
-        .title {
-            border-bottom: 1px solid black;
-            width: 100%;
-            display: flex;
+        &>span {
+            padding: .5rem;
+            flex: 1;
+            text-align: center;
+            user-select: none;
 
-            &>span {
-                padding: .5rem;
-                flex: 1;
-                text-align: center;
-                user-select: none;
+            &:first-of-type {
+                border-right: 1px solid gray;
+            }
 
-                &:first-of-type {
-                    border-right: 1px solid gray;
-                }
-
-                &:not(.not-allowed):hover {
-                    box-shadow:
-                        inset 0px 0 1px 1px green,
-                        inset 0px 0 1px 1px green;
-                }
+            &:not(.not-allowed):hover {
+                box-shadow:
+                    inset 0px 0 1px 1px green,
+                    inset 0px 0 1px 1px green;
             }
         }
+    }
 
-        .not-allowed {
-            cursor: not-allowed;
+    .not-allowed {
+        cursor: not-allowed;
+    }
+
+    .tabs {
+        overflow-y: scroll;
+        height: 100%;
+
+        &::-webkit-scrollbar {
+            width: 6px;
         }
 
-        .tabs {
-            overflow-y: scroll;
+        &::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+            margin: .25rem 0;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        ul {
+            position: relative;
             height: 100%;
+        }
 
-            &::-webkit-scrollbar {
-                width: 6px;
-            }
+        li {
+            @include WnH(100%, 36px);
+            padding-left: 1rem;
+            line-height: 36px;
+            border-bottom: 1px solid gray;
+            user-select: none;
 
-            &::-webkit-scrollbar-track {
-                background: #f1f1f1;
-                border-radius: 10px;
-                margin: .25rem 0;
-            }
-
-            &::-webkit-scrollbar-thumb {
-                background: #888;
-                border-radius: 10px;
-            }
-
-            ul {
-                position: relative;
-                height: 100%;
-            }
-
-            li {
-                @include WnH(100%, 36px);
-                padding-left: 1rem;
-                line-height: 36px;
-                border-bottom: 1px solid gray;
-                user-select: none;
-
-                &:hover {
-                    box-shadow:
-                        inset -1px 0 1px 1px green,
-                        inset 0px 0 1px 1px green;
-                }
+            &:hover {
+                box-shadow:
+                    inset -1px 0 1px 1px green,
+                    inset 0px 0 1px 1px green;
             }
         }
     }
+}
 
-    .optionsWrapper-enter-active,
-    .optionsWrapper-leave-active {
-        transition: transform .15s, opacity .15s;
-    }
+.optionsWrapper-enter-active,
+.optionsWrapper-leave-active {
+    transition: transform .15s, opacity .15s;
+}
 
-    .optionsWrapper-enter-from,
-    .optionsWrapper-leave-to {
-        opacity: 0;
-        transform: translateY(-2.5%);
-    }
+.optionsWrapper-enter-from,
+.optionsWrapper-leave-to {
+    opacity: 0;
+    transform: translateY(-2.5%);
+}
 
-    .optionsWrapper-enter-to,
-    .optionsWrapper-leave-from {
-        opacity: 1;
-        transform: translate(0);
-    }
+.optionsWrapper-enter-to,
+.optionsWrapper-leave-from {
+    opacity: 1;
+    transform: translate(0);
 }
 
 .spinner {
@@ -1500,11 +1498,13 @@ onUnmounted(() => {
 
         .storeAddr {
             width: 100%;
-            max-height: 0;
-            display: flex;
+            // max-height: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 0fr;
             align-items: center;
+            transition: grid-template-rows .3s;
             overflow: hidden;
-            transition: max-height .5s ease;
 
             .textWrapper {
                 padding-right: .5rem;
@@ -1514,10 +1514,15 @@ onUnmounted(() => {
                 font-size: 12px;
                 line-height: 1.5;
             }
+
+            &>div {
+                overflow: hidden;
+            }
         }
 
         .showStoreAddr {
-            max-height: 150px;
+            // max-height: 150px;
+            grid-template-rows: 1fr;
         }
 
         .chooseStoreBtn {
@@ -1526,7 +1531,7 @@ onUnmounted(() => {
             color: $primaryBacColor;
             font-size: .75rem;
             padding: 0 .25rem;
-            border: 1px solid green;
+            outline: 1px solid green;
             border-radius: .5rem;
             display: flex;
             margin-left: auto;
@@ -1568,7 +1573,7 @@ onUnmounted(() => {
     }
 }
 
-.storeAddrList {
+.wrapper .storeAddrList {
     min-height: 200px;
     min-width: 300px;
     background-color: white;
@@ -1584,18 +1589,17 @@ onUnmounted(() => {
     transform: translate(-50%, -50%);
     z-index: 2;
 
-    &>h2 {
-        font-size: 1.25rem;
-        position: absolute;
-        top: 1rem;
-        left: 50%;
-        transform: translateX(-50%);
+    h2 {
+        font-size: 1.5rem;
+        position: relative;
+        // top: 1rem;
+        // left: 50%;
+        // transform: translateX(-50%);
+        text-align: center;
     }
 
-    .cancelIcon {
-        cursor: pointer;
-        justify-content: flex-end;
-        margin: .25rem 0 1rem 0;
+    h3 {
+        font-size: 1.25rem;
     }
 
     ul {
@@ -1614,5 +1618,68 @@ onUnmounted(() => {
             }
         }
     }
+
+    .cancelIcon {
+        position: absolute;
+        right: 1rem;
+        margin: 0;
+        z-index: 2;
+    }
 }
+
+.storeAddrList-enter-active,
+.storeAddrList-leave-active {
+    transition: opacity .3s;
+}
+
+.storeAddrList-enter-from,
+.storeAddrList-leave-to {
+    opacity: 0;
+}
+
+.storeAddrList-enter-to,
+.storeAddrList-leave-from {
+    opacity: 1;
+}
+
+.cancelIcon {
+    cursor: pointer;
+    justify-content: flex-end;
+    margin: .25rem 0 1rem 0;
+}
+
+@include XLarge {}
+
+@include large {}
+
+@include medium($width: 1024px) {
+    .left>form>fieldset {
+        width: 100%;
+    }
+}
+
+@include medium {
+    .checkoutContainer {
+        margin-bottom: 2rem;
+    }
+
+    .wrapper {
+        flex-direction: column-reverse;
+    }
+
+    .left>form>fieldset {
+        width: 80%;
+    }
+}
+
+@include small {}
+
+@include small($width: 430px) {
+    .city_postal {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+@include small($width: 320px) {}
 </style>

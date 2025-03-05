@@ -64,8 +64,7 @@
                                 <label
                                     for="password">密碼</label>
                                 <div class="passwordIcon" @="{
-                                    mousedown: toggleShowPassword,
-                                    mouseup: toggleShowPassword
+                                    click: toggleShowPassword,
                                 }">
                                     <SvgIcon
                                         v-show="!showPassword"
@@ -145,7 +144,6 @@
             </div>
         </div>
 
-
         <router-view v-slot="{ Component, route }">
             <transition name="profileRoute">
                 <component :is="Component"
@@ -166,7 +164,14 @@
                 <img :src="url" alt="">
             </div>
         </div>
-        <!-- <button @click="login">登入測試</button> -->
+
+        <!-- <div>
+            <router-link to="/profile/resetPassword">
+                測試重設
+            </router-link>
+        </div> -->
+        <button
+            @click="addNotification('測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試')">測試</button>
         <!-- <router-link to="/profile/account"
             @click="login">登入測試</router-link> -->
     </div>
@@ -187,15 +192,6 @@
  * -----------------------------------------
  * ? profile組件是否添加路由守衛
  * ? 遊客購物車
- * 
- * //樣式完成 分隔線
- * //label 轉場 社群icon
- * //密碼顯示紐
- * //忘記密碼/註冊分頁
- * //驗證時機改為送出前
- * //帳號驗證
- * //響應返回cookie: JWT
- * //註冊後跳轉驗證
  */
 
 import { computed, nextTick, onBeforeMount, onMounted, onUpdated, ref, watch, type Ref } from 'vue';
@@ -211,6 +207,10 @@ import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { jwtDecode } from 'jwt-decode';
 import { useToastStore } from '@/store/toastStore';
+import bcrypt from "bcryptjs";
+
+const { addNotification } = useToastStore();
+
 
 // 社群登入圖片路徑
 const loginIcon = ['Fb.png', 'Google.png', 'Line.png'];
@@ -229,11 +229,6 @@ interface LoginData {
     password?: string | null;
 }
 const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
-
-// function onSubmit(val: LoginData) {
-//     console.log(val);
-//     console.log(JSON.stringify(val, null, 2));
-// }
 
 yup.addMethod(yup.string, 'email', function validateEmail(message) {
     return this.matches(emailRegex, {
@@ -293,6 +288,7 @@ const route = useRoute();
 
 async function handleEmailRedirect() {
     if (!route.query.token) return
+    if (route.path == '/profile/resetPassword') return
 
     try {
         const JWT = route.query.token as string;
@@ -356,6 +352,10 @@ $container_width: 300px;
 
     padding-top: 3rem;
     // gap: 2rem;
+    overflow: hidden;
+    // width: max-content;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
 
     h1 {
         font-size: 2rem;
@@ -370,6 +370,8 @@ $container_width: 300px;
 .login {
     text-align: center;
     flex: 1;
+    width: 100%;
+    max-width: 320px;
 }
 
 .inputWrapper {
@@ -386,7 +388,9 @@ $container_width: 300px;
         }
 
         input {
-            width: $container_width;
+            width: 100%;
+            // width: $container_width;
+            max-width: 100%;
             height: 48px;
             padding: 0 1rem;
             border: 1px solid gray;
@@ -532,6 +536,7 @@ $container_width: 300px;
     margin: 1rem;
     position: relative;
     text-align: center;
+    // overflow: hidden;
 
     &::before {
         @extend %divider_line;
@@ -557,6 +562,8 @@ $container_width: 300px;
         border-radius: 18px;
         overflow: hidden;
         transition: scale .15s ease;
+        // margin: .5rem;
+        box-shadow: 1px 1px 4px gray;
 
         &:hover {
             scale: 1.1;

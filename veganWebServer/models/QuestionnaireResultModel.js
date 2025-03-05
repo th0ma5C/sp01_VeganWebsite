@@ -23,7 +23,7 @@ const surveyResultSchema = new Schema({
     },
     habit: {
         type: String,
-        enum: ['完全素食', '蛋奶素', '健康飲食但非素食', '無偏好'],
+        enum: ['完全素食', '蛋奶素', '健康飲食但非素食', '沒偏好'],
         required: true
     },
     flavor: {

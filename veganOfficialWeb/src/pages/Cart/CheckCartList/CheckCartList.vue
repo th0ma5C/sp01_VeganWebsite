@@ -3,7 +3,7 @@
         loadingFilter: isItemListChecked
     }">
         <div class="barContainer">
-            <h4>
+            <h4 ref="congratulationsRef">
                 <span
                     v-if="cartCounter && cartCounter >= 14">
                     恭喜達標
@@ -239,7 +239,7 @@
                 <span>總計</span>
                 <span>${{
                     orderAmount.toLocaleString()
-                }}</span>
+                    }}</span>
             </div>
         </div>
 
@@ -257,10 +257,8 @@
 
 <script setup lang="ts">
 /**
- * todo: 
+ * todo:
  * ------------------------
- * // 折扣碼
- * //驗證coupon後清空, coupon讀取中filter位置不對
  */
 
 import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
@@ -270,12 +268,12 @@ import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
     type FormActions, type SubmissionHandler
 } from 'vee-validate';
-import { ref, computed, onMounted, reactive, watch } from 'vue';
+import { ref, computed, onMounted, reactive, watch, useTemplateRef } from 'vue';
 import * as yup from 'yup';
 import { reqFetchCoupon, type CouponCode } from '@/api/coupon';
 import { reqVerifyItemPrice } from '@/api/order/order';
-
-
+import confetti from 'canvas-confetti';
+import { useLoaderStore } from '@/store/loader';
 
 
 const cartStore = useCartStore();
@@ -478,9 +476,53 @@ async function verifyItemPrice() {
     }
 }
 
-onMounted(() => {
-    verifyItemPrice()
+// confetti config
+const isConfettiFired = ref(false);
+const congratulationsRef = useTemplateRef('congratulationsRef');
+// const congratulationsConfetti = confetti.create(document.createElement('canvas'), { useWorker: true });
 
+const congratulationsRefCoord = computed(() => {
+    if (!congratulationsRef.value) return
+    const { top, left, width, height } = congratulationsRef.value.getBoundingClientRect();
+    const x = (left + (width / 2)) / window.innerWidth;
+    const y = (top + (height / 2)) / window.innerHeight;
+    return {
+        x,
+        y
+    }
+})
+const confettiConfig = (): confetti.Options => {
+    if (!congratulationsRefCoord.value) return {}
+    return {
+        origin: congratulationsRefCoord.value,
+        zIndex: 100,
+        ticks: 250
+    }
+}
+
+function setConfetti() {
+    if (isConfettiFired.value || loaderStore.loaderActivated !== false) return
+    if ((cartCounter.value ?? 0) < 14) return
+    isConfettiFired.value = true;
+    setTimeout(() => {
+        confetti(confettiConfig());
+    }, 1000);
+}
+
+const loaderStore = useLoaderStore();
+loaderStore.$subscribe((_, state) => {
+    if (state.loaderActivated === false) {
+        setConfetti();
+    }
+})
+// watch(() => loaderStore.loaderActivated, (nVal, oVal) => {
+//     console.log(oVal, 'o');
+//     console.log(nVal, 'n');
+// }, { immediate: true })
+
+onMounted(() => {
+    verifyItemPrice();
+    setConfetti();
 })
 
 </script>
@@ -488,7 +530,7 @@ onMounted(() => {
 <style scoped lang="scss">
 .rightWrapper {
     position: sticky;
-    top: calc(100px + 3rem);
+    top: 3rem;
 
     display: flex;
     flex-direction: column;
@@ -537,135 +579,138 @@ onMounted(() => {
 .barContainer {
 
     h4 {
+        font-size: 2rem;
+        font-weight: 500;
         text-align: center;
-    }
-
-    .bar {
-        width: 100%;
-        height: 1.25rem;
-        background-color: rgb(229, 229, 229);
-        outline: 1px solid $btnBacColor_light;
-        border-radius: 1.25rem;
-
-        margin-top: 4rem;
-
-        position: relative;
-
-        .content {
-            border: 1px solid gray;
-            background-color: $primaryBacColor;
-            border-radius: .25rem;
-            padding: .25rem .5rem;
-            text-wrap: nowrap;
-
-            position: absolute;
-            top: -2rem;
-            left: 30%;
-            transform: translate(-50%, -50%);
-
-            &::after {
-                border: 1px solid gray;
-                border-top: none;
-                border-left: none;
-                background-color: $primaryBacColor;
-                content: '';
-                width: .75rem;
-                height: .75rem;
-                position: absolute;
-                bottom: -.80rem;
-                left: 50%;
-                transform: translate(-50%, -50%) rotate(45deg);
-            }
-        }
-
-        .milestone {
-            position: absolute;
-            top: 0rem;
-            transform: translate(-50%, 0%);
-        }
-
-        .mileage1 {
-            left: 50%;
-        }
-
-        .mileage2 {
-            left: 100%;
-            transform: translate(calc(-50% - .675rem), -50%);
-
-            &:has(div) {
-                transform: translate(-100%, 0%);
-            }
-        }
-
-
-        .progress {
-            content: '';
-            border-radius: 1.25rem;
-            background-color: $btnBacColor_light;
-            height: 100%;
-            width: 0;
-            // position: absolute;
-        }
     }
 }
 
-.listContainer {
+.bar {
+    width: calc(100% - 2rem);
+    height: 1.25rem;
+    background-color: rgb(229, 229, 229);
+    outline: 1px solid $btnBacColor_light;
+    border-radius: 1.25rem;
+
+    margin-top: 4rem;
+
+    position: relative;
+    left: 1rem;
+}
+
+.content {
+    border: 1px solid gray;
+    background-color: $primaryBacColor;
+    border-radius: .25rem;
+    padding: .25rem .5rem;
+    text-wrap: nowrap;
+
+    position: absolute;
+    top: -2rem;
+    left: 30%;
+    transform: translate(-50%, -50%);
+
+    &::after {
+        border: 1px solid gray;
+        border-top: none;
+        border-left: none;
+        background-color: $primaryBacColor;
+        content: '';
+        width: .75rem;
+        height: .75rem;
+        position: absolute;
+        bottom: -.80rem;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(45deg);
+    }
+}
+
+.milestone {
+    position: absolute;
+    top: 0rem;
+    transform: translate(-50%, 0%);
+}
+
+.mileage1 {
+    left: 50%;
+}
+
+.mileage2 {
+    left: 100%;
+    transform: translate(calc(-50% - .675rem), -50%);
+
+    &:has(div) {
+        transform: translate(-100%, 0%);
+    }
+}
+
+.progress {
+    content: '';
+    border-radius: 1.25rem;
+    background-color: $btnBacColor_light;
+    height: 100%;
+    width: 0;
+    // position: absolute;
+}
 
 
 
-    .cartItem {
-        display: flex;
-        padding: 0 1rem;
-        margin-bottom: 1rem;
+.listContainer .cartItem {
+    display: flex;
+    padding: 0 1rem;
+    margin-bottom: 1rem;
+}
 
-        .imgContainer {
-            position: relative;
-            border: 1px solid gray;
-            border-radius: 1rem;
-            width: 100px;
-            // overflow: hidden;
-            // flex: 1;
+.imgContainer {
+    position: relative;
+    border: 1px solid gray;
+    border-radius: 1rem;
+    width: 100px;
+    align-self: center;
+    // overflow: hidden;
+    // flex: 1;
 
-            .counter {
-                transform: translate(-50%, -50%);
-                background-color: $btnBacColor;
-            }
+    .counter {
+        transform: translate(-50%, -50%);
+        background-color: $btnBacColor;
+    }
 
-            img {
-                border-radius: 1rem;
-            }
-        }
+    img {
+        // max-width: none;
+        // height: 100%;
+        border-radius: 1rem;
+        object-fit: cover;
+    }
+}
 
-        .saladBg {
-            background: no-repeat url('@assets/img/Menu/bac_wood.jpg') center/contain;
-        }
+.saladBg {
+    background: no-repeat url('@assets/img/Menu/bac_wood.jpg') center/cover;
+}
 
-        .itemContent {
-            padding: 0 .5rem 0 2rem;
-            flex: 2;
+.itemContent {
+    flex: 2;
+    padding-right: .5rem;
+    padding-left: 1rem;
+    padding-left: clamp(1rem, -0.1428571428571428rem + 2.380952380952381vw, 2rem);
 
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: .5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: .5rem;
 
-            h4 {
-                font-size: 1.25rem;
-            }
+    h4 {
+        font-size: 1.25rem;
+    }
+}
 
-            p {}
-        }
+.itemPrice {
+    // flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
 
-        .itemPrice {
-            flex: 1;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-
-            span {
-                font-size: 1.25rem;
-            }
-        }
+    span {
+        font-size: 1.25rem;
     }
 }
 
@@ -678,11 +723,12 @@ onMounted(() => {
         width: 100%;
 
         display: flex;
-        // gap: 2rem;
+        gap: 1rem;
 
         input {
+            // max-width: 80%;
             // width: 100%;
-            flex: 1;
+            flex: 8;
             height: 34px;
             border: 1px solid gray;
             border-radius: 1rem;
@@ -711,39 +757,41 @@ onMounted(() => {
             pointer-events: none;
             transition: opacity .15s ease;
         }
-
-        .formBtn {
-            margin-left: 2rem;
-            width: 10%;
-            text-wrap: nowrap;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            button {
-                width: 100%;
-                height: 100%;
-
-                border: 1px solid green;
-                border-radius: 1rem;
-                background-color: $btnBacColor;
-                color: $primaryBacColor;
-                font-size: .75rem;
-            }
-        }
     }
+}
 
-    .errorMsg {
-        @include flex-center-center;
-        flex-direction: row;
-        gap: .5rem;
-        color: #b3261e;
-        text-wrap: nowrap;
-        position: absolute;
-        bottom: -75%;
-        left: 0%;
-        // transform: translate(0%, -50%);
+.formBtn {
+    flex: 1.5;
+    // margin-left: 2rem;
+    // width: 10%;
+    text-wrap: nowrap;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    button {
+        width: 100%;
+        height: 100%;
+
+        border: 1px solid green;
+        border-radius: 1rem;
+        background-color: $btnBacColor;
+        color: $primaryBacColor;
+        font-size: .75rem;
     }
+}
+
+
+.errorMsg {
+    @include flex-center-center;
+    flex-direction: row;
+    gap: .5rem;
+    color: #b3261e;
+    text-wrap: nowrap;
+    position: absolute;
+    bottom: -75%;
+    left: .5rem;
+    // transform: translate(0%, -50%);
 }
 
 .discountContent-enter-active,
@@ -792,84 +840,85 @@ onMounted(() => {
             }
         }
     }
+}
 
-    .cost {
-        font-size: .8rem;
+.cost {
+    font-size: .8rem;
 
-        .itemQuantity {
-            // margin-left: .5rem;
-        }
-
-        .discountAmount {
-            color: red;
-        }
-
-        .correctionDigit {
-            user-select: none;
-            color: transparent;
-        }
-
-        .discountContent {
-            display: flex;
-            justify-content: space-between;
-            position: relative;
-
-            .loadingFilter {
-                filter: opacity(.25);
-            }
-        }
-
-        .freight {
-            position: relative;
-            display: inline-flex;
-            gap: .25rem;
-            align-items: center;
-
-            .QuestionMark {
-                cursor: pointer;
-                opacity: .5;
-                transition: opacity .15s;
-                height: 100%;
-
-                &:hover {
-                    opacity: 1;
-                }
-            }
-
-            .freightIllustrate {
-                padding: .25rem .5rem;
-                background-color: $primaryBacColor;
-                border: 1px solid black;
-                border-radius: .5rem;
-                text-align: center;
-
-                width: 150px;
-                position: absolute;
-                top: 0%;
-                left: 40%;
-                z-index: 2;
-
-            }
-        }
+    .itemQuantity {
+        // margin-left: .5rem;
     }
 
-    .discount {
-        display: grid;
-        grid-template:
-            'a b b' 1fr
-            'a c c' 1fr / .5fr 1fr 1fr;
+    .discountAmount {
+        color: red;
+    }
 
-        .title {
-            grid-area: a;
-        }
+    .correctionDigit {
+        user-select: none;
+        color: transparent;
+    }
 
-        .amountDiscount {
-            grid-area: b;
-        }
+    .discountContent {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
 
-        .couponDiscount {
-            grid-area: c;
+        .loadingFilter {
+            filter: opacity(.25);
         }
+    }
+}
+
+.freight {
+    position: relative;
+    display: inline-flex;
+    gap: .25rem;
+    align-items: center;
+}
+
+.QuestionMark {
+    cursor: pointer;
+    opacity: .5;
+    transition: opacity .15s;
+    height: 100%;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.freightIllustrate {
+    padding: .25rem .5rem;
+    background-color: $primaryBacColor;
+    border: 1px solid black;
+    border-radius: .5rem;
+    text-align: center;
+
+    width: 150px;
+    position: absolute;
+    top: 0%;
+    left: 40%;
+    z-index: 2;
+
+}
+
+
+.discount {
+    display: grid;
+    grid-template:
+        'a b b' 1fr
+        'a c c' 1fr / .5fr 1fr 1fr;
+
+    .title {
+        grid-area: a;
+    }
+
+    .amountDiscount {
+        grid-area: b;
+    }
+
+    .couponDiscount {
+        grid-area: c;
     }
 }
 
@@ -926,5 +975,92 @@ onMounted(() => {
 .couponErrMsg-enter-to,
 .couponErrMsg-leave-from {
     opacity: 1;
+}
+
+@include XLarge {}
+
+@include large {}
+
+@include medium($width: 1024px) {}
+
+@include medium {
+    .mileage2 {
+        transform: translate((-75%, -50%));
+
+        &::after {
+            left: calc(75% - 10px)
+        }
+    }
+}
+
+@include small {}
+
+@include small($width: 430px) {
+    .discountForm form {
+        gap: .5rem;
+    }
+
+    .formBtn {
+        flex: 2;
+    }
+
+    .rightWrapper {
+        gap: 1rem;
+    }
+
+    .imgContainer {
+        width: 90px;
+        height: 90px;
+    }
+
+    .itemContent {
+        h4 {
+            font-size: 18px;
+        }
+
+        p {
+            font-size: 14px;
+        }
+    }
+
+    .itemPrice span {
+        font-size: 18px;
+    }
+}
+
+@include small($width: 375px) {
+    .imgContainer {
+        // width: 85px;
+    }
+
+    .itemContent {
+        h4 {
+            font-size: 16px;
+        }
+
+        p {
+            font-size: 12px;
+        }
+    }
+
+    .itemPrice span {
+        font-size: 16px;
+    }
+}
+
+@include small($width: 320px) {
+    // .itemContent {
+    //     h4 {
+    //         font-size: 16px;
+    //     }
+
+    //     p {
+    //         font-size: 14px;
+    //     }
+    // }
+
+    // .itemPrice span {
+    //     font-size: 18px;
+    // }
 }
 </style>

@@ -23,7 +23,7 @@
                 ref="bgFilter">
             </div>
         </transition>
-        <SvgIcon name="LocationTW" class="TW" width=""
+        <SvgIcon name="LocationTW" class="TW" width="300px"
             height="450" color="white">
         </SvgIcon>
 
@@ -206,8 +206,8 @@ function createScrollTrigger() {
             scrollTrigger: {
                 id: 'scaler',
                 trigger: locationRef.value,
-                start: 'top-=400 center',
-                end: 'top-=200 center',
+                start: 'top-=50% center',
+                end: 'top-=25% center',
                 scrub: .5,
             },
             onComplete: () => {
@@ -331,10 +331,12 @@ onUnmounted(() => {
 
     .TW {
         position: absolute;
+        // top: 37%;
         top: var(--TW_position);
         left: 50%;
         transform: translate(-50%, -50%);
         opacity: 0.6;
+        // background-color: wheat
     }
 
     .bgFilter {

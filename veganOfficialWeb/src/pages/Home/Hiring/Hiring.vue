@@ -74,7 +74,7 @@ function startImgScrollTrigger() {
     ScrollTrigger.create({
         trigger: containerRef.value,
         // pin: containerRef.value,
-        start: 'top-=50% top',
+        start: 'top-=50% center',
         // end: 'top+=4',
         onEnter: () => {
             startImgGsap();

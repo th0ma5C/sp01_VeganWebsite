@@ -100,7 +100,9 @@
                         <h2>價格</h2>
                         <span>
                             <span>
-                                {{ showPrice }}
+                                {{
+                                    showUnitPrice.number.toFixed(0)
+                                }}
                             </span>
 
                             <div class="discountWrapper">
@@ -143,7 +145,8 @@
 
                     </div>
 
-                    <Teleport :to="'.flyToCartContainer'">
+                    <Teleport :to="'.flyToCartContainer'"
+                        :defer="true">
                         <div class="flyToCart"
                             ref="flyToCartEl" v-if="true">
                             <img :src="imgURL" alt="">
@@ -182,8 +185,8 @@
         </div>
 
         <section class="socialMedia">
-            <swiper-container slidesPerView="auto"
-                grabCursor="true"
+            <swiper-container ref="socialSwiperRef"
+                slidesPerView="auto" grabCursor="true"
                 :navigation-prev-el="'.prevBtn'"
                 :navigation-next-el="'.nextBtn'"
                 :breakpoints="{
@@ -307,6 +310,7 @@
                 </div>
             </div>
         </section>
+        <div class="flyToCartContainer"></div>
     </div>
 
 </template>
@@ -355,7 +359,6 @@ import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from 'vue-router';
 import { LoremIpsum } from "lorem-ipsum";
 import Product_template from '@/components/Product/Product_template.vue';
 import useListener from '@/hooks/useListener';
-import useImgChecker from '@/hooks/useImgChecker';
 import Breadcrumbs from '@/components/Breadcrumbs/Breadcrumbs.vue';
 import OrderCounter from '@/components/OrderCounter/OrderCounter.vue';
 import { useCartStore } from '@/store/cartStore';
@@ -364,18 +367,12 @@ import emitter from '@/utils/eventBus';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import type { SwiperContainer } from 'swiper/element';
 import { debounce } from 'lodash';
+import gsap from 'gsap';
 
 // store數據
 const menuStore = useMenuStore();
 const { isLoaded, hotList, fullMenu } = storeToRefs(useMenuStore());
 const { fetchMenu, fetchHotList, getInfoByName, getSameStyleItem } = useMenuStore();
-
-// menuStore.$subscribe((mutation, state) => {
-//     if (state.isLoaded) {
-//         initProductInfo(state.isLoaded);
-//     }
-// })
-
 
 // 路由props
 const { name } = defineProps(['name']);
@@ -387,6 +384,9 @@ async function initProductInfo(isInit: boolean) {
         await fetchMenu();
     }
     productInfo.value = getInfoByName(name);
+    if (productInfo.value) {
+        showUnitPrice.number = productInfo.value.price || 0
+    }
     // if (productInfo.value?.category == 'salad') {
     //     replaceImgFileName(productInfo.value!);
     // }
@@ -469,15 +469,15 @@ function counter(actions: '+' | '-') {
 }
 
 watch(counterVal, (nVal, oVal) => {
-
-    if (Number.isNaN(nVal)) {
-        counterVal.value = prevCounterVal;
-    } else if (nVal > max) {
-        counterVal.value = max;
-    } else if (nVal < min) {
-        counterVal.value = min;
-    }
-
+    nextTick(() => {
+        if (Number.isNaN(nVal)) {
+            counterVal.value = prevCounterVal;
+        } else if (nVal > max) {
+            counterVal.value = max;
+        } else if (nVal < min) {
+            counterVal.value = min;
+        }
+    })
     // if (nVal >= max || nVal <= min) {
     //     limitAlert.value = true;
     //     return
@@ -503,29 +503,29 @@ const targetPrice = ref(0);
 let counterAnimating = false;
 
 watchEffect(() => {
-    if (!productInfo.value || !productInfo.value.price) return
+    // if (!productInfo.value || !productInfo.value.price) return
 
-    if (currPrice.value == 0) {
-        showPrice.value = productInfo.value.price;
-        currPrice.value = productInfo.value.price;
-        targetPrice.value = productInfo.value.price;
-    }
+    // if (currPrice.value == 0) {
+    //     showPrice.value = productInfo.value.price;
+    //     currPrice.value = productInfo.value.price;
+    //     targetPrice.value = productInfo.value.price;
+    // }
 
-    switch (selectedIndex.value) {
-        case 1:
-            targetPrice.value = Math.floor(productInfo.value.price * 7 * 0.9);
-            animateCounter(currPrice, targetPrice.value, showPrice, 200);
-            break;
-        case 2:
-            targetPrice.value = Math.floor(productInfo.value.price * 14 * 0.85);
-            animateCounter(currPrice, targetPrice.value, showPrice, 200);
-            break;
+    // switch (selectedIndex.value) {
+    //     case 1:
+    //         targetPrice.value = Math.floor(productInfo.value.price * 7 * 0.9);
+    //         animateCounter(currPrice, targetPrice.value, showPrice, 200);
+    //         break;
+    //     case 2:
+    //         targetPrice.value = Math.floor(productInfo.value.price * 14 * 0.85);
+    //         animateCounter(currPrice, targetPrice.value, showPrice, 200);
+    //         break;
 
-        default:
-            targetPrice.value = productInfo.value.price;
-            animateCounter(currPrice, targetPrice.value, showPrice, 200);
-            break;
-    }
+    //     default:
+    //         targetPrice.value = productInfo.value.price;
+    //         animateCounter(currPrice, targetPrice.value, showPrice, 200);
+    //         break;
+    // }
 })
 
 // function animateCounter(curr: Ref<number>, target: number, show: Ref<number>, duration: number) {
@@ -555,6 +555,7 @@ watchEffect(() => {
 
 //     requestAnimationFrame(update);
 // }
+// 使用GSAP達成
 function animateCounter(curr: Ref<number>, target: number, show: Ref<number>, duration: number) {
     counterAnimating = true;
 
@@ -584,6 +585,29 @@ function animateCounter(curr: Ref<number>, target: number, show: Ref<number>, du
     }, stepTime);
 }
 
+const num = ref(0)
+const showUnitPrice = reactive({
+    number: 0
+})
+
+watch(selectedIndex, (nVal) => {
+    if (!productInfo.value?.price) return;
+
+    const basePrice = productInfo.value.price;
+    switch (nVal) {
+        case 1:
+            num.value = Math.floor(basePrice * 7 * 0.9);
+            break;
+        case 2:
+            num.value = Math.floor(basePrice * 14 * 0.85);
+            break;
+        default:
+            num.value = basePrice;
+            break;
+    }
+
+    gsap.to(showUnitPrice, { duration: 0.5, number: Number(num.value) || 0 });
+})
 
 // info摺疊
 const lorem = new LoremIpsum();
@@ -663,6 +687,7 @@ function replaceImgFileName(info: MenuItem) {
 const showPopUpImg = ref(false);
 
 function setShowPopUpImg() {
+    if (showSkeleton.value) return
     showPopUpImg.value = !showPopUpImg.value;
 }
 
@@ -680,39 +705,38 @@ onBeforeRouteLeave((to, from) => {
         document.documentElement.style.overflow = '';
         return false
     }
+    return true
 })
 
 // 大圖骨架
 const showMainImg = ref(false);
 const showSkeleton = ref(false);
-const mainImg = ref();
+const mainImg = useTemplateRef('mainImg')
 
 function mainImgLoaded() {
     showMainImg.value = true;
 }
 
-// function checkImgLoaded(ref: Ref<HTMLImageElement>) {
+let imgTimer: ReturnType<typeof setTimeout> | null = null;
+function imgChecker() {
+    imgTimer = setTimeout(() => {
+        if (mainImg.value && !mainImg.value.complete) {
+            showSkeleton.value = true;
+        }
+    }, 1000);
+}
+watch(showMainImg, (nVal) => {
+    if (nVal) {
+        showSkeleton.value = false;
+        if (imgTimer) {
+            clearTimeout(imgTimer);
+            imgTimer = null;
+        }
+    }
+}, { once: true })
 
-//     const timer = setTimeout(() => {
-//         if (!ref.value.complete) {
-//             showSkeleton.value = true;
-//         }
-//     }, 1000);
-
-//     const watcher = setInterval(() => {
-//         if (ref.value.complete) {
-//             showSkeleton.value = false;
-//             mainImgIsLoad.value = true;
-//             clearTimeout(timer);
-//             clearInterval(watcher);
-//         }
-//     }, 500)
-// }
-const imgChecker = useImgChecker(mainImg, showSkeleton, showMainImg);
-
-watch(mainImg, (nVal) => {
-    if (!nVal) return
-    imgChecker();
+onMounted(() => {
+    imgChecker()
 })
 
 // 麵包屑路由
@@ -900,14 +924,15 @@ let currWidth = 0;
 
 function btnOnResize() {
     if (currWidth == window.innerWidth) return
-    const vw = document.documentElement.offsetWidth;
+    const vw = window.innerWidth;
     if (vw <= 320) {
-        swiperBtnSize.value = 24;
         amountBtnSize.height = 50;
+        swiperBtnSize.value = 28;
     } else if (vw <= 430) {
         amountBtnSize.height = 75;
-    } else if (vw <= 768) {
         swiperBtnSize.value = 32;
+    } else if (vw <= 768) {
+        swiperBtnSize.value = 36;
     } else if (vw <= 1024) {
         swiperBtnSize.value = 40;
     } else {
@@ -917,7 +942,10 @@ function btnOnResize() {
     currWidth = window.innerWidth;
 }
 
+const socialSwiperRef = useTemplateRef<SwiperContainer>('socialSwiperRef');
+
 const debounceResize = debounce(() => {
+    socialSwiperRef.value?.swiper.update();
     btnOnResize();
 }, 500)
 
@@ -933,6 +961,7 @@ onMounted(() => {
     initProductInfo(isLoaded.value);
     initVIPtab();
     getItemListWidth();
+    debounceResize();
     window.addEventListener('resize', debounceResize)
 })
 onActivated(() => {
@@ -1030,7 +1059,7 @@ onUnmounted(() => {
     &>img {
         // @include WnH(50%);
         border-radius: 1rem;
-        cursor: pointer;
+        cursor: zoom-in;
         position: sticky;
         top: 188px;
         z-index: 1;
@@ -1057,10 +1086,11 @@ onUnmounted(() => {
         border-radius: 1.5rem;
         width: calc(100% - 3rem);
         aspect-ratio: 1/1;
-        margin: 1.5rem;
+        margin: auto;
         position: absolute;
-        left: 0;
+        left: 50%;
         top: 0;
+        translate: -50% 0;
         z-index: 2;
         overflow: hidden;
 
@@ -1608,7 +1638,7 @@ onUnmounted(() => {
         // flex: 1 0 auto;
 
         img {
-            height: 100%;
+            // height: 100%;
         }
     }
 }

@@ -107,11 +107,13 @@
                 <!-- <transition-group name="bestComb"> -->
                 <Product_template :item="saladRank[0]"
                     :cartEl="viewCart" key="0"
+                    :flyToCartDisError="-100"
                     v-show="rankComplete">
                 </Product_template>
 
                 <Product_template :item="smoothiesRank[0]"
                     :cartEl="viewCart" key="1"
+                    :flyToCartDisError="-100"
                     v-show="rankComplete">
                 </Product_template>
                 <!-- </transition-group> -->
@@ -144,6 +146,7 @@
                     v-for="(item, index) in saladRank"
                     :key="index" :item="item"
                     :cartEl="viewCart"
+                    :flyToCartDisError="-100"
                     v-show="rankComplete && index != 0">
                 </Product_template>
 
@@ -157,6 +160,7 @@
                     v-for="(item, index) in smoothiesRank"
                     :key="index" :item="item"
                     :cartEl="viewCart"
+                    :flyToCartDisError="-100"
                     v-show="rankComplete && index != 0">
                 </Product_template>
             </div>
@@ -299,18 +303,8 @@
             </button>
 
             <CartCounter></CartCounter>
-            <!-- <div class="counter" :style="{
-                opacity: cartCounter ? '1' : '0'
-            }">
-                <span
-                    v-if="cartCounter && cartCounter < 99">
-                    {{ cartCounter }}
-                </span>
-                <span v-else>
-                    {{ 99 }}+
-                </span>
-            </div> -->
         </div>
+        <div class="flyToCartContainer"></div>
     </div>
 </template>
 

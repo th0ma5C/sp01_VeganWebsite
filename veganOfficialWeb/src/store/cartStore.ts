@@ -164,6 +164,7 @@ export const useCartStore = defineStore('cart', () => {
         try {
             initCartMap();
             setCartToStorage();
+            if (Object.keys(cartMap).length == 0) return
             await initCartItems();
         } catch (error) {
             console.log(error);

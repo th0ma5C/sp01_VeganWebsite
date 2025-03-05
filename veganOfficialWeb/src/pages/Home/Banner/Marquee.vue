@@ -110,8 +110,18 @@ function titleOnclick(target: string) {
         button {
             border: none;
             background-color: $primaryBacColor;
+            width: 36px;
             height: 100%;
             top: 0;
+            transition: scale .15s;
+
+            &:active div {
+                translate: 1px 1px;
+            }
+
+            &:hover {
+                scale: 1.2;
+            }
         }
 
         .btn-prev {
@@ -143,7 +153,7 @@ function titleOnclick(target: string) {
                 margin: 0;
                 width: 100%;
                 min-width: 100%;
-                padding-inline: 2rem;
+                padding-inline: 36px;
                 overflow: hidden;
                 font-variation-settings: 'wght' 400;
             }
@@ -165,12 +175,26 @@ function titleOnclick(target: string) {
 }
 
 @include medium {
-    .container .marquee .carousel {
-        min-height: 2.75rem;
+    .container .marquee {
+        .carousel {
+            min-height: 2.75rem;
 
-        p {
-            font-size: 14px;
+            p {
+                font-size: 14px;
+            }
         }
+
+        button:active {
+            filter: brightness(.95);
+        }
+
+        // .btn-prev {
+        //     left: 4px;
+        // }
+
+        // .btn-next {
+        //     right: 4px;
+        // }
     }
 }
 

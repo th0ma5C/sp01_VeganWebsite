@@ -1,12 +1,10 @@
 <template>
-    <transition name="loader">
-        <Loader v-show="loaderActivated"></Loader>
-    </transition>
-
-    <!-- <transition name="app"> -->
     <div :style="{
-        opacity: loaderActivated ? 0 : 1
+        // opacity: loaderActivated ? 0 : 1
     }">
+        <transition name="loader">
+            <Loader v-show="loaderActivated"></Loader>
+        </transition>
         <header>
             <VeganHeader></VeganHeader>
         </header>
@@ -16,7 +14,8 @@
 
             <router-view v-slot="{ Component }">
                 <keep-alive :max="3">
-                    <component :key="$route.query.name"
+                    <component
+                        :key="$route.query.name || 'default'"
                         v-if="$route.meta?.keepAlive"
                         :is="Component">
                     </component>
@@ -24,14 +23,12 @@
             </router-view>
 
             <CartCard></CartCard>
-            <div class="flyToCartContainer"></div>
             <Toast></Toast>
         </main>
         <footer>
             <VeganFooter></VeganFooter>
         </footer>
     </div>
-    <!-- </transition> -->
 </template>
 
 <script setup lang="ts">

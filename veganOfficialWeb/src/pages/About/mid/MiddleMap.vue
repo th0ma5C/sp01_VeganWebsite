@@ -159,10 +159,13 @@ const list = ref([
 ])
 
 // current tab
-const currTab = ref<null | number>(null);
+const currTab = ref(0);
 const lastTab = ref(0);
 function selectTab(tab: number) {
     currTab.value = tab;
+    nextTick(() => {
+        getPosition(tab);
+    })
 }
 
 // background img
@@ -191,7 +194,6 @@ function getPosition(index: number) {
     if (btnList.value) {
         const { width, height } = btnList.value[index].getBoundingClientRect();
         const { offsetLeft: left, offsetTop: top } = btnList.value[index];
-
         btnMarkerLeft.value = left;
         btnMarkerTop.value = top;
         btnMarkerHeight.value = height;
@@ -203,7 +205,6 @@ function getPosition(index: number) {
 watch(currTab, (nVal, oVal) => {
     if (typeof nVal === 'number' || nVal) {
         getPosition(nVal);
-
     }
     if (oVal !== null) {
         lastTab.value = oVal;
@@ -221,12 +222,6 @@ const btnMarkerStyle = computed(() => {
 
 // position store
 const midContainer = useTemplateRef('midContainer');
-function exposePosition() {
-    if (midContainer.value) {
-        const { top } = midContainer.value.getBoundingClientRect();
-        positionStore.setPosition('middle', top);
-    }
-}
 
 // on resize
 let currWidth = window.innerWidth;
@@ -239,9 +234,11 @@ function onResize() {
 const debounceResize = debounce(onResize, 500);
 
 onMounted(() => {
-    selectTab(0);
-    exposePosition();
+    positionStore.exposeElCoord('ACCESS', midContainer.value);
     window.addEventListener('resize', debounceResize);
+    nextTick(() => {
+        getPosition(0);
+    })
 })
 
 onUnmounted(() => {
@@ -268,18 +265,26 @@ onUnmounted(() => {
 
 .midContainer {
     padding: 0 8rem;
-    // padding-top: 60px;
     min-height: 100vh;
     position: relative;
     z-index: 0;
-    top: 100px;
     padding-inline: 1.5rem;
     padding-inline: clamp(1.5rem, 0.19999999999999996rem + 6.5vw, 8rem);
     display: flex;
     flex-direction: column;
     justify-content: center;
+    margin-inline: auto;
+    max-width: 1920px;
 
     &::after {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        top: 0;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        translate: -50% 0;
         transition: opacity .5s;
     }
 
@@ -320,14 +325,6 @@ onUnmounted(() => {
     }
 }
 
-.slideRightIn {
-    // animation: rightInSlider .5s forwards;
-}
-
-.slideLeftIn {
-    // animation: leftInSlider .5s forwards;
-}
-
 @keyframes pseudo_bac0 {
     from {
         opacity: .25;
@@ -359,51 +356,41 @@ onUnmounted(() => {
 }
 
 .store1::after {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+
     animation: pseudo_bac0 2.5s forwards;
     background:
-        linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('/imgs/about/midStore1.webp') no-repeat center/cover;
+        linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('/imgs/about/midStore1.webp') no-repeat top/cover;
 }
 
 .store2::after {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    // content: "";
+    // position: absolute;
+    // z-index: -1;
+    // top: 0;
+    // left: 0;
+    // width: 100%;
+    // height: 100%;
     animation: pseudo_bac1 2.5s forwards;
     background:
-        linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('/imgs/about/midStore2.webp') no-repeat center/cover;
+        linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('/imgs/about/midStore2.webp') no-repeat top/cover;
 }
 
 .store3::after {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    // content: "";
+    // position: absolute;
+    // z-index: -1;
+    // top: 0;
+    // left: 0;
+    // width: 100%;
+    // height: 100%;
     animation: pseudo_bac2 2.5s forwards;
     background:
-        linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('/imgs/about/midStore3.webp') no-repeat center/cover;
+        linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('/imgs/about/midStore3.webp') no-repeat top/cover;
 }
 
 main {
     display: flex;
     gap: 1rem;
-    // max-height: 800px;
-    // height: 800px;
-    // height: calc(100% - 9rem);
-    // height: 100%;
 
     &>div {
         flex: 1;
@@ -442,7 +429,6 @@ main {
     }
 
     li:has(p) {
-        // text-indent: 2.5rem;
         padding-left: 2.5rem;
         flex-direction: column;
         align-items: start;
@@ -479,7 +465,6 @@ main {
         transition: font-variation-settings .15s, color .3s;
 
         &:hover:not(.isSelect) {
-            // color: $primaryBacColor;
             opacity: 1;
             font-variation-settings: 'wght' 600;
         }
@@ -487,13 +472,11 @@ main {
 }
 
 .isSelect {
-    // background-color: $btnBacColor;
     color: $primaryBacColor;
     z-index: 2;
 }
 
 .unselect {
-    // opacity: .5;
     color: $secondBacColor;
     background-color: transparent;
     z-index: 2;
@@ -501,7 +484,6 @@ main {
 
 .btnMarker {
     position: absolute;
-    // z-index: -1;
     border-radius: .5rem;
     background-color: $btnBacColor;
     transition: left .3s;
@@ -517,11 +499,8 @@ main {
     overflow: hidden;
     border-radius: 1rem;
     position: relative;
-    // min-height: 150px;
-    // min-width: 300px;
 
     img {
-        // transform: scale(1.1) translateX(-2%);
         animation: imgSlider 15s infinite alternate;
     }
 }

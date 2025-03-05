@@ -1,5 +1,5 @@
 <template>
-    <div class="closeZone" @click="emitCloseSearch"></div>
+    <!-- <div class="closeZone" @click="emitCloseSearch"></div> -->
     <div class="searchContainer" ref="searchContainer"
         @click.stop>
         <div class="searchBar">
@@ -14,7 +14,8 @@
             <div class="inputWrapper" :class="{
                 inputOutline: !isAnimate
             }">
-                <input type="text" name="" id="search"
+                <input type="text" name=""
+                    :id="`search${nanoid(1)}`"
                     placeholder="搜尋" autocomplete="off"
                     @keydown.enter.prevent
                     v-model="inputSearch">
@@ -125,11 +126,17 @@ import gsap from 'gsap';
 import { storeToRefs } from 'pinia';
 import { computed, nextTick, onMounted, onUnmounted, ref, toRaw, toValue, useTemplateRef, watch, type ComponentPublicInstance, type Ref } from 'vue';
 import { useRouter, type RouteRecord } from 'vue-router';
-
+import { nanoid } from 'nanoid';
 // props
-const { showSearch } = defineProps<{
-    showSearch: boolean
-}>();
+// const { showSearch } = defineProps<{
+//     showSearch: boolean
+// }>();
+
+// watch(() => showSearch, (n, o) => {
+//     console.log('o', o);
+//     console.log('n', n);
+// }, { immediate: true })
+const showSearch = defineModel<boolean>();
 
 // GSAP
 interface IconRef {
@@ -174,20 +181,23 @@ function setGSAP() {
                 padding: '0.5rem 1rem',
                 duration: .3,
                 onComplete: () => {
+                    setCloseEvent();
                 }
             },
-            '+=0.05'
+            '+=0.05',
         )
 }
 
-function GsapOnresize() {
-    gsap.timeline().re
-}
 
 // close search
-const emit = defineEmits(['close'])
+// const emit = defineEmits(['close'])
 function emitCloseSearch() {
-    emit('close')
+    showSearch.value = false;
+    document.removeEventListener('click', emitCloseSearch)
+}
+
+function setCloseEvent() {
+    document.addEventListener('click', emitCloseSearch)
 }
 
 // fuse search
@@ -215,8 +225,20 @@ const formatRouteList = computed(() => {
 })
 // get menu data
 const menuStore = useMenuStore();
-const { fullMenu, hotList } = storeToRefs(menuStore);
+const { fetchMenu, fetchHotList } = menuStore;
+const { fullMenu, hotList, isLoaded } = storeToRefs(menuStore);
+
+async function initMenu() {
+    try {
+        if (!isLoaded.value) await fetchMenu()
+        if (hotList.value.length == 0) await fetchHotList()
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 const formatMenuList = computed(() => {
+    if (!isLoaded.value) return []
     const [{ items: saladList }, { items: smoothiesList }] = fullMenu.value;
     const list = [...saladList, ...smoothiesList].map((item) => {
         return {
@@ -283,7 +305,8 @@ const initMenuList = computed(() => {
 // search result on click
 function routeOnclick(path: string) {
     router.push(path).then(() => {
-        emit('close');
+        emitCloseSearch()
+        // emit('close');
     })
 }
 
@@ -295,11 +318,13 @@ function menuOnclick(name: string | null) {
             name
         }
     }).then(() => {
-        emit('close');
+        emitCloseSearch()
+        // emit('close');
     })
 }
 
 onMounted(() => {
+    initMenu()
     nextTick(() => {
         setGSAP();
     })

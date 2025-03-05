@@ -1,208 +1,141 @@
 <template>
     <div>
-        <h2>
-            收件資訊
-        </h2>
+        <div class="recipientInfo">
+            <h2>
+                收件資訊
+            </h2>
 
-        <main>
-            <div v-show="Object.keys(showShippingInfo).length == 0"
-                class="emptyList">
-                沒有已儲存的收件資訊
-            </div>
-
-            <div class="infoContainer"
-                v-show="Object.keys(showShippingInfo).length !== 0">
-                <div class='content'>
-                    <div class="shippingType">
-                        <h3>
-                            {{ showShippingInfo.deliveryType
-                            }}
-                        </h3>
-                    </div>
-
-                    <div class="infoTitle">
-                        <p>
-                            <span class="highlightName">
-                                {{
-                                    showShippingInfo.consigneeName
-                                }}
-                            </span>
-                            <span class="infoNo">
-                                {{
-                                    showShippingInfo.contactNo
-                                }}
-                            </span>
-                        </p>
-                    </div>
-
-                    <div>
-                        <p>
-                            {{ showShippingInfo.address }}
-                        </p>
-                    </div>
-
-                    <div class="infoAddr">
-                        <p>
-                            <span>
-                                {{ showShippingInfo.city }}
-                            </span>
-                            <span>
-                                {{ showShippingInfo.postal
-                                }}
-                            </span>
-                        </p>
-                    </div>
-
-                    <div>
-                        <p>
-                            {{ showShippingInfo.email }}
-                        </p>
-                    </div>
+            <main>
+                <div v-show="Object.keys(showShippingInfo).length == 0"
+                    class="emptyList">
+                    沒有已儲存的收件資訊
                 </div>
 
-                <div class="edit">
-                    <button @click="toggleDialogOpen">
-                        編輯
-                    </button>
-
-                    <button @click="toggleConfirmOpen">
-                        刪除
-                    </button>
-                </div>
-            </div>
-
-            <transition name="editDialog">
-                <VForm as="div" v-show="isDialogOpen"
-                    class="editDialog"
-                    v-slot="{ handleSubmit, submitCount, values, meta, setValues, resetForm }"
-                    :validation-schema="FormSchema"
-                    :initial-values="showShippingInfo"
-                    @click="clickOuter">
-
-                    <form action="" class="dialogForm">
-                        <div class="formTitle">
+                <div class="infoContainer"
+                    v-show="Object.keys(showShippingInfo).length !== 0">
+                    <div class='content'>
+                        <div class="shippingType">
                             <h3>
-                                編輯收件資訊
+                                {{
+                                    showShippingInfo.deliveryType
+                                }}
                             </h3>
                         </div>
-                        <fieldset>
-                            <div>
-                                <VField id="email"
-                                    name="email"
-                                    type="email"
-                                    placeholder=""
-                                    autocomplete="off">
-                                </VField>
 
-                                <label
-                                    for="email">聯絡信箱</label>
+                        <div class="infoTitle">
+                            <p>
+                                <span class="highlightName">
+                                    {{
+                                        showShippingInfo.consigneeName
+                                    }}
+                                </span>
+                                <span class="infoNo">
+                                    {{
+                                        showShippingInfo.contactNo
+                                    }}
+                                </span>
+                            </p>
+                        </div>
 
-                                <ErrorMessage as="div"
-                                    name="email"
-                                    v-slot="{ message }"
-                                    class="errorMsg" :style="{
-                                        opacity: submitCount > 0 ? 1 : 0
-                                    }">
-                                    <SvgIcon
-                                        name="QNR_alert"
-                                        width="18"
-                                        height="18"
-                                        color="#b3261e">
-                                    </SvgIcon>
-                                    <span>
-                                        {{ message }}
-                                    </span>
-                                </ErrorMessage>
+                        <div>
+                            <p>
+                                {{ showShippingInfo.address
+                                }}
+                            </p>
+                        </div>
+
+                        <div class="infoAddr">
+                            <p>
+                                <span>
+                                    {{ showShippingInfo.city
+                                    }}
+                                </span>
+                                <span>
+                                    {{
+                                        showShippingInfo.postal
+                                    }}
+                                </span>
+                            </p>
+                        </div>
+
+                        <div>
+                            <p>
+                                {{ showShippingInfo.email }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="edit">
+                        <button @click="toggleDialogOpen">
+                            編輯
+                        </button>
+
+                        <button @click="toggleConfirmOpen">
+                            刪除
+                        </button>
+                    </div>
+                </div>
+
+                <transition name="editDialog">
+                    <VForm as="div" v-show="isDialogOpen"
+                        class="editDialog"
+                        v-slot="{ handleSubmit, submitCount, values, meta, setValues, resetForm }"
+                        :validation-schema="FormSchema"
+                        :initial-values="showShippingInfo"
+                        @click="clickOuter">
+
+                        <form action="" class="dialogForm">
+                            <div class="formTitle">
+                                <h3>
+                                    編輯收件資訊
+                                </h3>
                             </div>
-                        </fieldset>
-
-                        <fieldset>
-                            <div>
-                                <VField id="consigneeName"
-                                    name="consigneeName"
-                                    type="text"
-                                    placeholder="">
-                                </VField>
-
-                                <label
-                                    for="consigneeName">姓名</label>
-
-                                <ErrorMessage as="div"
-                                    name="consigneeName"
-                                    v-slot="{ message }"
-                                    :style="{
-                                        opacity: submitCount > 0 ? 1 : 0
-                                    }">
-                                    <SvgIcon
-                                        name="QNR_alert"
-                                        width="18"
-                                        height="18"
-                                        color="#b3261e">
-                                    </SvgIcon>
-                                    <span>
-                                        {{ message }}
-                                    </span>
-                                </ErrorMessage>
-                            </div>
-                        </fieldset>
-
-                        <fieldset>
-                            <div>
-                                <VField name="address"
-                                    v-slot="{ field, meta, handleBlur }">
-                                    <input id="address"
-                                        type="text"
-                                        autocomplete="off"
+                            <fieldset>
+                                <div>
+                                    <VField id="email"
+                                        name="email"
+                                        type="email"
                                         placeholder=""
-                                        :="field" :class="{
-                                            invalidInput: !meta.valid && submitCount > 0
-                                        }"
-                                        @blur="updateAddrInput(field.value)">
-                                </VField>
-
-                                <label
-                                    for="address">地址</label>
-
-                                <ErrorMessage as="div"
-                                    name="address"
-                                    v-slot="{ message }"
-                                    :style="{
-                                        opacity: submitCount > 0 ? 1 : 0
-                                    }">
-                                    <SvgIcon
-                                        name="QNR_alert"
-                                        width="18"
-                                        height="18"
-                                        color="#b3261e">
-                                    </SvgIcon>
-                                    <span>
-                                        {{ message }}
-                                    </span>
-                                </ErrorMessage>
-                            </div>
-                        </fieldset>
-
-                        <fieldset>
-                            <div class="selectWrapper"
-                                @click.stop>
-                                <div class="hideField">
-                                    <VField id="city"
-                                        name="city"
-                                        type="text"
-                                        placeholder=""
-                                        v-model="inputCity"
-                                        v-slot="{ field, meta }">
-                                        <input id="city"
-                                            :="field"
-                                            placeholder=""
-                                            :class="{
-                                                invalidInput: !meta.valid && submitCount > 0
-                                            }">
+                                        autocomplete="off">
                                     </VField>
 
+                                    <label
+                                        for="email">聯絡信箱</label>
 
                                     <ErrorMessage as="div"
-                                        name="city"
+                                        name="email"
+                                        v-slot="{ message }"
+                                        class="errorMsg"
+                                        :style="{
+                                            opacity: submitCount > 0 ? 1 : 0
+                                        }">
+                                        <SvgIcon
+                                            name="QNR_alert"
+                                            width="18"
+                                            height="18"
+                                            color="#b3261e">
+                                        </SvgIcon>
+                                        <span>
+                                            {{ message }}
+                                        </span>
+                                    </ErrorMessage>
+                                </div>
+                            </fieldset>
+
+                            <fieldset>
+                                <div>
+                                    <VField
+                                        id="consigneeName"
+                                        name="consigneeName"
+                                        type="text"
+                                        placeholder="">
+                                    </VField>
+
+                                    <label
+                                        for="consigneeName">姓名</label>
+
+                                    <ErrorMessage as="div"
+                                        name="consigneeName"
                                         v-slot="{ message }"
                                         :style="{
                                             opacity: submitCount > 0 ? 1 : 0
@@ -218,112 +151,28 @@
                                         </span>
                                     </ErrorMessage>
                                 </div>
+                            </fieldset>
 
-                                <div class="selectContainer"
-                                    @click.self="toggleOpenOptions">
-                                    <label for="city"
-                                        :class="{
-                                            selectingOptions: isOptionsOpen || selectedCity.city !== ''
-                                        }">縣市</label>
-
-                                    <div class="selector"
-                                        @click="toggleOpenOptions">
-                                        <span
-                                            v-show="selectedCity.city">
-                                            {{ inputCity }}
-                                        </span>
-                                    </div>
-
-                                    <div class="icon"
-                                        :class="{
-                                            optionOpen: isOptionsOpen
-                                        }"
-                                        @click="toggleOpenOptions">
-                                        <SvgIcon
-                                            class="switchIcon"
-                                            name="ListArrowDown"
-                                            width="24"
-                                            height="24"
-                                            color="black">
-                                        </SvgIcon>
-                                    </div>
-
-                                    <transition
-                                        name="optionsWrapper">
-                                        <div class="optionContainer"
-                                            v-show="isOptionsOpen">
-                                            <div
-                                                class="title">
-                                                <span
-                                                    @click="switchTab('city')">縣市</span>
-                                                <span
-                                                    :class="{
-                                                        'not-allowed': !selectedCity.city
-                                                    }"
-                                                    @click="switchTab('town')">鄉鎮</span>
-                                            </div>
-
-                                            <div class="tabs"
-                                                ref="tabsRef">
-                                                <ul
-                                                    v-show="currTab == 'city'">
-                                                    <li v-for="({ NAME, CODE }) in showCityList"
-                                                        :key="CODE"
-                                                        @click="pickCity({ city: NAME, code: CODE })">
-                                                        {{
-                                                            NAME
-                                                        }}
-                                                    </li>
-                                                </ul>
-
-                                                <ul
-                                                    v-show="currTab == 'town'">
-                                                    <Spinner
-                                                        v-show="showSpinner">
-                                                    </Spinner>
-                                                    <li v-for="(town, index) in townList"
-                                                        :key="index"
-                                                        :style="{
-
-                                                        }"
-                                                        @click="pickTown(town)">
-                                                        {{
-                                                            town
-                                                        }}
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </transition>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class='postalWrapper'>
-                                    <VField
-                                        v-model="postalCode"
-                                        name="postal"
-                                        v-slot="{ field, meta }">
-                                        <input type="text"
-                                            id="postal"
+                            <fieldset>
+                                <div>
+                                    <VField name="address"
+                                        v-slot="{ field, meta, handleBlur }">
+                                        <input id="address"
+                                            type="text"
                                             autocomplete="off"
                                             placeholder=""
                                             :="field"
                                             :class="{
                                                 invalidInput: !meta.valid && submitCount > 0
-                                            }">
+                                            }"
+                                            @blur="updateAddrInput(field.value)">
                                     </VField>
 
                                     <label
-                                        for="postal">郵遞區號</label>
-
-                                    <Spinner
-                                        class="postalSpinner"
-                                        v-show="postalSpinner">
-                                    </Spinner>
+                                        for="address">地址</label>
 
                                     <ErrorMessage as="div"
-                                        name="postal"
+                                        name="address"
                                         v-slot="{ message }"
                                         :style="{
                                             opacity: submitCount > 0 ? 1 : 0
@@ -339,72 +188,277 @@
                                         </span>
                                     </ErrorMessage>
                                 </div>
+                            </fieldset>
+
+                            <fieldset>
+                                <div class="selectWrapper"
+                                    @click.stop>
+                                    <div class="hideField">
+                                        <VField id="city"
+                                            name="city"
+                                            type="text"
+                                            placeholder=""
+                                            v-model="inputCity"
+                                            v-slot="{ field, meta }">
+                                            <input id="city"
+                                                :="field"
+                                                placeholder=""
+                                                :class="{
+                                                    invalidInput: !meta.valid && submitCount > 0
+                                                }">
+                                        </VField>
+
+
+                                        <ErrorMessage
+                                            as="div"
+                                            name="city"
+                                            v-slot="{ message }"
+                                            :style="{
+                                                opacity: submitCount > 0 ? 1 : 0
+                                            }">
+                                            <SvgIcon
+                                                name="QNR_alert"
+                                                width="18"
+                                                height="18"
+                                                color="#b3261e">
+                                            </SvgIcon>
+                                            <span>
+                                                {{ message
+                                                }}
+                                            </span>
+                                        </ErrorMessage>
+                                    </div>
+
+                                    <div class="selectContainer"
+                                        @click.self="toggleOpenOptions">
+                                        <label for="city"
+                                            :class="{
+                                                selectingOptions: isOptionsOpen || selectedCity.city !== ''
+                                            }">縣市</label>
+
+                                        <div class="selector"
+                                            @click="toggleOpenOptions">
+                                            <span
+                                                v-show="selectedCity.city">
+                                                {{ inputCity
+                                                }}
+                                            </span>
+                                        </div>
+
+                                        <div class="icon"
+                                            :class="{
+                                                optionOpen: isOptionsOpen
+                                            }"
+                                            @click="toggleOpenOptions">
+                                            <SvgIcon
+                                                class="switchIcon"
+                                                name="ListArrowDown"
+                                                width="24"
+                                                height="24"
+                                                color="black">
+                                            </SvgIcon>
+                                        </div>
+
+                                        <transition
+                                            name="optionsWrapper">
+                                            <div class="optionContainer"
+                                                v-show="isOptionsOpen">
+                                                <div
+                                                    class="title">
+                                                    <span
+                                                        @click="switchTab('city')">縣市</span>
+                                                    <span
+                                                        :class="{
+                                                            'not-allowed': !selectedCity.city
+                                                        }"
+                                                        @click="switchTab('town')">鄉鎮</span>
+                                                </div>
+
+                                                <div class="tabs"
+                                                    ref="tabsRef">
+                                                    <ul
+                                                        v-show="currTab == 'city'">
+                                                        <li v-for="({ NAME, CODE }) in showCityList"
+                                                            :key="CODE"
+                                                            @click="pickCity({ city: NAME, code: CODE })">
+                                                            {{
+                                                                NAME
+                                                            }}
+                                                        </li>
+                                                    </ul>
+
+                                                    <ul
+                                                        v-show="currTab == 'town'">
+                                                        <Spinner
+                                                            v-show="showSpinner">
+                                                        </Spinner>
+                                                        <li v-for="(town, index) in townList"
+                                                            :key="index"
+                                                            :style="{
+
+                                                            }"
+                                                            @click="pickTown(town)">
+                                                            {{
+                                                                town
+                                                            }}
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </transition>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div
+                                        class='postalWrapper'>
+                                        <VField
+                                            v-model="postalCode"
+                                            name="postal"
+                                            v-slot="{ field, meta }">
+                                            <input
+                                                type="text"
+                                                id="postal"
+                                                autocomplete="off"
+                                                placeholder=""
+                                                :="field"
+                                                :class="{
+                                                    invalidInput: !meta.valid && submitCount > 0
+                                                }">
+                                        </VField>
+
+                                        <label
+                                            for="postal">郵遞區號</label>
+
+                                        <Spinner
+                                            class="postalSpinner"
+                                            v-show="postalSpinner">
+                                        </Spinner>
+
+                                        <ErrorMessage
+                                            as="div"
+                                            name="postal"
+                                            v-slot="{ message }"
+                                            :style="{
+                                                opacity: submitCount > 0 ? 1 : 0
+                                            }">
+                                            <SvgIcon
+                                                name="QNR_alert"
+                                                width="18"
+                                                height="18"
+                                                color="#b3261e">
+                                            </SvgIcon>
+                                            <span>
+                                                {{ message
+                                                }}
+                                            </span>
+                                        </ErrorMessage>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset>
+                                <div>
+                                    <VField id="contactNo"
+                                        name="contactNo"
+                                        type="tel"
+                                        placeholder="">
+                                    </VField>
+
+                                    <label
+                                        for="contactNo">聯絡電話</label>
+
+                                    <ErrorMessage as="div"
+                                        name="contactNo"
+                                        v-slot="{ message }"
+                                        :style="{
+                                            opacity: submitCount > 0 ? 1 : 0
+                                        }">
+                                        <SvgIcon
+                                            name="QNR_alert"
+                                            width="18"
+                                            height="18"
+                                            color="#b3261e">
+                                        </SvgIcon>
+                                        <span>
+                                            {{ message }}
+                                        </span>
+                                    </ErrorMessage>
+                                </div>
+                            </fieldset>
+
+                            <div class="dialogBtn">
+                                <button
+                                    @click="handleSubmit($event, handleInfoSubmit(meta.dirty))">
+                                    儲存
+                                </button>
+                                <button type="button"
+                                    @click="toggleDialogOpen($event, resetForm)">
+                                    取消
+                                </button>
                             </div>
-                        </fieldset>
+                        </form>
+                    </VForm>
+                </transition>
 
-                        <fieldset>
-                            <div>
-                                <VField id="contactNo"
-                                    name="contactNo"
-                                    type="tel"
-                                    placeholder="">
-                                </VField>
+                <div class="confirmDeleteDialog"
+                    v-show="confirmDeleteOpen">
+                    <div class="dialogContainer">
+                        <h3>
+                            確認刪除？
+                        </h3>
 
-                                <label
-                                    for="contactNo">聯絡電話</label>
-
-                                <ErrorMessage as="div"
-                                    name="contactNo"
-                                    v-slot="{ message }"
-                                    :style="{
-                                        opacity: submitCount > 0 ? 1 : 0
-                                    }">
-                                    <SvgIcon
-                                        name="QNR_alert"
-                                        width="18"
-                                        height="18"
-                                        color="#b3261e">
-                                    </SvgIcon>
-                                    <span>
-                                        {{ message }}
-                                    </span>
-                                </ErrorMessage>
-                            </div>
-                        </fieldset>
-
-                        <div class="dialogBtn">
-                            <button
-                                @click="handleSubmit($event, handleInfoSubmit(meta.dirty))">
-                                儲存
+                        <div class="btnWrapper">
+                            <button @click="handleDelete">
+                                確定
                             </button>
-                            <button type="button"
-                                @click="toggleDialogOpen($event, resetForm)">
+                            <button
+                                @click="toggleConfirmOpen">
                                 取消
                             </button>
                         </div>
-                    </form>
-                </VForm>
-            </transition>
-
-            <div class="confirmDeleteDialog"
-                v-show="confirmDeleteOpen">
-                <div class="dialogContainer">
-                    <h3>
-                        確認刪除？
-                    </h3>
-
-                    <div class="btnWrapper">
-                        <button @click="handleDelete">
-                            確定
-                        </button>
-                        <button @click="toggleConfirmOpen">
-                            取消
-                        </button>
                     </div>
                 </div>
+            </main>
+        </div>
+        <div class="emailVerify">
+            <h2>
+                個人檔案
+            </h2>
+
+            <div class="contentWrapper">
+                <h3>
+                    帳號信箱
+                </h3>
+
+                <div class="accDetail">
+                    <p>
+                        {{ user.email }}
+                        <small v-if="user.verified" :class="{
+                            isVerified: user.verified
+                        }">
+                            已驗證
+                        </small>
+                        <small v-else>
+                            未驗證
+                        </small>
+                    </p>
+
+                    <button v-if="!user.verified"
+                        @click="verifyEmail">
+                        <span :class="{
+                            isRequesting
+                        }">
+                            發送驗證信
+                        </span>
+                        <Spinner v-show="isRequesting">
+                        </Spinner>
+                    </button>
+                </div>
             </div>
-        </main>
+        </div>
     </div>
+
 </template>
 
 <script setup lang="ts">
@@ -421,11 +475,15 @@ import { getPostalCode } from '@/api/postal';
 import type { ShippingInfo } from '@/api/order/type';
 import { deleteShippingInfo, saveShippingInfo } from '@/api/shippingInfo/shippingInfo';
 import { useToastStore } from '@/store/toastStore';
+import { reqCheckUserVerified, reqSendVerifyEmail } from '@/api/userAuth';
 
 //pinia store
 const userStore = useUserStore();
 const { setUserShippingInfo, deleteSavedInfo } = userStore;
-const { userSavedCheckoutForm, userToken } = storeToRefs(userStore);
+const { userSavedCheckoutForm, userToken, user } = storeToRefs(userStore);
+const toastStore = useToastStore();
+const { addNotification } = toastStore;
+
 const showShippingInfo = computed(() => {
     return { ...userSavedCheckoutForm.value }
 })
@@ -629,7 +687,6 @@ function handleInfoSubmit(dirty: boolean) {
             toggleDialogOpen();
             return
         }
-        const toastStore = useToastStore();
 
         try {
             loadingNewInfo.value = true;
@@ -638,7 +695,7 @@ function handleInfoSubmit(dirty: boolean) {
                 setUserShippingInfo(result);
                 toggleDialogOpen();
                 loadingTimer();
-                toastStore.addNotification(`修改成功`)
+                addNotification(`修改成功`)
             }
 
         } catch (error) {
@@ -674,21 +731,52 @@ function toggleConfirmOpen() {
 async function handleDelete() {
     const token = userToken.value;
     if (!token) return
-    const toastStore = useToastStore();
     try {
         loadingNewInfo.value = true;
         await deleteShippingInfo(token);
         deleteSavedInfo();
         loadingTimer();
         toggleConfirmOpen();
-        toastStore.addNotification(`刪除成功`)
+        addNotification(`刪除成功`)
     } catch (error) {
         console.log(error);
     }
 }
 
+// check verified
+async function checkVerified() {
+    if (user.value.verified) return
+    try {
+        const { state } = await reqCheckUserVerified();
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// verified request
+const isRequesting = ref(false);
+
+async function verifyEmail() {
+    if (!user.value.email) return
+    const params = {
+        to: user.value.email
+    }
+    try {
+        isRequesting.value = true
+        const res = await reqSendVerifyEmail(params);
+        if (res.state == 'confirm') {
+            isRequesting.value = false
+            addNotification('發送成功，請至信箱點擊驗證連結')
+        }
+    } catch (error) {
+        isRequesting.value = false
+        addNotification('發送失敗，請重試')
+    }
+}
+
 onMounted(() => {
     initForm();
+    checkVerified()
 })
 
 </script>
@@ -711,9 +799,15 @@ onMounted(() => {
 
 h2 {
     font-size: 2rem;
+    font-size: 1.5rem;
+    font-size: clamp(1.5rem, 1.3571428571428572rem + 0.7142857142857143vw, 2rem);
     height: 50px;
     line-height: 50px;
     font-variation-settings: 'wght' 450;
+    margin-bottom: 1rem;
+}
+
+.recipientInfo {
     margin-bottom: 1rem;
 }
 
@@ -729,62 +823,48 @@ h2 {
     justify-content: space-between;
     padding: 0 3rem;
 
-    // position: relative;
-
     p {
         color: rgba(0, 0, 0, 0.8);
     }
 
     .content {
         position: relative;
-        // margin-left: 1rem;
 
         div {
             margin-bottom: .25rem;
         }
-
-        // &::after {
-        //     content: '';
-        //     position: absolute;
-        //     top: calc(36px + .25rem);
-        //     left: -1.5rem;
-        //     width: 500%;
-        //     height: 1px;
-        //     background-color: gray;
-        // }
-    }
-
-    .shippingType h3 {
-        font-size: 1.5rem;
-        margin-bottom: .5rem;
     }
 }
 
-.infoTitle {
+.shippingType h3 {
+    font-size: 1.5rem;
+    margin-bottom: .5rem;
+}
 
-    .highlightName {
-        font-size: 1.25rem;
-        color: black;
+.infoTitle {}
 
-        padding-right: .5rem;
-        position: relative;
+.highlightName {
+    font-size: 1.25rem;
+    color: black;
 
-        &::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 15%;
-            width: 1px;
-            height: 80%;
-            background-color: gray;
-        }
+    padding-right: .5rem;
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 15%;
+        width: 1px;
+        height: 80%;
+        background-color: gray;
     }
+}
 
-    .infoNo {
-        margin-left: .5rem;
-        line-height: 30px;
-        vertical-align: baseline;
-    }
+.infoNo {
+    margin-left: .5rem;
+    line-height: 30px;
+    vertical-align: baseline;
 }
 
 .infoAddr {
@@ -806,14 +886,6 @@ h2 {
     button {
         @include WnH(60px, 30px);
         @extend %edit_button;
-        // border: 1px solid $btnBacColor;
-        // border-radius: 1rem;
-        // background-color: $btnBacColor;
-        // color: $primaryBacColor;
-
-        // &:hover {
-        //     filter: brightness(1.2);
-        // }
     }
 }
 
@@ -904,9 +976,12 @@ h2 {
         &:has(.hideField) {
             display: flex;
             gap: 1rem;
+            width: 100%;
 
             &>div {
+                // width: calc((100% - 1rem) / 2);
                 flex: 1;
+                // max-width: 50%;
             }
         }
 
@@ -916,182 +991,186 @@ h2 {
             background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
         }
     }
+}
 
-    .selectWrapper {
-        width: 100%;
+.selectWrapper {
+    width: 100%;
 
-        .hideField {
-            display: none;
-            // visibility: hidden;
+    .selectingOptions {
+        transform: translateY(calc(-100% - 8px)) scale(0.9);
+        background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
+    }
+}
+
+.hideField {
+    display: none;
+    // visibility: hidden;
+}
+
+
+
+.selectContainer {
+    position: relative;
+}
+
+.selector {
+    @include WnH(100%, 36px);
+    cursor: pointer;
+    font-size: .9rem;
+    padding: 0 1rem;
+    border: 1px solid gray;
+    border-radius: .5rem;
+    background-color: white;
+    padding-left: 1rem;
+
+    span {
+        line-height: 36px;
+        user-select: none;
+    }
+}
+
+
+
+.icon {
+    cursor: pointer;
+    position: absolute;
+    right: .5rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transition: transform .3s ease;
+}
+
+.optionOpen {
+    transform: translateY(-50%) rotate(0deg);
+}
+
+.optionContainer {
+    width: calc(100% + 1px);
+    height: 250px;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: -1px;
+    z-index: 2;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: .5rem;
+
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.title {
+    border-bottom: 1px solid black;
+    width: 100%;
+    display: flex;
+
+    &>span {
+        padding: .5rem;
+        flex: 1;
+        text-align: center;
+        user-select: none;
+
+        &:first-of-type {
+            border-right: 1px solid gray;
         }
 
-        .selectContainer {
-            position: relative;
-
-            .selector {
-                @include WnH(100%, 36px);
-                cursor: pointer;
-                font-size: .9rem;
-                padding: 0 1rem;
-                border: 1px solid gray;
-                border-radius: .5rem;
-                background-color: white;
-                padding-left: 1rem;
-
-                span {
-                    line-height: 36px;
-                    user-select: none;
-                }
-
-                // position: absolute;
-            }
-        }
-
-        .selectingOptions {
-            transform: translateY(calc(-100% - 8px)) scale(0.9);
-            background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
-        }
-
-        .icon {
-            cursor: pointer;
-            position: absolute;
-            right: .5rem;
-            top: 50%;
-            transform: translateY(-50%) rotate(-90deg);
-            transition: transform .3s ease;
-        }
-
-        .optionOpen {
-            transform: translateY(-50%) rotate(0deg);
-        }
-
-        .optionContainer {
-            width: calc(100% + 1px);
-            height: 250px;
-            position: absolute;
-            top: calc(100% + 6px);
-            left: -1px;
-            z-index: 2;
-            background-color: white;
-            border: 1px solid black;
-            border-radius: .5rem;
-
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-
-            .title {
-                border-bottom: 1px solid black;
-                width: 100%;
-                display: flex;
-
-                &>span {
-                    padding: .5rem;
-                    flex: 1;
-                    text-align: center;
-                    user-select: none;
-
-                    &:first-of-type {
-                        border-right: 1px solid gray;
-                    }
-
-                    &:not(.not-allowed):hover {
-                        box-shadow:
-                            inset 0px 0 1px 1px green,
-                            inset 0px 0 1px 1px green;
-                    }
-                }
-            }
-
-            .not-allowed {
-                cursor: not-allowed;
-            }
-
-            .tabs {
-                overflow-y: scroll;
-                height: 100%;
-
-                &::-webkit-scrollbar {
-                    width: 6px;
-                }
-
-                &::-webkit-scrollbar-track {
-                    background: #f1f1f1;
-                    border-radius: 10px;
-                    margin: .25rem 0;
-                }
-
-                &::-webkit-scrollbar-thumb {
-                    background: #888;
-                    border-radius: 10px;
-                }
-
-                ul {
-                    position: relative;
-                    height: 100%;
-                }
-
-                li {
-                    @include WnH(100%, 36px);
-                    padding-left: 1rem;
-                    line-height: 36px;
-                    border-bottom: 1px solid gray;
-                    user-select: none;
-
-                    &:hover {
-                        box-shadow:
-                            inset -1px 0 1px 1px green,
-                            inset 0px 0 1px 1px green;
-                    }
-                }
-            }
-        }
-
-        .optionsWrapper-enter-active,
-        .optionsWrapper-leave-active {
-            transition: transform .15s, opacity .15s;
-        }
-
-        .optionsWrapper-enter-from,
-        .optionsWrapper-leave-to {
-            opacity: 0;
-            transform: translateY(-2.5%);
-        }
-
-        .optionsWrapper-enter-to,
-        .optionsWrapper-leave-from {
-            opacity: 1;
-            transform: translate(0);
+        &:not(.not-allowed):hover {
+            box-shadow:
+                inset 0px 0 1px 1px green,
+                inset 0px 0 1px 1px green;
         }
     }
+}
 
-    .postalWrapper {
+
+.not-allowed {
+    cursor: not-allowed;
+}
+
+.tabs {
+    overflow-y: scroll;
+    height: 100%;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+        margin: .25rem 0;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+
+    ul {
         position: relative;
-
-        &>div[role="alert"] {
-            @include flex-center-center;
-            flex-direction: row;
-            gap: 2px;
-            color: #b3261e;
-            font-size: .8rem;
-            text-wrap: nowrap;
-            position: absolute;
-            bottom: -55%;
-            left: .25rem;
-            // transform: translate(0%, 100%);
-            transition: opacity .15s;
-        }
+        height: 100%;
     }
 
-    .dialogBtn {
-        display: flex;
-        gap: .75rem;
-        justify-content: flex-end;
+    li {
+        @include WnH(100%, 36px);
+        padding-left: 1rem;
+        line-height: 36px;
+        border-bottom: 1px solid gray;
+        user-select: none;
 
-        button {
-            @include WnH(60px, 30px);
-            @extend %edit_button;
+        &:hover {
+            box-shadow:
+                inset -1px 0 1px 1px green,
+                inset 0px 0 1px 1px green;
         }
+    }
+}
+
+
+.optionsWrapper-enter-active,
+.optionsWrapper-leave-active {
+    transition: transform .15s, opacity .15s;
+}
+
+.optionsWrapper-enter-from,
+.optionsWrapper-leave-to {
+    opacity: 0;
+    transform: translateY(-2.5%);
+}
+
+.optionsWrapper-enter-to,
+.optionsWrapper-leave-from {
+    opacity: 1;
+    transform: translate(0);
+}
+
+.postalWrapper {
+    position: relative;
+
+    &>div[role="alert"] {
+        @include flex-center-center;
+        flex-direction: row;
+        gap: 2px;
+        color: #b3261e;
+        font-size: .8rem;
+        text-wrap: nowrap;
+        position: absolute;
+        bottom: -55%;
+        left: .25rem;
+        // transform: translate(0%, 100%);
+        transition: opacity .15s;
+    }
+}
+
+.dialogBtn {
+    display: flex;
+    gap: .75rem;
+    justify-content: flex-end;
+
+    button {
+        @include WnH(60px, 30px);
+        @extend %edit_button;
     }
 }
 
@@ -1132,36 +1211,154 @@ h2 {
     height: 100vh;
 
     background-color: rgba(0, 0, 0, 0.25);
+}
 
-    .dialogContainer {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+.dialogContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 
-        background-color: $primaryBacColor;
+    background-color: $primaryBacColor;
 
-        padding: 1.5rem 3rem;
-        border-radius: 1rem;
+    padding: 1.5rem 3rem;
+    border-radius: 1rem;
 
-        transform-origin: top left;
+    transform-origin: top left;
 
-        h3 {
-            font-size: 1.5rem;
-            margin-bottom: 2cap;
-            margin-right: 3.75rem;
+    h3 {
+        font-size: 1.5rem;
+        margin-bottom: 2cap;
+        margin-right: 3.75rem;
+    }
+}
+
+.btnWrapper {
+    display: flex;
+    gap: .75rem;
+    justify-content: flex-end;
+
+    button {
+        @include WnH(60px, 30px);
+        @extend %edit_button;
+    }
+}
+
+.contentWrapper {
+    padding-inline: 3rem;
+    margin-bottom: 2rem;
+
+    h3 {
+        font-size: 1.5rem;
+        margin-bottom: .5rem;
+    }
+
+    p {
+        font-size: 1.25rem;
+    }
+
+    small {
+        margin-left: .5rem;
+        color: $error_color;
+    }
+
+    button {
+        // @include WnH(60px, 30px);
+        @extend %edit_button;
+        align-self: flex-end;
+        height: 30px;
+        padding: 0rem .75rem;
+        margin-right: 2rem;
+        position: relative;
+
+        .isRequesting {
+            filter: blur(2px);
         }
 
-        .btnWrapper {
-            display: flex;
-            gap: .75rem;
-            justify-content: flex-end;
-
-            button {
-                @include WnH(60px, 30px);
-                @extend %edit_button;
-            }
+        div {
+            // border-top: 3px solid $primaryBacColor;
         }
     }
 }
+
+.accDetail .isVerified {
+    color: $btnBacColor_light;
+}
+
+.accDetail {
+    display: flex;
+    justify-content: space-between;
+}
+
+@include XLarge {}
+
+@include large {}
+
+@include medium($width: 1024px) {}
+
+@include medium {}
+
+@include small {
+    .infoContainer {
+        flex-direction: column;
+        gap: .75rem;
+        padding: 0 1rem;
+    }
+
+    .contentWrapper {
+        padding-inline: 1rem;
+
+        button {
+            margin-right: 1rem;
+        }
+    }
+
+    .accDetail {
+        flex-direction: column;
+        gap: .75rem;
+    }
+
+    .edit {
+        margin-right: 1rem;
+    }
+
+    .editDialog {
+        .dialogForm {
+            width: 95%;
+            padding: 1rem 2rem;
+        }
+
+        fieldset {
+            min-width: max-content;
+            margin-bottom: 2rem;
+        }
+
+        fieldset:has(.hideField) {
+            gap: 2rem;
+            flex-direction: column;
+        }
+    }
+}
+
+@include small($width: 430px) {
+    .infoContainer {
+        padding: 0 .5rem;
+    }
+
+    .contentWrapper {
+        padding-inline: .5rem;
+
+        button {
+            margin-right: 0rem;
+        }
+    }
+
+    .edit {
+        margin-right: 0rem;
+    }
+
+
+}
+
+@include small($width: 320px) {}
 </style>

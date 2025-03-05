@@ -7,27 +7,27 @@
         <ul class="orderContainer">
             <li>
                 <div class="orderTitle orderHeader">
-                    <div>
+                    <div class="title_id">
                         <h3>
                             訂單編號
                         </h3>
                     </div>
 
-                    <div class="progressBar">
+                    <div class="progressBar title_bar">
                         訂單進度
                     </div>
 
-                    <div>
+                    <div class="title_date">
                         <span>建立日期</span>
                     </div>
 
-                    <div>
+                    <div class="title_price">
                         <span>
                             訂單金額
                         </span>
                     </div>
 
-                    <div>
+                    <div class="title_icon">
                     </div>
                 </div>
 
@@ -48,14 +48,17 @@
                 v-show="filterWord.includes(purchaseOrder.status)">
                 <div class="orderTitle listItem"
                     @click="toggleListOpen(index)">
-                    <div>
+                    <div class=" orderID">
+                        <h3 class="mobileID_title">
+                            訂單編號
+                        </h3>
                         <h3>
                             {{ orderID }}
                         </h3>
                     </div>
 
-                    <div class="progressBar">
-                        <div class="trail"></div>
+                    <div class="progressBar orderBar">
+                        <!-- <div class="trail"></div> -->
                         <div class="milestone step0 filled"
                             :class="{
                                 cancelledFilled: purchaseOrder.status == 'cancelled'
@@ -63,11 +66,15 @@
                             <span
                                 v-if="purchaseOrder.status == 'cancelled'">{{
                                     '取消' }}</span>
+                            <span v-else>{{
+                                '訂單建立' }}</span>
                         </div>
                         <div v-for="(text, index) in milestone"
                             :key="index" class="milestone"
-                            :class="[`step${index + 1}`,
-                            { filled: statusStyleIndex > index }]">
+                            :class="[
+                                `step${index + 1}`,
+                                { filled: statusStyleIndex > index }
+                            ]">
                             <span>{{ text }}</span>
                         </div>
                         <div class="progress" :style="{
@@ -77,11 +84,33 @@
                         </div>
                     </div>
 
-                    <div>
+                    <div class="mobileProgressBar ">
+                        <span class="barTitle">
+                            訂單狀態
+                        </span>
+                        <span
+                            v-if="purchaseOrder.status == 'cancelled'">
+                            {{
+                                '取消' }}
+                        </span>
+                        <span v-else>
+                            {{
+                                milestone[statusStyleIndex - 1]
+                            }}
+                        </span>
+                    </div>
+
+                    <div class="orderDate">
+                        <span class="mobileDate">
+                            訂單日期
+                        </span>
                         <span>{{ createdAt }}</span>
                     </div>
 
-                    <div>
+                    <div class="orderPrice">
+                        <span class="mobilePrice">
+                            訂單金額
+                        </span>
                         <span>
                             ${{
                                 purchaseOrder.total.toLocaleString()
@@ -89,7 +118,7 @@
                         </span>
                     </div>
 
-                    <div>
+                    <div class="orderIcon">
                         <button>
                             <SvgIcon name="ListArrowDown"
                                 height="24px" width="24px"
@@ -110,54 +139,58 @@
                             <h4>
                                 收件地址
                             </h4>
-                            <div class="consigneeName">
-                                {{
-                                    shippingInfo.consigneeName
-                                }}
-                            </div>
-                            <div>
-                                {{
-                                    shippingInfo.contactNo
-                                }}
-                            </div>
-                            <div>
-                                {{ shippingInfo.city +
-                                    shippingInfo.address }}
-                            </div>
-                            <div>
-                                {{
-                                    shippingInfo.deliveryType
-                                }}
+                            <div class="detail">
+                                <div class="consigneeName">
+                                    {{
+                                        shippingInfo.consigneeName
+                                    }}
+                                </div>
+                                <div>
+                                    {{
+                                        shippingInfo.contactNo
+                                    }}
+                                </div>
+                                <div>
+                                    {{ shippingInfo.city +
+                                        shippingInfo.address }}
+                                </div>
+                                <div>
+                                    {{
+                                        shippingInfo.deliveryType
+                                    }}
+                                </div>
                             </div>
                         </div>
                         <div class="info" v-else>
                             <h4>
                                 收件地址
                             </h4>
-                            <div class="consigneeName">
-                                {{
-                                    shippingInfo.consigneeName
-                                }}
-                            </div>
-                            <div>
-                                {{
-                                    shippingInfo.contactNo
-                                }}
-                            </div>
-                            <div>
-                                {{
-                                    shippingInfo.storeBranch
-                                }}
-                            </div>
-                            <div>
-                                {{
-                                    shippingInfo.storeAddr
-                                }}
-                            </div>
-                            <div>
-                                {{
-                                    shippingInfo.deliveryType
-                                }}
+                            <div class="detail">
+                                <div class="consigneeName">
+                                    {{
+                                        shippingInfo.consigneeName
+                                    }}
+                                </div>
+                                <div>
+                                    {{
+                                        shippingInfo.contactNo
+                                    }}
+                                </div>
+                                <div>
+                                    {{
+                                        shippingInfo.storeBranch
+                                    }}
+                                </div>
+                                <div>
+                                    {{
+                                        shippingInfo.storeAddr
+                                    }}
+                                </div>
+                                <div>
+                                    {{
+                                        shippingInfo.deliveryType
+                                    }}
+                                </div>
                             </div>
                         </div>
 
@@ -197,12 +230,26 @@
                             </ul>
 
                             <div class="total">
+                                <span>折扣：</span>
+                                <span>
+                                    ${{
+                                        purchaseOrder.discountAmount.toLocaleString()
+                                    }}
+                                </span>
                                 <span>總額：</span>
                                 <span>
                                     ${{
                                         purchaseOrder.total.toLocaleString()
                                     }}
                                 </span>
+                                <!-- <div class="totalAmount">
+                                    <span>總額：</span>
+                                    <span>
+                                        ${{
+                                            purchaseOrder.total.toLocaleString()
+                                        }}
+                                    </span>
+                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -298,7 +345,7 @@ const showOrderList = computed(() => {
 });
 
 // milestone
-const milestone = ['建立', '付款成功', '配送中', '配送完成'];
+const milestone = ['訂單處理中', '付款成功', '配送中', '配送完成'];
 
 // list state
 interface ListState {
@@ -462,32 +509,10 @@ onMounted(() => {
     // outline: 1px solid black;
 }
 
-// .orderList-move,
-// .orderList-enter-active,
-// .orderList-leave-active {
-//     width: 100%;
-//     transition: all 10s;
-// }
-
-// .orderList-leave-active {
-//     width: 100%;
-//     position: absolute;
-// }
-
-// .orderList-enter-from,
-// .orderList-leave-to {
-//     opacity: 0;
-//     transform: translate(30px, 30px);
-// }
-
-// .orderList-enter-to,
-// .orderList-leave-from {
-//     transform: translate(0, 0);
-//     opacity: 1;
-// }
-
 h2 {
     font-size: 2rem;
+    font-size: 1.5rem;
+    font-size: clamp(1.5rem, 1.3571428571428572rem + 0.7142857142857143vw, 2rem);
     height: 50px;
     line-height: 50px;
     font-variation-settings: 'wght' 450;
@@ -499,9 +524,8 @@ h2 {
     position: relative;
 
     &>li {
-        // border: 1px solid black;
         border-radius: 1rem;
-        padding: 1rem;
+        padding: 1.25rem 1rem;
         margin-bottom: 1rem;
         box-shadow: 1px 1px 2px 2px rgba(0, 0, 0, 0.5);
 
@@ -510,8 +534,6 @@ h2 {
             margin-bottom: 0;
             padding: 0 1rem;
         }
-
-
     }
 
     .orderHeader {
@@ -536,114 +558,70 @@ h2 {
     .listItem {
         cursor: pointer;
 
-        h3 {
-            // padding-left: 1rem;
-        }
-
         .progressBar {
             width: 100%;
             height: 4px;
             border-radius: 4px;
-
-
             position: relative;
+            outline: 1px solid $btnBacColor;
+            background-color: $primaryBacColor;
+        }
+
+        .milestone {
+            width: 10px;
+            height: 10px;
+            border-radius: 100%;
+
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
 
             outline: 1px solid $btnBacColor;
             background-color: $primaryBacColor;
 
-            .trail {}
+            transition: background-color .3s;
 
-
-            .milestone {
-                width: 10px;
-                height: 10px;
-                border-radius: 100%;
-
-                position: absolute;
-                top: 50%;
-                transform: translate(-50%, -50%);
-
-                outline: 1px solid $btnBacColor;
-                background-color: $primaryBacColor;
-
-                transition: background-color .3s;
-
-                span {
-                    font-size: .75rem;
-                    text-wrap: nowrap;
-
-                    position: absolute;
-                    top: -1.25rem;
-                    left: 0;
-                }
-
-
-            }
-
-            .step0 {
-                left: 0%;
-
-
-                span {
-                    transform: translateX(-7px);
-                }
-            }
-
-            .step1 {
-                left: 25%;
-
-                span {
-                    transform: translateX(-7px);
-                }
-            }
-
-            .step2 {
-                left: 50%;
-
-                span {
-                    transform: translateX(-19px);
-                }
-            }
-
-            .step3 {
-                left: 75%;
-
-                span {
-                    transform: translateX(-13px);
-                }
-            }
-
-            .step4 {
-                left: 100%;
-
-                span {
-                    transform: translateX(-19px);
-                }
-            }
-
-            .filled {
-                background-color: $btnBacColor;
-            }
-
-            .cancelledFilled {
-                background-color: $error_color;
-                outline-color: $error_color;
-            }
-
-            .progress {
-                height: 4px;
-                border-radius: 4px;
-
+            span {
+                display: block;
+                width: max-content;
+                font-size: .75rem;
+                text-wrap: nowrap;
 
                 position: absolute;
-                top: 0;
-                left: 0;
-
-                outline: 1px solid $btnBacColor;
-                background-color: $btnBacColor;
-
-                transition: width .3s;
+                top: -200%;
+                left: 5px;
+                translate: -50% 0;
             }
+        }
+
+        @for $i from 0 through 4 {
+            .step#{$i} {
+                left: #{$i * 25}+"%";
+            }
+        }
+
+        .filled {
+            background-color: $btnBacColor;
+        }
+
+        .cancelledFilled {
+            background-color: $error_color;
+            outline-color: $error_color;
+        }
+
+        .progress {
+            height: 4px;
+            border-radius: 4px;
+
+
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            outline: 1px solid $btnBacColor;
+            background-color: $btnBacColor;
+
+            transition: width .3s;
         }
     }
 
@@ -654,36 +632,48 @@ h2 {
 
         padding: .5rem;
 
-        &>div:nth-of-type(1) {
+        .title_id,
+        .orderID {
             flex: 1;
         }
 
-        &>div:nth-of-type(2) {
-            margin-left: 2rem;
-            margin-right: 4rem;
+        .title_bar,
+        .orderBar {
+            // margin-left: 2rem;
+            // margin-right: 4rem;
+            margin-inline: 1rem 2rem;
             flex: 2;
         }
 
-        &>div:nth-of-type(3) {
+        .title_date,
+        .orderDate {
             flex: 1;
         }
 
-        &>div:nth-of-type(4) {
+        .title_price,
+        .orderPrice {
             flex: 1;
         }
 
-        &>div:nth-of-type(5) {
+        .title_icon,
+        .orderIcon {
             @include flex-center-center;
             flex: .5;
 
             .listIcon {
-                transform: rotate(0deg);
+                transform: rotate(-90deg);
                 transition: transform .3s;
             }
 
             .rotateIcon {
-                transform: rotate(-90deg);
+                transform: rotate(0deg);
             }
+        }
+
+        .mobileID_title,
+        .mobileDate,
+        .mobilePrice {
+            display: none;
         }
     }
 
@@ -694,44 +684,47 @@ h2 {
 
         padding: 1rem 0;
 
-        &>* {
+        &>div {
             overflow: hidden;
         }
+    }
 
-        .content {
-            display: flex;
-            gap: .5rem;
-            padding: 0rem 4rem;
-            margin-bottom: 1rem;
-            border-top: 1px solid gray;
-            transition: border-top .25s, margin-bottom .25s;
+    .content {
+        display: flex;
+        gap: .5rem;
+        // padding: 0rem 4rem;
+        padding-inline: 1rem;
+        padding-inline: clamp(1rem, 0.1428571428571428rem + 4.285714285714286vw, 4rem);
+        margin-bottom: 1rem;
+        border-top: 1px solid gray;
+        transition: border-top .25s, margin-bottom .25s;
 
-            &>div {
-                // flex: 1;
-                padding-top: 2rem;
+        &>div {
+            // flex: 1;
+            padding-top: 2rem;
+        }
+    }
+
+    .editBtn {
+        // padding: 0 4rem;
+        padding-inline: 0.75rem;
+        padding-inline: clamp(0.75rem, -0.1785714285714286rem + 4.642857142857143vw, 4rem);
+        justify-self: end;
+        font-size: .75rem;
+        display: flex;
+        gap: .5rem;
+
+        button {
+            @include WnH(80px, 30px);
+            border: 1px solid $btnBacColor;
+            border-radius: 1rem;
+            background-color: $btnBacColor;
+            color: $primaryBacColor;
+
+            &:hover {
+                filter: brightness(1.2);
             }
         }
-
-        .editBtn {
-            padding: 0 4rem;
-            justify-self: end;
-            font-size: .75rem;
-            display: flex;
-            gap: .5rem;
-
-            button {
-                @include WnH(80px, 30px);
-                border: 1px solid $btnBacColor;
-                border-radius: 1rem;
-                background-color: $btnBacColor;
-                color: $primaryBacColor;
-
-                &:hover {
-                    filter: brightness(1.2);
-                }
-            }
-        }
-
     }
 
     .info {
@@ -746,13 +739,13 @@ h2 {
             font-variation-settings: 'wght' 450;
         }
 
-        &>div {
+        &>div:not(.consigneeName) {
             @apply opacity-80 text-sm;
         }
+    }
 
-        .consigneeName {
-            @apply mb-1 text-lg opacity-100;
-        }
+    .consigneeName {
+        @apply mb-1 text-lg opacity-100;
     }
 
     .itemList {
@@ -763,67 +756,77 @@ h2 {
             display: flex;
             margin-bottom: .5rem;
         }
+    }
 
-        .imgWrapper {
-            position: relative;
-            border: 1px solid gray;
+    .imgWrapper {
+        position: relative;
+        border: 1px solid gray;
+        border-radius: 1rem;
+        width: 100px;
+
+        img {
             border-radius: 1rem;
-            width: 100px;
+        }
+    }
 
-            img {
-                border-radius: 1rem;
-            }
+    .saladBG {
+        background: no-repeat url('@assets/img/Menu/bac_wood.jpg') center/contain;
+    }
+
+    .itemName {
+        padding: 0 .5rem 0 2rem;
+        flex: 2;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: .5rem;
+
+        h4 {
+            font-size: 1.25rem;
+            font-variation-settings: 'wght' 500;
+        }
+    }
+
+    .subtotal {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+
+        span {
+            // font-size: 1.25rem;
         }
 
-        .saladBG {
-            background: no-repeat url('@assets/img/Menu/bac_wood.jpg') center/contain;
+        .correctionDigit {
+            user-select: none;
+            color: transparent;
+        }
+    }
+
+    .total {
+        text-align: end;
+        position: relative;
+        display: grid;
+        align-items: baseline;
+        grid-template-columns: auto max-content;
+        grid-template-rows: auto auto;
+        column-gap: .5rem;
+
+        span:nth-of-type(1),
+        span:nth-of-type(3) {
+            font-size: .75rem;
+            line-height: 100%;
         }
 
-        .itemName {
-            padding: 0 .5rem 0 2rem;
-            flex: 2;
-
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: .5rem;
-
-            h4 {
-                font-size: 1.25rem;
-                font-variation-settings: 'wght' 500;
-            }
-
-            p {}
+        span:nth-of-type(2) {
+            color: red;
         }
 
-        .subtotal {
-            flex: 1;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-
-            span {
-                // font-size: 1.25rem;
-            }
-
-            .correctionDigit {
-                user-select: none;
-                color: transparent;
-            }
-        }
-
-        .total {
-            text-align: end;
-
-            span:first-of-type {
-                font-size: .75rem;
-            }
-
-            span:last-of-type {
-                font-size: 1.25rem;
-                font-variation-settings: 'wght' 600;
-                color: $btnBacColor;
-            }
+        span:last-of-type {
+            font-size: 1.25rem;
+            font-variation-settings: 'wght' 600;
+            color: $btnBacColor;
         }
     }
 
@@ -867,4 +870,241 @@ h2 {
 .Dialog-leave-from {
     opacity: 1;
 }
+
+.mobileProgressBar {
+    display: none;
+}
+
+
+
+@include XLarge {}
+
+@include large {}
+
+@include medium($width: 1024px) {
+    .orderContainer .orderHeader {
+        padding: .5rem 0;
+
+        .progressBar {
+            display: none;
+        }
+
+        .title_id {
+            flex: 1;
+        }
+
+        .title_bar {}
+
+        .title_date {
+            flex: 1;
+        }
+
+        .title_price {
+            flex: 1;
+        }
+
+        .title_icon {
+            flex: .25;
+        }
+    }
+
+    .orderContainer .listItem {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr .25fr;
+        grid-template-rows: repeat(2, 1fr);
+        row-gap: 1.5rem;
+        padding: 0;
+    }
+
+    .orderBar {
+        grid-column: 1 / 4;
+        grid-row: 2;
+        max-width: 80%;
+        justify-self: center;
+    }
+
+    .orderIcon {
+        grid-column: 4 / 5;
+        grid-row: 1 / 3;
+    }
+
+    .orderContainer {
+        .info {
+            border-right: none;
+            border-bottom: 1px solid gray;
+            padding-bottom: 1rem;
+            display: flex;
+            gap: 2rem;
+
+            h4 {
+                display: inline-block;
+                width: 100px;
+                text-align: center;
+            }
+        }
+
+        .content {
+            flex-direction: column;
+            gap: 0;
+
+            &>div {
+                padding-top: 1rem;
+            }
+        }
+
+        .itemList {
+            margin-left: 0;
+        }
+    }
+}
+
+@include medium {}
+
+@include small {
+    .orderContainer {
+
+        .itemList li {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: .5rem;
+        }
+
+        .imgWrapper {
+            grid-column: 1;
+            justify-self: center;
+        }
+
+        .itemName {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .subtotal {
+            grid-column: 1;
+            grid-row: 2;
+            align-self: flex-end;
+        }
+
+        .info {
+            flex-direction: column;
+            gap: 0;
+
+            h4 {
+                width: inherit;
+                margin-bottom: 0;
+            }
+
+            .detail {
+                padding-left: 2rem;
+            }
+        }
+
+        .editBtn {
+
+            button {
+                @include WnH(70px, 30px);
+            }
+        }
+    }
+}
+
+@include small($width: 430px) {
+
+
+    .orderContainer {
+        .orderHeader {
+            display: none;
+        }
+
+        .listItem {
+            grid-template-columns: 1fr 1fr .25fr;
+            grid-template-rows: 1fr 1fr;
+            row-gap: 0rem;
+        }
+
+        .mobileID_title {
+            grid-column: 1;
+            grid-row: 1;
+
+        }
+
+        .orderID {
+            grid-column: 1;
+            grid-row: 1;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .orderDate {
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            margin-top: .5rem;
+        }
+
+        .orderPrice {
+            grid-column: 2;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            margin-top: .5rem;
+        }
+
+        .orderIcon {
+            grid-column: 3;
+            grid-row: 1/3;
+        }
+
+        .orderTitle {
+
+            .mobileID_title,
+            .mobileDate,
+            .mobilePrice,
+            .barTitle {
+                display: flex;
+                justify-content: center;
+                font-variation-settings: 'wght' 450;
+                position: relative;
+                margin-bottom: .25rem;
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 1px;
+                    background-color: black;
+                }
+            }
+        }
+    }
+
+    .progressBar {
+        display: none;
+    }
+
+    .orderContainer .listItem {
+        .mobileProgressBar {
+            display: block;
+            width: 100%;
+            grid-column: 2;
+            grid-row: 1;
+            justify-self: center;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            text-wrap: nowrap;
+            margin-inline: 0;
+
+            &>span:first-of-type {
+                font-variation-settings: 'wght' 450;
+            }
+        }
+
+    }
+}
+
+@include small($width: 320px) {}
 </style>

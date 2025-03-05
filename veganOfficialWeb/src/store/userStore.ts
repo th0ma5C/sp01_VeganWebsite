@@ -32,6 +32,7 @@ export const useUserStore = defineStore('user', () => {
         username: 'anonymous' as 'anonymous' | string,
         email: null as null | string,
         userID: nanoid(6) as | string,
+        verified: false
     })
     const userSavedCheckoutForm = reactive<Partial<ShippingInfo>>({});
     const userOrderList = ref<UserOrder[]>([]);
@@ -48,14 +49,23 @@ export const useUserStore = defineStore('user', () => {
         user.userID = id
     }
 
-    function setUserState({ username = 'anonymous', email = null as null | string, userID = nanoid(6) }) {
+    function setUserVerified(verified: boolean) {
+        user.verified = verified
+    }
+
+    function setUserState({
+        username = 'anonymous',
+        email = null as null | string,
+        userID = nanoid(6),
+        verified = false
+    }) {
         setUsername(username);
         setEmail(email);
         setUserID(userID);
+        setUserVerified(verified);
     }
 
     async function login(token?: string, isGuest?: boolean) {
-        const toastStore = useToastStore();
         try {
             isAuth.value = true;
             if (token && !isGuest) {
@@ -249,6 +259,7 @@ export const useUserStore = defineStore('user', () => {
         logout,
         setUsername,
         setEmail,
+        setUserID,
         storeUserProfile,
         getSavedShippingInfo,
         getUserOrderList,

@@ -1,19 +1,20 @@
 <template>
-    <div class="signupContainer" ref="signupContainer"
+    <div class="resetPasswordContainer"
+        ref="resetPasswordContainer"
         :style="containerStyle">
         <h1>
-            註冊
+            重設密碼
         </h1>
 
         <div class="inputWrapper">
             <VForm as=""
                 v-slot="{ meta, isSubmitting, handleSubmit, submitCount }"
-                :validation-schema="signupSchema">
+                :validation-schema="resetPasswordSchema">
                 <form action=""
                     @change="handleFormChange(meta)"
-                    @submit="handleSubmit($event, signUpReq)">
+                    @submit="handleSubmit($event, resetPasswordReq)">
                     <fieldset class="inputData">
-                        <div v-for="({ input, type, label }, index) in signupForm"
+                        <div v-for="({ input, type, label }, index) in resetPasswordForm"
                             :class="input" :key="index">
                             <VField :name="input"
                                 v-slot="{ field, meta }">
@@ -71,55 +72,7 @@
                         </div>
                     </fieldset>
 
-                    <fieldset class="inputPrivacy">
-                        <div>
-                            <VField v-slot="{ field }"
-                                name="joinPrivacyPolicy"
-                                type="checkbox"
-                                :value="true"
-                                :unchecked-value="false">
-                                <input
-                                    id="joinPrivacyPolicy"
-                                    type="checkbox"
-                                    v-bind="field"
-                                    :value="true" />
-                            </VField>
-                            <label for="joinPrivacyPolicy">
-                                [必要] 我已詳閱並同意顧客隱私權政策
-                                <ErrorMessage as="div"
-                                    class="errorMsg"
-                                    name="joinPrivacyPolicy"
-                                    v-slot="{ message }">
-                                    <SvgIcon
-                                        name="QNR_alert"
-                                        width="18"
-                                        height="18"
-                                        color="#b3261e">
-                                    </SvgIcon>
-                                    <span>
-                                        {{ message }}
-                                    </span>
-                                </ErrorMessage>
-                            </label>
-
-
-                            <!-- <ErrorMessage as="div"
-                                class="errorMsg"
-                                name="joinPrivacyPolicy"
-                                v-slot="{ message }">
-                                <SvgIcon name="QNR_alert"
-                                    width="18" height="18"
-                                    color="#b3261e">
-                                </SvgIcon>
-                                <span>
-                                    {{ message }}
-                                </span>
-                            </ErrorMessage> -->
-                        </div>
-
-                    </fieldset>
-
-                    <div class="login_signup">
+                    <div class="login_resetPassword">
                         <div class="ResErrMsg"
                             v-show="registerMsg">
                             <SvgIcon name="QNR_alert"
@@ -160,34 +113,47 @@ import {
     type FormMeta
 } from 'vee-validate';
 import * as yup from 'yup';
-import { reqUserRegister } from '@/api/userAuth';
+import { reqResetPassword, reqUserRegister } from '@/api/userAuth';
 import { AxiosError } from 'axios';
-import { onBeforeRouteLeave, useRouter } from 'vue-router';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/store/userStore';
-
-
-/**
- * todo: account store, 社群登入
- * doing: email會員驗證
- * //! 輸入太長會跑版
- * -----------------------------------
- * //同意勾選框
- * //改驗證時機
- * //密碼格式 確認驗證值 蒐集數據
- * //DB建置
- */
+import { storeToRefs } from 'pinia';
+import { jwtDecode } from 'jwt-decode';
+import { useToastStore } from '@/store/toastStore';
 
 //  user store
-const userStore = useUserStore();
-const { setEmail } = userStore
+// const userStore = useUserStore();
+// const { user } = storeToRefs(userStore);
 
+// toast store
+const toastStore = useToastStore();
+const { addNotification } = toastStore;
 
-const signupContainer = ref<HTMLElement>();
+const resetPasswordContainer = ref<HTMLElement>();
 const containerStyle = computed(() => {
-    if (!signupContainer.value) return { top: 0 }
-    const top = signupContainer.value.getBoundingClientRect().top;
+    if (!resetPasswordContainer.value) return { top: 0 }
+    const top = resetPasswordContainer.value.getBoundingClientRect().top;
     return { top: `${top}px` }
 })
+
+// 路由
+const router = useRouter();
+const route = useRoute();
+function routerTo(link: string) {
+    return async () => {
+        await router.push(link)
+    }
+}
+const routerToLogin = routerTo('/profile')
+
+// handle token
+interface RedirectResTokenDecoded {
+    email: string,
+    userID: string,
+    exp: number
+}
+const token = route.query.token as string;
+const JWTpayload = jwtDecode<RedirectResTokenDecoded>(token);
 
 // 顯示密碼紐
 const showPassword = ref(false);
@@ -197,21 +163,11 @@ function toggleShowPassword() {
 }
 
 // 表單驗證
-const signupForm = [
-    {
-        input: 'username',
-        type: 'text',
-        label: '稱呼'
-    },
-    {
-        input: 'email',
-        type: 'email',
-        label: '電子郵件'
-    },
+const resetPasswordForm = [
     {
         input: 'password',
         type: 'password',
-        label: '密碼'
+        label: '新密碼'
     },
     {
         input: 'confirmPassword',
@@ -220,48 +176,36 @@ const signupForm = [
     },
 ]
 
-const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
-
-yup.addMethod(yup.string, 'email', function validateEmail(message) {
-    return this.matches(emailRegex, {
-        message: '請輸入正確信箱格式',
-        name: 'email',
-        excludeEmptyString: true,
-    });
-});
-
-const signupSchema = yup.object({
-    username: yup.string().trim().required('此欄不能空白'),
-    email: yup.string().trim().required('此欄不能空白').email(),
+const resetPasswordSchema = yup.object({
     password: yup.string().trim()
         .min(6, '最少6個字').required('此欄不能空白').matches(/^\S*$/, '格式錯誤'),
     confirmPassword: yup
         .string()
         .oneOf([yup.ref('password')], '密碼不相符')
         .required('此欄不能空白'),
-    joinPrivacyPolicy: yup.boolean()
-        .oneOf([true], '必須閱讀並接受隱私條款').required('必須閱讀並接受隱私條款')
 })
 
 // 註冊 api req
-type ReqForm = yup.InferType<typeof signupSchema>;
+type ReqForm = yup.InferType<typeof resetPasswordSchema>;
 
 interface ErrorResponse {
     message: string;
 }
 
-
 const registerMsg = ref<string | null>(null);
 const formState = ref('processing')
-async function signUpReq(form: Record<string, any>) {
-    const data = form as ReqForm;
+async function resetPasswordReq(form: Record<string, any>) {
+    const { password } = form as ReqForm;
+    const data = {
+        userID: JWTpayload.userID,
+        password,
+        token
+    }
     try {
-        const result = await reqUserRegister(data);
+        const res = await reqResetPassword(data);
         formState.value = 'finish';
-        setEmail(data.email);
-        router.push({
-            name: 'EmailVerify'
-        })
+        addNotification('密碼已重設');
+        await routerToLogin();
     } catch (error) {
         const message = (error as AxiosError<ErrorResponse>).response?.data.message;
         registerMsg.value = message ?? '未知錯誤'
@@ -290,16 +234,7 @@ onBeforeRouteLeave(() => {
     }
 })
 
-// 路由
-const router = useRouter();
 
-function routerTo(link: string) {
-    return () => {
-        router.push(link)
-    }
-}
-
-const routerToLogin = routerTo('/profile')
 
 
 onMounted(() => {
@@ -315,7 +250,7 @@ onUnmounted(() => {
 <style scoped lang="scss">
 $container_width: 300px;
 
-.signupContainer {
+.resetPasswordContainer {
     text-align: center;
     flex: 1;
     width: 100%;
@@ -341,7 +276,6 @@ $container_width: 300px;
         }
 
         input {
-            // width: $container_width;
             width: 100%;
             height: 48px;
             padding: 0 1rem;
@@ -369,18 +303,6 @@ $container_width: 300px;
             pointer-events: none;
         }
 
-        // .errorMsg {
-        //     @include flex-center-center;
-        //     flex-direction: row;
-        //     gap: .5rem;
-        //     color: #b3261e;
-        //     text-wrap: nowrap;
-        //     position: absolute;
-        //     bottom: -75%;
-        //     left: 0%;
-        //     transform: translate(0%, -50%);
-        // }
-
         & div:has(input:focus)>label,
         & div:has(input:not(:placeholder-shown))>label {
             transform: translateY(calc(-100% - 10px)) scale(0.8);
@@ -389,8 +311,6 @@ $container_width: 300px;
         .passwordIcon {
             @include absoluteCenterTLXY($left: 100%, $X: -150%);
             cursor: pointer;
-            // right: 0;
-            // top: 50%;
         }
     }
 
@@ -405,27 +325,10 @@ $container_width: 300px;
         left: 0%;
         transform: translate(0%, -50%);
     }
-
-    .inputPrivacy>div {
-        @include flex-center-center;
-        gap: .5rem;
-        position: relative;
-        // margin-top: 1rem;
-
-        .errorMsg {
-            transform: translate(0%, 0%);
-            bottom: -100%;
-        }
-
-        label {
-            position: relative;
-        }
-    }
 }
 
-.login_signup {
-    padding-top: 4rem;
-    // margin-top: 3rem;
+.login_resetPassword {
+    padding-top: calc(2rem + 10px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -445,7 +348,6 @@ $container_width: 300px;
         transition: box-shadow .15s ease;
         position: relative;
 
-
         &:hover {
             box-shadow: 2px 2px 4px black;
         }
@@ -457,7 +359,7 @@ $container_width: 300px;
         }
     }
 
-    .signup {
+    .resetPassword {
         font-size: .75rem;
 
         a,
@@ -495,7 +397,7 @@ $container_width: 300px;
 
     .ResErrMsg {
         position: absolute;
-        top: 2rem;
+        top: 0rem;
 
         display: flex;
         align-items: center;
@@ -504,12 +406,6 @@ $container_width: 300px;
         span {
             color: $error_color;
         }
-    }
-}
-
-@include small {
-    .inputWrapper .inputPrivacy>div {
-        font-size: 14px;
     }
 }
 </style>

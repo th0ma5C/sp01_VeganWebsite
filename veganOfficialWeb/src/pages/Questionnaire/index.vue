@@ -297,7 +297,7 @@ const {
     setQNR_result,
     initQNR,
     setQNRtoStorage,
-    checkQuestionIsANswered
+    checkQuestionIsAnswered
 } = QuestionnaireStore;
 
 
@@ -421,15 +421,15 @@ const QNR_container = ref();
 const QNR_pagesCount = computed(() => showQuestionnaire.value.length + 1)
 
 function turnPage(signs: '+' | '-', question?: QNRFormKeys) {
-    if (question && !checkQuestionIsANswered(question)) {
-        console.log(question);
-        console.log(QNR_result.value[question]);
-        console.log(checkQuestionIsANswered(question));
+    if (question && !checkQuestionIsAnswered(question)) {
+        // console.log(question);
+        // console.log(QNR_result.value[question]);
+        // console.log(checkQuestionIsAnswered(question));
         return
     }
 
-    if ((currPage.value == 1 && signs == '-') ||
-        (currPage.value == QNR_pagesCount.value && signs == '+')) {
+    if ((currPage.value == QNR_pagesCount.value && signs == '+')) {
+        QNR_isDone.value = true;
         showResult();
         return
     };
@@ -464,7 +464,7 @@ async function showResult() {
         if (!isLoaded.value) {
             await fetchMenu();
         }
-        QNR_isDone.value = true;
+        // QNR_isDone.value = true;
         await setQNR_result(QNR_result.value);
         setQNRtoStorage();
         router.push('/questionnaire/result');
@@ -621,6 +621,7 @@ onUnmounted(() => {
 .questionnaire {
     width: 100%;
     height: calc(100vh - 100px);
+    // height: calc(100vh - 100px);
     overflow: hidden;
 
 }
@@ -699,7 +700,7 @@ $alertColor: #b3261e;
     position: sticky;
     bottom: 0;
     // bottom: calc($btn_position / 2);
-    transform: translateY(-200%);
+    transform: translateY(-150%);
     min-height: 48px;
     transition: border-color .2s, box-shadow .2s, opacity .2s;
     font-variation-settings: 'wght' 600;

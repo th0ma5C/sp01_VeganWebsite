@@ -19,7 +19,8 @@ NProgress.configure({ showSpinner: false });
 interface RedirectResTokenDecoded {
     email: string,
     userID: string,
-    isGuest: boolean
+    isGuest: boolean,
+    exp: number
 }
 
 const routes = [
@@ -72,9 +73,10 @@ const routes = [
         name: 'Product',
         component: Product,
         path: '/product',
-        props(route: RouteLocationNormalized) {
-            return route.query
-        },
+        // props(route: RouteLocationNormalized) {
+        //     return route.query
+        // },
+        props: (route: RouteLocationNormalized) => route.query,
         meta: {
             keepAlive: true,
             breadcrumbs: [
@@ -119,6 +121,7 @@ const routes = [
         },
         children: [
             {
+                name: 'ForgetPassword',
                 path: 'forgetPassword',
                 component: () => import('@/pages/Profile/forgetPassword/ForgetPassword.vue'),
                 meta: {
@@ -135,6 +138,42 @@ const routes = [
                         toastStore.addNotification('請先登出')
                         return '/profile/account'
                     }
+                    return true
+                },
+            },
+            {
+                path: 'resetPassword',
+                component: () => import('@/pages/Profile/resetPassword/ResetPassword.vue'),
+                meta: {
+                    hideParent: true,
+                },
+                beforeEnter: (
+                    to: RouteLocationNormalized,
+                    from: RouteLocationNormalized
+                ) => {
+                    const token = to.query.token as string;
+                    if (!token) {
+                        return router.push({
+                            name: 'ForgetPassword',
+                            state: {
+                                msg: '重設驗證失效，請重新發送驗證信'
+                            }
+                        })
+                    }
+
+                    const payload = jwtDecode<RedirectResTokenDecoded>(token)
+                    const isExpired = (payload.exp ?? 0) < (Date.now() / 1000)
+                    if (isExpired) {
+                        return {
+                            name: 'ForgetPassword',
+                            state: {
+                                msg: '重設已過期，請重新發送驗證信'
+                            }
+                        }
+                    }
+                    const userStore = useUserStore();
+                    const { setUserID } = userStore;
+                    setUserID(payload.userID);
                     return true
                 },
             },

@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="aboutContainer">
         <UpperPart ref="upper"></UpperPart>
         <MiddleMap ref="middle"></MiddleMap>
         <BottomFAQ ref="bottom"></BottomFAQ>
@@ -14,21 +14,16 @@ import { onBeforeMount, onMounted, useTemplateRef, computed, nextTick, watch, re
 import { positionStore } from './store/usePagePosition'
 import { useRoute, useRouter } from 'vue-router';
 
-// position store
-const positionState = computed(() => {
-    return positionStore.getPosition();
-})
-
 // home 跳轉
 const router = useRouter();
 const route = useRoute();
-
+type AnchorTarget = 'CONCEPT' | 'ACCESS' | 'FAQ';
 function homeRedirect() {
     if (route.query.scroll) {
-        const { bottom } = positionState.value;
-        console.log(bottom);
+        // const { bottom } = positionState.value;
+        const y = positionStore.getElPosition(route.query.scroll as AnchorTarget)
         window.scroll({
-            top: bottom,
+            top: y || 0,
             behavior: 'smooth'
         })
     }
@@ -51,4 +46,9 @@ onMounted(() => {
 })
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.aboutContainer {
+    margin-top: 100px;
+
+}
+</style>
