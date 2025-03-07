@@ -45,8 +45,6 @@ const reqCancelUserOrder = (token: string | null, orderID: string) => {
     })
 }
 
-// 修改訂單
-
 
 export {
     reqVerifyItemPrice,

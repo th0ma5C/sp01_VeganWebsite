@@ -19,6 +19,7 @@ import { useToastStore } from '@/store/toastStore';
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 
 // user store
 const { user } = storeToRefs(useUserStore());
@@ -26,6 +27,9 @@ const { user } = storeToRefs(useUserStore());
 // toast store
 const toastStore = useToastStore();
 const { addNotification } = toastStore;
+
+// router
+const router = useRouter();
 
 
 const showEmail = computed(() => {
@@ -45,6 +49,7 @@ async function verifyEmail() {
         const res = await reqSendVerifyEmail(params);
         if (res.state == 'confirm') {
             addNotification('發送成功，請至信箱點擊驗證連結')
+            router.push('/profile')
         }
         // console.log(res);
     } catch (error) {

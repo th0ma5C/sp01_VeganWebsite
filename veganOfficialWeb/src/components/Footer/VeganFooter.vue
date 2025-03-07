@@ -86,7 +86,6 @@
                             {{ title }}
                         </h2>
                     </li>
-                    <!-- <div class="mobileListWrapper"> -->
                     <li v-for="(item, contentIndex) in content"
                         :key="item"
                         @mouseenter="handleMouseEnter(listIndex, contentIndex)"
@@ -99,7 +98,6 @@
                             :class="[{ 'out': iconStates[listIndex][contentIndex].setAnimate }]">
                         </SvgIcon>
                     </li>
-                    <!-- </div> -->
                 </ul>
                 <div class="socialLink">
                     <a target="_blank"
@@ -133,19 +131,6 @@
                 Relation-Ship
             </span>
         </div>
-        <!-- <div class="bot">
-            <svg id="b" data-name="圖層 2"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 1095.78 245.4">
-                <g id="c" data-name="圖層 1">
-                    <text class="d"
-                        transform="translate(10.2 162.2)">
-                        <tspan x="0" y="0">Relation-Ship
-                        </tspan>
-                    </text>
-                </g>
-            </svg>
-        </div> -->
     </div>
 </template>
 
@@ -437,12 +422,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-* {
-    // outline: 1px solid black;
-}
-
 %default {
-    // width: calc(80% - 6rem);
     margin: 0 auto;
     width: 85%;
 }
@@ -450,23 +430,17 @@ onUnmounted(() => {
 %topLayout {
     position: relative;
     flex: 1 1 0;
-    // padding: 2rem 3rem 3rem 3rem;
 
     h2 {
-        // text-align: center;
-        // padding-left: 1rem;
-        // font-size: 2.25rem;
         font-size: 1.25rem;
         font-size: clamp(1.25rem, 1.05rem + 1vw, 2.25rem);
         font-weight: 600;
     }
 
     p {
-        // font-size: 1.25rem;
         font-size: 1rem;
         font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
         margin-top: 1rem;
-        // padding: 1rem;
         text-align: justify;
         line-height: 1.25rem;
         line-height: clamp(1.25rem, 1rem + 1.25vw, 2.5rem);
@@ -482,7 +456,6 @@ onUnmounted(() => {
         bottom: -85%;
         left: 50%;
         transform: translate(-35%, -50%);
-        // padding-left: 1.5rem;
     }
 }
 
@@ -490,7 +463,6 @@ onUnmounted(() => {
     color: $primaryBacColor;
     display: flex;
     flex-direction: column;
-    // min-height: 920px;
     margin: 0 auto;
     position: relative;
     z-index: 1;
@@ -512,7 +484,6 @@ onUnmounted(() => {
         max-width: $primaryWidth;
         margin-inline: auto;
         display: flex;
-        // flex: 1;
     }
 }
 
@@ -528,8 +499,6 @@ onUnmounted(() => {
     &::after {
         @include WnH(calc(100% + 6rem), 2px);
         content: '';
-        // width: 100%;
-        // height: 2px;
         left: -3rem;
         bottom: 0;
         border-radius: 100%;
@@ -577,7 +546,6 @@ onUnmounted(() => {
         @include flex-center-center;
         border-radius: 0 3rem 3rem 0;
         background-color: #0d731e;
-        // border: 1px solid #00510E;
         color: rgb(252, 250, 242);
         position: absolute;
         right: 0;
@@ -597,12 +565,8 @@ onUnmounted(() => {
 
 .submitForm {
     color: black;
-    // width: calc(100% - 6rem);
-    // margin-top: 4rem;
     margin-top: auto;
     position: relative;
-    // padding: 0 1rem;
-    // padding-right: 1rem;
     text-align: end;
 }
 
@@ -683,14 +647,9 @@ onUnmounted(() => {
 }
 
 .phone {
-    // height: fit-content;
-    // height: clamp(200px, 100%, 300px);
-    // width: clamp(100px, 100%, 150px);
 
     img {
         width: 150px;
-        // height: 300px;
-        // height: 100%;
     }
 }
 
@@ -800,12 +759,10 @@ onUnmounted(() => {
     display: flex;
     font-size: 12px;
     opacity: 0.5;
-    // margin: 2rem 0.5rem 0 auto;
     margin-left: auto;
 }
 
 .container .bot {
-    // font-size: 29rem;
     text-wrap: nowrap;
     font-family: 'Mr Dafoe', 'Noto Sans';
     color: #FCFAF2;
@@ -818,21 +775,6 @@ onUnmounted(() => {
     span {
         line-height: .85;
     }
-
-    // padding-inline: 1rem;
-    // text-align: center;
-    // align-items: flex-start;
-    // justify-content: center;
-    // overflow: hidden;
-    // user-select: none;
-
-    // svg {
-    //     width: 95vw;
-    //     font-family: 'Mr Dafoe', 'Noto Sans';
-    //     font-size: 200px;
-    //     fill: #FCFAF2;
-    //     // transform: translateY(-2%);
-    // }
 }
 
 .check-enter-active,
@@ -864,12 +806,6 @@ onUnmounted(() => {
 @include large {}
 
 @include medium($width: 1024px) {
-    // .top {
-    //     flex-direction: column;
-    //     gap: 4rem;
-    // }
-
-
     .phone img {
         width: 125px;
     }
@@ -879,41 +815,20 @@ onUnmounted(() => {
     .top {
         flex-direction: column;
         gap: 4rem;
-
-        .sub,
-        .app {
-            // padding: 0;
-        }
     }
 
     .submitForm {
         margin-top: 2rem;
     }
 
-    .sub input {
-        // width: 37%;
-    }
-
-    .content .download button {
-        // width: 10rem;
-    }
-
     .mid {
         margin-bottom: 1rem;
 
         nav {
-            // flex-direction: column;
             gap: .75rem;
             justify-content: center;
 
             ul {
-                // flex: 1;
-                // flex-direction: row;
-                // align-items: center;
-
-                // & li:has(h2) {
-                //     margin: 0;
-                // }
                 li {
                     width: 100%;
                 }
@@ -923,19 +838,10 @@ onUnmounted(() => {
                 }
             }
 
-            // li {
-            //     height: 100%;
-            //     align-items: center;
-            // }
         }
 
     }
 
-    .mobileListWrapper {
-        // display: grid;
-        // grid-template-rows: 1fr;
-        // grid-template-columns: 1fr 1fr 1fr 1fr;
-    }
 
     .socialLink {
         display: none;
@@ -975,48 +881,10 @@ onUnmounted(() => {
         width: clamp(200px, 50%, 250px);
         padding-left: 1rem;
     }
-
-    .phone img {
-        // width: 80px;
-    }
-
-    .mobileListWrapper {
-        // display: flex;
-        // // align-items: center;
-        // padding-left: .75rem;
-        // // text-wrap: nowrap;
-
-        // li {
-        //     // flex: 1;
-        // }
-    }
-
-    // %topLayout {
-    //     padding: 0;
-    // }
-
-    // .container {
-    //     &>div {
-    //         padding: 0;
-    //     }
-
-    //     .top>div {
-    //         padding: 0;
-    //     }
-
-    //     .mid nav {
-    //         padding: 0;
-
-    //         .socialLink {
-    //             gap: 0;
-    //         }
-    //     }
-    // }
 }
 
 @include small($width: 430px) {
     .top {
-        // padding-bottom: 1rem;
         gap: 2rem;
     }
 
@@ -1068,21 +936,11 @@ onUnmounted(() => {
             width: 3.5rem;
         }
     }
-
-    .mid {
-        // padding-top: 1rem;
-    }
-
-
 }
 
 @include small($width: 320px) {
     .mid nav {
         gap: .5rem .25rem;
-    }
-
-    .content .download {
-        // margin-top: 1rem;
     }
 }
 </style>

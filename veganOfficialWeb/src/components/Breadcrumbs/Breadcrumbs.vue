@@ -21,7 +21,6 @@ import { useRoute } from 'vue-router';
 
 // get current route info
 const { currentPage } = defineProps(['currentPage']);
-// console.log(currentPage);
 
 
 // get router info
@@ -31,7 +30,6 @@ interface BreadcrumbArr {
 }
 
 const Route = useRoute();
-// console.log(Route.matched);
 const breadcrumbArr = computed(() => {
     const result = Route.matched.map((route) => {
         return route.meta.breadcrumbs || []
@@ -45,52 +43,24 @@ const breadcrumbArr = computed(() => {
     }
     return result
 })
-// console.log(breadcrumbArr.value);
-
-// const activeComponent = ref(false);
-
-// onActivated(() => {
-//     activeComponent.value = true;
-// })
-
-// onDeactivated(() => {
-//     activeComponent.value = false;
-// })
 
 onMounted(() => {
-    // console.log(Route.matched);
 })
 onUnmounted(() => {
-    // console.log('unmount');
 })
 
 </script>
 
 <style scoped lang="scss">
-* {
-    // outline: 1px solid black;
-}
-
 .wrapper {
 
     &>a {
         display: inline-flex;
         overflow: hidden;
-        // line-height: 30px;
-
     }
 }
 
-// .wrapper>a:not(.lastBreadcrumb):hover {
-//     font-variation-settings: 'wght' 500;
-
-//     &::before {
-//         transform: translateX(0%);
-//     }
-// }
-
 .breadcrumb {
-    // color: $btnBacColor_light;
     position: relative;
 
     &::after {
@@ -104,7 +74,6 @@ onUnmounted(() => {
         @include WnH(calc(100% - 22px), 1px);
         content: '';
         background-color: black;
-        // background-color: $btnBacColor_light;
         position: absolute;
         bottom: 1px;
         left: -1px;
@@ -126,7 +95,6 @@ onUnmounted(() => {
     color: $btnBacColor_light;
     font-variation-settings: 'wght' 500;
     position: relative;
-    // color: black;
 
     &::before {
         @include WnH(100%, 1px);

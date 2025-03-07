@@ -201,7 +201,6 @@ export const useMenuStore = defineStore('menu', (() => {
     }
 
     function getImgURLbyName(target: string) {
-        console.log(target);
         if (target in menuImgURLMap.value) {
             return menuImgURLMap.value[target]
         }

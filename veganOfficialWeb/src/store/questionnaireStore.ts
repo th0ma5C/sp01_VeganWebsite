@@ -84,8 +84,8 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
     }, { immediate: true });
 
     function checkQuestionIsAnswered(question: keyof Omit<Form, 'info'>) {
-        if (Array.isArray(QNR_result.value[question])) {
-            return QNR_result.value[question].length !== 0
+        if (Array.isArray(QNR_result.value[question]) && QNR_result.value[question]) {
+            return QNR_result.value[question]!.length !== 0
         } else if (QNR_result.value[question]) {
             return true
         }

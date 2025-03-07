@@ -1,5 +1,4 @@
 import axios from 'axios';
-import type { AxiosResponse } from 'axios';
 import type { TownResponse } from './type'
 
 const request = axios.create({
@@ -9,7 +8,7 @@ const request = axios.create({
 request.interceptors.response.use((res) => {
     return res.data;
 }, (err) => {
-    return Promise.reject(/*new Error('failed!')*/ err);
+    return Promise.reject(err);
 })
 
 enum API {

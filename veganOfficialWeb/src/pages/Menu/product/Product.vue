@@ -366,7 +366,7 @@ import FlyToCart from '@/hooks/useFlyToCart';
 import emitter from '@/utils/eventBus';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import type { SwiperContainer } from 'swiper/element';
-import { debounce } from 'lodash';
+import debounce from 'lodash/debounce';
 import gsap from 'gsap';
 
 // store數據

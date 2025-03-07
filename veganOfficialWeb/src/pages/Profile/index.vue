@@ -43,7 +43,7 @@
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>{{ message
-                                        }}</span>
+                                    }}</span>
                                 </ErrorMessage>
                             </div>
 
@@ -164,16 +164,6 @@
                 <img :src="url" alt="">
             </div>
         </div>
-
-        <!-- <div>
-            <router-link to="/profile/resetPassword">
-                測試重設
-            </router-link>
-        </div> -->
-        <button
-            @click="addNotification('測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試')">測試</button>
-        <!-- <router-link to="/profile/account"
-            @click="login">登入測試</router-link> -->
     </div>
 
     <router-view v-else v-slot="{ Component, route }">

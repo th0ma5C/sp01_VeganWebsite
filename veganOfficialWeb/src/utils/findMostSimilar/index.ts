@@ -22,12 +22,14 @@ function calcSimilarity(arrays: string[][], targetArr: string[]) {
 }
 
 function getTopFiveMostSimilarity(arrays: string[][], targetArr: string[]) {
-    let map = calcSimilarity(arrays, targetArr);
+    let map = calcSimilarity(arrays, targetArr) as {
+        position: number;
+        similarity: number;
+    }[];
 
     map = map.sort((a, b) => {
         return b.similarity - a.similarity
-    })
-        .slice(1, 6);
+    }).slice(1, 6);
 
     const result = map.map((item) => {
         return item.position

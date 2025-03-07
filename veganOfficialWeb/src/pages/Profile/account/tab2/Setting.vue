@@ -748,6 +748,11 @@ async function checkVerified() {
     if (user.value.verified) return
     try {
         const { state } = await reqCheckUserVerified();
+        if (state == 'confirm') {
+            user.value.verified = true
+        } else {
+            user.value.verified = false
+        }
     } catch (error) {
         console.log(error);
     }

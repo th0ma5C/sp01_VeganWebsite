@@ -5,8 +5,6 @@ import type { ResData } from "@/api/cart/type";
 import { useUserStore } from "./userStore";
 import { useMenuStore } from "./menuStore";
 import { reqGetMemberCart, reqResetMemberCart, reqSaveCartList } from "@/api/cart/CartRequest";
-import debounce from "lodash/debounce";
-
 
 interface MapState {
     [key: string]: {

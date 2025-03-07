@@ -8,6 +8,7 @@ import type { UserOrder, ShippingInfo } from "@/api/order/type";
 import { useCartStore } from "./cartStore";
 import { useQuestionnaireStore } from "./questionnaireStore";
 import { useToastStore } from "./toastStore";
+import type { AxiosError } from "axios";
 
 interface LoginTokenPayload {
     username: string,
@@ -164,7 +165,7 @@ export const useUserStore = defineStore('user', () => {
             const { shippingInfo } = await reqGetUserShippingInfo(token);
             return shippingInfo
         } catch (error) {
-            console.log(error);
+            // console.log((error as AxiosError).message);
         }
     }
 
@@ -178,7 +179,7 @@ export const useUserStore = defineStore('user', () => {
             if (!order) return
             return userOrderList.value = [...order]
         } catch (error) {
-            console.log(error);
+            // console.log(error);
         }
     }
 

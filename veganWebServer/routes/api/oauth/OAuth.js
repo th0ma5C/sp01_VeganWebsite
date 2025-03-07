@@ -20,13 +20,9 @@ router.get('/login', (req, res) => {
 router.get('/google/cb', async (req, res) => {
     const code = req.query.code; // 授權碼
     try {
-        // 使用授權碼交換 token
         const { tokens } = await googleOAuth2Client.getToken(code);
 
-        // 設定憑證並保存 token
         googleOAuth2Client.setCredentials(tokens);
-        // req.session.tokens = tokens;
-        // req.session.authenticated = true;
 
         console.log('Access Token:', tokens.access_token);
         console.log('Refresh Token:', tokens.refresh_token);
