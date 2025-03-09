@@ -55,8 +55,7 @@ export default defineConfig({
     open: process.env.BROWSER = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     proxy: {
       '/api': {
-        target: 'https://tmc4web.dev',
-        // target: 'http://localhost:3000',
+        target: process.env.VITE_API_URL || 'https://tmc4web.dev',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
         // xfwd: true

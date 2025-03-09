@@ -9,7 +9,7 @@ if (fs.existsSync(envFile)) {
   console.log(`Loaded environment variables from ${envFile}`);
 } else {
   dotenv.config();
-  console.warn(`Environment file ${envFile} not found, loading default .env`);
+  console.warn(`Loaded environment variables from default .env`);
 }
 
 // 導入db函數
