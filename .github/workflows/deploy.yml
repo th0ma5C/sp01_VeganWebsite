@@ -1,0 +1,37 @@
+name: Vite Build and Deploy to GCP VM
+
+on:
+  push:
+    branches:
+      - main  
+    paths-ignore:
+      - 'README.md'
+    if: contains(github.event.head_commit.message, 'deploy')
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 'latest'
+
+      - name: Install dependencies
+        run: npm i --prefix veganOfficialWeb
+
+      - name: Build Vite project
+        run: npm run build --prefix veganOfficialWeb
+
+      - name: Deploy to GCP VM
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          scp -r -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no veganOfficialWeb/dist/* ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:/var/www/html/dist
