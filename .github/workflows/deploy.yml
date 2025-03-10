@@ -16,33 +16,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install dependencies
-        run: npm i --prefix veganOfficialWeb
-
-      - name: Build Vite project
-        run: npm run build --prefix veganOfficialWeb
-
-      - name: Set up SSH key and known_hosts
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          known_hosts: ${{ secrets.VM_HOST }}
-
-      - name: copy file via ssh
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          port: 22
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: veganOfficialWeb/dist/*
-          target: /var/www/html/dist
-          
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+    
+      - name: Test SSH connection
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} echo "SSH connection successful"
