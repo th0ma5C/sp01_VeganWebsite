@@ -57,6 +57,7 @@ onMounted(() => {
     //     const img = new Image();
     //     img.src = el;
     // });
+    console.log(import.meta.env.VITE_API_BASE_URL);
 })
 
 onUnmounted(() => {

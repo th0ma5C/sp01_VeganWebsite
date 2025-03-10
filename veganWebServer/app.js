@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
+const cors = require('cors');
 require('module-alias/register');
 require('dotenv').config();
 
@@ -48,5 +49,13 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+// 配置 CORS，僅允許來自指定域名的請求
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 module.exports = app;
