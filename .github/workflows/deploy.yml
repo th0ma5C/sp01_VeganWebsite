@@ -28,17 +28,14 @@ jobs:
       - name: Build Vite project
         run: npm run build --prefix veganOfficialWeb
 
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
       - name: Deploy to GCP VM
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "veganOfficialWeb/dist/"
-          target: "/home/thomas_c/tmp/uploads/dist"
+        run: |
+          scp -i ~/.ssh/id_rsa -r /veganOfficialWeb/dist/ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:~/tmp/uploads/dist
