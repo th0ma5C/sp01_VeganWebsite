@@ -13,26 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --prefix veganOfficialWeb
-
-      - name: Build Vite project
-        run: npm run build --prefix veganOfficialWeb
-
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: ${{ secrets.KNOWN_HOSTS }}
-
-      - name: rsync over SSH
-        run: rsync -r veganOfficialWeb/dist ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:~/tmp/uploads/dist
+      - name: Debug SSH connection
+        run: |
+          ping -c 4 ${{ secrets.VM_HOST }}
+          nc -zv ${{ secrets.VM_HOST }} 22
+          ssh -vvv ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} -o StrictHostKeyChecking=no echo "Connection test"
+    
