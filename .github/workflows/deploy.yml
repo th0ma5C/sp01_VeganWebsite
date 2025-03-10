@@ -34,6 +34,6 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: /veganOfficialWeb/dist/
+          source: veganOfficialWeb/dist/
           target: "/home/thomas_c/tmp/uploads/dist"
           proxy_host: ${{ secrets.PROXY_IP }}
