@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
 
@@ -27,11 +27,12 @@ jobs:
       - name: Build Vite project
         run: npm run build --prefix veganOfficialWeb
 
-      - name: Deploy to GCP VM
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -t rsa ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-          scp -r -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no veganOfficialWeb/dist/* ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:/var/www/html/dist
+      - name: copy file via ssh
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          port: 22
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: veganOfficialWeb/dist/*
+          target: /var/www/html/dist
