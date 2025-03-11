@@ -48,7 +48,8 @@
                     </div>
                     <div class="branchName"
                         ref="branchNames">
-                        <p>{{ item.position }}</p>
+                        <p>{{ item.position }}
+                        </p>
                         <h1>
                             {{ item.branch }}
                             <span class="prevBranch">
@@ -319,10 +320,18 @@ onUnmounted(() => {
 
     .mapWrapper {
         position: absolute;
+        // position: relative;
         top: var(--TW_position);
         left: 50%;
         transform: translate(-50%, -50%);
         opacity: 1;
+
+        &:has(.TWAnchor) {
+            position: relative;
+            left: 0%;
+            transform: translate(0%, -50%);
+            // top: 0;
+        }
 
         .TWAnchor {
             opacity: 0;
@@ -397,6 +406,10 @@ onUnmounted(() => {
 .content {
     @include flex-center-center;
     width: 100%;
+    // height: 100%;
+    justify-content: start;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .point {
@@ -441,11 +454,13 @@ onUnmounted(() => {
     // width: 100%;
     // width: 360px;
     flex-direction: column;
-    position: absolute;
-    top: calc(37% + 225px + 2rem);
+    // position: absolute;
+    position: relative;
+    // top: calc(37% + 225px + 2rem);
     // top: calc(7rem + 450px);
-    left: 50%;
-    transform: translate(-50%, 0);
+    // left: 50%;
+    // transform: translate(-50%, 0);
+    flex: 1;
 
     p {
         font-size: 0.75rem;
@@ -516,7 +531,7 @@ onUnmounted(() => {
     position: absolute;
     bottom: 0%;
     left: -100%;
-    translate: 50% 100%;
+    // translate: 50% 100%;
     text-wrap: nowrap;
     line-height: 36px;
     padding: .25rem .5rem;
