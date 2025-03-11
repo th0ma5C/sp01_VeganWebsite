@@ -38,7 +38,7 @@ jobs:
 
       - name: SCP Transfer vue File via IAP
         run: |
-          gcloud compute scp --recurse veganOfficialWeb/dist/ ${{ secrets.VM_USER }}@${{ secrets.GCE_INSTANCE_NAME }}:~/tmp/uploads/dist \
+          gcloud compute scp --recurse veganOfficialWeb/dist ${{ secrets.VM_USER }}@${{ secrets.GCE_INSTANCE_NAME }}:~/tmp/uploads/dist \
               --zone=${{ secrets.GCE_ZONE }} \
               --tunnel-through-iap \
               || exit 1
@@ -60,16 +60,17 @@ jobs:
         run: |
           max_retries=5
           counter=0
-          until curl -f https://${{ secrets.APP_DOMAIN }} || [ $counter -eq $max_retries ]
+          until curl -v -f https://${{ secrets.APP_DOMAIN }} 2>&1 || [ $counter -eq $max_retries ]
           do
-            echo "Attempt $counter: Waiting for service to be up..."
+            echo "嘗試次數 $((counter + 1)) / $max_retries"
+            echo "等待 10 秒後重試..."
+            curl -v https://${{ secrets.APP_DOMAIN }} 2>&1
             sleep 10
             counter=$((counter + 1))
           done
           
           if [ $counter -eq $max_retries ]; then
-            echo "Health check failed after $max_retries attempts"
             exit 1
           fi
           
-          echo "Service is up and running!"
+          echo "服務正常運作中！"
