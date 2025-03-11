@@ -38,7 +38,7 @@ jobs:
 
       - name: SCP Transfer vue File via IAP
         run: |
-          gcloud compute scp -r veganOfficialWeb/dist/ ${{ secrets.VM_USER }}@${{ secrets.GCE_INSTANCE_NAME }}:~/tmp/uploads/dist \
+          gcloud compute scp --recurse veganOfficialWeb/dist/ ${{ secrets.VM_USER }}@${{ secrets.GCE_INSTANCE_NAME }}:~/tmp/uploads/dist \
               --zone=${{ secrets.GCE_ZONE }} \
               --tunnel-through-iap \
               || exit 1
