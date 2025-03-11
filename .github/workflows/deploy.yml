@@ -22,7 +22,7 @@ jobs:
 
       - name: Test SSH Connection via IAP
         run: |
-          gcloud compute ssh ${{ secrets.GCE_INSTANCE_NAME }} \
+          gcloud compute ssh ${{ secrets.VM_USER }}@${{ secrets.GCE_INSTANCE_NAME }} \
               --zone=${{ secrets.GCE_ZONE }} \
               --tunnel-through-iap \
               --command "echo 'SSH Connection Successful'"
@@ -30,6 +30,6 @@ jobs:
       - name: Test SCP File Transfer via IAP
         run: |
           echo "This is a test file" > testfile.txt
-          gcloud compute scp testfile.txt ${{ secrets.GCE_INSTANCE_NAME }}:~/tmp \
+          gcloud compute scp testfile.txt ${{ secrets.VM_USER }}@${{ secrets.GCE_INSTANCE_NAME }}:~/tmp \
               --zone=${{ secrets.GCE_ZONE }} \
               --tunnel-through-iap
