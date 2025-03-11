@@ -1,0 +1,35 @@
+name: Deploy to GCE via IAP SSH
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Test SSH Connection via IAP
+        run: |
+          gcloud compute ssh ${{ secrets.VM_USER }}@${{ secrets.GCE_INSTANCE_NAME }} \
+              --zone=${{ secrets.GCE_ZONE }} \
+              --tunnel-through-iap \
+              --command "echo 'SSH Connection Successful'"
+
+      - name: Test SCP File Transfer via IAP
+        run: |
+          echo "This is a test file" > testfile.txt
+          gcloud compute scp testfile.txt ${{ secrets.VM_USER }}@${{ secrets.GCE_INSTANCE_NAME }}:~/tmp \
+              --zone=${{ secrets.GCE_ZONE }} \
+              --tunnel-through-iap
