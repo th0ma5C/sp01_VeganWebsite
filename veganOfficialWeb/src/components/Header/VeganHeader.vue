@@ -871,11 +871,14 @@ onBeforeUnmount(() => {
     .navIcon {}
 }
 
-@include medium {
+
+@include medium($width: 900px) {
     .hideLogo {
         opacity: 0;
     }
 }
+
+@include medium {}
 
 @include small {
     %pseudoLine {

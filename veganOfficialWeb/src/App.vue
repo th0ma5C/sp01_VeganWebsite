@@ -2,9 +2,10 @@
     <div :style="{
         // opacity: loaderActivated ? 0 : 1
     }">
-        <transition name="loader">
-            <Loader v-show="loaderActivated"></Loader>
-        </transition>
+        <Loader
+            v-if="route.path !== '/profile/GoogleRedirect'">
+        </Loader>
+
         <header>
             <VeganHeader></VeganHeader>
         </header>
@@ -41,15 +42,18 @@ import { onMounted, watch, toRefs, onUnmounted } from 'vue';
 import { useLoaderStore } from '@/store/loader';
 import preloadImgList from './utils/preloadImgList';
 import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router';
 
 let { loaderActivated } = storeToRefs(useLoaderStore());
+
+const route = useRoute();
 
 onMounted(() => {
     watch(loaderActivated, (newValue) => {
         if (newValue == false) {
-            setTimeout(() => {
-                document.body.style.overflow = 'auto';
-            }, 0)
+            // setTimeout(() => {
+            document.body.style.overflow = 'auto';
+            // }, 0)
         }
     });
 
@@ -57,7 +61,6 @@ onMounted(() => {
     //     const img = new Image();
     //     img.src = el;
     // });
-    console.log(import.meta.env.VITE_API_BASE_URL);
 })
 
 onUnmounted(() => {
@@ -66,34 +69,21 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
-/* 引入全局樣式和字體 */
 @use "./style/index.scss" as *;
 @use './style/fonts.scss' as *;
-
-* {
-    // outline: 1px solid black;
-}
 
 body {
     overflow: hidden;
 }
 
-// .flyToCartContainer {}
 
 #app {
     background-color: $primaryBacColor;
     min-width: 320px;
-    // overflow: hidden;
 }
 
 main {
     margin-inline: auto;
-    // max-width: 1920px;
-}
-
-footer {
-    // background-color: $secondBacColor;
-    // position: relative;
 }
 
 .app-enter-active {
@@ -109,30 +99,4 @@ footer {
 .app-enter-to {
     transform: scale(1);
 }
-
-.loader-enter-active,
-.loader-leave-active {
-    transition: opacity 1s, transform 1s;
-}
-
-.loader-enter-from,
-.loader-leave-to {
-    opacity: 0;
-    transform: scale(5) translateZ(0);
-}
-
-.loader-enter-to,
-.loader-leave-from {
-    opacity: 1;
-    transform: scale(1) translateZ(0);
-    // display: none;
-}
-
-
-
-// @include XLarge {
-//     #app>div {
-//         margin-inline: auto;
-//         max-width: 1920px;
-//     }
-// }</style>
+</style>

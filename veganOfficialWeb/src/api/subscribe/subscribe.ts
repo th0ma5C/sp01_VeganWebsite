@@ -7,7 +7,7 @@ interface SubscribeRes {
 }
 
 const reqSubscribe = (params?: any) => {
-    return request.post<any, SubscribeRes>('/api/subscribe/send-subscribeEmail', {
+    return request.post<any, SubscribeRes>('/subscribe/send-subscribeEmail', {
         ...params
     })
 }

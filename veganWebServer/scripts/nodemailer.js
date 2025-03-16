@@ -12,8 +12,8 @@ const initTransporter = async () => {
             auth: {
                 type: 'OAuth2',
                 user: 'thomas29111@gmail.com',
-                clientId: process.env.CLIENT_ID,
-                clientSecret: process.env.CLIENT_SECRET,
+                clientId: process.env.MAILER_CLIENT_ID,
+                clientSecret: process.env.MAILER_CLIENT_SECRET,
                 refreshToken: tokenData.refreshToken,
                 accessToken: tokenData.accessToken,
             },

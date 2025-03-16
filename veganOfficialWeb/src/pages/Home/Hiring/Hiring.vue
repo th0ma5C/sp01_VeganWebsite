@@ -196,22 +196,16 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-* {
-    // outline: 1px solid black;
-}
-
 .hiringContainer {
     width: 100%;
     max-width: 1920px;
-    height: calc(100vh - 12rem);
-    // height: calc(100vh - 6rem);
+    height: 100vh;
     max-height: 920px;
 
     position: relative;
 
     margin-block: 6rem;
     margin-block: clamp(1rem, 0rem + 5vw, 6rem) 6rem;
-    // padding-inline: 6rem;
     margin-inline: auto
 }
 
@@ -244,8 +238,8 @@ onUnmounted(() => {
 @for $i from 0 through 7 {
     .imgWrapper#{$i} {
         clip-path: polygon(#{$i * 12.5} + "%" + " 0",
-            #{$i * 12.5 + 12.5} + "%" + " 0",
-            #{$i * 12.5 + 12.5} + "%" + " 100%",
+            #{$i * 13 + 13} + "%" + " 0",
+            #{$i * 13 + 13} + "%" + " 100%",
             #{$i * 12.5} + "%" + " 100%",
         );
     }
@@ -259,7 +253,6 @@ onUnmounted(() => {
     z-index: 1;
     width: 100%;
     max-width: 100%;
-    // height: 100%;
     padding-inline: 2rem;
     padding-inline: clamp(2rem, 0.8571428571428572rem + 5.714285714285714vw, 6rem);
     background-color: $primaryBacColor;

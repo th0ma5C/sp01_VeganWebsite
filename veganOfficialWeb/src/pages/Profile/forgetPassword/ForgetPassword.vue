@@ -97,13 +97,13 @@ const toastStore = useToastStore();
 const { addNotification } = toastStore;
 
 // loader store
-const loaderStore = useLoaderStore();
-const { loaderActivated } = storeToRefs(loaderStore);
-watch(loaderActivated, (nVal) => {
-    console.log(loaderActivated.value);
-    if (nVal == false) {
-    }
-}, { immediate: true })
+// const loaderStore = useLoaderStore();
+// const { loaderActivated } = storeToRefs(loaderStore);
+// watch(loaderActivated, (nVal) => {
+//     console.log(loaderActivated.value);
+//     if (nVal == false) {
+//     }
+// }, { immediate: true })
 
 // 路由
 const router = useRouter();

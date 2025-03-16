@@ -5,6 +5,7 @@ import About from '@pages/About/index.vue'
 import Checkout from '@/pages/Cart/Checkout.vue'
 import Profile from '@pages/Profile/index.vue'
 import Product from "@/pages/Menu/product/Product.vue";
+import GoogleRedirect from "@pages/Profile/googleRedirect/GoogleRedirect.vue";
 import type { RouteLocationNormalized, NavigationGuardNext, NavigationGuardReturn } from 'vue-router'
 import { useUserStore } from '@/store/userStore'
 import { reqGetUser, reqRedirectLogin } from "@/api/userAuth";
@@ -246,6 +247,17 @@ const routes = [
                     searchKeys: ['會員', '購買清單', 'account']
 
                 }
+            },
+            {
+                path: 'GoogleRedirect',
+                component: GoogleRedirect,
+                // component: () => import('@pages/Profile/googleRedirect/GoogleRedirect.vue'),
+                meta: {
+                    hideParent: true,
+                },
+                beforeEnter: () => {
+                    return true
+                }
             }
         ]
     },
@@ -315,6 +327,11 @@ router.beforeEach(async (to, from) => {
             userStore.clearExpiredUserData();
             console.log(error);
         }
+    }
+
+    if (to.path == '/profile/GoogleRedirect') {
+        loaderStore.loaderActivated = false;
+        return true
     }
 
     setTimeout(() => {

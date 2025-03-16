@@ -52,12 +52,12 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
-      open: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      // open: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
       proxy: {
         '/api': {
           target: env.VITE_API_BASE_URL || 'https://tmc4web.dev',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
+          rewrite: (path) => path.replace(/^\/api\/images/, '/images'),
         }
       }
     },

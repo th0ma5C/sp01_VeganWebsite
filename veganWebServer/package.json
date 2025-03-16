@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "cross-env NODE_ENV=production node bin/www",
-    "start:dev": "cross-env NODE_ENV=development nodemon bin/www"
+    "start:dev": "cross-env NODE_ENV=development nodemon bin/www",
+    "mailer-script:dev": "cross-env NODE_ENV=development node scripts/OAuthGmail"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -13,7 +14,7 @@
     "debug": "~2.6.9",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
-    "express": "^4.20.0",
+    "express": "^4.21.2",
     "express-session": "^1.18.1",
     "express-validator": "^7.2.0",
     "googleapis": "^144.0.0",
@@ -30,6 +31,8 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.16",
     "nodemon": "^3.1.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
     "redis": "^4.7.0",
     "veganwebserver": "file:"
   },
@@ -37,7 +40,8 @@
     "@root": ".",
     "@models": "./models",
     "@middlewares": "./middlewares",
-    "@scripts": "./scripts"
+    "@scripts": "./scripts",
+    "@routes": "routes"
   },
   "devDependencies": {
     "cross-env": "^7.0.3"

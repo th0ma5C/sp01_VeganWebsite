@@ -4,12 +4,12 @@ import type { OrderResData } from './type'
 
 // 驗證價格
 const reqVerifyItemPrice = (params: any) => {
-    return request.post<any, OrderResData>('/api/order/verifyPurchaseOrder', { ...params })
+    return request.post<any, OrderResData>('/order/verifyPurchaseOrder', { ...params })
 }
 
 // user shipping info
 const reqGetUserShippingInfo = (token: string | null) => {
-    return request.get<any, OrderResData>('/api/order/getShippingInfo', {
+    return request.get<any, OrderResData>('/order/getShippingInfo', {
         headers: {
             Authorization: token
         }
@@ -18,7 +18,7 @@ const reqGetUserShippingInfo = (token: string | null) => {
 
 // 建立訂單
 const reqCreateOrder = (params: any, token?: string) => {
-    return request.post<any, OrderResData>('/api/order/createOrder', {
+    return request.post<any, OrderResData>('/order/createOrder', {
         ...params
     }, {
         headers: {
@@ -29,7 +29,7 @@ const reqCreateOrder = (params: any, token?: string) => {
 
 // 查詢訂單
 const reqGetUserOrder = (token: string | null) => {
-    return request.get<any, OrderResData>('/api/order/userOrderList', {
+    return request.get<any, OrderResData>('/order/userOrderList', {
         headers: {
             Authorization: token
         }
@@ -38,7 +38,7 @@ const reqGetUserOrder = (token: string | null) => {
 
 // 取消訂單
 const reqCancelUserOrder = (token: string | null, orderID: string) => {
-    return request.patch<any, OrderResData>(`/api/order/${orderID}`, null, {
+    return request.patch<any, OrderResData>(`/order/${orderID}`, null, {
         headers: {
             Authorization: token
         }

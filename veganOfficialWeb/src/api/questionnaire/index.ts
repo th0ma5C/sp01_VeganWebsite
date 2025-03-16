@@ -26,11 +26,11 @@ interface GPT_RES {
     result: Node[]
 }
 
-const reqGetQuestionnaire = (params?: any) => request.get<any, resType.Questionnaire[]>('/api/questionnaire/getQuestionnaire', params);
+const reqGetQuestionnaire = (params?: any) => request.get<any, resType.Questionnaire[]>('/questionnaire/getQuestionnaire', params);
 
 // member save survey result
 const reqSaveSurveyResult = (result: any, token?: string) => {
-    return request.post('/api/questionnaire/saveResult', {
+    return request.post('/questionnaire/saveResult', {
         data: {
             result
         }
@@ -43,7 +43,7 @@ const reqSaveSurveyResult = (result: any, token?: string) => {
 
 // member get saved survey result
 const reqGetSavedResult = (token?: string) => {
-    return request.get<any, SurveyResponse>('/api/questionnaire/result', {
+    return request.get<any, SurveyResponse>('/questionnaire/result', {
         headers: {
             Authorization: token
         }
@@ -52,7 +52,7 @@ const reqGetSavedResult = (token?: string) => {
 
 // get GPT response
 const getGPTAnalyze = (params: any) => {
-    return request.post<any, GPT_RES>('/api/questionnaire/gpt-analyze', {
+    return request.post<any, GPT_RES>('/questionnaire/gpt-analyze', {
         data: { ...params }
     })
 }

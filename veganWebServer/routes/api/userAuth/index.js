@@ -49,14 +49,15 @@ router.post('/login', validateLogin, async (req, res) => {
             { expiresIn: '1d' }
         );
 
-        res.cookie('token', token, {
-            httpOnly: true,
-            // secure: process.env.NODE_ENV === 'production', // 僅在 HTTPS 連接時發送
-            sameSite: 'Strict',
-            maxAge: 1000 * 60 * 60 * 24 // 1 day
-        });
-
-        res.json({ message: '登錄成功', token });
+        res
+            .status(200)
+            .cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'Strict',
+                maxAge: 1000 * 60 * 60 * 24 // 1 day
+            })
+            .json({ state: 'confirm', message: '登錄成功', token });
 
     } catch (error) {
         res.status(500).json({ message: '伺服器錯誤' });
