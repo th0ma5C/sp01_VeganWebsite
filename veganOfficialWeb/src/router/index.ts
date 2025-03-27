@@ -3,9 +3,9 @@ import Home from '@pages/Home/index.vue'
 import Menu from '@pages/Menu/index.vue'
 import About from '@pages/About/index.vue'
 import Checkout from '@/pages/Cart/Checkout.vue'
-import Profile from '@pages/Profile/index.vue'
+// import Profile from '@pages/Profile/index.vue'
 import Product from "@/pages/Menu/product/Product.vue";
-import GoogleRedirect from "@pages/Profile/googleRedirect/GoogleRedirect.vue";
+// import Account from "@/pages/Profile/account/Account.vue";
 import type { RouteLocationNormalized, NavigationGuardNext, NavigationGuardReturn } from 'vue-router'
 import { useUserStore } from '@/store/userStore'
 import { reqGetUser, reqRedirectLogin } from "@/api/userAuth";
@@ -14,6 +14,7 @@ import { useToastStore } from "@/store/toastStore";
 import { useLoaderStore } from "@/store/loader";
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
+// import { useQuestionnaireStore } from "@/store/questionnaireStore";
 
 NProgress.configure({ showSpinner: false });
 
@@ -50,6 +51,12 @@ const routes = [
         ],
         meta: {
             searchKeys: ['專屬分析', '分析', '問卷', '測驗', 'questionnaire']
+        },
+        beforeEnter: () => {
+            // console.log('object');
+            // const questionnaireStore = useQuestionnaireStore();
+            // questionnaireStore.checkResultIsExpired();
+            return true
         }
     },
     {
@@ -106,7 +113,8 @@ const routes = [
     {
         path: '/profile',
         name: 'Profile',
-        component: Profile,
+        component: () => import('@/pages/Profile/index.vue'),
+        // component: Profile,
         beforeEnter: (
             to: RouteLocationNormalized,
             from: RouteLocationNormalized
@@ -206,20 +214,27 @@ const routes = [
                 meta: {
                     hideParent: true,
                 },
-                beforeEnter: () => {
+                beforeEnter: (
+                    to: RouteLocationNormalized,
+                    from: RouteLocationNormalized
+                ) => {
                     const userStore = useUserStore();
-                    if (!userStore.user.email) {
-                        return '/profile'
-                    }
-                    if (userStore.isAuth) {
-                        return '/profile/account'
-                    }
+                    const token = to.query.token;
+                    if (token) return true
+
+                    // if (!userStore.user.email) {
+                    //     return '/profile'
+                    // }
+                    // if (userStore.isAuth) {
+                    //     return '/profile/account'
+                    // }
                     return true
                 }
             },
             {
                 path: 'account',
                 name: 'Account',
+                // component: Account,
                 component: () => import('@/pages/Profile/account/Account.vue'),
                 beforeEnter: async (
                     to: RouteLocationNormalized,
@@ -247,17 +262,6 @@ const routes = [
                     searchKeys: ['會員', '購買清單', 'account']
 
                 }
-            },
-            {
-                path: 'GoogleRedirect',
-                component: GoogleRedirect,
-                // component: () => import('@pages/Profile/googleRedirect/GoogleRedirect.vue'),
-                meta: {
-                    hideParent: true,
-                },
-                beforeEnter: () => {
-                    return true
-                }
             }
         ]
     },
@@ -274,6 +278,18 @@ const router = createRouter({
     }
 })
 
+// pre load component
+const ProfilePages = import.meta.glob(
+    '@/pages/Profile/account/Account.vue',
+    { eager: false }
+);
+
+// 預加載 account page
+function preloadProfilePages() {
+    for (const path in ProfilePages) {
+        ProfilePages[path](); // 觸發實際 import，這時候 chunk 才會被載入
+    }
+}
 
 router.beforeEach(async (to, from) => {
     NProgress.start();
@@ -282,6 +298,7 @@ router.beforeEach(async (to, from) => {
     const toastStore = useToastStore();
     const loaderStore = useLoaderStore();
 
+    if (to.path == '/profile') preloadProfilePages()
 
     if (to.path == '/profile' && to.query.token) {
         try {
@@ -329,14 +346,10 @@ router.beforeEach(async (to, from) => {
         }
     }
 
-    if (to.path == '/profile/GoogleRedirect') {
-        loaderStore.loaderActivated = false;
-        return true
-    }
-
     setTimeout(() => {
         loaderStore.loaderActivated = false;
     }, 5000);
+
     return true
 })
 

@@ -1,7 +1,8 @@
 <template>
     <div ref="header" class="container"
-        :class="{ 'hideNav': hideNav }"
-        v-if="!QNR_IsLoaded && !isCheckout">
+        :class="{ 'hideNav': hideNav }" :style="{
+            paddingRight: isCartCardOpen ? `${scrollbarWidth}px` : 0
+        }" v-if="!QNR_IsLoaded && !isCheckout">
         <div class="burgerWrapper">
             <label class="burger" for="burger" :class="{
                 foldBurgerBac: isBehind,
@@ -248,7 +249,6 @@ import CartCounter from '../popover/cartCounter/CartCounter.vue';
 import Search from './Search/Search.vue';
 import emitter from '@/utils/eventBus';
 import gsap from 'gsap';
-import CSSRulePlugin from 'gsap/CSSRulePlugin';
 
 
 let navLink = [
@@ -333,7 +333,7 @@ function prevPage() {
 
 // 購物車
 const cartStore = useCartStore();
-const { isCheckout } = storeToRefs(cartStore);
+const { isCheckout, isCartCardOpen, scrollbarWidth } = storeToRefs(cartStore);
 const { toggleCartCardOpen, getHeaderCart } = cartStore;
 
 function clickNavIcon(target: string) {
@@ -425,6 +425,8 @@ router.beforeEach(() => {
 // prevent url bar resize
 let currWidth = 0;
 
+// scroll bar width
+// const scrollbarWidth = ref(window.innerWidth - document.documentElement.clientWidth)
 
 onMounted(() => {
     window.addEventListener('scroll', throttledOnScroll);
@@ -435,6 +437,7 @@ onMounted(() => {
         isInit.value = true;
         isSearchShow.value = false;
         currWidth = window.innerWidth;
+        scrollbarWidth.value = window.innerWidth - document.documentElement.clientWidth
     })
 })
 
@@ -457,7 +460,8 @@ onBeforeUnmount(() => {
     height: 100px;
     position: fixed;
     top: -0.1%;
-    transition: all 0.2s linear;
+    transition: all 0.2s linear,
+        padding-right 0s;
     z-index: 99;
 }
 

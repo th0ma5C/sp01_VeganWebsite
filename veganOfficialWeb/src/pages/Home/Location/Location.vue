@@ -92,20 +92,6 @@
 </template>
 
 <script setup lang="ts">
-// TODO: 整體代碼優化
-/**
- * //無法點按鈕(pointer-event or z-index)
- * //cursor出現、消失動畫(淡化)
- * //左下字用切換顯示
- * //下一分店名靠前、淡化
- * //游標跟隨可以不用requestAnimationFrame，透過不斷移除animation、新增animation達成平滑移動
- * // 頭尾兩張clone時會閃爍，不時出現，原因未知
- * // 封裝游標跟隨
- * ? 取消游標跟隨mouseover，不確定影響
- */
-
-
-
 import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpdated, watchEffect, useTemplateRef } from 'vue';
 import type { Ref } from 'vue';
 import debounce from 'lodash/debounce';

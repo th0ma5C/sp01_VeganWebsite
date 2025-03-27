@@ -2,10 +2,9 @@ const User = require('@models/User');
 const jwt = require('jsonwebtoken');
 const { getTransporter } = require('@scripts/nodemailer')
 
-// 訂單email
 function mailOptions(recipient) {
     return {
-        from: 'thomas29111@gmail.com',
+        from: `"果漾 Relation-Ship" <${process.env.SMTP_ADDRESS}>`,
         to: `${recipient ?? 'thomas29111@gmail.com'}`,
         subject: '感謝您訂閱我們的電子報！',
         html: `
@@ -16,7 +15,7 @@ function mailOptions(recipient) {
                 <p>我們的團隊將竭力提供最有價值的內容，助您了解最新動態。</p>
                 <p>如果有任何問題或建議，歡迎隨時聯繫我們！</p>
                 <hr>
-                <a href="">果漾Relation-Ship</a>
+                <a href="${process.env.FE_BASE_URL}">果漾Relation-Ship</a>
             </div>
         `
     }

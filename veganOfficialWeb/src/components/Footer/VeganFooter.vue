@@ -131,6 +131,10 @@
                 Relation-Ship
             </span>
         </div>
+        <template>
+            <span>發布版本：{{ version }}</span>
+            <span>發布時間：{{ buildTime }}</span>
+        </template>
     </div>
 </template>
 
@@ -150,72 +154,69 @@ import {
 } from 'vee-validate';
 import * as yup from 'yup';
 import { reqSubscribe } from '@/api/subscribe/subscribe';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import debounce from 'lodash/debounce'
 import { useToastStore } from '@/store/toastStore';
+import { positionStore } from '@/pages/About/store/usePagePosition';
 
+const version = __APP_VERSION__;
+const buildTime = __APP_BUILD_TIME__;
 
+const routeMap: Record<string, string> = {
+    '開始專屬分析': '/questionnaire',
+    '菜單': '/menu',
+    '關於果漾': '/about',
+    '我的帳戶': '/profile'
+}
 
-let footerList = reactive([
+function scrollToFAQ() {
+    if (route.path === '/about') {
+        const y = positionStore.getElPosition('FAQ')
+        window.scroll({
+            top: window.scrollY + (y || 0) - 100,
+            behavior: 'smooth'
+        })
+    } else {
+        router.push({
+            path: '/about',
+            query: { scroll: 'FAQ' }
+        })
+    }
+}
+
+const footerList = reactive([
     {
         title: '快速連結',
         content: ['開始專屬分析', '菜單', '關於果漾', '我的帳戶'],
         routeTo: (item: string) => {
-            switch (item) {
-                case '開始專屬分析':
-                    router.push('/questionnaire')
-                    break;
-                case '菜單':
-                    router.push('/menu')
-                    break;
-                case '關於果漾':
-                    router.push('/about')
-                    break;
-                case '我的帳戶':
-                    router.push('/profile')
-                    break;
-                default:
-                    break;
+            const target = routeMap[item]
+            if (target === route.path) {
+                window.scroll({
+                    top: 0,
+                    behavior: 'smooth'
+                })
+            } else {
+                router.push(target)
             }
         }
     },
     {
         title: '顧客服務',
         content: ['常見問題', '付款與寄送流程', '果漾會員制度'],
-        routeTo: () => {
-            router.push({
-                path: '/about',
-                query: {
-                    scroll: "FAQ"
-                }
-            })
-        }
+        routeTo: scrollToFAQ
     },
     {
         title: '聲明條款',
         content: ['隱私權服務', '服務條款', '退貨政策', '反詐騙公告'],
-        routeTo: () => {
-            router.push({
-                path: '/about',
-                query: {
-                    scroll: "FAQ"
-                }
-            })
-        }
+        routeTo: scrollToFAQ
     },
     {
         title: '果漾蔬食',
         content: ['信箱', '客服專線', '服務時間'],
-        routeTo: () => {
-            router.push({
-                path: '/about',
-                query: {
-                    scroll: "FAQ"
-                }
-            })
-        }
+        routeTo: scrollToFAQ
     },
 ]);
+
 
 const iconList = reactive({
     Fb: 'https://www.facebook.com/',
@@ -337,6 +338,7 @@ function appLinkOnclick() {
 
 // list btn
 const router = useRouter();
+const route = useRoute();
 
 function listOnclick(item: string) {
     switch (item) {

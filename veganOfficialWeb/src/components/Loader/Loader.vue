@@ -3,8 +3,19 @@
         <div class="container" :class="{ b: loaded }"
             v-show="loaderActivated">
             <div class="svgContainer">
+
                 <svg id="a" viewBox="0 0 315.65 73.62"
-                    xmlns="http://www.w3.org/2000/svg">
+                    xmlns="http://www.w3.org/2000/svg"
+                    filter="url(#dropShadowFilter)">
+                    <defs>
+                        <filter id="dropShadowFilter"
+                            x="-50%" y="-50%" width="200%"
+                            height="200%">
+                            <feDropShadow dx="8" dy="8"
+                                stdDeviation="4"
+                                flood-color="rgba(0,0,0,0.5)" />
+                        </filter>
+                    </defs>
                     <g>
                         <path class="draw-1"
                             d="m0,26.4c0-1.24.48-2.44,1.44-3.6.96-1.16,2.02-2.28,3.18-3.36,1.16-1.08,2.87-2.37,5.13-3.87,2.26-1.5,4.67-2.84,7.23-4.02,2.56-1.18,5.7-2.19,9.42-3.03,3.72-.84,7.56-1.26,11.52-1.26,3.44,0,6.86.66,10.26,1.98,1.72.68,3.13,1.67,4.23,2.97,1.1,1.3,1.65,2.81,1.65,4.53,0,2.68-1.62,5.36-4.86,8.04-3.24,2.68-8.9,5.66-16.98,8.94-.8.2-1.2.48-1.2.84,0,.12.08.26.24.42,5.68,6.56,10.36,11.14,14.04,13.74.44.36.66.72.66,1.08,0,.88-1.3,1.32-3.9,1.32s-4.76-.84-6.48-2.52c-7.28-7.72-11.86-12.88-13.74-15.48-.04-.16-.11-.24-.21-.24s-.21.08-.33.24c-6.48,7.96-10.22,13.18-11.22,15.66,0,.64-.11.96-.33.96s-.57-.12-1.05-.36c-.48-.24-.98-.7-1.5-1.38-.52-.68-.78-1.51-.78-2.49s.4-2.19,1.2-3.63c5.68-8.24,11.68-15.16,18-20.76,2.68-2.36,5.2-4.2,7.56-5.52.36-.32.69-.48.99-.48s.66.14,1.08.42c.42.28.63.61.63.99s-.16.71-.48.99c-5.24,5.28-8.84,9.22-10.8,11.82-.52.56-.78.94-.78,1.14s.1.3.3.3h.24c4.8-1.32,8.68-2.64,11.64-3.96,6.28-2.84,11.04-5.84,14.28-9,.68-.64,1.02-1.26,1.02-1.86,0-.92-.77-1.62-2.31-2.1-1.54-.48-3.98-.72-7.32-.72s-7.43.5-12.27,1.5c-4.84,1-9.66,2.61-14.46,4.83-4.8,2.22-8.36,4.79-10.68,7.71-.32.36-.48.61-.48.75s.22.21.66.21,1.81-.5,4.11-1.5c2.3-1,4.27-1.98,5.91-2.94,2.56-1.72,4.16-2.58,4.8-2.58.24,0,.36.05.36.15s-.25.45-.75,1.05c-.5.6-1.2,1.36-2.1,2.28s-2.01,1.94-3.33,3.06c-3,2.6-5.76,3.9-8.28,3.9-1.36,0-2.47-.43-3.33-1.29-.86-.86-1.37-1.73-1.53-2.61L0,26.4Z" />
@@ -53,17 +64,18 @@ let loaded = ref(false);
 const drawFinished = ref(false);
 
 // watch(loaderActivated, (newVal) => {
-//     const delay = setInterval(() => {
-//         loaded.value = true
-//     }, 5000)
+//     console.log(newVal);
+//     // const delay = setInterval(() => {
+//     //     loaded.value = true
+//     // }, 5000)
 
-//     if (newVal == false) {
-//         clearInterval(delay)
-//         setInterval(() => {
-//             loaded.value = true
-//         }, 2500)
-//     }
-// })
+//     // if (newVal == false) {
+//     //     clearInterval(delay)
+//     //     setInterval(() => {
+//     //         loaded.value = true
+//     //     }, 2500)
+//     // }
+// }, { immediate: true })
 
 </script>
 
@@ -146,7 +158,6 @@ $strokeDashoffset: 600;
             left: 0;
             width: 50%;
             height: 50%;
-            // background: linear-gradient(115deg, transparent 40%, red 50%, transparent 52%);
             animation: loading 4s infinite ease-in-out;
             background: linear-gradient(125deg, transparent 40%, #FCFAF2 50%, transparent 52%);
         }
@@ -154,7 +165,7 @@ $strokeDashoffset: 600;
 
     svg {
         @include WnH(61.8%);
-        filter: drop-shadow(8px 8px 8px rgba(0, 0, 0, 0.5));
+        overflow: visible;
     }
 
     path {

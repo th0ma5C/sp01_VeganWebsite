@@ -2,8 +2,7 @@
     <div :style="{
         // opacity: loaderActivated ? 0 : 1
     }">
-        <Loader
-            v-if="route.path !== '/profile/GoogleRedirect'">
+        <Loader>
         </Loader>
 
         <header>
@@ -80,6 +79,10 @@ body {
 #app {
     background-color: $primaryBacColor;
     min-width: 320px;
+
+    & input::-ms-reveal {
+        display: none;
+    }
 }
 
 main {

@@ -4,13 +4,7 @@ const defaultDB = {
     DBPORT: 27017,
     DBNAME: 'veganWebDB'
 }
-const backupDB = {
-    DBHOST: '192.168.0.101',
-    DBPORT: 27017,
-    DBNAME: 'veganWebDB'
-}
 
 module.exports = {
     defaultDB,
-    backupDB
 }

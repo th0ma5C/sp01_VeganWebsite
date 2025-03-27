@@ -36,10 +36,6 @@ const customAdapter: AxiosAdapter = async (config: AxiosRequestConfig): Promise<
 
 const requests = axios.create({
     baseURL: '/api',
-    // headers: {
-    //     'Content-Type': 'application/json',
-    // },
-    //timeout: 5000,
     adapter: customAdapter
 });
 

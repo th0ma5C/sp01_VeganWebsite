@@ -1,7 +1,7 @@
 import { defineStore, storeToRefs } from "pinia";
-import { onMounted, reactive, ref, watch, computed } from "vue";
+import { onMounted, reactive, ref, watch, computed, toRaw } from "vue";
 import { reqGetQuestionnaire, reqGetSavedResult, reqSaveSurveyResult } from "@/api/questionnaire"
-import type { Questionnaire } from '@/api/questionnaire/type'
+import type { GPT_RES, Questionnaire } from '@/api/questionnaire/type'
 import type { Birth, Info, Form } from '@/store/type/QNR_type'
 import { useUserStore } from "./userStore";
 import { reqGetUser } from "@/api/userAuth";
@@ -22,6 +22,11 @@ const mockData = reactive({
     food: ['香蕉', '生菜', '巧克力'],
     calories: '1800卡'
 })
+interface Gpt_Data {
+    gpt_user: string,
+    gpt_content: GPT_RES['result'],
+    gpt_stamp: number
+}
 
 
 export const useQuestionnaireStore = defineStore('questionnaire', () => {
@@ -93,10 +98,7 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
     }
 
     async function setQNR_result(obj?: Form) {
-        if (!obj) {
-            QNR_result.value = { ...QNR_empty.value }
-            return
-        }
+        if (!obj) return
         try {
             QNR_result.value = { ...obj }
             if (isAuth.value) {
@@ -106,6 +108,11 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         } catch (error) {
             console.log(error);
         }
+    }
+
+    function resetQNR_result() {
+        QNR_result.value = structuredClone(toRaw(QNR_empty.value));
+        localStorage.removeItem(localStorageKey.value);
     }
 
     // 進度存放webStorage
@@ -130,13 +137,21 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         localStorage.setItem(localStorageKey.value, data);
     }
 
-    function getDataFromStorage() {
+    async function getDataFromStorage() {
         const now = Date.now();
         const raw = (localStorage.getItem(localStorageKey.value));
         if (!raw) return
         const data = JSON.parse(raw);
-        if (now > data.timeStamp) return localStorage.removeItem(localStorageKey.value);
         return data
+    }
+
+    function checkResultIsExpired() {
+        try {
+            if (Date.now() < QNR_state.value.timeStamp) return
+            return clearSurveyData()
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     function arrayIsSame<T>(arr1: T[], arr2: T[]) {
@@ -146,10 +161,10 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
 
     async function initQNR() {
         try {
-
+            checkResultIsExpired()
             let storageResult;
             let localTimeStamp;
-            const localStorage = getDataFromStorage();
+            const localStorage = await getDataFromStorage();
             if (localStorage) {
                 ({
                     currPage: currPage.value,
@@ -177,8 +192,7 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
                 }
                 surveyHasCompleted.value = true;
             }
-
-            QNR_result.value = storageResult ?? { ...QNR_empty.value };
+            QNR_result.value = storageResult ?? structuredClone(toRaw(QNR_empty.value));
             setQNRtoStorage();
             return
         } catch (error) {
@@ -197,7 +211,7 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
     async function memberSaveResult() {
         if (!userToken.value || !QNR_isDone.value) return
         try {
-            const result = await reqSaveSurveyResult(QNR_result.value, userToken.value);
+            const result = await reqSaveSurveyResult(QNR_result.value, userToken.value, 'survey');
         } catch (error) {
             console.log(error);
         }
@@ -206,26 +220,26 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
     async function memberGetResult() {
         if (!userToken.value) return
         try {
-            const { result } = await reqGetSavedResult();
+            const { result } = await reqGetSavedResult('survey');
             if (result) {
                 surveyHasCompleted.value = true;
                 QNR_isDone.value = true;
             }
             return result
         } catch (error) {
-            console.log(error);
+            // console.log(error);
         }
     }
 
     // clear data when logout
-    async function clearSurveyData() {
+    function clearSurveyData() {
         try {
-            await setQNR_result()
-            localStorage.removeItem(localStorageKey.value);
+            // await setQNR_result()
+            resetQNR_result();
+            resetGPTStorage();
             QNR_isDone.value = false;
             currPage.value = 1;
             formPageTranslateX.value = (currPage.value - 1) * -100;
-
         } catch (error) {
             console.log(error);
         }
@@ -242,6 +256,89 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
 
     function getRecList() {
         return recommendList.value
+    }
+
+    // gpt response
+
+    const gpt_localstorageKey = 'GPT_Result';
+    const gpt_response = computed(() => {
+        return {
+            gpt_user: gpt_user.value,
+            gpt_content: gpt_content.value,
+            gpt_stamp: gpt_stamp.value
+        }
+    })
+    const gpt_user = ref<string>();
+    const gpt_content = ref<GPT_RES['result']>();
+    const gpt_stamp = ref<number>();
+
+    function initGPT_res(data: Gpt_Data) {
+        gpt_user.value = data.gpt_user;
+        gpt_content.value = data.gpt_content;
+        gpt_stamp.value = data.gpt_stamp;
+    }
+
+    async function saveGptDataToStorage() {
+        try {
+            const data = JSON.stringify(gpt_response.value);
+            localStorage.setItem(gpt_localstorageKey, data);
+            if (isAuth.value) {
+                await memberSaveGPTResult();
+            }
+            return
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    function loadGptDataFromStorage() {
+        const rawData = localStorage.getItem(gpt_localstorageKey);
+        if (!rawData) return
+        const data = JSON.parse(rawData);
+        initGPT_res(data);
+    }
+
+    function resetGPTStorage() {
+        localStorage.removeItem(gpt_localstorageKey);
+    }
+
+    function getStorageGptData() {
+        return gpt_response.value
+    }
+
+    async function memberSaveGPTResult() {
+        try {
+            if (!userToken.value) return
+            const data = getStorageGptData()
+            const result = await reqSaveSurveyResult(data, userToken.value, 'gpt');
+            return
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async function memberGetGPTResult() {
+        if (!userToken.value) return
+        try {
+            const { result } = await reqGetSavedResult('gpt') as unknown as { result: Gpt_Data };
+            return result
+        } catch (error) {
+            // console.log(error);
+        }
+    }
+
+    async function loadGPTStorage() {
+        try {
+            if (!isAuth.value) {
+                return loadGptDataFromStorage();
+            }
+            const result = await memberGetGPTResult();
+            if (!result) return
+            initGPT_res(result)
+            return
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     return {
@@ -262,6 +359,13 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         memberGetResult,
         clearSurveyData,
         getRecList,
-        checkQuestionIsAnswered
+        checkQuestionIsAnswered,
+        initGPT_res,
+        saveGptDataToStorage,
+        loadGptDataFromStorage,
+        getStorageGptData,
+        memberGetGPTResult,
+        loadGPTStorage,
+        checkResultIsExpired
     }
 })

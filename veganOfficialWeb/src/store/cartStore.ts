@@ -38,6 +38,18 @@ export const useCartStore = defineStore('cart', () => {
     function toggleCartCardOpen() {
         isCartCardOpen.value = !isCartCardOpen.value
     }
+    const scrollbarWidth = ref(window.innerWidth - document.documentElement.clientWidth)
+
+    watch(isCartCardOpen, (nVal) => {
+        scrollbarWidth.value = window.innerWidth - document.documentElement.clientWidth
+        if (nVal) {
+            document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = `${scrollbarWidth.value}px`
+        } else {
+            document.body.style.overflow = 'auto';
+            document.body.style.paddingRight = ''
+        }
+    })
 
     // const cartItems = reactive<MenuItem[]>([]);
     const cartMap = reactive<MapState>({});
@@ -329,7 +341,6 @@ export const useCartStore = defineStore('cart', () => {
         }
     }
 
-    // todo 送出訂單後清空購物車
     async function memberResetCart() {
         try {
             await reqResetMemberCart(userToken.value);
@@ -373,6 +384,7 @@ export const useCartStore = defineStore('cart', () => {
         discountAmount,
         couponAmount,
         totalAmount,
+        scrollbarWidth,
         toggleCartCardOpen,
         addItemToCart,
         DELItemFromCart,

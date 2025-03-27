@@ -25,7 +25,7 @@ async function mailOptions(username, orderID, userID, userEmail, isGuest) {
             jwt.sign({ userID: user._id, email: user.email, isGuest }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
         return {
-            from: 'thomas29111@gmail.com',
+            from: `"果漾 Relation-Ship" <${process.env.SMTP_ADDRESS}>`,
             to: `${userEmail ?? 'thomas29111@gmail.com'}`,
             subject: `Relation-Ship 感謝您的訂購(${orderID})`,
             html: `
@@ -37,7 +37,7 @@ async function mailOptions(username, orderID, userID, userEmail, isGuest) {
             詳細訂單內容請點選連結查看：<br />
             <a 
             style="font-size: 1.25rem;"
-            href="http://localhost:5173/profile?token=${userToken}">訂單狀態</a><br />
+            href="${process.env.FE_BASE_URL}/profile?token=${userToken}">訂單狀態</a><br />
             如有任何疑問歡迎諮詢客服，謝謝！
             </p>
         `
@@ -110,5 +110,4 @@ module.exports = {
     getTransporter,
     orderMailer,
     mailOptions,
-    // guestOrderMailer
 }

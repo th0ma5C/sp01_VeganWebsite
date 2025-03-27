@@ -4,7 +4,16 @@ const ShippingInfo = require('@models/ShippingInfoModel');
 
 async function saveShippingInfo(data) {
     try {
-        return await ShippingInfo.create(data)
+        // return await ShippingInfo.create(data)
+        const { userID, shippingInfo } = data
+        return await ShippingInfo.findOneAndUpdate(
+            { userID },
+            shippingInfo,
+            {
+                upsert: true,
+                new: true
+            }
+        )
     } catch (error) {
         console.error("Error saving shipping info");
         throw error;

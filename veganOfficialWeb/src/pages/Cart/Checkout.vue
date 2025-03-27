@@ -5,7 +5,7 @@
                 loadingFilter: isFormInit
             }">
                 <VForm ref="checkoutForm" as=""
-                    v-slot="{ handleSubmit, submitCount, values, meta, setValues }"
+                    v-slot="{ handleSubmit, submitCount, values, meta, setValues, validate }"
                     :validation-schema="verifiedSchema"
                     :initial-values="userSavedCheckoutForm">
                     <transition name="initSpinner">
@@ -15,6 +15,7 @@
                             <Spinner></Spinner>
                         </div>
                     </transition>
+
                     <form action=""
                         @change="handleFormChange(meta)"
                         @submit="handleSubmit($event, createOrder)">
@@ -22,6 +23,10 @@
                             <div class="topContent">
                                 <h2>
                                     聯絡信箱
+                                    <small
+                                        style="font-size: 50%;opacity: .75;">
+                                        請修改為欲測試之信箱
+                                    </small>
                                 </h2>
                                 <router-link
                                     v-show="!isAuth"
@@ -379,8 +384,7 @@
                                     name="deliveryType"
                                     v-slot="{ field }">
                                     <input type="text" id=""
-                                        :="field"
-                                        v-show="false">
+                                        :="field" hidden>
                                 </VField>
 
                                 <div class="radio">
@@ -497,10 +501,62 @@
                                 class="formWrapper radioWrapper">
                                 <VField name="paymentType"
                                     v-model="selectedPayment"
+                                    v-slot="{ field, handleChange }">
+                                    <input type="text"
+                                        :="field"
+                                        :value="selectedPayment"
+                                        hidden>
+                                    <div class="radio">
+                                        <ul>
+                                            <li v-for="(type, index) in paymentTypeList"
+                                                :key="index"
+                                                :class="{
+                                                    selectLi: type == selectedPayment
+                                                }" @click="
+                                                    () => {
+                                                        pickPaymentType(type);
+                                                        handleFormChange(meta);
+                                                    }
+                                                ">
+                                                <div
+                                                    class="radioBtn">
+                                                    <div>
+                                                    </div>
+                                                </div>
+                                                <h3>
+                                                    {{ type
+                                                    }}
+                                                </h3>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </VField>
+
+                                <ErrorMessage
+                                    name="paymentType"
+                                    as="div"
+                                    v-slot="{ message }"
+                                    class="errorMsg">
+                                    <SvgIcon
+                                        name="QNR_alert"
+                                        width="18"
+                                        height="18"
+                                        color="#b3261e">
+                                    </SvgIcon>
+                                    <span>
+                                        {{
+                                            message
+                                        }}
+                                    </span>
+                                </ErrorMessage>
+                            </div>
+                            <!-- <div
+                                class="formWrapper radioWrapper">
+                                <VField name="paymentType"
+                                    v-model="selectedPayment"
                                     v-slot="{ field }">
                                     <input type="radio"
-                                        :="field"
-                                        v-show="false">
+                                        :="field" hidden>
                                 </VField>
 
                                 <ErrorMessage
@@ -539,7 +595,7 @@
                                         </li>
                                     </ul>
                                 </div>
-                            </div>
+                            </div> -->
                         </fieldset>
 
                         <div class="btnWrapper">
@@ -588,23 +644,20 @@
                 </CheckCartList>
             </div>
         </div>
+        <form v-html="ECform" class=" hidden"
+            ref="ECformRef"></form>
     </div>
 </template>
 
 <script setup lang="ts">
-//TODO: 金流api 
-/**
- * doing: anonymous create order, 送出後轉至付款頁面
- * ------------------------------------------
- */
-
 import CheckCartList from './CheckCartList/CheckCartList.vue';
 import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, useTemplateRef, onBeforeMount } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, useTemplateRef, onBeforeMount, onBeforeUnmount } from 'vue';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
     type FormMeta,
+    useForm,
 } from 'vee-validate';
 import * as yup from 'yup';
 import { city } from '@/hooks/useGetCityList';
@@ -616,6 +669,8 @@ import { reqGetUser } from '@/api/userAuth';
 import { reqResetMemberCart } from '@/api/cart/CartRequest';
 import { useToastStore } from '@/store/toastStore';
 import { reqSubscribe } from '@/api/subscribe/subscribe';
+import { useSSEStore } from '@/store/SSEStore';
+import { ECpayAPIconfig, fetchECorderForm } from '@/api/checkout/checkout';
 
 // 購物車
 const cartStore = useCartStore();
@@ -910,32 +965,45 @@ watch([() => selectedCity.city, selectedTown, addrInput], async (nVal) => {
 
 // user store
 const userStore = useUserStore();
-const { getSavedShippingInfo, getUserOrderList } = userStore;
-const { isAuth, user, userSavedCheckoutForm, userToken } = storeToRefs(userStore);
+const {
+    getSavedShippingInfo,
+    getUserOrderList,
+    localSaveShipInfo,
+    localGetShipInfo } = userStore;
+const { isAuth, user, userSavedCheckoutForm, userToken, isUserHasSavedForm } = storeToRefs(userStore);
 
-const checkoutForm = ref();
+const checkoutForm = useTemplateRef('checkoutForm');
 const isFormInit = ref(false);
 userStore.$subscribe(async (_, state) => {
     if (!state.isAuth) {
         try {
+            await nextTick()
+            if (!checkoutForm.value) return
+            const form = localGetShipInfo();
+            if (form) checkoutForm.value.setValues(form);
+
             const { state, token } = await reqGetUser();
             if (state && state == 'confirm' && token) {
                 userStore.login(token);
             }
         } catch (error) {
-            isFormInit.value = true
             userStore.isAuth = false;
+        } finally {
+            isFormInit.value = true
             return
         }
     } else if (state.isAuth && Object.keys(state.userSavedCheckoutForm).length != 0) {
         nextTick(() => {
+            if (!checkoutForm.value) return
             checkoutForm.value.setValues(state.userSavedCheckoutForm);
+            updateAddrInput(state.userSavedCheckoutForm.address || '');
             setTimeout(() => {
                 isFormInit.value = true
             }, 1000)
         })
     } else if (state.isAuth && Object.keys(state.userSavedCheckoutForm).length == 0) {
         nextTick(() => {
+            if (!checkoutForm.value) return
             checkoutForm.value.setValues({
                 email: user.value.email,
                 consigneeName: user.value.username
@@ -966,24 +1034,43 @@ const newOrder = (shippingInfo: Record<string, any>) => {
     }
 }
 
+// local save ship info
+function guestSaveShipInfo(form: Record<string, any>) {
+    localSaveShipInfo(form)
+}
+
+
 // req create order
 const toastStore = useToastStore();
 const orderProcessing = ref(false);
 async function createOrder(form: Record<string, any>) {
     const isSub = form.subNews;
+    const wantSaved = form.saveInfo
     const params = { recipient: form.email }
+    isFormFinish.value = true;
+    formHasChanged.value = true
     try {
         orderProcessing.value = true;
-        const { state } = await reqCreateOrder(newOrder(form));
-        if (state == 'confirm') {
+        const { state, orderId } = await reqCreateOrder(newOrder(form));
+        if (state == 'confirm' && orderId) {
             window.removeEventListener('beforeunload', handleRefreshAlert);
+
+            if (wantSaved) guestSaveShipInfo(form);
             if (isSub) await reqSubscribe(params);
+
             await refreshMemberCart();
             await getUserOrderList();
+            SSEStore.startPaymentQueue(user.value.userID);
+
+            if (form.paymentType == '匯款' || form.paymentType == '信用卡') {
+                return await fetchECForm(orderId);
+            }
+
             isAuth.value ?
                 await router.replace('/profile/account') :
                 await router.replace('/');
-            toastStore.addNotification('訂單送出，請至信箱確認訂單')
+
+            toastStore.addNotification('訂單送出，請至信箱確認訂單');
         } else {
             return toastStore.addNotification('連線問題，請重試')
         }
@@ -991,6 +1078,42 @@ async function createOrder(form: Record<string, any>) {
         console.log(error);
     }
 }
+
+// ec form
+const ECform = ref<null | string>(null);
+const ECformRef = useTemplateRef<HTMLFormElement>('ECformRef')
+
+async function fetchECForm(orderId: string) {
+    try {
+        const { state, form } = await fetchECorderForm(orderId);
+        if (state == 'confirm') {
+            return ECform.value = form;
+        }
+        toastStore.addNotification('無法獲取訂單支付表單，請稍後再試。');
+        return null;
+    } catch (error) {
+        console.error('Error fetching EC order form:', error);
+        toastStore.addNotification('無法連接支付服務，請稍後再試。');
+        return null;
+    }
+}
+
+watchEffect(async () => {
+    try {
+        if (ECform.value && ECformRef.value) {
+            await nextTick();
+            // const ecFormEl = ECformRef.value.querySelector('form');
+            // if (ecFormEl) ecFormEl.submit();
+            const { action, headers, method } = ECpayAPIconfig()
+            ECformRef.value.action = action;
+            ECformRef.value.method = method;
+            ECformRef.value.name = 'payment';
+            ECformRef.value.submit();
+        }
+    } catch (error) {
+        console.log(error);
+    }
+})
 
 // 收到最新消息
 
@@ -1004,22 +1127,27 @@ function handleFormChange(meta: FormMeta<Record<string, string>>) {
 
 function handleRefreshAlert(e: Event) {
     e.preventDefault();
-    if (!formHasChanged.value) return
+    if (isFormFinish.value) return
+    // if (!formHasChanged.value) return
     if (confirm()) {
         // router.push()
     }
 }
 
+// payment queue sse event
+const SSEStore = useSSEStore();
+
 
 onBeforeRouteLeave(() => {
     if (formHasChanged.value && !isFormFinish.value) {
         const answer = confirm('離開將丟失當前進度');
+        console.log('router');
         return answer
     }
 })
 
 
-onMounted(() => {
+onMounted(async () => {
     if (!isCheckout.value) toggleIsCheckout();
     window.addEventListener('beforeunload', handleRefreshAlert);
 })

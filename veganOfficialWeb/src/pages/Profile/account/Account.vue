@@ -74,21 +74,12 @@
                         <Setting></Setting>
                     </section>
                 </transition-group>
-
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-/**
- * todo:  引入訂單, 刪、改訂單
- * doing: DB加入訂單編號屬性, 頁面結構、CSS
- * ! 1440寬下，list數量少時容器會塌陷
- * ------------------------------------
- * //!若先進account後又新增訂單，account不會同步更新
- * 
- */
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, watch, ref, type Ref, shallowRef } from 'vue';

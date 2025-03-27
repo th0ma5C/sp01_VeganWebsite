@@ -72,12 +72,16 @@
                                     <img :src="fileName!"
                                         alt=""
                                         @click="gotoProductPage(name ?? '')"
-                                        @load="imgCounter"
+                                        @load="handleImgLoaded(name)"
                                         v-show="isLoaded">
-                                    <div class="imgSkeleton"
-                                        v-show="!isLoaded">
-                                        <img src="@assets/img/Home/Catalog/salad.png"
-                                            alt="">
+                                    <div class="imgSkeletonWrapper"
+                                        v-show="!isLoaded || !imgSet.has(name ?? '')">
+                                        <div
+                                            class="imgSkeleton">
+                                        </div>
+                                        <div
+                                            class="scanner">
+                                        </div>
                                     </div>
                                 </a>
                                 <div>
@@ -86,20 +90,16 @@
                                         <h2>{{ name }}</h2>
                                         <p>{{ description }}
                                         </p>
+                                        <div class="textSkeleton"
+                                            v-show="!isLoaded">
+                                            <div
+                                                class="top">
+                                            </div>
+                                            <div
+                                                class="scanner">
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="textSkeleton"
-                                        v-show="!isLoaded">
-                                        <h2>Lorem, ipsum.
-                                        </h2>
-                                        <p>
-                                            Lorem ipsum
-                                            dolor
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="scanner"
-                                    v-show="!isLoaded">
                                 </div>
                             </swiper-slide>
 
@@ -133,17 +133,22 @@
                             watch-slides-progress="true">
 
                             <swiper-slide
-                                v-for="({ fileName }, index) in item.list"
+                                v-for="({ fileName, name }, index) in item.list"
                                 :key="index"
                                 :class="{ 'swiper-slide-thumb-active': index == 0 }">
                                 <a href="" @click.prevent>
                                     <img :src="fileName!"
                                         alt=""
-                                        v-show="isLoaded == true">
-                                    <div class="imgSkeleton"
-                                        v-show="isLoaded == false">
-                                        <img src="@assets/img/Home/Catalog/salad.png"
-                                            alt="">
+                                        v-show="isLoaded == true"
+                                        @load="handleImgLoaded(name)">
+                                    <div class="imgSkeletonWrapper "
+                                        v-show="isLoaded == false || !imgSet.has(name ?? '')">
+                                        <div
+                                            class="imgSkeleton">
+                                        </div>
+                                        <div
+                                            class="scanner">
+                                        </div>
                                     </div>
                                 </a>
                             </swiper-slide>
@@ -187,16 +192,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * todo: 
- * 
- * *0411解決切換動畫進出問題、swiper樣式問題 *0412解決服務端返回數據 *0418完成字體放本地、中英字體分離
- * *0423初步完成catalog skeleton、去背 *0424壓縮圖片、解決兩個swiper實例問題、選中效果
- * *0425vip測試連結按鈕 字體轉檔woff2 *0426讀取Skeleton
- * *0429改Skeleton邏輯、CSS Skeleton圖片預加載 *0501完整菜單連結hover、線條動畫
- * *0901swiper說明字樣
- * //請求超時進不了首頁(基本架構完成就進頁面) catalog讀取完成後出現動畫
- */
 import { watch, onMounted, ref, reactive, useTemplateRef, nextTick, onBeforeMount, onUpdated } from 'vue';
 import { reqGetNewMenu, reqGetHotMenu } from '@/api/menu'
 import { useLoaderStore } from '@/store/loader';
@@ -318,29 +313,17 @@ function updateSwiper(index: number) {
 
 let getTabClass = (index: number) => index === show.value ? 'active' : '';
 
-let imgCount = ref(0);
-function imgCounter() {
-    imgCount.value++;
+// img on load
+const imgSet = ref(new Set());
+function handleImgLoaded(img: string | null) {
+    if (!img) return
+    imgSet.value.add(img)
 }
 
 let { loaderActivated } = storeToRefs(useLoaderStore());
 let isLoaded = ref(false);
-// watch([imgCount, menu], ([newCount,]) => {
-//     let done = (menu[0].list!.length) + (menu[1].list!.length);
-//     if (newCount == done) {
-//         loaderActivated.value = false;
-//         isLoaded.value = true;
-//     }
-// })
-
-watch(show, (newVal, oldVal) => {
-    newVal > oldVal ? transitionName.value = 'rightIn' : transitionName.value = 'leftIn';
-})
 
 // 路由跳轉
-/**
- * ?todo hot new list 儲存到Store
- */
 // const { getInfoByName } = useMenuStore();
 const router = useRouter();
 
@@ -403,10 +386,6 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-* {
-    // outline: 1px solid black;
-}
-
 %flipper {
     @include WnH(64px, 42px);
 
@@ -440,7 +419,6 @@ onMounted(() => {
     align-items: normal;
     justify-content: flex-start;
     gap: 3rem;
-    // height: 898px;
     min-height: 100%;
     flex-direction: column;
     overflow: hidden;
@@ -524,33 +502,6 @@ onMounted(() => {
 
         a {
             @extend %flipper;
-            // @include WnH(64px, 42px);
-
-            // // &:hover>div {
-            // //     transform: rotateX(180deg);
-            // // }
-
-            // .flipper {
-            //     @include WnH(100%);
-            //     position: relative;
-            //     top: -1px;
-            //     transform-style: preserve-3d;
-            //     text-align: center;
-            //     font-variation-settings: 'wght' 500;
-
-            //     .linkText {
-            //         @include WnH(100%);
-            //         @include flex-center-center;
-            //         color: $secondBacColor;
-            //         position: absolute;
-            //         right: 0;
-            //         backface-visibility: hidden;
-            //         background-color: #FCFAF2;
-            //         line-height: 42px;
-            //     }
-
-            // }
-
         }
 
     }
@@ -558,7 +509,6 @@ onMounted(() => {
 
 .linkText-enter-active,
 .linkText-leave-active {
-    // transition: all .25s, transform 0.25s;
     transition: all .5s;
 }
 
@@ -572,45 +522,60 @@ onMounted(() => {
     transform: rotateX(0deg);
 }
 
-@keyframes loadText {
-    from {
-        background-position: 100%;
-    }
-
-    to {
-        background-position: 0%;
-    }
-}
-
-@keyframes loadImg {
+@keyframes loading {
     0% {
-        left: -250%;
+        translate: -100% 0;
     }
 
     100% {
-        left: -50%;
+        translate: 110% 0;
     }
 }
 
+.skeleton-leave-active {
+    transition: opacity .3s
+}
+
+.skeleton-leave-to {
+    opacity: 0;
+}
+
+.skeleton-leave-from {
+    opacity: 1;
+}
+
 @mixin skeleton {
-    // @include WnH(300px);
-    @include flex-center-center;
-    position: relative;
+    position: absolute;
+    top: 0;
+    background-color: $primaryBacColor;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
     overflow: hidden;
+    pointer-events: none;
+    border-radius: 1rem 1rem 8px 8px;
 
-    img {
-        @include WnH(230px);
-        filter: none;
-        display: block;
+    .imgSkeleton {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        background-color: rgba(62, 163, 80, 0.2);
+        border: 2px solid $btnBacColor_light;
+        border-radius: 50%;
     }
+}
 
-    &::after {
-        @include WnH(300%);
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
+.scanner {
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: linear-gradient(115deg, transparent 40%, #FCFAF2 50%, transparent 52%);
+    animation: loading 2.5s infinite ease-in;
 }
 
 @mixin catalogTab {
@@ -632,7 +597,7 @@ onMounted(() => {
         overflow: hidden;
     }
 
-    .imgSkeleton {
+    .imgSkeletonWrapper {
         @include WnH(300px);
         @include skeleton;
     }
@@ -649,15 +614,28 @@ onMounted(() => {
     }
 
     .textSkeleton {
-        color: transparent;
+        position: absolute;
+        top: 0;
+        background-color: $primaryBacColor;
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+        overflow: hidden;
+        pointer-events: none;
+        border-radius: 1rem 1rem 8px 8px;
+        gap: 1rem;
+        max-width: 100%;
 
-        h2 {
-            margin-bottom: .5rem;
-        }
-
-        &>* {
-            border-radius: 0.25rem;
-            background-color: #036313;
+        .top {
+            width: 100%;
+            height: calc(100% - 18px);
+            background-color: rgba(62, 163, 80, 0.2);
+            border: 2px solid $btnBacColor_light;
+            border-radius: 1rem;
+            translate: 0 18px;
         }
     }
 }
@@ -689,7 +667,7 @@ onMounted(() => {
         overflow: hidden;
     }
 
-    .imgSkeleton {
+    .imgSkeletonWrapper {
         @include WnH(135px);
         @include skeleton;
 
@@ -725,7 +703,6 @@ onMounted(() => {
 }
 
 .tab {
-    // margin: 0.5rem 0 1rem 0;
     position: relative;
 }
 
@@ -740,8 +717,6 @@ onMounted(() => {
     bottom: -2rem;
     left: 50%;
     z-index: 4;
-    // transform: translate(-50%, -50%);
-    // transform-origin: left top;
     transform-origin: center;
     transition: scale .2s;
     translate: -50% 50%;
@@ -752,20 +727,15 @@ onMounted(() => {
 
     &:active {
         translate: calc(-50% + 1px) calc(50% + 1px);
-        // transform: translate(calc(-50% + 1px), calc(50% + 1px));
     }
 }
 
 .prevBtn {
     left: 45%;
-    // translate: -50% -50%;
-    // translate: -60%
 }
 
 .nextBtn {
     left: 55%;
-    // translate: 50% -50%;
-    // translate: 60%
 }
 
 [class^="menuSubSwiper"] {
@@ -778,10 +748,10 @@ onMounted(() => {
 }
 
 .tabContent {
-    // outline: 1px solid black;
     width: 375px;
     transform: translateY(-18px);
     color: $secondBacColor;
+    position: relative;
 
     h2 {
         font-size: 2rem;
@@ -805,7 +775,7 @@ onMounted(() => {
     transform: translate(-50%, -50%);
     padding: .75rem 1rem;
     border-radius: 1rem;
-    background-color: $secondBacColor;
+    background-color: $btnBacColor;
     filter: drop-shadow(2px 2px 1px black);
     transition: scale .15s;
     transform-origin: left top;
@@ -827,42 +797,6 @@ onMounted(() => {
     }
 }
 
-
-
-// .rightIn-enter-active,
-// .rightIn-leave-active {
-//     transition: transform 0.5s, opacity .25s;
-// }
-
-// .rightIn-enter-from,
-// .leftIn-leave-to {
-//     transform: translateX(100%);
-//     opacity: 0;
-// }
-
-// .rightIn-enter-to,
-// .leftIn-leave-from {
-//     transform: translateX(0);
-//     opacity: 1;
-// }
-
-// .leftIn-enter-active,
-// .leftIn-leave-active {
-//     transition: transform 0.5s, opacity .25s;
-// }
-
-// .leftIn-enter-to,
-// .rightIn-leave-from {
-//     transform: translateX(0);
-//     opacity: 1;
-// }
-
-// .leftIn-enter-from,
-// .rightIn-leave-to {
-//     transform: translateX(-100%);
-//     opacity: 0;
-// }
-
 swiper-container::part(container) {
     overflow: visible;
 }
@@ -872,36 +806,12 @@ swiper-container::part(pagination) {
 }
 
 .mobileMoreBtn {
-    // @include WnH(100%);
-    // color: $secondBacColor;
     position: absolute;
     display: none;
 
     a {
         @extend %flipper;
-        // @include WnH(72px, 42px);
     }
-}
-
-@keyframes loadImg {
-    0% {
-        translate: -50% 0;
-    }
-
-    100% {
-        translate: 100% 0;
-    }
-}
-
-.scanner {
-    pointer-events: none;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-    background: linear-gradient(115deg, transparent 40%, #FCFAF2 50%, transparent 52%);
-    animation: loadImg 3s infinite ease-in;
 }
 
 @include large {}
@@ -924,10 +834,6 @@ swiper-container::part(pagination) {
         a {
             @include WnH(125px);
         }
-    }
-
-    [class^=menuSwiper] .imgSkeleton {
-        @include WnH(225px);
     }
 
     .nextBtn,
@@ -966,10 +872,6 @@ swiper-container::part(pagination) {
         a {
             @include WnH(200px);
         }
-    }
-
-    [class^=menuSwiper] .imgSkeleton {
-        @include WnH(175px);
     }
 
     [class^="menuSubSwiper"] {
@@ -1034,14 +936,6 @@ swiper-container::part(pagination) {
         a {
             @include WnH(150px);
         }
-
-        .imgSkeleton {
-            @include WnH(125px);
-        }
-
-        .textSkeleton {
-            width: 150px;
-        }
     }
 
 
@@ -1091,7 +985,7 @@ swiper-container::part(pagination) {
         }
 
         .textSkeleton {
-            margin-bottom: .5rem;
+            max-width: calc(100% - 4rem);
         }
     }
 
@@ -1129,14 +1023,8 @@ swiper-container::part(pagination) {
 }
 
 @include small($width: 320px) {
-    [class^="menuSwiper"] {
-        // display: none;
-    }
-
     .tabsContainer {
         min-height: 325px;
     }
-
-
 }
 </style>

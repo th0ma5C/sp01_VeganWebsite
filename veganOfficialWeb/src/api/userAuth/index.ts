@@ -70,6 +70,12 @@ const reqResetPassword = (params: Record<string, string>) => {
     })
 }
 
+const reqVerifyAccount = (params: Record<'token', string>) => {
+    return request.post<any, AuthResData>('/auth/verifyAccount', {
+        ...params
+    })
+}
+
 
 export {
     reqUserRegister,
@@ -80,5 +86,6 @@ export {
     reqRedirectLogin,
     reqForgetPasswordEmail,
     reqResetPassword,
-    reqCheckUserVerified
+    reqCheckUserVerified,
+    reqVerifyAccount
 }

@@ -143,8 +143,8 @@ router.get('/oauthGmail-redirect', async (req, res) => {
             });
             await token.save();
         }
-        console.log('Access Token:', tokens.access_token);
-        console.log('Refresh Token:', tokens.refresh_token);
+        // console.log('Access Token:', tokens.access_token);
+        // console.log('Refresh Token:', tokens.refresh_token);
         console.log('Token retrieved and saved to database successfully.');
         res.send('Token retrieved successfully. Check the console for details.');
 

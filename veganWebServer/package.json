@@ -5,6 +5,7 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production node bin/www",
     "start:dev": "cross-env NODE_ENV=development nodemon bin/www",
+    "mailer-script": "cross-env node scripts/OAuthGmail",
     "mailer-script:dev": "cross-env NODE_ENV=development node scripts/OAuthGmail"
   },
   "dependencies": {
@@ -31,6 +32,7 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.16",
     "nodemon": "^3.1.0",
+    "openai": "^4.87.3",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "redis": "^4.7.0",
