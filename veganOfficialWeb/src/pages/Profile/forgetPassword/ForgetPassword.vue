@@ -19,10 +19,9 @@
                         <div>
                             <VField name="email"
                                 v-slot="{ field, meta }">
-                                <input type="email"
+                                <input type="text"
                                     id="email" required
-                                    placeholder="" :="field"
-                                    :class="{
+                                    :="field" :class="{
                                         invalidInput: !meta.valid && submitCount > 0
                                     }">
                             </VField>
@@ -97,13 +96,13 @@ const toastStore = useToastStore();
 const { addNotification } = toastStore;
 
 // loader store
-const loaderStore = useLoaderStore();
-const { loaderActivated } = storeToRefs(loaderStore);
-watch(loaderActivated, (nVal) => {
-    console.log(loaderActivated.value);
-    if (nVal == false) {
-    }
-}, { immediate: true })
+// const loaderStore = useLoaderStore();
+// const { loaderActivated } = storeToRefs(loaderStore);
+// watch(loaderActivated, (nVal) => {
+//     console.log(loaderActivated.value);
+//     if (nVal == false) {
+//     }
+// }, { immediate: true })
 
 // 路由
 const router = useRouter();
@@ -228,8 +227,7 @@ h1 {
             transform: translate(0%, -50%);
         }
 
-        & div:has(input:focus)>label,
-        div:has(input:valid)>label {
+        & div:has(input:focus, input:focus-within, input:valid)>label {
             transform: translateY(calc(-100% - 10px)) scale(0.8);
         }
 

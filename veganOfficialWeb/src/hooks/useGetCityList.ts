@@ -10,12 +10,10 @@ class City {
     #townList: TownList = {};
     private static instance: City;
 
-    // 單例模式防止多次實例化
     private constructor() {
         this.#cityList = [...cityList.RESPONSE];
     }
 
-    // 單例訪問方法
     static getInstance() {
         if (!City.instance) {
             City.instance = new City();

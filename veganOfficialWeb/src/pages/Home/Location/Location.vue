@@ -1,5 +1,5 @@
 <template>
-    <div class="container relative z-[1]" ref="locationRef">
+    <div class="container" ref="locationRef">
         <Teleport to=".location" defer>
             <div class="cursor" ref="cursor"
                 :style="cursorStyle"
@@ -18,33 +18,34 @@
             </div>
         </Teleport>
 
-        <transition name="bgFilter">
-            <div class="bgFilter absolute content-none"
-                ref="bgFilter">
+        <div class="TW">
+            <div class=" relative">
+                <SvgIcon name="tw_map" width="100%"
+                    height="100%" color="white" ref="TWRef">
+                </SvgIcon>
             </div>
-        </transition>
-        <SvgIcon name="LocationTW" class="TW" width="300px"
-            height="450" color="white">
-        </SvgIcon>
+        </div>
 
         <swiper-container class="mainPart" ref="swiperRef"
             :loop="true" :speed="1000" :parallax="true"
             grab-cursor="true">
+            <div slot="container-start">
+            </div>
             <swiper-slide
                 v-for="(item, index) in branchList"
                 :key="index" class="carousel">
                 <div class="content">
                     <div class="mapWrapper" ref="point">
-                        <SvgIcon name="LocationTW"
-                            class="TWAnchor" width=""
-                            height="450" color="white">
-                        </SvgIcon>
-                        <div class="point" ref="point"
-                            :class="{
-                                north: item.position == '北部分店',
-                                central: item.position == '中部分店',
-                                south: item.position == '南部分店',
-                            }"></div>
+                        <div class=" relative">
+                            <SvgIcon name="tw_map"
+                                class="TWAnchor"
+                                width="100%" height="100%"
+                                color="white">
+                            </SvgIcon>
+                            <div class="point" ref="point"
+                                :style="pointStyleMap[index]">
+                            </div>
+                        </div>
                     </div>
                     <div class="branchName"
                         ref="branchNames">
@@ -91,20 +92,6 @@
 </template>
 
 <script setup lang="ts">
-// TODO: 整體代碼優化
-/**
- * //無法點按鈕(pointer-event or z-index)
- * //cursor出現、消失動畫(淡化)
- * //左下字用切換顯示
- * //下一分店名靠前、淡化
- * //游標跟隨可以不用requestAnimationFrame，透過不斷移除animation、新增animation達成平滑移動
- * // 頭尾兩張clone時會閃爍，不時出現，原因未知
- * // 封裝游標跟隨
- * ? 取消游標跟隨mouseover，不確定影響
- */
-
-
-
 import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpdated, watchEffect, useTemplateRef } from 'vue';
 import type { Ref } from 'vue';
 import debounce from 'lodash/debounce';
@@ -145,22 +132,27 @@ let swiperRef = useTemplateRef<SwiperContainer>('swiperRef');
 // handle window resize
 
 // prevent url bar resize
-let currWidth = window.innerWidth;
+let currWidth = ref(window.innerWidth)
 
 function resize() {
-    if (currWidth == window.innerWidth) return
+    if (currWidth.value == window.innerWidth) return
     if (swiperRef.value) {
         swiperRef.value.swiper.update();
     }
-    ScrollTrigger.killAll();
-    createScrollTrigger();
-    ScrollTrigger.refresh();
-    const scaler = ScrollTrigger.getById('scaler');
-    if (scaler && scaler.progress !== 1) {
-        scaler?.enable();
-    }
-    currWidth = window.innerWidth;
+    // ScrollTrigger.killAll();
+    // createScrollTrigger();
+    // ScrollTrigger.refresh();
+    // const scaler = ScrollTrigger.getById('scaler');
+    // if (scaler && scaler.progress !== 1) {
+    // scaler?.enable();
+    // }
+    currWidth.value = window.innerWidth;
+    nextTick(() => {
+        getRatio();
+    })
 }
+
+const debounceResize = debounce(resize, 500)
 
 //icon hover
 let { iconClass, setIconClass, timers } = useArrowFly();
@@ -174,7 +166,7 @@ let cursorStyle = computed(() => ({
 
 // cursor follow
 let { coordinate, setCursorStyle, cursorLeave } = useCursorFollow(locationRef)
-const isScrollerFinish = ref(true);
+const isScrollerFinish = ref(false);
 watchEffect(() => {
     if (isScrollerFinish.value) {
         setCursorStyle.enable = true
@@ -183,7 +175,7 @@ watchEffect(() => {
 
 const events = {
     window: [
-        { event: 'resize', handler: resize },
+        { event: 'resize', handler: debounceResize },
     ]
 }
 function handleCheckMapMouserEnter(e: MouseEvent) {
@@ -200,40 +192,45 @@ function createScrollTrigger() {
         {
             scale: .5,
             transformOrigin: "top",
+            backgroundColor: "rgba(0, 0, 0, 0)"
         },
         {
             scale: 1,
             transformOrigin: "top",
+            backgroundColor: "rgba(0, 0, 0, .6)",
             scrollTrigger: {
                 id: 'scaler',
                 trigger: locationRef.value,
-                start: 'top-=50% center',
-                end: 'top-=25% center',
+                start: 'top-=75% center',
+                end: 'top center',
                 scrub: .5,
+                once: true
             },
             onComplete: () => {
-                ScrollTrigger.refresh()
+                // ScrollTrigger.refresh()
                 isScrollerFinish.value = true;
-
-                const scaler = ScrollTrigger.getById('scaler');
-                if (scaler && scaler.progress) {
-                    scaler.disable(false);
-                } else if (scaler) {
-                    scaler.enable();
-                }
+                // const scaler = ScrollTrigger.getById('scaler');
+                // if (scaler && scaler.progress) {
+                //     scaler.disable(false);
+                // } else if (scaler) {
+                //     scaler.enable();
+                // }
+                nextTick(() => {
+                    getRatio();
+                })
             },
         }
     )
-    ScrollTrigger.create({
-        id: 'pin',
-        trigger: locationRef.value,
-        // pin: locationRef.value,
-        start: 'top top',
-        end: '+=100',
-        onLeave: () => {
-            // ScrollTrigger.getById('pin')?.disable(false);
-        }
-    })
+    // ScrollTrigger.create({
+    //     id: 'pin',
+    //     trigger: locationRef.value,
+    //     // pin: locationRef.value,
+    //     start: 'top top',
+    //     end: '+=100',
+    //     onLeave: () => {
+    //         // ScrollTrigger.getById('pin')?.disable(false);
+    //     },
+    // })
 }
 
 // refactor with swiper js
@@ -272,6 +269,42 @@ function mapBtn(target: typeof branchList[number]['branch']) {
     }
 }
 
+// point position
+const TWRef = useTemplateRef<Record<'iconRef', HTMLDivElement>>('TWRef');
+const adjustRatio = ref(1);
+const pointCoord = reactive({
+    north: {
+        top: -192.3,
+        left: 59.9
+    },
+    mid: {
+        top: -70.5,
+        left: -42
+    },
+    south: {
+        top: 127.9,
+        left: -89.2
+    },
+})
+function getRatio() {
+    if (!TWRef.value || !isScrollerFinish.value) return 0
+    const { height } = TWRef.value.iconRef.getBoundingClientRect()
+    const ratio = height / 450;
+    adjustRatio.value = ratio
+}
+
+const pointStyleMap = computed(() => {
+    const ratio = adjustRatio.value;
+    const newCoord = Object.keys(pointCoord).map((direction) => {
+        const key = direction as keyof typeof pointCoord;
+        return {
+            top: `calc(50% + ${pointCoord[key].top * ratio}px)`,
+            left: `calc(50% + ${pointCoord[key].left * ratio}px)`
+        }
+    })
+    return newCoord
+})
+
 onMounted(() => {
     useListener(window, 'add', events.window);
     createScrollTrigger();
@@ -287,10 +320,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-* {
-    // outline: 1px solid black;
-}
-
 @keyframes cursor {
     0% {
         stroke-dashoffset: 100;
@@ -313,24 +342,67 @@ onUnmounted(() => {
 
 .container {
     @extend %fixContainer;
-    --TW_position: 37%;
-    background: url('@assets/img/Home/Location/shop.jpg') fixed no-repeat center/cover;
+    --TW_position: 10cqh;
+    container-type: normal;
+    container-name: main;
+    background:
+        fixed no-repeat center/cover url('@assets/img/Home/Location/shop.jpg');
+    background-blend-mode: multiply;
     transition: width 0.2s ease, height 0.2s ease;
     margin-inline: auto;
+    padding-block: 10cqh;
+    height: 100vh;
+    // min-height: 100vh;
 
     .mapWrapper {
-        position: absolute;
+        // container: main;
+        // // position: absolute;
         // position: relative;
-        top: var(--TW_position);
-        left: 50%;
-        transform: translate(-50%, -50%);
-        opacity: 1;
+        // top: var(--TW_position);
+        // left: 50%;
+        // transform: translate(-50%, -50%);
+        // opacity: 1;
+        // max-height: 100%;
+        // width: 300px;
+        // height: 450px;
 
-        &:has(.TWAnchor) {
+        // &:has(.TWAnchor) {
+        //     position: relative;
+        //     left: 0%;
+        //     transform: translate(0%, 0%);
+        //     top: 0;
+        // }
+
+        // .TWAnchor {
+        //     opacity: 0;
+        //     height: 100%;
+        // }
+    }
+
+    .mapWrapper {
+        bottom: 0;
+        left: 0;
+        margin-inline: auto;
+        pointer-events: none;
+        position: relative;
+        right: 0;
+        top: 0;
+        width: max(40vh, 22vw);
+        z-index: 5;
+
+        .relative {
+            backface-visibility: hidden;
+            overflow: hidden;
+            padding-top: 113%;
             position: relative;
-            left: 0%;
-            transform: translate(0%, -50%);
-            // top: 0;
+
+            &>div:not(.point) {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
         }
 
         .TWAnchor {
@@ -339,31 +411,80 @@ onUnmounted(() => {
     }
 
     .TW {
+        // position: absolute;
+        // // top: 37%;
+        // top: var(--TW_position);
+        // left: 50%;
+        // transform: translate(-50%, 0%);
+        // opacity: 0.6;
+        // // background-color: wheat
+        // max-height: 100%;
+        // width: 300px;
+        // height: 450px;
+        // margin: auto;
+        // // background-image: url(@asset/icons/LocationTW.svg);
+
+        // &>div {
+        //     height: 100%;
+        // }
+
+        // .relative {
+        //     padding-bottom: 113%;
+        //     backface-visibility: hidden;
+        //     overflow: hidden;
+        //     position: relative;
+
+        //     &>div {
+        //         width: 300px;
+        //         height: 450px;
+        //     }
+        // }
+
+    }
+
+    .TW {
+        bottom: 0;
+        left: 0;
+        margin: auto;
+        pointer-events: none;
         position: absolute;
-        // top: 37%;
+        right: 0;
         top: var(--TW_position);
-        left: 50%;
-        transform: translate(-50%, -50%);
-        opacity: 0.6;
-        // background-color: wheat
+        width: max(40vh, 22vw);
+        z-index: 5;
+
+        .relative {
+            backface-visibility: hidden;
+            overflow: hidden;
+            padding-top: 113%;
+            position: relative;
+
+            &>div {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+        }
     }
 
-    .bgFilter {
-        @include WnH(100%);
-        background-color: rgba(0, 0, 0, 0.6);
-    }
+    // .bgFilter {
+    //     @include WnH(100%);
+    //     background-color: rgba(0, 0, 0, 0.6);
+    // }
 
-    .bgFilter-enter-active {
-        transition: opacity 1s ease;
-    }
+    // .bgFilter-enter-active {
+    //     transition: opacity 1s ease;
+    // }
 
-    .bgFilter-enter-from {
-        opacity: 0;
-    }
+    // .bgFilter-enter-from {
+    //     opacity: 0;
+    // }
 
-    .bgFilter-enter-to {
-        opacity: 1;
-    }
+    // .bgFilter-enter-to {
+    //     opacity: 1;
+    // }
 }
 
 @keyframes flyOut {
@@ -387,9 +508,9 @@ onUnmounted(() => {
 
 .mainPart {
     @include WnH(100%);
-    height: 100vh;
+    // height: 100vh;
     // height: 920px;
-    max-height: 920px;
+    max-height: 100%;
     display: inline-flex;
     color: $primaryBacColor;
     filter: brightness(2);
@@ -400,14 +521,16 @@ onUnmounted(() => {
 .carousel {
     display: flex;
     justify-content: center;
-    margin-bottom: 10%;
+    // margin-bottom: 10%;
+    width: 100%;
+    height: 100%;
 }
 
 .content {
     @include flex-center-center;
     width: 100%;
-    // height: 100%;
-    justify-content: start;
+    height: 100%;
+    justify-content: space-between;
     flex-direction: column;
     gap: 1rem;
 }
@@ -417,21 +540,33 @@ onUnmounted(() => {
     border-radius: 50%;
     background-color: white;
     position: absolute;
-    top: -4px;
-    left: -4px;
+    // top: -4px;
+    // left: -4px;
+    top: 50%;
+    left: 50%;
     transition: opacity .3s 1s;
+    container: map;
+    translate: -4px -4px;
 }
 
 .north {
-    transform: translate(210px, 32.5px);
+    // transform: translate(210px, 32.5px);
+    left: 70%;
+    top: 7.2%;
+    // left: calc(20%);
+    // top: calc(50% - 7.2%);
 }
 
 .central {
-    transform: translate(108px, 154.5px);
+    // transform: translate(108px, 154.5px);
+    left: 36%;
+    top: 34.3%;
 }
 
 .south {
-    transform: translate(70px, 360px);
+    // transform: translate(70px, 360px);
+    left: 23.3%;
+    top: 80%;
 }
 
 .fadeIn-enter-active,
@@ -455,12 +590,13 @@ onUnmounted(() => {
     // width: 360px;
     flex-direction: column;
     // position: absolute;
-    position: relative;
+    // position: relative;
     // top: calc(37% + 225px + 2rem);
     // top: calc(7rem + 450px);
     // left: 50%;
     // transform: translate(-50%, 0);
-    flex: 1;
+    // flex: 1;
+    margin-block: auto;
 
     p {
         font-size: 0.75rem;
@@ -528,13 +664,15 @@ onUnmounted(() => {
 .position {
     @include flex-center-center;
     gap: 0.25rem;
-    position: absolute;
-    bottom: 0%;
-    left: -100%;
-    // translate: 50% 100%;
+    // position: absolute;
+    position: relative;
+    bottom: 0;
+    left: -50%;
+    // translate: -50% 100%;
     text-wrap: nowrap;
     line-height: 36px;
     padding: .25rem .5rem;
+    // height: max-content;
 
     p {
         font-size: 0.75rem;
@@ -614,31 +752,21 @@ swiper-slide:is(.swiper-slide-active) {
 
 @include medium {
 
-    .container {
-        // --TW_position: 4rem;
-    }
 
     .branchName {
-        top: calc(37% + 225px + 1.75rem);
+        // top: calc(37% + 225px + 1.75rem);
         // top: calc(5.5rem + 450px);
-    }
-
-    .position {
-        bottom: 5%;
     }
 }
 
 @include small {
-    .container {
-        // --TW_position: 3rem;
-    }
 
     .prevBranch {
         right: 55vw;
     }
 
     .branchName {
-        top: calc(37% + 225px + 1.5rem);
+        // top: calc(37% + 225px + 1.5rem);
         // top: calc(4rem + 450px);
     }
 
@@ -646,6 +774,8 @@ swiper-slide:is(.swiper-slide-active) {
         left: 55vw;
     }
 }
+
+@include small($width: 430px) {}
 
 @include small($width: 320px) {
     .prevBranch {
@@ -658,18 +788,25 @@ swiper-slide:is(.swiper-slide-active) {
     }
 }
 
+// 300 450
 // 北
 // 25.047893811483274,
 // 121.51709051510576 top: calc(114px);
 // left: calc(1012px);
-// x 210 y 32.5
+// x 209.9 y 32.7
+// x 70% 7.2%
+// x 59.9 192.3
 
 // 中 24.137131307709268,
 // 120.68668906182916 top: calc(236px);
 // left: calc(910px);
 // x 108 y 154.5
+// x 36% 34.3%
+// x -42 70.5
 
 // 南 22.639888449163326,
 // 120.30226114031127 top: calc(435px);
 // left: calc(863px);
-// x 61 y 353</style>
+// x 60.8 y 352.9
+// x 23.3% 80%
+// x -89.2 -127.9</style>

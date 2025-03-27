@@ -6,23 +6,19 @@
         </div>
         <div class="productWrapper">
             <div class="imgWrapper">
-                <transition name="mainImg">
+                <transition-group name="mainImg" tag="div"
+                    class="imgSlider">
                     <img v-show="showMainImg"
                         @click="setShowPopUpImg"
                         ref="mainImg" @load="mainImgLoaded"
                         :class="{ unLoaded: !showMainImg }"
-                        v-if="productInfo"
                         :src="replaceImgFileName(productInfo) ?? ''"
-                        alt="大圖">
-                </transition>
-
-                <transition name="mainImg">
-                    <SvgIcon v-show="showSkeleton"
-                        name="skeletonSalad"
-                        class="skeleton" width="80%"
-                        height="80%" color="#00430b">
-                    </SvgIcon>
-                </transition>
+                        alt="大圖" key="img">
+                    <div class="skeleton"
+                        v-show="showSkeleton"
+                        key="skeleton">
+                    </div>
+                </transition-group>
             </div>
             <transition name="popUpImg">
                 <div class="popUpImg" v-show="showPopUpImg"
@@ -316,40 +312,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * todo: 會員 購物車 關於
- * --------------------
- * *
- * --------------------
- * //!取消大圓圈，overflow會使圖片sticky失效
- * --------------------
- * ?價格試算移到結帳頁面
- * //?建立果昔組件
- * //?麵包屑組件
- * //?小圖去掉，改只放一張大圖就好
- * 
- * --------------------
- * 推薦菜單架構
- * //麵包屑
- * //大圖出現轉場
- * //骨架屏
- * //字體寬度
- * //點擊圖片跳出放大圖
- * //單位價格隨尺寸改變
- * //推薦菜單架構
- * //大圖JPG
- * //尺寸選擇
- * //折疊icon(可否重用menu的折疊)
- * //營養Tag
- * //IG假圖*5
- * //加入購物車按鈕寬度
- * //包裝圖片長寬
- * //+-按鈕
- * //摺疊區塊底線
- * //detail區顏色
- * //進路由去頁首
- */
-
 import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, onBeforeMount, onDeactivated, onActivated, useTemplateRef } from 'vue';
 import type { Ref } from 'vue';
 import { useMenuStore } from '@/store/menuStore';
@@ -675,7 +637,8 @@ watch(similarList, (nVal) => {
 // }
 
 // 大圖檔名
-function replaceImgFileName(info: MenuItem) {
+function replaceImgFileName(info?: MenuItem) {
+    if (!info) return
     const reg = /\.png$/;
     if (info.category == 'salad') {
         return info.fileName!.replace(reg, '.jpg');
@@ -723,7 +686,7 @@ function imgChecker() {
         if (mainImg.value && !mainImg.value.complete) {
             showSkeleton.value = true;
         }
-    }, 1000);
+    }, 500);
 }
 watch(showMainImg, (nVal) => {
     if (nVal) {
@@ -1053,10 +1016,11 @@ onUnmounted(() => {
 .imgWrapper {
     display: flex;
     flex-direction: column;
+    align-items: center;
     position: relative;
     z-index: 0;
 
-    &>img {
+    &>.imgSlider {
         // @include WnH(50%);
         border-radius: 1rem;
         cursor: zoom-in;
@@ -1065,6 +1029,10 @@ onUnmounted(() => {
         z-index: 1;
         // width: 80%;
         // margin: auto;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        aspect-ratio: 1 / 1;
     }
 
     .unLoaded {
@@ -1082,14 +1050,17 @@ onUnmounted(() => {
     }
 
     .skeleton {
-        background-color: $primaryBacColor;
-        border-radius: 1.5rem;
-        width: calc(100% - 3rem);
+        width: 85%;
+        aspect-ratio: 1 / 1;
+        background-color: rgba(62, 163, 80, 0.2);
+        border: 2px solid $btnBacColor_light;
+        border-radius: 50%;
+        // width: calc(100% - 3rem);
         aspect-ratio: 1/1;
         margin: auto;
         position: absolute;
         left: 50%;
-        top: 0;
+        top: 7.5%;
         translate: -50% 0;
         z-index: 2;
         overflow: hidden;
@@ -1102,19 +1073,9 @@ onUnmounted(() => {
             left: 0;
             top: 0;
             transform: translateX(-75%);
-            animation: skeletonScan 2s linear infinite;
+            animation: skeletonScan 2.5s linear infinite;
         }
     }
-
-    // .thumbnail {
-    //     height: 15%;
-    //     display: flex;
-    //     flex-direction: row;
-
-    //     &>img {
-    //         @include WnH(100%);
-    //     }
-    // }
 }
 
 .popUpImg-enter-active,
@@ -1760,7 +1721,7 @@ onUnmounted(() => {
     transform: translate(-50%, 0%);
     padding: .75rem 1rem;
     border-radius: 1rem;
-    background-color: $secondBacColor;
+    background-color: $btnBacColor;
     filter: drop-shadow(2px 2px 1px black);
     transition: scale .15s;
     transform-origin: left top;
@@ -1830,6 +1791,11 @@ onUnmounted(() => {
         grid-template-columns: 1fr;
         grid-template-rows: .5fr 1fr;
         justify-items: center;
+    }
+
+    .skeleton {
+        height: 100%;
+        // height: calc(100% - 1.5rem)
     }
 }
 

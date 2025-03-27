@@ -42,6 +42,7 @@ interface OrderResData {
     token?: string,
     shippingInfo?: ShippingInfo,
     order?: UserOrder[],
+    orderId?: string
 }
 
 export type {

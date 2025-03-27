@@ -52,7 +52,7 @@ export const useToastStore = defineStore('toast', () => {
         // }
         setTimeout(() => {
             notificationList.value[index].show = false;
-        }, 3000);
+        }, 5000);
     }
 
     function pop() {

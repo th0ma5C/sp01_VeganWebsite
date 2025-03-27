@@ -321,6 +321,7 @@ swiper-container {
         object-position: center;
         max-width: none;
         max-height: 40vh;
+        max-height: max(40vh, 60vw);
     }
 }
 

@@ -1,9 +1,19 @@
 <template>
     <div class="item" ref="productEl" v-if="item">
+        <transition name="skeleton">
+            <div class="skeleton" v-show="isImgLoading">
+                <div class="top"></div>
+                <div class="bot">
+                    <div></div>
+                    <div></div>
+                </div>
+                <div class="scanner"></div>
+            </div>
+        </transition>
         <div :class="imgClass"
             @click="routerPush(item.name ?? '')">
             <img :src="item.fileName ?? ''" alt="商品"
-                ref="itemImg">
+                ref="itemImg" @load="imgLoaded">
             <p>{{ item.price }}元</p>
             <div class="description">
                 <span>{{ item.description }}</span>
@@ -11,12 +21,14 @@
         </div>
         <h3>{{ item.name }}</h3>
         <div class="ingredients">
-            <span v-for="(el) in item.ingredients"
-                :key="el">
+            <span v-for="(el) in item.ingredients" :key="el"
+                :title="el">
                 {{ el }}
             </span>
         </div>
-        <div class="btnWrapper">
+        <div class="btnWrapper" :style="{
+            boxShadow: isImgLoading ? 'none' : ' 2px 2px 8px rgb(0, 0, 0, 0.5)'
+        }">
             <button class="cart-btn" ref="cartBtnEl"
                 @click="addCart">
                 加入購物車
@@ -50,7 +62,9 @@
                 </svg>
             </div>
         </div>
-        <div class="btnWrapper mobileBtn">
+        <div class="btnWrapper mobileBtn" :style="{
+            boxShadow: isImgLoading ? 'none' : ' 2px 2px 8px rgb(0, 0, 0, 0.5)'
+        }">
             <button class="cart-btn" ref="mobileCartBtnEl"
                 @click="addCart">
                 加入購物車
@@ -244,6 +258,12 @@ function emitEvent() {
     emitter.emit('sendIcon');
 }
 
+// skeleton
+const isImgLoading = ref(true);
+function imgLoaded() {
+    isImgLoading.value = false
+}
+
 </script>
 
 <style scoped lang="scss">
@@ -256,6 +276,7 @@ function emitEvent() {
     flex-direction: column;
     width: fit-content;
     height: fit-content;
+    position: relative;
 
     &>h3 {
         font-size: 1rem;
@@ -340,7 +361,7 @@ function emitEvent() {
 .ingredients {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 33%);
     justify-content: center;
     justify-items: center;
     column-gap: 3px;
@@ -405,9 +426,10 @@ function emitEvent() {
     overflow: hidden;
     position: relative;
     border-radius: 8px;
-    box-shadow: 2px 2px 8px rgb(0, 0, 0, 0.5);
+    // box-shadow: 2px 2px 8px rgb(0, 0, 0, 0.5);
     z-index: 0;
     margin-top: 1.25rem;
+    transition: box-shadow .3s;
 
     &>button {
         width: 50%;
@@ -488,6 +510,71 @@ function emitEvent() {
 .mobileBtn {
     display: none;
 }
+
+.skeleton {
+    position: absolute;
+    top: 0;
+    background-color: $primaryBacColor;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: 1rem 1rem 8px 8px;
+
+    .top {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        background-color: rgba(62, 163, 80, 0.2);
+        border: 2px solid $btnBacColor_light;
+        border-radius: 1rem;
+    }
+
+    .bot {
+        width: 100%;
+        aspect-ratio: 2.5 / 1;
+        background-color: rgba(62, 163, 80, 0.2);
+        border: 2px solid $btnBacColor_light;
+        border-radius: 8px;
+    }
+
+    .scanner {
+        pointer-events: none;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        background: linear-gradient(115deg, transparent 40%, #FCFAF2 50%, transparent 52%);
+        animation: loading 2.5s infinite ease-in;
+    }
+}
+
+@keyframes loading {
+    0% {
+        translate: -100% 0;
+    }
+
+    100% {
+        translate: 110% 0;
+    }
+}
+
+.skeleton-leave-active {
+    transition: opacity .3s
+}
+
+.skeleton-leave-to {
+    opacity: 0;
+}
+
+.skeleton-leave-from {
+    opacity: 1;
+}
+
 
 @include medium {
     .menuImg {

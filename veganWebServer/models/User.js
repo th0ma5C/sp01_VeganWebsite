@@ -18,7 +18,8 @@ const ShippingInfoSchema = new Schema({
 const userSchema = new Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String },
+    googleId: { type: String, unique: true, sparse: true },
     joinPrivacyPolicy: { type: Boolean, required: true },
     verified: { type: Boolean, required: true },
     shippingInfo: { type: ShippingInfoSchema },
@@ -43,6 +44,7 @@ userSchema.pre('save', async function (next) {
 
 userSchema.method('validatePassword', async function (inputPassword) {
     try {
+        if (!this.password) return false;
         return await bcrypt.compare(inputPassword, this.password);
     } catch (error) {
         console.error("Error comparing passwords:", error);

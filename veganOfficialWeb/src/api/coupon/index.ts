@@ -10,7 +10,7 @@ interface CouponRes {
 }
 
 const reqFetchCoupon = (params: CouponCode) => {
-    return request.post<any, CouponRes>('/api/coupon/getCoupon', {
+    return request.post<any, CouponRes>('/coupon/getCoupon', {
         data: JSON.stringify(params)
     })
 }

@@ -14,7 +14,7 @@
             <div class="gptRes" :class="{
                 unClickable: isAnalyzing
             }">
-                <!-- <transition name="spinner">
+                <transition name="spinner">
                     <Spinner v-show="isAnalyzing"></Spinner>
                 </transition>
 
@@ -46,14 +46,13 @@
                             height="24px" color="black"
                             class="checkSvg"
                             v-else-if="!isAnalyzing && isCopied"
-                            @click="isCopied = false"
-                            key="1">
+                            @click="" key="1">
                         </SvgIcon>
                     </transition>
-                </div> -->
+                </div>
 
 
-                <div class="content" ref="analyzeResult">
+                <!-- <div class="content" ref="analyzeResult">
                     <h2>營養建議</h2>
                     <p>鷹村先生，根據您選擇的完全素食飲食習慣、清爽的口味偏好，以及Omega-3、抗氧化物、維生素的需求，我們為您提供以下建議：
                     </p>
@@ -94,7 +93,7 @@
                             v-else-if="isCopied" key="1">
                         </SvgIcon>
                     </transition>
-                </div>
+                </div> -->
             </div>
 
             <div class="guideContent">
@@ -309,19 +308,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * todo: 完成表單功能 登入 會員 購物車 關於
- * doing: menu頁面添加飛入購物車 
- * //數據太多或太少的情況 and 樣式 => 控制固定輸出量
- * ----------------------------------
- * * 飛入購物車動畫初步完成
- * ----------------------------------
- * ? 購物車side bar
- * ? 結果本地儲存
- * ----------------------------------
- * //?重新整理頁面、數據會消失 
- */
-
 import Product_template from '@/components/Product/Product_template.vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { useMenuStore } from '@/store/menuStore';
@@ -338,6 +324,8 @@ import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
 import { getGPTAnalyze } from '@/api/questionnaire';
 import emitter from '@/utils/eventBus';
 import debounce from 'lodash/debounce';
+import { useUserStore } from '@/store/userStore';
+import type { GPT_RES } from '@/api/questionnaire/type';
 
 // questionnaireStore
 const questionnaireStore = useQuestionnaireStore();
@@ -345,10 +333,13 @@ const { QNR_result, QNR_isDone } = storeToRefs(questionnaireStore);
 const { memberSaveResult, memberGetResult, clearSurveyData } = questionnaireStore;
 // const { info: { userName, gender, birth }, habit, flavor, ingredients, food, calories } = QNR_result.value;
 
-
 // menuStore
 const menuStore = useMenuStore();
 const { saladList, smoothieList, isLoaded } = storeToRefs(menuStore);
+
+// user store
+const userStore = useUserStore();
+const { user } = storeToRefs(userStore);
 
 // 顯示推薦
 function filterByTag(
@@ -744,7 +735,6 @@ function createViewCartScrollTrigger() {
 
 
 // 打字效果
-// TODO GPT api 回覆格式: 1. Node 2. 預先排版的markdown
 function sleep(duration: number) {
     return new Promise(resolve => setTimeout(resolve, duration))
 }
@@ -753,28 +743,15 @@ interface Node {
     content?: string,
     count?: number,
 }
-const renderNodes = ref<Node[]>([
-    // {
-    //     tag: 'div',
-    //     content: '鷹村先生，根據您選擇的完全素食飲食習慣、清爽的口味偏好，以及Omega-3、抗氧化物、維生素的需求，我們為您提供以下建議：',
-    //     count: 60
-    // },
-    // {
-    //     tag: 'div',
-    //     content: '',
-    //     count: 3
-    // },
-]);
+const renderNodes = ref<Node[]>();
 const analyzeResult = useTemplateRef('analyzeResult');
 const isAnalyzing = ref(true);
 const typingSpeed = 30;
-// const resContent = ref('')
 
 async function fetchGPTAnalyze() {
     try {
         const { result } = await getGPTAnalyze(QNR_result.value);
         const data = result.map((item) => {
-            // resContent.value += item.markdown;
             return {
                 ...item,
                 count: item.content?.length
@@ -782,6 +759,7 @@ async function fetchGPTAnalyze() {
         })
         await typeEffect(renderNodes, data);
         isAnalyzing.value = false;
+        return result
     } catch (error) {
         console.log(error);
     }
@@ -822,32 +800,70 @@ async function typeEffect(nodes: Ref, data: Node[]) {
     })
 }
 
+// init GPT response state
+const isAnalyzed = ref(false);
+const GPT_result = ref<GPT_RES['result']>();
+const { initGPT_res, saveGptDataToStorage, loadGptDataFromStorage, getStorageGptData, loadGPTStorage } = questionnaireStore;
+async function initGPTState() {
+    try {
+        await loadGPTStorage();
+        let state = getStorageGptData();
+        if (state.gpt_user && state.gpt_user == user.value.userID) {
+            GPT_result.value = state.gpt_content;
+            renderRes()
+            return
+        }
+        const result = await fetchGPTAnalyze();
+        if (result) {
+            // GPT_result.value = result
+            const data = {
+                gpt_user: user.value.userID,
+                gpt_content: [...result],
+                gpt_stamp: Date.now()
+            }
+            initGPT_res(data);
+            await saveGptDataToStorage();
+            return
+        }
+        return
+    } catch (error) {
+        console.log(error);
+    }
+}
+function renderRes() {
+    if (GPT_result.value && GPT_result.value.length) {
+        const data = GPT_result.value.map((item) => {
+            return {
+                ...item,
+                count: item.content?.length
+            }
+        })
+        renderNodes.value = [...data];
+        isAnalyzing.value = false;
+    }
+}
+watchEffect(() => {
+
+})
+
 //copy GPT response
 const isCopied = ref(false);
 async function copyGPTResponse() {
+    if (isCopied.value) return
     isCopied.value = true;
-    // console.dir(analyzeResult.value);
     if (analyzeResult.value) {
         try {
-            await navigator.clipboard.writeText(analyzeResult.value.innerHTML);
+            await navigator.clipboard.writeText(analyzeResult.value.innerText);
+
             setTimeout(() => {
                 isCopied.value = false
-            }, 5000)
+            }, 3000)
             // alert('複製')
         } catch (error) {
             console.log(error);
         }
     }
-    // if (resContent.value) {
-    //     try {
-    //         await navigator.clipboard.writeText(resContent.value);
-    //         alert('複製')
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // }
 }
-
 // 購物車state
 const cartStore = useCartStore();
 const { cartCounter } = storeToRefs(cartStore);
@@ -858,7 +874,6 @@ const { toggleCartCardOpen } = cartStore;
 function checkResultState() {
     if (!isLoaded.value) {
         // Router.push('/questionnaire');
-        console.log('object');
         Router.back()
     }
 }
@@ -901,6 +916,7 @@ onMounted(() => {
     createListScrollTrigger();
     // fetchGPTAnalyze();
     // });
+    initGPTState();
 })
 
 onUnmounted(() => {

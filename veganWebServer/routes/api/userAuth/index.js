@@ -5,7 +5,7 @@ const User = require('@models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { validateRegister, validateLogin, authToken, authJWT, authUser } = require('@middlewares/userValidator');
-const { mailOptions, getTransporter, setOptions } = require('./nodemailer');
+const { getTransporter, setOptions } = require('./nodemailer');
 
 async function isUserExist(username, email) {
     try {
@@ -49,17 +49,18 @@ router.post('/login', validateLogin, async (req, res) => {
             { expiresIn: '1d' }
         );
 
-        res.cookie('token', token, {
-            httpOnly: true,
-            // secure: process.env.NODE_ENV === 'production', // 僅在 HTTPS 連接時發送
-            sameSite: 'Strict',
-            maxAge: 1000 * 60 * 60 * 24 // 1 day
-        });
-
-        res.json({ message: '登錄成功', token });
+        res
+            .status(200)
+            .cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'Strict',
+                maxAge: 1000 * 60 * 60 * 24 // 1 day
+            })
+            .json({ state: 'confirm', message: '登錄成功', token });
 
     } catch (error) {
-        res.status(500).json({ message: '伺服器錯誤' });
+        res.status(500).json({ message: '伺服器錯誤，請重試' });
     }
 })
 
@@ -134,12 +135,16 @@ router.post('/send-verifyEmail', async (req, res) => {
     const subject = '驗證你的信箱'
     try {
         const { to } = req.body;
-        const userID = await User.findOne({ email: to }).select('_id')
-        const token = jwt.sign({ userID, email: to }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const user = await User.findOne({ email: to })
+        const token = jwt.sign(
+            { username: user.username, email: user.email, userID: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '1d' }
+        );
         const options = {
             ...setOptions(to, subject),
             text: `請點擊以下連結來驗證你的信箱(連結將在一小時後失效): ${to}`,
-            html: `<p>請點擊以下連結來驗證你的信箱: <a href="http://localhost:3000/api/auth/verify?token=${token}">驗證連結</a></p>`,
+            html: `<p>請點擊以下連結來驗證你的信箱: <a href="${process.env.FE_BASE_URL}/profile/emailVerify?token=${token}">驗證連結</a></p>`,
         }
         const transporter = getTransporter();
         const info = await transporter.sendMail(options);
@@ -151,43 +156,35 @@ router.post('/send-verifyEmail', async (req, res) => {
     }
 })
 
-router.get('/verify', async (req, res) => {
-    const { token } = req.query;
+router.post('/verifyAccount', async (req, res) => {
+    const { token } = req.body;
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const email = decoded.email;
-
         // 查找該使用者並更新狀態
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).send('無效的驗證連結');
+            return res.status(403).json({ state: 'denied', message: '驗證連結無效或已過期' });
         }
-        const verifiedToken = jwt.sign({ email: user.email, userID: user.userID }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
         user.verified = true;
         await user.save();
 
-        res.send(`
-            <html>
-            <head>
-                <meta http-equiv="refresh" content="5;url=/home" />
-                <title>驗證成功</title>
-            </head>
-            <body>
-                <h1>你的帳號已成功驗證！</h1>
-                <p>5秒後將自動跳轉到首頁。如果沒有跳轉，<a href="http://localhost:5173/profile?token=${verifiedToken}">點擊這裡</a>。</p>
-                <script>
-                    setTimeout(() => {
-                        window.location.href = 'http://localhost:5173/profile?token=${verifiedToken}';
-                    }, 5000); // 5秒後跳轉
-                </script>
-            </body>
-            </html>
-        `);
+        res.status(200)
+            .cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'Strict',
+                maxAge: 1000 * 60 * 60 * 24 // 1 day
+            })
+            .json({
+                state: 'confirm',
+                token
+            })
     } catch (error) {
         console.error('驗證過程出錯:', error);
-        res.status(400).send('驗證連結無效或已過期');
+        res.status(403).json({ state: 'denied', message: '驗證連結無效或已過期' });
     }
 })
 
@@ -216,7 +213,7 @@ router.post('/forgetPassword', authResetEmail, async (req, res) => {
             html: `
             <h1>
             請點擊以下連結以重設密碼(連結將在一小時後失效)：
-            <a href="http://localhost:5173/profile/resetPassword?token=${token}">重設密碼</a>
+            <a href="${process.env.FE_BASE_URL}/profile/resetPassword?token=${token}">重設密碼</a>
             </h1>
             `,
         }

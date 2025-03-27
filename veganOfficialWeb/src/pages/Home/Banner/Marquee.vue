@@ -13,22 +13,23 @@
                     width="24" color="#036313">
                 </SvgIcon>
             </button>
-            <transition-group name="carousel" tag="div"
-                ref="div" class="carousel"
+            <div ref="divRef" class="carousel"
+                :class="{ 'dragging': isDown }"
                 :style="swiperStyle">
-                <p v-for="({ id, title }) in showSwiper"
-                    :key="id"
-                    :class="{ 'dragging': isDown }"
-                    @mouseup="titleOnclick(title)">
-                    {{ title }}
-                </p>
-            </transition-group>
+                <transition-group name="carousel">
+                    <p v-for="({ id, title }) in showSwiper"
+                        :key="id"
+                        @mouseup="titleOnclick(title)">
+                        {{ title }}
+                    </p>
+                </transition-group>
+            </div>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { useSwiper } from '@/hooks/useSwiper';
 import { useRouter } from 'vue-router';
 
@@ -40,8 +41,8 @@ const carousel = [
 ]
 
 // 切換、自動輪播、拖曳
-const div = ref(); //拖曳物件之容器
-const { throttleChangeSwiper, showSwiper, isDown, isDrag, swiperStyle } = useSwiper(div, carousel, 7500)
+const divRef = useTemplateRef('divRef'); //拖曳物件之容器
+const { throttleChangeSwiper, showSwiper, isDown, isDrag, swiperStyle } = useSwiper(divRef, carousel, 7500)
 
 // 跳轉
 const router = useRouter();
@@ -86,6 +87,9 @@ function titleOnclick(target: string) {
             break;
     }
 }
+
+onMounted(() => {
+})
 
 </script>
 
@@ -145,6 +149,7 @@ function titleOnclick(target: string) {
             flex-direction: row;
             align-items: center;
             will-change: transform;
+            transition: transform 1s;
 
             p {
                 display: block;
@@ -166,10 +171,10 @@ function titleOnclick(target: string) {
             .carousel-move {
                 transition: transform 1s ease;
             }
+        }
 
-            .dragging {
-                transition: none !important;
-            }
+        .dragging {
+            transition: none !important;
         }
     }
 }

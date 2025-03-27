@@ -31,10 +31,16 @@
                     </div>
                 </div>
 
+
                 <div :class="{
                     emptyList: showOrderList.length == 0
-                }" v-show="showOrderList.length == 0">
-                    <h3>
+                }"
+                    v-show="showOrderList.length == 0 || fetchOrderListResult == null">
+                    <Spinner
+                        v-show="fetchOrderListResult == null">
+                    </Spinner>
+                    <h3
+                        v-show="fetchOrderListResult == 'denied'">
                         沒有訂單
                     </h3>
                 </div>
@@ -281,25 +287,21 @@
 </template>
 
 <script setup lang="ts">
-//TODO 按鈕功能
-/**
- * 
- */
-
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/store/userStore';
-import { computed, watch, watchEffect, ref, useTemplateRef, onMounted, nextTick, onUpdated } from 'vue';
+import { computed, watch, watchEffect, ref, useTemplateRef, onMounted, nextTick, onUpdated, onUnmounted } from 'vue';
 import type { UserOrder } from '@/api/order/type';
 import { useMenuStore } from '@/store/menuStore';
 import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
 import gsap from 'gsap';
 import { Flip } from 'gsap/Flip';
 import Dialog from './dialog/Dialog.vue';
+import { useSSEStore } from '@/store/SSEStore';
 
 // pinia
 const userStore = useUserStore();
 // const { getUserOrderList, logout } = userStore;
-const { userOrderList, userSavedCheckoutForm } = storeToRefs(userStore);
+const { userOrderList, userSavedCheckoutForm, user, fetchOrderListResult } = storeToRefs(userStore);
 const { cancelOrder, refreshOrderList } = userStore;
 
 const menuStore = useMenuStore();
@@ -496,10 +498,24 @@ async function refreshList() {
     }
 }
 
+// payment sse event
+const SSEStore = useSSEStore();
+function setPaymentNotify() {
+    SSEStore.paymentNotify(user.value.userID, refreshList)
+}
+function stopPaymentNotify() {
+    SSEStore.stopPaymentQueue(user.value.userID);
+}
+
 onUpdated(() => {
 })
 
 onMounted(() => {
+    setPaymentNotify()
+})
+
+onUnmounted(() => {
+    stopPaymentNotify()
 })
 
 </script>
@@ -541,6 +557,7 @@ h2 {
     }
 
     .emptyList {
+        position: relative;
         padding: 0 .5rem;
         margin-top: 2.5rem;
         color: rgba(0, 0, 0, 0.5);

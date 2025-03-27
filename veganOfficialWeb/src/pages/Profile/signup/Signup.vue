@@ -20,9 +20,9 @@
                                 <input :id="input"
                                     :type="type == 'password' ?
                                         (showPassword ? 'text' : 'password') : type"
-                                    placeholder=""
                                     autocomplete="off"
-                                    :="field" :class="{
+                                    required :="field"
+                                    :class="{
                                         invalidInput: !meta.valid && submitCount > 0
                                     }">
 
@@ -165,18 +165,6 @@ import { AxiosError } from 'axios';
 import { onBeforeRouteLeave, useRouter } from 'vue-router';
 import { useUserStore } from '@/store/userStore';
 
-
-/**
- * todo: account store, 社群登入
- * doing: email會員驗證
- * //! 輸入太長會跑版
- * -----------------------------------
- * //同意勾選框
- * //改驗證時機
- * //密碼格式 確認驗證值 蒐集數據
- * //DB建置
- */
-
 //  user store
 const userStore = useUserStore();
 const { setEmail } = userStore
@@ -205,7 +193,7 @@ const signupForm = [
     },
     {
         input: 'email',
-        type: 'email',
+        type: 'text',
         label: '電子郵件'
     },
     {
@@ -381,8 +369,8 @@ $container_width: 300px;
         //     transform: translate(0%, -50%);
         // }
 
-        & div:has(input:focus)>label,
-        & div:has(input:not(:placeholder-shown))>label {
+
+        & div:has(input:focus, input:focus-within, input:valid)>label {
             transform: translateY(calc(-100% - 10px)) scale(0.8);
         }
 

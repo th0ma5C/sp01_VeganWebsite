@@ -41,7 +41,7 @@
                             <div class="details">
                                 <h3>{{ key }}</h3>
                                 <small>${{ item.price
-                                    }}</small>
+                                }}</small>
                             </div>
 
                             <div class="itemSubtotal">
@@ -76,11 +76,16 @@
                         <small class="discountNotice">
                             <span v-if="!userStore.isAuth">
                                 <router-link
-                                    to="/profile/signup">加入會員</router-link>享首購優惠
+                                    to="/profile/signup"
+                                    @click="closeDrawer">加入會員</router-link>享首購優惠
                             </span>
                             <span v-else>
                                 <a href=""
-                                    @click.prevent>社群分享</a>送購物金
+                                    @click.prevent="copyShareLink">社群分享</a>送購物金
+                            </span>
+                            <span class="popup"
+                                ref="popupRef">
+                                連結已複製
                             </span>
                         </small>
 
@@ -114,33 +119,23 @@
 </template>
 
 <script setup lang="ts">
-/**
- * todo: 加入會員、社群分享超連結
- * doing: 其他分頁購物車、問卷按鈕路由完善
- * //!組件內修改數量、刪除item需要更新storage
- * ----------------------------------
- * *item list scrollbar 用icon提示
- * ----------------------------------
- * //?小計分隔線樣式
- * //封裝加減數量組件
- * //點空白關閉
- * //導入數據
- * //樣式完成 
- * //購物車本地儲存
- */
 import OrderCounter from '../OrderCounter/OrderCounter.vue';
 import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, watch, ref, watchEffect } from 'vue';
+import { computed, onMounted, watch, ref, watchEffect, useTemplateRef } from 'vue';
 import type { MenuItem } from "@/api/menu/type";
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/userStore';
+import { useToastStore } from '@/store/toastStore';
+import { gsap } from 'gsap/gsap-core';
 
 
 
 const cartStore = useCartStore();
 const { isCartCardOpen, cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
 const { toggleCartCardOpen, DELItemFromCart, initCart, toggleIsCheckout } = cartStore;
+
+const toastStore = useToastStore();
 
 const showCartItemList = computed(() => {
     return cartMap.value
@@ -202,6 +197,39 @@ function goCheckoutPage() {
 
 // user store
 const userStore = useUserStore();
+
+// share link
+const popupRef = useTemplateRef('popupRef');
+const link = import.meta.env.VITE_API_BASE_URL;
+async function copyShareLink() {
+    try {
+        await navigator.clipboard.writeText(link);
+        gsap.fromTo(popupRef.value,
+            {
+                yPercent: 0,
+                autoAlpha: 0,
+            },
+            {
+                autoAlpha: 1,
+                yPercent: -75,
+                opacity: 1,
+                duration: .3,
+                onComplete: () => {
+                    gsap.to(popupRef.value, {
+                        duration: .3,
+                        delay: .5,
+                        autoAlpha: 0,
+                        yPercent: 0
+                    })
+                }
+            }
+        )
+        return
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 
 onMounted(() => {
     initCart();
@@ -418,9 +446,13 @@ onMounted(() => {
         display: flex;
         flex-direction: column;
         gap: .5rem;
+        background-color: $primaryBacColor;
     }
 
     .discountNotice {
+        position: relative;
+        width: max-content;
+        z-index: 0;
 
         a {
             text-decoration: underline;
@@ -430,6 +462,26 @@ onMounted(() => {
                 color: blue;
             }
         }
+
+        span:not(.popup) {
+            background-color: $primaryBacColor;
+        }
+    }
+
+    .popup {
+        user-select: none;
+        position: absolute;
+        top: -50%;
+        left: 50%;
+        translate: -50% 0;
+        background-color: $primaryBacColor;
+        text-wrap: nowrap;
+        padding: .25rem;
+        border-radius: .25rem;
+        font-variation-settings: 'wght' 500;
+        outline: 1px solid gray;
+        visibility: hidden;
+        z-index: -1;
     }
 
     .amount {

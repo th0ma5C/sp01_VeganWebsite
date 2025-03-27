@@ -124,7 +124,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                }}</span>
+                                                    }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -160,9 +160,6 @@
                             </transition>
                         </div>
                     </div>
-                    <!-- <div>
-                        選中
-                    </div> -->
                     <div class="sort">
                         <span>排序：</span>
                         <div class="sortWrapper"
@@ -223,15 +220,6 @@
                 :class="{ expandMenu: isShowFullMenu }"
                 :style="saladMenuStyle"
                 ref="saladContainer">
-                <transition name="skeleton">
-                    <div class="skeleton" v-show="!isLoaded"
-                        :style="saladMenuStyle">
-                        <Skeleton
-                            v-for="(item, index) in (columnsLimit * 2)"
-                            :key="index"></Skeleton>
-                    </div>
-                </transition>
-
                 <Product_template :item="item"
                     :flightDelay="hideNav ? .2 : 0"
                     v-for="(item, index) in sortedSalad"
@@ -261,12 +249,6 @@
                 :class="{
                     isSelecting: selectIngredient.length !== 0
                 }">
-                <div class="skeletonWrapper"
-                    v-show="!isLoaded">
-                    <Skeleton class="skeleton"
-                        v-for="(item, index) in 6"
-                        :key="index"></Skeleton>
-                </div>
                 <swiper-container ref="smoothieSwiper"
                     scrollbar-hide="true"
                     slides-per-view="auto"
@@ -290,14 +272,25 @@
                         v-for="(items, index) in sortedSmoothies"
                         v-show="filteredSmoothie.includes(items)"
                         :key="index">
+                        <transition name="skeleton">
+                            <div class="skeleton"
+                                v-show="isImgLoading">
+                                <div class="top"></div>
+                                <div class="bot">
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                                <div class="scanner"></div>
+                            </div>
+                        </transition>
                         <div class="imgWrapper"
                             @click="routerToProduct(items.name)">
                             <img :src="items.fileName!"
-                                alt="商品">
+                                alt="商品" @load="imgLoaded">
                             <div class="description">
                                 <span>{{
                                     items.description
-                                }}</span>
+                                    }}</span>
                             </div>
                         </div>
                         <h3>{{ items.name }}</h3>
@@ -361,7 +354,7 @@
                                 詳細資訊
                             </button>
                         </div>
-                        <Teleport :defer="true"
+                        <Teleport defer
                             :to="'.flyToCartContainer'">
                             <div class="flyToCart"
                                 ref="flyToCartEl"
@@ -461,9 +454,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick, onBeforeUpdate, inject, toRefs, onUnmounted, useTemplateRef, onUpdated } from 'vue';
+import { computed, ref, onMounted, reactive, watch, onBeforeMount, watchEffect, nextTick, onBeforeUpdate, inject, toRefs, onUnmounted, useTemplateRef, onUpdated, watchPostEffect } from 'vue';
 import type { ComputedRef, Ref, WritableComputedRef } from 'vue';
-import Skeleton from '@components/skeleton/skeleton.vue';
 import Product_template from '@/components/Product/Product_template.vue';
 import useConcatImgPath from '@/hooks/useConcatImgPath';
 import { useMenuStore } from '@/store/menuStore';
@@ -474,7 +466,6 @@ import gsap from 'gsap';
 import Flip from 'gsap/Flip';
 import { useRoute, useRouter } from 'vue-router';
 import Breadcrumbs from '@/components/Breadcrumbs/Breadcrumbs.vue';
-import { log } from 'console';
 import { useCartStore } from '@/store/cartStore';
 import emitter from '@/utils/eventBus';
 import FlyToCart from '@/hooks/useFlyToCart';
@@ -483,21 +474,6 @@ import type { SwiperContainer } from 'swiper/element';
 import { LoremIpsum } from 'lorem-ipsum';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-
-//DOING salad圖ps改成一致
-//TODO 商品內頁 麵包屑
-/**
- * *骨架屏、果席跑馬燈初步完成
- * *營養數據轉移
- * *新增數據量
- * *響應初步完成
- * --------------
- * !整理樣式
- * !整理腳本
- * --------------
- * ? localStorage、ETag緩存
- * --------------
- */
 
 // -----篩選、排序樣式-----
 // 下拉顯示
@@ -729,11 +705,6 @@ function setFullMenu(e?: Event) {
         setGridRows()
     })
 }
-
-// let skeletonIsShow = ref(true); //初始化時待skeleton消失
-// function setSkeletonIsShow() {
-//     skeletonIsShow.value = false;
-// }
 
 
 // -----smoothie marquee-----
@@ -1092,6 +1063,12 @@ function refreshTrigger() {
     ScrollTrigger.refresh();
 }
 
+// skeleton
+const isImgLoading = ref(true);
+function imgLoaded() {
+    isImgLoading.value = false
+}
+
 // -----生命週期-----
 onBeforeMount(() => {
 })
@@ -1110,7 +1087,7 @@ onMounted(() => {
     getSubTitleTranslate();
     getDocumentWidth()
     window.addEventListener('resize', debounceResize);
-    setAnalystBotScrollTrigger()
+    setAnalystBotScrollTrigger();
 })
 
 onUnmounted(() => {
@@ -2024,100 +2001,19 @@ $menuItemContainer_height: 405px;
 }
 
 .saladMenu {
-    // margin-top: 1rem;
     padding: 1rem 0rem;
     display: grid;
-    // justify-content: space-between;
     justify-content: space-around;
     grid-template-columns: repeat(auto-fill, minmax(250px, 20%));
-    // grid-template-columns: 20% 20% 20% 20%;
-    // grid-template-rows: 1fr 1fr 0 0;
-    // grid-template-rows: repeat(auto-fill, minmax(0, 450px));
-    // clip-path: inset(0 0 48% 0);
     row-gap: 2rem;
-    // transition: grid-template-rows 0.5s ease;
     position: relative;
-    // opacity: 1;
 
 
-    .item {
-        // @extend %menuItem;
-        // transition: top 0.5s ease,
-        //     left 0.5s ease;
-        // transition: transform 0.5s ease;
-        // overflow: hidden;
-    }
+    .item {}
 
-    .hideItem {
-        // display: none;
-        // height: 0;
-        // overflow: hidden;
-        // opacity: 0;
-    }
+    .hideItem {}
 
-    // @keyframes onUnloaded {
-    //     from {
-    //         opacity: 0;
-    //     }
-
-    //     to {
-    //         opacity: 1;
-    //     }
-    // }
-
-    // .loadingScene {
-    //     display: none;
-    //     @include WnH(100%);
-    //     position: absolute;
-    //     z-index: 3;
-    //     left: 0;
-    //     top: 0;
-    //     background-color: hsla(47, 60%, 97%, 0.3)
-    // }
-    .skeleton {
-        // opacity: 0.5;
-        @include WnH(100%, 100%);
-        background-color: $primaryBacColor;
-        // padding: 0 4rem;
-        display: grid;
-        // justify-content: space-between;
-        // grid-template-columns: repeat(4, 20%);
-        // grid-template-rows: 1fr 1fr;
-        grid-template-rows: repeat(auto-fill, minmax(max-content, 450px));
-        row-gap: 2rem;
-        position: absolute;
-        top: 0;
-        // left: -5%;
-        z-index: 5;
-
-        padding: 1rem 0rem;
-        justify-content: space-around;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 20%));
-        row-gap: 2rem;
-
-        &:deep(.wrapper) {
-            overflow: hidden;
-            flex-direction: column;
-        }
-    }
 }
-
-.skeleton-enter-active,
-.skeleton-leave-active {
-    transition: opacity .75s ease;
-}
-
-.skeleton-enter-from,
-.skeleton-leave-to {
-    opacity: 0;
-}
-
-.skeleton-enter-to,
-.skeleton-leave-from {
-    opacity: 1;
-}
-
-
 
 .onUnloaded {
     min-height: 80px;
@@ -2319,37 +2215,7 @@ $menuItemContainer_height: 405px;
     }
 }
 
-.skeletonWrapper {
-    @include absoluteCenterTLXY($top: 0, $left: 0, $X: 0, $Y: 0);
-    // background-color: $primaryBacColor;
-    // margin: 1.5rem 0;
-    // padding: 0 1rem;
-    padding-left: 1rem;
-    display: flex;
-    flex-direction: row;
-    gap: 2rem;
-    height: 100%;
-    // position: absolute;
-    // left: 50%;
-    // top: 0;
-    z-index: 5;
-
-
-    // &:deep(.wrapper) {
-    //     flex-direction: column;
-    // }
-
-    .skeleton {
-        width: 300px;
-        height: 100%;
-        background-color: $primaryBacColor;
-        border: 1px solid black;
-        border-radius: 150px 150px 1rem 1rem;
-        box-shadow: 8px -5px 0px $secondBacColor, 10px -7px 7px black;
-        overflow: hidden;
-        flex-direction: column;
-    }
-}
+.skeletonWrapper {}
 
 .flyToCart {
     @include WnH(50px);
@@ -2667,6 +2533,68 @@ $menuItemContainer_height: 405px;
     display: none;
 }
 
+.skeleton {
+    position: absolute;
+    top: 0;
+    background-color: $primaryBacColor;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: 1rem 1rem 8px 8px;
+
+    .top {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        background-color: rgba(62, 163, 80, 0.2);
+        border-radius: 0 0 1rem 1rem;
+    }
+
+    .bot {
+        width: 100%;
+        aspect-ratio: 2.5 / 1;
+        background-color: rgba(62, 163, 80, 0.2);
+        border-radius: 8px 8px 0 0;
+    }
+
+    .scanner {
+        pointer-events: none;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        background: linear-gradient(115deg, transparent 40%, #FCFAF2 50%, transparent 52%);
+        animation: loading 2.5s infinite linear;
+    }
+}
+
+@keyframes loading {
+    0% {
+        translate: -100% 0;
+    }
+
+    100% {
+        translate: 110% 0;
+    }
+}
+
+.skeleton-leave-active {
+    transition: opacity .3s
+}
+
+.skeleton-leave-to {
+    opacity: 0;
+}
+
+.skeleton-leave-from {
+    opacity: 1;
+}
+
 @include XLarge {}
 
 @include large {}
@@ -2733,14 +2661,8 @@ $menuItemContainer_height: 405px;
     }
 
     .saladMenu,
-    .saladMenu .skeleton {
+    .saladMenu {
         grid-template-columns: repeat(auto-fill, minmax(200px, 20%));
-    }
-
-    .saladMenu .skeleton:deep(.wrapper) {
-        .imgSkeleton {
-            @include WnH(200px);
-        }
     }
 
     .showFullMenuBtn {
@@ -2755,10 +2677,6 @@ $menuItemContainer_height: 405px;
         .itemWrapper {
             margin-block: 2rem;
             min-height: 417px;
-        }
-
-        .skeletonWrapper .skeleton {
-            width: 250px;
         }
 
         .item {
@@ -2881,31 +2799,14 @@ $menuItemContainer_height: 405px;
     }
 
     .saladMenu,
-    .saladMenu .skeleton {
+    .saladMenu {
         grid-template-columns: repeat(auto-fill, minmax(180px, 20%));
-        // row-gap: 1.5rem;
-        // justify-content: space-between;
-    }
-
-    .saladMenu .skeleton:deep(.wrapper) {
-        .imgSkeleton {
-            @include WnH(180px);
-        }
-
-        .textSkeleton>div {
-            width: 120px;
-            height: 22px;
-        }
     }
 
     .smoothieMenu {
         .itemWrapper {
             margin-block: 1.5rem;
             min-height: 390px;
-        }
-
-        .skeletonWrapper .skeleton {
-            width: 230px;
         }
 
         .item {
@@ -2994,31 +2895,15 @@ $menuItemContainer_height: 405px;
     }
 
     .saladMenu,
-    .saladMenu .skeleton {
+    .saladMenu {
         grid-template-columns: repeat(auto-fill, minmax(155px, 20%));
-        // justify-content: space-between;
         row-gap: 1.5rem;
-    }
-
-    .saladMenu .skeleton:deep(.wrapper) {
-        .imgSkeleton {
-            @include WnH(160px);
-        }
-
-        .textSkeleton>div {
-            width: 100px;
-            height: 20px;
-        }
     }
 
     .smoothieMenu {
 
         .itemWrapper {
             min-height: 357px;
-        }
-
-        .skeletonWrapper .skeleton {
-            width: 200px;
         }
 
         .skeletonWrapper:deep(.wrapper) {
@@ -3060,7 +2945,7 @@ $menuItemContainer_height: 405px;
 @include small($width: 375px) {
 
     .saladMenu,
-    .saladMenu .skeleton {
+    .saladMenu {
         grid-template-columns: repeat(auto-fill, minmax(140px, 20%));
         row-gap: 1rem;
     }
@@ -3085,20 +2970,8 @@ $menuItemContainer_height: 405px;
 @include small($width: 320px) {
 
     .saladMenu,
-    .saladMenu .skeleton {
+    .saladMenu {
         grid-template-columns: repeat(auto-fill, minmax(135px, 20%));
-        // row-gap: 1rem;
-    }
-
-    .saladMenu .skeleton:deep(.wrapper) {
-        .imgSkeleton {
-            @include WnH(140px);
-        }
-
-        .textSkeleton>div {
-            width: 80px;
-            height: 18px;
-        }
     }
 
     .smoothieMenu {

@@ -2,9 +2,9 @@ import request from '@/utils/request/requests'
 import type * as menuType from './type'
 
 enum API {
-    newList_URL = '/api/menu/newCatalog',
-    hotList_URL = '/api/menu/hotCatalog',
-    graphQL = '/api/graphql'
+    newList_URL = '/menu/newCatalog',
+    hotList_URL = '/menu/hotCatalog',
+    graphQL = '/graphql'
 }
 
 // 首頁菜單圖片

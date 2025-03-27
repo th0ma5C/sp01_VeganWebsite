@@ -77,13 +77,14 @@
                 </div>
 
                 <transition name="editDialog">
-                    <VForm as="div" v-show="isDialogOpen"
+                    <VForm as="div" ref="VFormRef"
+                        v-if="isUserHasSavedForm !== null && isFormCreated"
+                        v-show="isDialogOpen"
                         class="editDialog"
                         v-slot="{ handleSubmit, submitCount, values, meta, setValues, resetForm }"
                         :validation-schema="FormSchema"
                         :initial-values="showShippingInfo"
                         @click="clickOuter">
-
                         <form action="" class="dialogForm">
                             <div class="formTitle">
                                 <h3>
@@ -116,7 +117,8 @@
                                             color="#b3261e">
                                         </SvgIcon>
                                         <span>
-                                            {{ message }}
+                                            {{ message
+                                            }}
                                         </span>
                                     </ErrorMessage>
                                 </div>
@@ -147,7 +149,8 @@
                                             color="#b3261e">
                                         </SvgIcon>
                                         <span>
-                                            {{ message }}
+                                            {{ message
+                                            }}
                                         </span>
                                     </ErrorMessage>
                                 </div>
@@ -184,7 +187,8 @@
                                             color="#b3261e">
                                         </SvgIcon>
                                         <span>
-                                            {{ message }}
+                                            {{ message
+                                            }}
                                         </span>
                                     </ErrorMessage>
                                 </div>
@@ -223,7 +227,8 @@
                                                 color="#b3261e">
                                             </SvgIcon>
                                             <span>
-                                                {{ message
+                                                {{
+                                                    message
                                                 }}
                                             </span>
                                         </ErrorMessage>
@@ -240,7 +245,8 @@
                                             @click="toggleOpenOptions">
                                             <span
                                                 v-show="selectedCity.city">
-                                                {{ inputCity
+                                                {{
+                                                    inputCity
                                                 }}
                                             </span>
                                         </div>
@@ -349,7 +355,8 @@
                                                 color="#b3261e">
                                             </SvgIcon>
                                             <span>
-                                                {{ message
+                                                {{
+                                                    message
                                                 }}
                                             </span>
                                         </ErrorMessage>
@@ -381,7 +388,8 @@
                                             color="#b3261e">
                                         </SvgIcon>
                                         <span>
-                                            {{ message }}
+                                            {{ message
+                                            }}
                                         </span>
                                     </ErrorMessage>
                                 </div>
@@ -419,6 +427,10 @@
                         </div>
                     </div>
                 </div>
+
+                <Spinner
+                    v-show="isUserHasSavedForm == null">
+                </Spinner>
             </main>
         </div>
         <div class="emailVerify">
@@ -479,20 +491,43 @@ import { reqCheckUserVerified, reqSendVerifyEmail } from '@/api/userAuth';
 
 //pinia store
 const userStore = useUserStore();
-const { setUserShippingInfo, deleteSavedInfo } = userStore;
-const { userSavedCheckoutForm, userToken, user } = storeToRefs(userStore);
+const { setUserShippingInfo, deleteSavedInfo, getSavedShippingInfo } = userStore;
+const { userSavedCheckoutForm, userToken, user, isUserHasSavedForm } = storeToRefs(userStore);
 const toastStore = useToastStore();
 const { addNotification } = toastStore;
 
 const showShippingInfo = computed(() => {
     return { ...userSavedCheckoutForm.value }
 })
+
+const isFormCreated = computed(() => {
+    const length = Object.keys(showShippingInfo.value).length
+    return length !== 0
+})
+
+async function initUserShippingForm() {
+    try {
+        if (isUserHasSavedForm.value === false || Object.keys(showShippingInfo.value).length !== 0) return
+        await getSavedShippingInfo();
+        return
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 function initForm() {
     if (showShippingInfo.value.city && showShippingInfo.value.postal) {
         [selectedCity.city = '', selectedTown.value = ''] = showShippingInfo.value.city.split(', ');
         postalCode.value = showShippingInfo.value.postal
     }
 }
+const VFormRef = useTemplateRef('VFormRef');
+
+watch(() => showShippingInfo.value.email, (nVal) => {
+    nextTick(() => {
+        VFormRef.value?.resetForm();
+    })
+}, { immediate: true })
 
 // 表單
 const errMsg = {
@@ -781,7 +816,8 @@ async function verifyEmail() {
 
 onMounted(() => {
     initForm();
-    checkVerified()
+    checkVerified();
+    // initUserShippingForm()
 })
 
 </script>
@@ -814,13 +850,17 @@ h2 {
 
 .recipientInfo {
     margin-bottom: 1rem;
+
+    main {
+        position: relative;
+    }
 }
 
 .emptyList {
     text-align: center;
     margin-top: 2.5rem;
     color: rgba(0, 0, 0, 0.5);
-    width: calc(100% / 5.5 * 5);
+    // width: calc(100% / 5.5 * 5);
 }
 
 .infoContainer {

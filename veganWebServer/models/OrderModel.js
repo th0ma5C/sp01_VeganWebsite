@@ -53,13 +53,13 @@ const PurchaseOrderSchema = new Schema({
 const OrderSchema = new Schema({
     shippingInfo: { type: ShippingInfoSchema, required: true },
     purchaseOrder: { type: PurchaseOrderSchema, required: true },
+    transactionId: { type: String, sparse: true, unique: true, }, //第三方支付交易序號
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });
 
 OrderSchema.pre('save', function (next) {
     const purchaseOrder = this.purchaseOrder;
-    // console.log('@@@ purchaseOrder save middleware');
     if (purchaseOrder && typeof purchaseOrder.userID === 'string') {
         if (mongoose.Types.ObjectId.isValid(purchaseOrder.userID)) {
             purchaseOrder.userID = new mongoose.Types.ObjectId(purchaseOrder.userID);

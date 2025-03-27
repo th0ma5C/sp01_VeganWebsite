@@ -34,7 +34,8 @@ const { addNotification, clearNotification } = toastStore;
 
 
 function bar() {
-    addNotification('測試測試測試測試');
+    addNotification('測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試');
+    addNotification('測試測試測試測試測試測試測試');
 }
 
 
@@ -54,10 +55,13 @@ function bar() {
     right: 1rem;
     right: clamp(1rem, -0.4285714285714284rem + 7.142857142857142vw, 6rem);
     z-index: 99;
-
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 
     &>li {
-        max-width: 180px;
+        width: max-content;
+        max-width: 360px;
         min-width: 180px;
         min-height: 48px;
         padding: .5rem 1rem;
@@ -159,15 +163,27 @@ function bar() {
     }
 }
 
-@include large {}
+@include large {
+    .toastContainer li {
+        // max-width: 270px;
+    }
+}
 
-@include medium($width: 1024px) {}
+@include medium($width: 1024px) {
+    .toastContainer li {
+        max-width: 270px;
+    }
+}
 
 @include medium {}
 
 @include small {
     .toastContainer {
         top: 90px;
+
+        li {
+            max-width: 180px;
+        }
     }
 }
 

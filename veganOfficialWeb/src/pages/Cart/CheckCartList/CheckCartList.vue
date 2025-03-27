@@ -196,7 +196,7 @@
                                     class="correctionDigit"
                                     v-text="correctionDigit(couponAmount)"></span>
                                 <span>{{ couponAmount
-                                    }}</span>
+                                }}</span>
                             </span>
                         </transition-group>
                     </div>
@@ -239,7 +239,7 @@
                 <span>總計</span>
                 <span>${{
                     orderAmount.toLocaleString()
-                    }}</span>
+                }}</span>
             </div>
         </div>
 
@@ -256,11 +256,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * todo:
- * ------------------------
- */
-
 import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
 import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';

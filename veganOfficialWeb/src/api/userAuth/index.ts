@@ -25,33 +25,33 @@ interface LoginForm {
 
 
 const reqUserRegister = (params: RegisterForm) => {
-    return request.post('/api/auth/register', {
+    return request.post('/auth/register', {
         ...params
     })
 }
 
 const reqUserLogin = (params: LoginForm) => {
-    return request.post<any, AuthResData>('/api/auth/login', {
+    return request.post<any, AuthResData>('/auth/login', {
         ...params
     })
 }
 
-const reqGetUser = () => request.get<any, AuthResData>('/api/auth/profile');
+const reqGetUser = () => request.get<any, AuthResData>('/auth/profile');
 
-const reqCheckUserVerified = () => request.get<any, AuthResData>('/api/auth/checkUserVerified');
+const reqCheckUserVerified = () => request.get<any, AuthResData>('/auth/checkUserVerified');
 
 const reqSendVerifyEmail = (params?: any) => {
-    return request.post<any, AuthResData>('/api/auth//send-verifyEmail', {
+    return request.post<any, AuthResData>('/auth//send-verifyEmail', {
         ...params
     })
 }
 
 const reqUserLogout = () => {
-    return request.post<any, AuthResData>('api/auth/logout')
+    return request.post<any, AuthResData>('/auth/logout')
 }
 
 const reqRedirectLogin = (params: any) => {
-    return request.post<any, AuthResData>('api/auth/tokenLogin', null, {
+    return request.post<any, AuthResData>('/auth/tokenLogin', null, {
         headers: {
             Authorization: params.token
         }
@@ -59,13 +59,19 @@ const reqRedirectLogin = (params: any) => {
 }
 
 const reqForgetPasswordEmail = (params: Record<string, string>) => {
-    return request.post('api/auth/forgetPassword', {
+    return request.post('/auth/forgetPassword', {
         ...params
     })
 }
 
 const reqResetPassword = (params: Record<string, string>) => {
-    return request.patch('api/auth/resetPassword', {
+    return request.patch('/auth/resetPassword', {
+        ...params
+    })
+}
+
+const reqVerifyAccount = (params: Record<'token', string>) => {
+    return request.post<any, AuthResData>('/auth/verifyAccount', {
         ...params
     })
 }
@@ -80,5 +86,6 @@ export {
     reqRedirectLogin,
     reqForgetPasswordEmail,
     reqResetPassword,
-    reqCheckUserVerified
+    reqCheckUserVerified,
+    reqVerifyAccount
 }

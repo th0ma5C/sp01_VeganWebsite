@@ -4,16 +4,23 @@ import vue from '@vitejs/plugin-vue'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import { viteMockServe } from 'vite-plugin-mock'
 import path from 'path'
-import { visualizer } from 'rollup-plugin-visualizer';
+import { execSync } from 'child_process'
+import pkg from './package.json'
 
 /// <reference types="vitest/config" />
 
 // https://vitejs.dev/config/
 
+const commitHash = execSync('git rev-parse --short HEAD').toString().trim()
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
+    define: {
+      __APP_VERSION__: JSON.stringify(`${pkg.version} (${commitHash})`),
+      __APP_BUILD_TIME__: JSON.stringify(new Date().toLocaleDateString())
+    },
     build: {
       target: 'esnext',
       rollupOptions: {
@@ -24,6 +31,9 @@ export default defineConfig(({ mode }) => {
             }
           }
         }
+      },
+      esbuild: {
+        drop: ['console']
       }
     },
     plugins: [
@@ -52,12 +62,12 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
-      open: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      // open: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
       proxy: {
         '/api': {
           target: env.VITE_API_BASE_URL || 'https://tmc4web.dev',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
+          rewrite: (path) => path.replace(/^\/api\/images/, '/images'),
         }
       }
     },
@@ -68,5 +78,12 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      deps: {
+        inline: ['vue']
+      }
+    }
   }
 })

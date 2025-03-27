@@ -19,7 +19,6 @@ interface LoginTokenPayload {
 }
 
 const ProfileStorage_KEY = 'profile';
-const CheckoutFormStorage_KEY = 'checkoutForm';
 
 
 export const useUserStore = defineStore('user', () => {
@@ -36,6 +35,7 @@ export const useUserStore = defineStore('user', () => {
         verified: false
     })
     const userSavedCheckoutForm = reactive<Partial<ShippingInfo>>({});
+    const isUserHasSavedForm = ref<null | boolean>(null);
     const userOrderList = ref<UserOrder[]>([]);
 
     function setUsername(username: string) {
@@ -68,18 +68,30 @@ export const useUserStore = defineStore('user', () => {
 
     async function login(token?: string, isGuest?: boolean) {
         try {
-            isAuth.value = true;
-            if (token && !isGuest) {
-                storeUserProfile(token)
-                loadUserProfile();
-                userToken.value = token;
-            }
+            if (!token) throw new Error("無權限，請重試");
+
+            userToken.value = token;
+
+            if (isGuest) return isAuth.value = true;
+
+            storeUserProfile(token);
+            loadUserProfile();
+
             const cartStore = useCartStore();
-            if (isGuest && token) {
-                userToken.value = token
-                return
-            }
             await cartStore.memberLoadCart();
+            isAuth.value = true;
+            // isAuth.value = true;
+            // if (token && !isGuest) {
+            //     storeUserProfile(token)
+            //     loadUserProfile();
+            //     userToken.value = token;
+            // }
+            // const cartStore = useCartStore();
+            // if (isGuest && token) {
+            //     userToken.value = token
+            //     return
+            // }
+            // await cartStore.memberLoadCart();
         } catch (error) {
             console.log(error);
         }
@@ -93,6 +105,7 @@ export const useUserStore = defineStore('user', () => {
             if (result.state == 'logout') {
                 clearExpiredUserData();
                 questionnaireStore.clearSurveyData();
+                fetchOrderListResult.value = null;
 
                 await router.replace('/home');
                 await router.push('/profile');
@@ -162,20 +175,35 @@ export const useUserStore = defineStore('user', () => {
     async function getSavedShippingInfo() {
         const token = userToken.value ?? getStorageToken();
         try {
-            const { shippingInfo } = await reqGetUserShippingInfo(token);
+            const { state, shippingInfo } = await reqGetUserShippingInfo(token);
+            state == 'confirm' ?
+                isUserHasSavedForm.value = true :
+                isUserHasSavedForm.value = false
             return shippingInfo
         } catch (error) {
             // console.log((error as AxiosError).message);
         }
     }
 
+    // refresh if info unload
+    async function checkShippingInfoState() {
+        try {
+            if (Object.keys(userSavedCheckoutForm).length !== 0) return
+            return await refreshShippingInfo();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     // get user order
+    const fetchOrderListResult = ref<string | null>(null);
     async function getUserOrderList() {
         const token = userToken.value ?? getStorageToken();
         try {
-            const { order } = await reqGetUserOrder(token);
-            await refreshShippingInfo()
+            const { order, state } = await reqGetUserOrder(token);
+            // await refreshShippingInfo()
             // const orderList = order?.map((item) => item.purchaseOrder);
+            if (state) fetchOrderListResult.value = state
             if (!order) return
             return userOrderList.value = [...order]
         } catch (error) {
@@ -217,6 +245,7 @@ export const useUserStore = defineStore('user', () => {
                 // const { _id, ...filteredInfo } = info;
                 setUserShippingInfo(info);
             }
+            // return info
         } catch (error) {
             console.log(error);
         }
@@ -234,6 +263,7 @@ export const useUserStore = defineStore('user', () => {
             Object.keys(userSavedCheckoutForm).forEach(key => {
                 delete userSavedCheckoutForm[key];
             });
+            isUserHasSavedForm.value = null
         }
     }
 
@@ -248,6 +278,33 @@ export const useUserStore = defineStore('user', () => {
         }
     });
 
+    // local save guest ship info
+    const ShipInfoStorageKey = 'ship_info'
+    function localSaveShipInfo(form: Record<string, any>) {
+        if (isAuth.value) return
+        const data = {
+            user: user.userID,
+            form
+        }
+        const value = JSON.stringify(data);
+        localStorage.setItem(ShipInfoStorageKey, value)
+    }
+
+    function localGetShipInfo() {
+        const raw = localStorage.getItem(ShipInfoStorageKey);
+        if (!raw) return
+
+        const data = JSON.parse(raw);
+        const { user: currUser, form } = data
+        if (currUser !== user.userID) return localClearShipInfo()
+
+        return form
+    }
+
+    function localClearShipInfo() {
+        localStorage.removeItem(ShipInfoStorageKey)
+    }
+
 
     return {
         isAuth,
@@ -256,6 +313,8 @@ export const useUserStore = defineStore('user', () => {
         userSavedCheckoutForm,
         userOrderList,
         userToken,
+        isUserHasSavedForm,
+        fetchOrderListResult,
         login,
         logout,
         setUsername,
@@ -270,5 +329,8 @@ export const useUserStore = defineStore('user', () => {
         refreshShippingInfo,
         setUserShippingInfo,
         deleteSavedInfo,
+        checkShippingInfoState,
+        localSaveShipInfo,
+        localGetShipInfo
     }
 })

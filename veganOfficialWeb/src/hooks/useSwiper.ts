@@ -1,5 +1,5 @@
 import { ref, computed, inject, nextTick, onMounted, onUnmounted, onUpdated } from "vue";
-import type { Ref, ComponentPublicInstance } from 'vue';
+import type { ShallowRef } from 'vue';
 import throttle from 'lodash/throttle';
 import useListener from './useListener';
 
@@ -7,10 +7,10 @@ interface SwiperItem {
     title: string,
 }
 // 參數: transition-group的ref、swiper數據、間隔時間
-export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swiper: SwiperItem[], intervalTime: number) {
+export function useSwiper(elementRef: Readonly<ShallowRef<HTMLDivElement | null>>, swiper: SwiperItem[], intervalTime: number) {
     let nanoid = inject('nanoid') as (n: number) => string,
         clicking = true,
-        interval: (number | null | NodeJS.Timeout) = null,
+        interval: ReturnType<typeof setInterval> | null = null,
         i = swiper.length >= 2 ? swiper : [...swiper, ...swiper],
         headItem = swiper.slice(0, 2),
         footItem = swiper.slice(-2);
@@ -64,9 +64,8 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     }))
 
     function resize() {
-        // if (elementRef.value) {
-        divWidth = elementRef.value?.$el.clientWidth;
-        // }
+        if (!elementRef.value) return
+        divWidth = elementRef.value.clientWidth;
     }
 
     function down(e: MouseEvent) {
@@ -95,7 +94,10 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
         } else if (breakPoint > (divWidth / 5)) {
             throttleChangeSwiper(0);
         }
+
+        // elementRef.value?.ontransitionend(() => {
         translateX.value = 0;
+        // })
 
         startPlay();
         useListener(window, 'remove', dragEvents);
@@ -128,8 +130,8 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     /**------生命週期鉤子------ */
 
     onMounted(() => {
-        const el = elementRef.value?.$el;
-
+        const el = elementRef.value;
+        if (!el) return
         useListener(el, 'add', domEvents);
         useListener(window, 'add', windowEvents);
 
@@ -141,8 +143,8 @@ export function useSwiper(elementRef: Ref<ComponentPublicInstance | null>, swipe
     })
 
     onUnmounted(() => {
-        const el = elementRef.value?.$el;
-
+        const el = elementRef.value;
+        if (!el) return
         useListener(el, 'remove', domEvents);
         useListener(window, 'remove', windowEvents);
 

@@ -4,7 +4,7 @@ import type { ResData } from './type'
 
 // 儲存cart
 const reqSaveCartList = (params: any, token: string | null) => {
-    return request.post('/api/cart/saveList', {
+    return request.post('/cart/saveList', {
         data: {
             cart: params
         }
@@ -17,7 +17,7 @@ const reqSaveCartList = (params: any, token: string | null) => {
 
 // get member cart
 const reqGetMemberCart = (token: string | null) => {
-    return request.get<any, ResData>('/api/cart/getList', {
+    return request.get<any, ResData>('/cart/getList', {
         headers: {
             Authorization: token
         }
@@ -26,7 +26,7 @@ const reqGetMemberCart = (token: string | null) => {
 
 // after created order, reset cart
 const reqResetMemberCart = (token: string | null) => {
-    return request.delete('/api/cart/resetList', {
+    return request.delete('/cart/resetList', {
         headers: {
             Authorization: token
         }

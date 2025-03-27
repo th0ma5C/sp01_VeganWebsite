@@ -8,7 +8,7 @@ interface InfoRes {
 }
 
 const saveShippingInfo = (params: Partial<ShippingInfo>, token: string) => {
-    return request.patch<any, InfoRes>('/api/order/saveShippingInfo', {
+    return request.patch<any, InfoRes>('/order/saveShippingInfo', {
         ...params
     }, {
         headers: {
@@ -18,7 +18,7 @@ const saveShippingInfo = (params: Partial<ShippingInfo>, token: string) => {
 }
 
 const deleteShippingInfo = (token: string) => {
-    return request.delete('/api/order/saveShippingInfo', {
+    return request.delete('/order/saveShippingInfo', {
         headers: {
             Authorization: token
         }

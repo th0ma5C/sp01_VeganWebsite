@@ -202,23 +202,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * todo: NEXT功能 表單結果頁面 會員 購物車 關於
- * doing: 驗證輸入 未輸入不能下一頁
- * ! 本地數據過期後問卷顯示問題
- * --------------------
- * * 刷新後問卷會丟失 初步完成刷新不丟失
- * --------------------
- * //! 1440 1 2 題會滾動 ==> 3 4題以外取消questionWrapper margin bottom
- * --------------------
- * ?是否需要儲存問題作答裝況
- * ?刷新不丟失放入store
- * ?問卷蒐集移入store
- * --------------------
- * 換頁轉場改淡入淡出
- * //單選多選樣式
- */
-
 import { computed, onMounted, onUnmounted, reactive, ref, watch, nextTick, onBeforeUnmount, shallowReactive, onBeforeMount } from 'vue';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { storeToRefs } from 'pinia';
@@ -272,6 +255,7 @@ async function initQuestionnaire() {
             await updateProgress(75, showResult());
         }
         await loadingTimer(100);
+
     } catch (error) {
         console.log(error);
     }
@@ -288,19 +272,20 @@ const {
     QNR_result,
     currPage,
     formPageTranslateX,
-    surveyHasCompleted
+    surveyHasCompleted,
 } = storeToRefs(QuestionnaireStore);
-
 const {
     QNR_FinishLoading,
     fetchQuestionnaire,
     setQNR_result,
     initQNR,
     setQNRtoStorage,
-    checkQuestionIsAnswered
+    checkQuestionIsAnswered,
+    checkResultIsExpired
 } = QuestionnaireStore;
 
-
+onBeforeMount(() => {
+})
 
 function leaveQNR_page() {
     QNR_IsLoaded.value = false;

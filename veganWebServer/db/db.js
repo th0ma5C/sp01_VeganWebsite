@@ -10,13 +10,13 @@ module.exports = (success, error) => {
     }
 
     const mongoose = require('mongoose');
-    const { defaultDB, backupDB } = require('../config/config');
+    const { defaultDB } = require('../config/config');
     const defaultUri = `mongodb://${defaultDB.DBHOST}:${defaultDB.DBPORT}/${defaultDB.DBNAME}`;
-    const backupUri = `mongodb://${backupDB.DBHOST}:${backupDB.DBPORT}/${backupDB.DBNAME}`;
+    // const backupUri = `mongodb://${backupDB.DBHOST}:${backupDB.DBPORT}/${backupDB.DBNAME}`;
 
     mongoose.set('strictQuery', true);
 
-    const uris = [defaultUri, backupUri];
+    const uris = [defaultUri];
     let connected = false;
 
     (async () => {

@@ -17,14 +17,21 @@
                         <fieldset>
                             <div>
                                 <VField name="email"
-                                    v-slot="{ field, meta }">
-                                    <input type="email"
+                                    v-slot="{ field, meta }"
+                                    v-model="inputEmail">
+                                    <input type="text"
                                         id="email" required
-                                        placeholder=""
                                         autocomplete="username"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
-                                        }">
+                                        }"
+                                        @keydown.tab="handleTab">
+                                    <i class="placeholder">
+                                        <span>
+                                            TAB
+                                        </span>
+                                        測試者快速登入
+                                    </i>
                                 </VField>
                                 <label
                                     for="email">電子信箱</label>
@@ -49,7 +56,8 @@
 
                             <div>
                                 <VField name="password"
-                                    v-slot="{ field, meta, validate }">
+                                    v-slot="{ field, meta, validate }"
+                                    v-model="inputPassword">
                                     <input ref="passwordRef"
                                         :type="showPassword ? 'text' : 'password'"
                                         id="password"
@@ -57,9 +65,16 @@
                                         placeholder=""
                                         autocomplete="current-password"
                                         @input="validate"
+                                        @keydown.tab="handleTab"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
+                                    <i class="placeholder">
+                                        <span>
+                                            TAB
+                                        </span>
+                                        測試者快速登入
+                                    </i>
                                 </VField>
                                 <label
                                     for="password">密碼</label>
@@ -160,8 +175,13 @@
 
         <div class="outerAccount">
             <div v-for="(url, index) in showIconImgList"
-                :key="index">
+                :key="index" @click="googleLoginRedirect"
+                :class="{
+                    onLogin: googleAuth.isLoading
+                }">
                 <img :src="url" alt="">
+                <Spinner v-show="googleAuth.isLoading">
+                </Spinner>
             </div>
         </div>
     </div>
@@ -174,17 +194,7 @@
 </template>
 
 <script setup lang="ts">
-/**
- * todo:  社群登入, 臨時帳號, 登出清理資料, 忘記密碼, user DB 連結購物車
- * doing: 登入後頁面(訂單), 登入後資料庫添加session, store建置, 記住登入資訊
- * * store含本地儲存JWT, 記住資訊會挾帶token至後端驗證, 添加JWT時限
- * !登出時結構崩潰，因為vif
- * -----------------------------------------
- * ? profile組件是否添加路由守衛
- * ? 遊客購物車
- */
-
-import { computed, nextTick, onBeforeMount, onMounted, onUpdated, ref, watch, type Ref } from 'vue';
+import { computed, nextTick, onBeforeMount, onMounted, onUpdated, reactive, ref, watch, watchEffect, type Ref } from 'vue';
 import useConcatImgPath from '@/hooks/useConcatImgPath';
 import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
@@ -197,14 +207,14 @@ import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { jwtDecode } from 'jwt-decode';
 import { useToastStore } from '@/store/toastStore';
-import bcrypt from "bcryptjs";
+import { reqGoogleLogin, reqGoogleLoginUrl } from '@/api/userAuth/googleLogin';
 
 const { addNotification } = useToastStore();
 
 
 // 社群登入圖片路徑
-const loginIcon = ['Fb.png', 'Google.png', 'Line.png'];
-const showIconImgList = useConcatImgPath(loginIcon, 'Login');
+const loginIcon = ['Google.png'];
+const showIconImgList = useConcatImgPath(loginIcon, 'Login')
 
 // 顯示密碼紐
 const showPassword = ref(false);
@@ -249,13 +259,13 @@ interface ErrorResponse {
 const registerMsg = ref<string | null>(null);
 
 async function loginReq(form: Record<string, any>) {
-    const toastStore = useToastStore();
     try {
         const result = await reqUserLogin(form as ReqForm);
         const { token } = result;
-        login(token);
-        routerTo('/profile/account');
-        toastStore.addNotification(`${user.value.username}，歡迎！`)
+        await login(token);
+        await routerTo('/profile/account');
+        addNotification(`${user.value.username}，歡迎！`);
+        return
     } catch (error) {
         const message = (error as AxiosError<ErrorResponse>).response?.data.message;
         registerMsg.value = message ?? '未知錯誤'
@@ -279,6 +289,7 @@ const route = useRoute();
 async function handleEmailRedirect() {
     if (!route.query.token) return
     if (route.path == '/profile/resetPassword') return
+    if (route.path == '/profile/emailVerify') return
 
     try {
         const JWT = route.query.token as string;
@@ -286,6 +297,7 @@ async function handleEmailRedirect() {
         const decoded = jwtDecode<RedirectResTokenDecoded>(token!);
         await login(token, decoded.isGuest)
         await routerTo('/profile/account');
+        addNotification(`${user.value.username}，歡迎！`)
         return
     } catch (error) {
         console.log(error);
@@ -304,14 +316,117 @@ function autofocusInput(target: Ref) {
     target.value.focus()
 }
 
-// initialize order list
-
-
 watch(passwordRef, (nVal) => {
     if (nVal && showEmail.value !== '') {
         autofocusInput(passwordRef)
     }
 }, { once: true })
+
+// google login
+interface GoogleAuthData {
+    code: null | string,
+    state: null | string,
+}
+const googleAuth = reactive({
+    isLoading: false,
+    error: null as null | string,
+    data: {
+        code: route.query.code,
+        state: route.query.state,
+    } as GoogleAuthData
+})
+
+// let pollingInterval: ReturnType<typeof setInterval> | null;
+
+// function msgEvent(event: MessageEvent, targetWindow: Window) {
+//     if (event.origin !== window.location.origin) return
+
+//     const { code, state, error } = event.data;
+//     console.log(code, state, error);
+
+//     if (error) {
+//         addNotification('登入失敗，請重試');
+//         googleAuth.error = error;
+//         return
+//     }
+
+//     if (code && state) {
+//         googleAuth.data.code = code;
+//         googleAuth.data.state = state;
+//     }
+
+// }
+
+function openLoginWindow(url: string) {
+    const popup = window.open(url, '_self');
+    // if (!popup) return googleAuth.error = '請允許彈出視窗以繼續登入';
+
+    // const eventHandler = (e: MessageEvent) => {
+    //     return msgEvent(e, popup)
+    // }
+    // window.addEventListener('message', eventHandler);
+
+    // pollingInterval = setInterval(() => {
+    //     if (popup.closed && pollingInterval) {
+    //         clearInterval(pollingInterval);
+    //         googleAuth.isLoading = false;
+    //         window.removeEventListener('message', eventHandler);
+    //     }
+    // }, 1000);
+}
+
+
+
+async function googleLoginRedirect() {
+    if (googleAuth.isLoading) return
+    googleAuth.isLoading = true;
+    googleAuth.error = null;
+    try {
+        const { authUrl, state } = await reqGoogleLoginUrl();
+        if (!authUrl) return googleAuth.error = '跳轉驗證失敗';
+        return openLoginWindow(authUrl)
+    } catch (error) {
+        googleAuth.error = '發生錯誤，請重試'
+        console.error(error)
+    }
+}
+
+watchEffect(async () => {
+    if (!googleAuth.data.code || !googleAuth.data.state) return
+    googleAuth.isLoading = true
+    try {
+        const { result, token } = await reqGoogleLogin(googleAuth.data);
+        if (!token) {
+            addNotification('網路錯誤，請重試');
+            return
+        }
+        await login(token);
+        await routerTo('/profile/account');
+        addNotification(`${user.value.username}，歡迎！`);
+        googleAuth.data.code = null
+        googleAuth.data.state = null
+        return
+    } catch (error) {
+        googleAuth.error = '登入失敗，請重試'
+        console.error(error)
+    } finally {
+        googleAuth.isLoading = false
+    }
+})
+
+// 測試帳號快速登入
+const inputEmail = ref('');
+const inputPassword = ref('');
+
+function handleTab(e: KeyboardEvent) {
+    const tabTarget = e.target as HTMLInputElement;
+    if (tabTarget.value) return
+    e.preventDefault();
+    tabTarget.id == 'email' ?
+        inputEmail.value = import.meta.env.VITE_ADMIN_ACCOUNT :
+        inputPassword.value = import.meta.env.VITE_ADMIN_PASSWORD
+}
+
 
 onBeforeMount(async () => {
     await handleEmailRedirect();
@@ -419,10 +534,38 @@ $container_width: 300px;
             transform: translate(0%, -50%);
         }
 
-        & div:has(input:focus)>label,
-        & div:has(input:not(:placeholder-shown))>label {
+        // & div:has(input:focus)>label,
+        // & div:has(input:focus-within)>label,
+        // & div:has(input:valid)>label {
+        //     transform: translateY(calc(-100% - 10px)) scale(0.8);
+        // }
+
+        & div:has(input:focus, input:focus-within, input:valid)>label {
             transform: translateY(calc(-100% - 10px)) scale(0.8);
         }
+
+        & div:has(input:focus, input:focus-within)>.placeholder {
+            opacity: .25;
+        }
+
+        & div:has(input:valid)>.placeholder {
+            opacity: 0;
+        }
+
+        // & div:has(input:focus)>label,
+        // & div:has(input:not(:placeholder-shown))>label {
+        //     transform: translateY(calc(-100% - 10px)) scale(0.8);
+        // }
+
+        // & div:has(input:focus)>.placeholder,
+        // & div:has(input:not(:placeholder-shown))>.placeholder {
+        //     opacity: .25;
+        // }
+
+        // & div:has(input:valid)>.placeholder,
+        // & div:has(input:not(:placeholder-shown))>.placeholder {
+        //     opacity: 0;
+        // }
 
         .passwordIcon {
             @include absoluteCenterTLXY($left: 100%, $X: -150%);
@@ -430,6 +573,27 @@ $container_width: 300px;
             // right: 0;
             // top: 50%;
         }
+    }
+}
+
+.placeholder {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    translate: 0 -50%;
+    user-select: none;
+    pointer-events: none;
+    font-variation-settings: 'wght' 500;
+    opacity: 0;
+    transition: opacity .15s;
+
+    span {
+        outline: 1px solid black;
+        border-radius: .25rem;
+        text-align: center;
+        display: inline-flex;
+        justify-content: center;
+        padding: 0 .25rem;
     }
 }
 
@@ -554,10 +718,21 @@ $container_width: 300px;
         transition: scale .15s ease;
         // margin: .5rem;
         box-shadow: 1px 1px 4px gray;
+        position: relative;
 
         &:hover {
             scale: 1.1;
         }
+    }
+
+    .onLogin::before {
+        content: '';
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        backdrop-filter: blur(2px);
     }
 }
 
