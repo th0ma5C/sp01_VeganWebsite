@@ -550,52 +550,6 @@
                                     </span>
                                 </ErrorMessage>
                             </div>
-                            <!-- <div
-                                class="formWrapper radioWrapper">
-                                <VField name="paymentType"
-                                    v-model="selectedPayment"
-                                    v-slot="{ field }">
-                                    <input type="radio"
-                                        :="field" hidden>
-                                </VField>
-
-                                <ErrorMessage
-                                    name="paymentType"
-                                    as="div"
-                                    v-slot="{ message }"
-                                    class="errorMsg">
-                                    <SvgIcon
-                                        name="QNR_alert"
-                                        width="18"
-                                        height="18"
-                                        color="#b3261e">
-                                    </SvgIcon>
-                                    <span>
-                                        {{
-                                            message
-                                        }}
-                                    </span>
-                                </ErrorMessage>
-
-                                <div class="radio">
-                                    <ul>
-                                        <li v-for="(type, index) in paymentTypeList"
-                                            :key="index"
-                                            :class="{
-                                                selectLi: type == selectedPayment
-                                            }"
-                                            @click="pickPaymentType(type)">
-                                            <div
-                                                class="radioBtn">
-                                                <div></div>
-                                            </div>
-                                            <h3>
-                                                {{ type }}
-                                            </h3>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div> -->
                         </fieldset>
 
                         <div class="btnWrapper">
@@ -1526,7 +1480,7 @@ onUnmounted(() => {
 }
 
 .ckboxWrapper {
-    cursor: pointer;
+    // cursor: pointer;
     margin-bottom: .5rem;
     display: flex;
     align-items: center;
@@ -1671,7 +1625,7 @@ onUnmounted(() => {
         }
 
         .chooseStoreBtn {
-            background-color: $btnBacColor_light;
+            background-color: $btnBacColor;
             height: fit-content;
             color: $primaryBacColor;
             font-size: .75rem;
@@ -1682,6 +1636,18 @@ onUnmounted(() => {
             margin-left: auto;
             margin-right: 1rem;
             text-wrap: nowrap;
+
+            &:hover {
+                filter: brightness(1.1);
+            }
+
+            &:active {
+                translate: 1px 1px;
+            }
+
+            button {
+                font-variation-settings: 'wght' 500;
+            }
         }
     }
 
@@ -1689,6 +1655,14 @@ onUnmounted(() => {
         top: calc(100% + .75rem + 1px);
         bottom: none;
     }
+}
+
+button:hover {
+    filter: brightness(1.1);
+}
+
+button:active {
+    translate: 1px 1px;
 }
 
 .btnWrapper {

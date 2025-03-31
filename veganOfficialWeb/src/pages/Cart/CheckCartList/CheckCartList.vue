@@ -535,6 +535,14 @@ onMounted(() => {
         filter: blur(2px);
         transition: filter .3s;
     }
+
+    button:hover {
+        filter: brightness(1.1);
+    }
+
+    button:active {
+        translate: 1px 1px;
+    }
 }
 
 .loadingFilter>div:not(.spinnerWrapper) {
