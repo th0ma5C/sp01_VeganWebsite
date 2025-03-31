@@ -33,6 +33,10 @@ jobs:
           cd veganOfficialWeb
           npm ci
           npm run build-only
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_ADMIN_ACCOUNT: ${{ secrets.VITE_ADMIN_ACCOUNT }}
+          VITE_ADMIN_PASSWORD: ${{ secrets.VITE_ADMIN_PASSWORD }}
 
       - name: Auth with GCP
         uses: google-github-actions/auth@v2

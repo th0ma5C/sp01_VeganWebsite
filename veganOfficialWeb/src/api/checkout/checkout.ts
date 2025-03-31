@@ -1,26 +1,12 @@
 import request from '@/utils/request/requests';
 import type { AxiosError } from 'axios';
 
-// const request = axios.create({
-//     baseURL: 'https://payment-stage.ecpay.com.tw',
-//     headers: {
-//         "Content-Type": "application/x-www-form-urlencoded"
-//     }
-// });
-
-// request.interceptors.response.use((res) => {
-//     return res.data;
-// }, (err) => {
-//     return Promise.reject(err);
-// });
-
-// const api = '/Cashier/AioCheckOut/V5';
-
 interface EC_Form_response {
     state: string,
     form: string
 }
 
+// 綠界
 const fetchECorderForm = (params: string) => {
     return request.post<any, EC_Form_response>('/checkout/ECorderForm', {
         orderId: params
@@ -37,8 +23,21 @@ const ECpayAPIconfig = () => {
     }
 }
 
+// line pay
+interface LinePayUrlRes {
+    state: string,
+    url?: string,
+    message?: string
+}
+
+const fetchLinePayUrl = (orderId: string) => {
+    return request.post<any, LinePayUrlRes>('/checkout/LinePayUrl', {
+        orderId
+    })
+}
 
 export {
     fetchECorderForm,
-    ECpayAPIconfig
+    ECpayAPIconfig,
+    fetchLinePayUrl
 }

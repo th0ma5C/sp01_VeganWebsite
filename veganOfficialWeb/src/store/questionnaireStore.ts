@@ -181,8 +181,9 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
                 // const cloudStamp = new Date(cloudResult.createdAt).getTime();
                 const cloudUsername = cloudResult.info.userName;
                 const cloudBirth = cloudResult.info.birth;
-                const localBirth = storageResult.info.birth;
-                if ((cloudUsername !== storageResult.info.userName ||
+                const localBirth = storageResult?.info.birth || [];
+                const localUsername = storageResult?.info.userName || '';
+                if ((cloudUsername !== localUsername ||
                     !arrayIsSame(cloudBirth, localBirth)) &&
                     localHasFinished) {
                     storageResult = cloudResult;
@@ -224,8 +225,8 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
             if (result) {
                 surveyHasCompleted.value = true;
                 QNR_isDone.value = true;
+                return result
             }
-            return result
         } catch (error) {
             // console.log(error);
         }
@@ -238,6 +239,7 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
             resetQNR_result();
             resetGPTStorage();
             QNR_isDone.value = false;
+            surveyHasCompleted.value = false;
             currPage.value = 1;
             formPageTranslateX.value = (currPage.value - 1) * -100;
         } catch (error) {

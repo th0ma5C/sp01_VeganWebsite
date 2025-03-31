@@ -670,7 +670,7 @@ import { reqResetMemberCart } from '@/api/cart/CartRequest';
 import { useToastStore } from '@/store/toastStore';
 import { reqSubscribe } from '@/api/subscribe/subscribe';
 import { useSSEStore } from '@/store/SSEStore';
-import { ECpayAPIconfig, fetchECorderForm } from '@/api/checkout/checkout';
+import { ECpayAPIconfig, fetchECorderForm, fetchLinePayUrl } from '@/api/checkout/checkout';
 
 // 購物車
 const cartStore = useCartStore();
@@ -1060,10 +1060,14 @@ async function createOrder(form: Record<string, any>) {
 
             await refreshMemberCart();
             await getUserOrderList();
-            SSEStore.startPaymentQueue(user.value.userID);
+            // SSEStore.startPaymentQueue(orderId);
 
             if (form.paymentType == '匯款' || form.paymentType == '信用卡') {
                 return await fetchECForm(orderId);
+            }
+
+            if (form.paymentType == '電子支付') {
+                return await openLinePayUrl(orderId);
             }
 
             isAuth.value ?
@@ -1146,6 +1150,19 @@ onBeforeRouteLeave(() => {
     }
 })
 
+// line pay
+async function openLinePayUrl(orderId: string) {
+    try {
+        const { state, url } = await fetchLinePayUrl(orderId);
+        if (state == 'confirm' && url) {
+            window.open(url, '_self')
+            return
+        }
+    } catch (error) {
+        console.error(openLinePayUrl.name, error)
+        throw error
+    }
+}
 
 onMounted(async () => {
     if (!isCheckout.value) toggleIsCheckout();
