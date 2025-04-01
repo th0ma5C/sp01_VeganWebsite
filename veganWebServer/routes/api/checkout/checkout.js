@@ -238,11 +238,14 @@ router.post('/LinePayUrl', detectPlatform, async (req, res) => {
 const linePayIps = process.env.ALLOWED_LINE_PAY_DOMAINS ? process.env.ALLOWED_LINE_PAY_DOMAINS.split(',') : [];
 
 router.get('/LinePayPaymentResult', async (req, res) => {
-    const accessible = await isIpAllowed({
-        clientIp: req.ip,
-        ips: linePayIps
-    });
-    if (!accessible) return res.status(403).end();
+    if (process.env.NODE_ENV === 'production') {
+        const accessible = await isIpAllowed({
+            clientIp: req.ip,
+            ips: linePayIps
+        });
+
+        if (!accessible) return res.status(403).end();
+    }
 
     const { orderId, transactionId } = req.query
     try {

@@ -42,7 +42,7 @@
                                     <input id="email"
                                         type="email"
                                         autocomplete="email"
-                                        placeholder=""
+                                        placeholder="信箱"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
@@ -80,7 +80,7 @@
                                         id="consigneeName"
                                         autocomplete="off"
                                         type="text"
-                                        placeholder=""
+                                        placeholder="姓名"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
@@ -116,7 +116,7 @@
                                     <input id="address"
                                         type="text"
                                         autocomplete="off"
-                                        placeholder=""
+                                        placeholder="地址"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }"
@@ -155,7 +155,7 @@
                                         <input id="city"
                                             class="hideInput"
                                             :="field"
-                                            placeholder=""
+                                            placeholder="縣市"
                                             :class="{
                                                 invalidInput: !meta.valid && submitCount > 0
                                             }">
@@ -266,7 +266,7 @@
                                         <input type="text"
                                             id="postal"
                                             autocomplete="off"
-                                            placeholder=""
+                                            placeholder="郵遞區號"
                                             :="field"
                                             :class="{
                                                 invalidInput: !meta.valid && submitCount > 0
@@ -308,7 +308,7 @@
                                     v-slot="{ field, meta }">
                                     <input type="tel"
                                         id="contactNo"
-                                        placeholder=""
+                                        placeholder="連絡電話"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
@@ -1219,6 +1219,10 @@ onUnmounted(() => {
             background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
             // background-color: $primaryBacColor;
         }
+
+        input::placeholder {
+            opacity: 0;
+        }
     }
 }
 
@@ -1626,7 +1630,7 @@ onUnmounted(() => {
 
         .chooseStoreBtn {
             background-color: $btnBacColor;
-            height: fit-content;
+            // height: fit-content;
             color: $primaryBacColor;
             font-size: .75rem;
             padding: 0 .25rem;
@@ -1797,6 +1801,16 @@ button:active {
     .city_postal {
         flex-direction: column;
         gap: 0;
+    }
+
+    .topContent h2 {
+        display: inline-flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+    }
+
+    .loginLink {
+        text-wrap: nowrap;
     }
 }
 

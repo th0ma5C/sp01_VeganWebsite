@@ -50,7 +50,7 @@
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>{{ message
-                                    }}</span>
+                                        }}</span>
                                 </ErrorMessage>
                             </div>
 
@@ -286,7 +286,7 @@ interface RedirectResTokenDecoded {
     isGuest: boolean
 }
 const route = useRoute();
-const orderQueue = route.query.token as string;
+const orderQueue = route.query.orderQueue as string;
 const SSEStore = useSSEStore();
 const { startPaymentQueue } = SSEStore;
 const { } = storeToRefs(SSEStore)

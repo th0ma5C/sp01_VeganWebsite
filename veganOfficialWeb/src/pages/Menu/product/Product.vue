@@ -1051,6 +1051,7 @@ onUnmounted(() => {
 
     .skeleton {
         width: 85%;
+        height: 85%;
         aspect-ratio: 1 / 1;
         background-color: rgba(62, 163, 80, 0.2);
         border: 2px solid $btnBacColor_light;
@@ -1774,7 +1775,8 @@ onUnmounted(() => {
         }
 
         .imgWrapper img {
-            width: 90%;
+            // width: 90%;
+            // height: 90%;
         }
     }
 
