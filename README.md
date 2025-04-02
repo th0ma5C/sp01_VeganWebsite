@@ -1,12 +1,9 @@
-![Vue](https://img.shields.io/badge/%20-Vue.js-4FC08D?logo=vue.js&logoColor=white)
-![TypeScript](https://img.shields.io/badge/%20-TypeScript-blue?style=flat&logo=typescript&logoColor=white)
-![Sass](https://img.shields.io/badge/%20-Sass-CD6799?logo=sass&logoColor=white)
+# Relation-Ship 蔬食沙拉與果昔 &nbsp; ![Vue](https://img.shields.io/badge/%20-Vue.js-34495E?logo=vue.js&logoColor=41B883) ![TypeScript](https://img.shields.io/badge/%20-TypeScript-3178C6?style=flat&logo=typescript&logoColor=white) ![Sass](https://img.shields.io/badge/%20-Sass-CC6699?logo=sass&logoColor=white)
 
-## Relation-Ship 蔬食沙拉與果昔
-
-一個以 Vue 3 打造的蔬食電商網站。
-
+<h3>
+一個以 Vue 3 打造的蔬食電商網站。<br><br>
 此專案為個人 side project 使用，從前端畫面設計、API 開發、資料庫架構到部署流程，完整涵蓋電商網站建構所需的關鍵環節，旨在模擬一個完整的前、後端實務流程。
+</h3>
 
 ## 網站 Demo
 
