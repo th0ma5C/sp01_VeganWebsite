@@ -22,11 +22,11 @@
 import useConcatImgPath from '@/hooks/useConcatImgPath';
 
 let imgUrl = [
-    'a.jpg',
-    'b.jpg',
-    'c.jpg',
-    'd.jpg',
-    'e.jpg',
+    'subBanner_a.jpg',
+    'subBanner_b.jpg',
+    'subBanner_c.jpg',
+    'subBanner_d.jpg',
+    'subBanner_e.jpg',
 ], folder = 'SubBanner';
 
 let getUrl = useConcatImgPath(imgUrl, folder);

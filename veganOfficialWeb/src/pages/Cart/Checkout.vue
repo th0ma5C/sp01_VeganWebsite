@@ -1130,10 +1130,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-* {
-    // outline: 1px solid black;
-}
-
 .checkoutContainer {
     @extend %headerPseudo;
     @extend %fixContainer;
@@ -1458,9 +1454,6 @@ onUnmounted(() => {
     transform: translate(-50%, -50%);
 }
 
-.postalSpinner {
-    // transform: translate(-50%, -50%);
-}
 
 @keyframes rotation {
     0% {
@@ -1472,10 +1465,6 @@ onUnmounted(() => {
     }
 }
 
-.addressWrapper,
-.contactNoWrapper {
-    // margin: 1rem 0;
-}
 
 .staticLabel {
     transform: none;
@@ -1545,11 +1534,6 @@ onUnmounted(() => {
         align-items: center;
         gap: 1rem;
         position: relative;
-
-        &:not(:first-of-type) {
-            // border-top: none;
-        }
-
 
         h3 {
             font-size: 18px;

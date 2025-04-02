@@ -4,6 +4,7 @@
   TODO: 測試SSE
   TODO: 改google oauth redirect url
   TODO: 綠界有超商地圖api
+  TODO: redis沒有刷新
 
     * line pay 無法跳轉，原因未知
     ❗❗❗ 訂單多項目時排版確認、多筆歷史訂單時排版確認

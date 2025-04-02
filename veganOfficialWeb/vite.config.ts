@@ -6,6 +6,7 @@ import { viteMockServe } from 'vite-plugin-mock'
 import path from 'path'
 import { execSync } from 'child_process'
 import pkg from './package.json'
+import viteImagemin from 'vite-plugin-imagemin'
 
 /// <reference types="vitest/config" />
 
@@ -14,7 +15,11 @@ import pkg from './package.json'
 const commitHash = execSync('git rev-parse --short HEAD').toString().trim()
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
+  const env = loadEnv(mode, process.cwd(), '');
+  const skipPaths = [
+    /\/SubBanner\//,
+    /\/bac_wood\.jpg$/
+  ]
 
   return {
     define: {
@@ -51,6 +56,57 @@ export default defineConfig(({ mode }) => {
       viteMockServe({
         mockPath: 'mock',
         enable: true,
+      }),
+      viteImagemin({
+        gifsicle: {
+          optimizationLevel: 7,
+          interlaced: false,
+        },
+        optipng: {
+          optimizationLevel: 7,
+        },
+        mozjpeg: {
+          quality: 80,
+          progressive: true
+        },
+        pngquant: {
+          quality: [0.8, 0.9],
+          speed: 4,
+        },
+        svgo: {
+          plugins: [
+            {
+              name: 'removeEmptyAttrs',
+              active: true,
+            },
+            {
+              name: 'removeMetadata',
+              active: true
+            },
+            {
+              name: 'cleanupIDs',
+              active: true
+            },
+            {
+              name: 'removeComments',
+              active: true
+            },
+            {
+              name: 'convertStyleToAttrs',
+              active: true
+            }
+          ],
+        },
+        webp: {
+          quality: 80,
+        },
+        filter: (source: string) => {
+          const normalized = source.replace(/\\/g, '/')
+
+          const shouldSkip = /bac_wood/.test(normalized) || /subBanner_/.test(normalized)
+
+          return /\.(jpe?g|png|gif|svg|webp)$/i.test(normalized) && !shouldSkip
+        }
       }),
     ],
     resolve: {
