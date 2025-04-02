@@ -1,6 +1,5 @@
 const redis = require('../redisClient');
 const updateRedis = require('../scripts/updateRedis');
-const { scheduleTokenRefresh, refreshGCPToken, autoRefreshToken } = require('../scripts/refreshOAuth');
 
 module.exports = (success, error) => {
     if (typeof error != 'function') {
@@ -12,7 +11,6 @@ module.exports = (success, error) => {
     const mongoose = require('mongoose');
     const { defaultDB } = require('../config/config');
     const defaultUri = `mongodb://${defaultDB.DBHOST}:${defaultDB.DBPORT}/${defaultDB.DBNAME}`;
-    // const backupUri = `mongodb://${backupDB.DBHOST}:${backupDB.DBPORT}/${backupDB.DBNAME}`;
 
     mongoose.set('strictQuery', true);
 
@@ -31,10 +29,6 @@ module.exports = (success, error) => {
                 console.log('Redis activated');
 
                 await updateRedis();
-
-                // await refreshGCPToken();
-                // await scheduleTokenRefresh();
-                // await autoRefreshToken();
 
                 success();
                 connected = true;

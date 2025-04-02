@@ -1,5 +1,7 @@
-const redisClient = require('@root/redisClient');
 const Stocks = require('@models/StockModel');
+const redisQueue = require('@root/queues/redisQueue');
+const redisClient = require('@root/redisClient');
+
 
 async function checkStocks(list) {
     try {
@@ -7,15 +9,23 @@ async function checkStocks(list) {
             list.map(async (item, index) => {
                 let checkPrice = await redisClient.get(item.name);
                 if (!checkPrice) {
-                    const stock = await Stocks.find({ name: item.name });
+                    const stock = await Stocks.findOne({ name: item.name });
                     if (!stock) {
                         throw new Error(`Product not found: ${item.name}`);
                     }
                     checkPrice = stock.price
-                    await redisClient.set(item.name, checkPrice);
+                    await redisClient.set(item.name, checkPrice), { EX: 93600 };
+
+                    const isUpdating = await redisClient.get('isCacheUpdating');
+                    if (!isUpdating) {
+                        await redisClient.set('isCacheUpdating', 'true', { EX: 300 });
+                        redisQueue.add({}, {
+                            removeOnComplete: true,
+                            removeOnFail: true
+                        })
+                    }
                 }
-                checkPrice = Number(checkPrice);
-                const checkSub = checkPrice * item.amount;
+                const checkSub = Number(checkPrice) * item.amount;
                 return { name: item.name, checkSub };
             })
         )
