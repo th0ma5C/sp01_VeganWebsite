@@ -138,7 +138,8 @@
                     v-for="(item, index) in imgList"
                     :key="index">
                     <div class="imgSlider">
-                        <img :src="item.url" alt="">
+                        <img :src="assetsImg(item.url)"
+                            alt="">
                     </div>
                 </swiper-slide>
             </swiper-container>
@@ -153,15 +154,19 @@ import { positionStore } from '../store/usePagePosition'
 
 const imgList = ref([
     {
-        url: '/imgs/about/upper_left.webp'
+        url: 'upper_left.webp'
     },
     {
-        url: '/imgs/about/upper_right_env.webp'
+        url: 'upper_right_env.webp'
     },
     {
-        url: '/imgs/about/upper_right_chef.webp'
+        url: 'upper_right_chef.webp'
     },
 ]);
+
+function assetsImg(source: string) {
+    return new URL(`/src/assets/img/about/${source}`, import.meta.url).href
+}
 
 let injectStyles = [
     `
@@ -207,10 +212,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-* {
-    // outline: 1px solid black;
-}
-
 .upperContainer {
 
     display: flex;
@@ -491,9 +492,7 @@ onUnmounted(() => {
 
 @include large {}
 
-@include medium($width: 1024px) {
-    .navContainer {}
-}
+@include medium($width: 1024px) {}
 
 .objTop {
     object-position: top;
@@ -508,7 +507,6 @@ onUnmounted(() => {
 }
 
 @include medium {
-    .navContainer {}
 
     .padPage {
         display: block;

@@ -3,10 +3,12 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var session = require('express-session');
+// var session = require('express-session');
 const cors = require('cors');
 require('module-alias/register');
 require('dotenv').config();
+// const RedisStore = require('connect-redis').default;
+
 
 var indexRouter = require('./routes/web/index');
 const apiRouter = require('./routes/api');
@@ -23,12 +25,23 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({
-  secret: 'vegan',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false }
-}))
+// app.use(session({
+//   store: new RedisStore({ client: redisClient }),
+//   secret: 'vegan',
+//   resave: false,
+//   saveUninitialized: false,
+//   cookie: {
+//     secure: false,
+//     maxAge: 1000 * 60 * 60 * 24
+//   }
+// }));
+
+// app.use(session({
+//   secret: 'vegan',
+//   resave: false,
+//   saveUninitialized: true,
+//   cookie: { secure: false }
+// }))
 
 
 app.use('/', indexRouter);

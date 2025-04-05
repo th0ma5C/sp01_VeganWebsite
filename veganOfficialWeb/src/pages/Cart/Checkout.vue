@@ -42,7 +42,7 @@
                                     <input id="email"
                                         type="email"
                                         autocomplete="email"
-                                        placeholder=""
+                                        placeholder="信箱"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
@@ -80,7 +80,7 @@
                                         id="consigneeName"
                                         autocomplete="off"
                                         type="text"
-                                        placeholder=""
+                                        placeholder="姓名"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
@@ -116,7 +116,7 @@
                                     <input id="address"
                                         type="text"
                                         autocomplete="off"
-                                        placeholder=""
+                                        placeholder="地址"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }"
@@ -155,7 +155,7 @@
                                         <input id="city"
                                             class="hideInput"
                                             :="field"
-                                            placeholder=""
+                                            placeholder="縣市"
                                             :class="{
                                                 invalidInput: !meta.valid && submitCount > 0
                                             }">
@@ -266,7 +266,7 @@
                                         <input type="text"
                                             id="postal"
                                             autocomplete="off"
-                                            placeholder=""
+                                            placeholder="郵遞區號"
                                             :="field"
                                             :class="{
                                                 invalidInput: !meta.valid && submitCount > 0
@@ -308,7 +308,7 @@
                                     v-slot="{ field, meta }">
                                     <input type="tel"
                                         id="contactNo"
-                                        placeholder=""
+                                        placeholder="連絡電話"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
@@ -550,52 +550,6 @@
                                     </span>
                                 </ErrorMessage>
                             </div>
-                            <!-- <div
-                                class="formWrapper radioWrapper">
-                                <VField name="paymentType"
-                                    v-model="selectedPayment"
-                                    v-slot="{ field }">
-                                    <input type="radio"
-                                        :="field" hidden>
-                                </VField>
-
-                                <ErrorMessage
-                                    name="paymentType"
-                                    as="div"
-                                    v-slot="{ message }"
-                                    class="errorMsg">
-                                    <SvgIcon
-                                        name="QNR_alert"
-                                        width="18"
-                                        height="18"
-                                        color="#b3261e">
-                                    </SvgIcon>
-                                    <span>
-                                        {{
-                                            message
-                                        }}
-                                    </span>
-                                </ErrorMessage>
-
-                                <div class="radio">
-                                    <ul>
-                                        <li v-for="(type, index) in paymentTypeList"
-                                            :key="index"
-                                            :class="{
-                                                selectLi: type == selectedPayment
-                                            }"
-                                            @click="pickPaymentType(type)">
-                                            <div
-                                                class="radioBtn">
-                                                <div></div>
-                                            </div>
-                                            <h3>
-                                                {{ type }}
-                                            </h3>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div> -->
                         </fieldset>
 
                         <div class="btnWrapper">
@@ -670,7 +624,7 @@ import { reqResetMemberCart } from '@/api/cart/CartRequest';
 import { useToastStore } from '@/store/toastStore';
 import { reqSubscribe } from '@/api/subscribe/subscribe';
 import { useSSEStore } from '@/store/SSEStore';
-import { ECpayAPIconfig, fetchECorderForm } from '@/api/checkout/checkout';
+import { ECpayAPIconfig, fetchECorderForm, fetchLinePayUrl } from '@/api/checkout/checkout';
 
 // 購物車
 const cartStore = useCartStore();
@@ -924,7 +878,8 @@ function clearSelectedStore() {
 
 
 // 付款方式 input
-const paymentTypeList = ref(['匯款', '信用卡', '貨到付款', '電子支付']);
+const paymentTypeList = ref(['匯款', '信用卡', '貨到付款']);
+// const paymentTypeList = ref(['匯款', '信用卡', '貨到付款', '電子支付']);
 const selectedPayment = ref('匯款');
 
 function pickPaymentType(type: string) {
@@ -1060,10 +1015,14 @@ async function createOrder(form: Record<string, any>) {
 
             await refreshMemberCart();
             await getUserOrderList();
-            SSEStore.startPaymentQueue(user.value.userID);
+            // SSEStore.startPaymentQueue(orderId);
 
             if (form.paymentType == '匯款' || form.paymentType == '信用卡') {
                 return await fetchECForm(orderId);
+            }
+
+            if (form.paymentType == '電子支付') {
+                return await openLinePayUrl(orderId);
             }
 
             isAuth.value ?
@@ -1146,6 +1105,19 @@ onBeforeRouteLeave(() => {
     }
 })
 
+// line pay
+async function openLinePayUrl(orderId: string) {
+    try {
+        const { state, url } = await fetchLinePayUrl(orderId);
+        if (state == 'confirm' && url) {
+            window.open(url, '_self')
+            return
+        }
+    } catch (error) {
+        console.error(openLinePayUrl.name, error)
+        throw error
+    }
+}
 
 onMounted(async () => {
     if (!isCheckout.value) toggleIsCheckout();
@@ -1159,10 +1131,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-* {
-    // outline: 1px solid black;
-}
-
 .checkoutContainer {
     @extend %headerPseudo;
     @extend %fixContainer;
@@ -1247,6 +1215,10 @@ onUnmounted(() => {
             transform: translateY(calc(-100% - 10px)) scale(0.8);
             background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
             // background-color: $primaryBacColor;
+        }
+
+        input::placeholder {
+            opacity: 0;
         }
     }
 }
@@ -1483,9 +1455,6 @@ onUnmounted(() => {
     transform: translate(-50%, -50%);
 }
 
-.postalSpinner {
-    // transform: translate(-50%, -50%);
-}
 
 @keyframes rotation {
     0% {
@@ -1497,10 +1466,6 @@ onUnmounted(() => {
     }
 }
 
-.addressWrapper,
-.contactNoWrapper {
-    // margin: 1rem 0;
-}
 
 .staticLabel {
     transform: none;
@@ -1509,7 +1474,7 @@ onUnmounted(() => {
 }
 
 .ckboxWrapper {
-    cursor: pointer;
+    // cursor: pointer;
     margin-bottom: .5rem;
     display: flex;
     align-items: center;
@@ -1570,11 +1535,6 @@ onUnmounted(() => {
         align-items: center;
         gap: 1rem;
         position: relative;
-
-        &:not(:first-of-type) {
-            // border-top: none;
-        }
-
 
         h3 {
             font-size: 18px;
@@ -1654,8 +1614,8 @@ onUnmounted(() => {
         }
 
         .chooseStoreBtn {
-            background-color: $btnBacColor_light;
-            height: fit-content;
+            background-color: $btnBacColor;
+            // height: fit-content;
             color: $primaryBacColor;
             font-size: .75rem;
             padding: 0 .25rem;
@@ -1665,6 +1625,18 @@ onUnmounted(() => {
             margin-left: auto;
             margin-right: 1rem;
             text-wrap: nowrap;
+
+            &:hover {
+                filter: brightness(1.1);
+            }
+
+            &:active {
+                translate: 1px 1px;
+            }
+
+            button {
+                font-variation-settings: 'wght' 500;
+            }
         }
     }
 
@@ -1672,6 +1644,14 @@ onUnmounted(() => {
         top: calc(100% + .75rem + 1px);
         bottom: none;
     }
+}
+
+button:hover {
+    filter: brightness(1.1);
+}
+
+button:active {
+    translate: 1px 1px;
 }
 
 .btnWrapper {
@@ -1806,6 +1786,16 @@ onUnmounted(() => {
     .city_postal {
         flex-direction: column;
         gap: 0;
+    }
+
+    .topContent h2 {
+        display: inline-flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+    }
+
+    .loginLink {
+        text-wrap: nowrap;
     }
 }
 

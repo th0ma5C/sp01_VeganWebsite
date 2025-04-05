@@ -3,24 +3,33 @@ const { promisify } = require("util");
 
 const resolve4Async = promisify(dns.resolve4);
 
-// const allowedDomains = ['postgate.ecpay.com.tw', 'postgate-stage.ecpay.com.tw'];
-const allowedDomains = process.env.ALLOWED_DOMAINS ? process.env.ALLOWED_DOMAINS.split(',') : [];
+// const allowedDomains = process.env.ALLOWED_EC_DOMAINS ? process.env.ALLOWED_EC_DOMAINS.split(',') : [];
 
-const ipResolver = (clientIp) => {
-    return allowedDomains.map(async (domain) => {
-        try {
-            const addresses = await resolve4Async(domain);
-            return addresses.includes(clientIp);
-        } catch (err) {
-            console.error(`解析域名 ${domain} 時出錯:`, err);
-            return false;
-        }
-    })
+const ipResolver = ({
+    clientIp,
+    domains,
+    ips
+}) => {
+    if (domains) {
+        return domains.map(async (domain) => {
+            try {
+                const addresses = await resolve4Async(domain);
+                return addresses.includes(clientIp);
+            } catch (error) {
+                console.error(`解析域名 ${domain} 時出錯:`, error);
+                return false;
+            }
+        })
+    } else if (ips) {
+        return ips.map((ip) => ip === clientIp);
+    } else {
+        return [false]
+    }
 }
 
-const isIpAllowed = async (clientIp) => {
+const isIpAllowed = async (params) => {
     try {
-        const results = await Promise.all(ipResolver(clientIp));
+        const results = await Promise.all(ipResolver({ ...params }),);
         return results.includes(true);
     } catch (error) {
         console.error("發生錯誤:", error);
@@ -28,12 +37,17 @@ const isIpAllowed = async (clientIp) => {
     }
 }
 
-// (async () => {
-//     const res = await ipChecker('175.99.72.1')
-//     console.log(res);
-// })()
 
 module.exports = isIpAllowed
+
+// (async () => {
+//     const foo = ['147.92.159.209', '147.92.159.21', '147.92.159.68']
+//     const res = await isIpAllowed({
+//         clientIp: '147.92.159.6',
+//         ips: foo
+//     })
+//     console.log(res);
+// })()
 
 // 解析域名並比對 IP 是否在白名單中
 // function ipChecker(clientIp, callback) {

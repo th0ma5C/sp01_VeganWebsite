@@ -26,7 +26,8 @@
                                             invalidInput: !meta.valid && submitCount > 0
                                         }"
                                         @keydown.tab="handleTab">
-                                    <i class="placeholder">
+                                    <i class="placeholder"
+                                        v-show="!userAgentIsMobile">
                                         <span>
                                             TAB
                                         </span>
@@ -50,7 +51,7 @@
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>{{ message
-                                    }}</span>
+                                        }}</span>
                                 </ErrorMessage>
                             </div>
 
@@ -69,7 +70,8 @@
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
-                                    <i class="placeholder">
+                                    <i class="placeholder"
+                                        v-show="!userAgentIsMobile">
                                         <span>
                                             TAB
                                         </span>
@@ -139,6 +141,20 @@
                                 <span :style="{
                                     opacity: isSubmitting ? .5 : 1
                                 }">登入</span>
+
+                                <Spinner
+                                    v-show="isSubmitting">
+                                </Spinner>
+                            </button>
+                            <button class="testLogin"
+                                v-if="userAgentIsMobile"
+                                :disabled="isSubmitting"
+                                @click="MobTestLogin">
+                                <span :style="{
+                                    opacity: isSubmitting ? .5 : 1
+                                }">
+                                    使用測試帳號
+                                </span>
                                 <Spinner
                                     v-show="isSubmitting">
                                 </Spinner>
@@ -208,6 +224,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { jwtDecode } from 'jwt-decode';
 import { useToastStore } from '@/store/toastStore';
 import { reqGoogleLogin, reqGoogleLoginUrl } from '@/api/userAuth/googleLogin';
+import { useSSEStore } from '@/store/SSEStore';
 
 const { addNotification } = useToastStore();
 
@@ -285,6 +302,10 @@ interface RedirectResTokenDecoded {
     isGuest: boolean
 }
 const route = useRoute();
+const orderQueue = route.query.orderQueue as string;
+const SSEStore = useSSEStore();
+const { startPaymentQueue } = SSEStore;
+const { } = storeToRefs(SSEStore)
 
 async function handleEmailRedirect() {
     if (!route.query.token) return
@@ -295,6 +316,9 @@ async function handleEmailRedirect() {
         const JWT = route.query.token as string;
         const { token } = await reqRedirectLogin({ token: JWT });
         const decoded = jwtDecode<RedirectResTokenDecoded>(token!);
+        if (orderQueue) {
+            startPaymentQueue(orderQueue);
+        }
         await login(token, decoded.isGuest)
         await routerTo('/profile/account');
         addNotification(`${user.value.username}，歡迎！`)
@@ -415,18 +439,27 @@ watchEffect(async () => {
 })
 
 // 測試帳號快速登入
+const testEmail = import.meta.env.VITE_ADMIN_ACCOUNT;
+const testPwd = import.meta.env.VITE_ADMIN_PASSWORD;
 const inputEmail = ref('');
 const inputPassword = ref('');
 
 function handleTab(e: KeyboardEvent) {
     const tabTarget = e.target as HTMLInputElement;
-    if (tabTarget.value) return
+    if (tabTarget.value || userAgentIsMobile.value) return
     e.preventDefault();
     tabTarget.id == 'email' ?
-        inputEmail.value = import.meta.env.VITE_ADMIN_ACCOUNT :
-        inputPassword.value = import.meta.env.VITE_ADMIN_PASSWORD
+        inputEmail.value = testEmail :
+        inputPassword.value = testPwd
 }
 
+// mobile 快速登入
+const userAgent = ref(navigator.userAgent);
+const userAgentIsMobile = computed(() => /Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(userAgent.value))
+function MobTestLogin() {
+    inputEmail.value = testEmail;
+    inputPassword.value = testPwd
+}
 
 onBeforeMount(async () => {
     await handleEmailRedirect();
@@ -632,6 +665,7 @@ $container_width: 300px;
         box-shadow: 1px 1px 2px black;
         transition: box-shadow .15s ease;
         position: relative;
+        user-select: none;
 
         &:hover {
             box-shadow: 2px 2px 4px black;
@@ -641,6 +675,15 @@ $container_width: 300px;
             transition: none;
             box-shadow: 2px 2px 2px black;
             transform: translate(1px, 1px);
+        }
+    }
+
+    .testLogin {
+        font-size: 1rem;
+        opacity: .5;
+
+        &:active {
+            opacity: 1;
         }
     }
 
@@ -708,6 +751,7 @@ $container_width: 300px;
     display: flex;
     flex-direction: row;
     gap: 1rem;
+    min-height: 36px;
 
     &>div {
         // border: 1px solid green;

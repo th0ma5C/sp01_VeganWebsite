@@ -265,6 +265,7 @@ const routes = [
             }
         ]
     },
+    { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/pages/404/404.vue'), }
 ]
 
 const router = createRouter({

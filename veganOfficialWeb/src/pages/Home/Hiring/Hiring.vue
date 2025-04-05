@@ -33,7 +33,8 @@
                 </div>
 
                 <div class="imgBc">
-                    <img src="/imgs/Hiring/chef.png" alt="">
+                    <img src="@assets/img/Hiring/chef.png"
+                        alt="">
                 </div>
             </main>
         </transition>
@@ -42,7 +43,7 @@
             <div v-for="(item, index) in 8" :key="index"
                 :class='`imgWrapper${index}`'
                 ref="startImgRef">
-                <img src="/imgs/about/upper_right_chef.webp"
+                <img src="@assets/img/about/upper_right_chef.webp"
                     alt="">
             </div>
         </div>
@@ -477,7 +478,7 @@ main {
     &::before {
         content: '';
         background:
-            url('/imgs/Hiring/hiring.webp') no-repeat;
+            url('@assets/img/Hiring/hiring.webp') no-repeat;
         background-position: var(--bacPosition);
         // background-position: 50% 0;
         background-size: cover;

@@ -1,13 +1,63 @@
 const Order = require('@models/OrderModel');
+const User = require('@models/User');
 const moment = require('moment');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 async function genECorderForm(orderId) {
     try {
         const order = await Order.findById(orderId);
-        return genSubmitForm(order)
+        if (order.transactionId !== null) {
+            order.transactionId = await genTransactionId();
+            await order.save();
+        }
+        return await genSubmitForm(order)
     } catch (error) {
         console.log(error);
+    }
+}
+
+async function genTransactionId() {
+    try {
+        let transactionId;
+        let isUnique = false;
+
+        while (!isUnique) {
+            transactionId = crypto.randomUUID().replace(/-/g, "").substring(0, 20);
+            const existingOrder = await Order.exists({ transactionId });
+            if (!existingOrder) isUnique = true;
+        }
+
+        return transactionId;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function genUserToken(purchaseOrder) {
+    try {
+        const isGuest = !(mongoose.Types.ObjectId.isValid(purchaseOrder.userID));
+        let user = null
+        if (isGuest) {
+            user = {
+                userID: purchaseOrder.userID,
+                email: shippingInfo.email,
+                isGuest
+            }
+        } else {
+            const member = await User.findById(purchaseOrder.userID);
+            user = {
+                userID: member._id,
+                email: member.email,
+                isGuest
+            }
+        }
+        const token = jwt.sign({ ...user }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        return token
+    } catch (error) {
+        throw error
     }
 }
 
@@ -39,29 +89,32 @@ function generateCheckValue(params) {
     return result
 }
 
-function genSubmitForm(order) {
-    const { _id, purchaseOrder, transactionId } = order;
+async function genSubmitForm(order) {
+    try {
+        const { _id, purchaseOrder, transactionId } = order;
 
-    const ItemName = purchaseOrder.orderList.map((item) => {
-        return `${item.name},${item.amount}pcs`
-    }).join("#");
+        const ItemName = purchaseOrder.orderList.map((item) => {
+            return `${item.name},${item.amount}pcs`
+        }).join("#");
 
-    const base_param = {
-        MerchantID: process.env.MerchantID,
-        MerchantTradeNo: transactionId,
-        MerchantTradeDate: moment().format('YYYY/MM/DD HH:mm:ss'),
-        PaymentType: 'aio',
-        TotalAmount: purchaseOrder.total,
-        TradeDesc: 'ecpay test',
-        ItemName,
-        ReturnURL: process.env.PaymentReturnURL,
-        ChoosePayment: 'ALL',
-        EncryptType: 1,
-        ClientBackURL: process.env.EC_ClientBackURL,
-        CustomField1: _id,
-    };
+        const token = await genUserToken(purchaseOrder);
 
-    const form = `
+        const base_param = {
+            MerchantID: process.env.MerchantID,
+            MerchantTradeNo: transactionId,
+            MerchantTradeDate: moment().format('YYYY/MM/DD HH:mm:ss'),
+            PaymentType: 'aio',
+            TotalAmount: purchaseOrder.total,
+            TradeDesc: 'ecpay test',
+            ItemName,
+            ReturnURL: process.env.PaymentReturnURL,
+            ChoosePayment: 'ALL',
+            EncryptType: 1,
+            ClientBackURL: `${process.env.EC_ClientBackURL}?orderQueue=${_id}&token=${token}`,
+            CustomField1: _id,
+        };
+
+        const form = `
           <input name="MerchantID" value="${base_param.MerchantID}"/>
           <input name="MerchantTradeNo" value="${base_param.MerchantTradeNo}" />
           <input name="MerchantTradeDate" value="${base_param.MerchantTradeDate}" />
@@ -76,26 +129,12 @@ function genSubmitForm(order) {
           <input name="CustomField1" value="${base_param.CustomField1}" />
           <input name="CheckMacValue" value="${generateCheckValue(base_param)}" />
       `;
-    // const form = `
-    //     <form action="https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5" method="POST" name="payment" style="display: none;">
-    //       <input name="MerchantID" value="${base_param.MerchantID}"/>
-    //       <input name="MerchantTradeNo" value="${base_param.MerchantTradeNo}" />
-    //       <input name="MerchantTradeDate" value="${base_param.MerchantTradeDate}" />
-    //       <input name="PaymentType" value="${base_param.PaymentType}" />
-    //       <input name="TotalAmount" value="${base_param.TotalAmount}" />
-    //       <input name="TradeDesc" value="${base_param.TradeDesc}" />
-    //       <input name="ItemName" value="${base_param.ItemName}" />
-    //       <input name="ReturnURL" value="${base_param.ReturnURL}" />
-    //       <input name="ChoosePayment" value="${base_param.ChoosePayment}" />
-    //       <input name="EncryptType" value="${base_param.EncryptType}" />
-    //       <input name="ClientBackURL" value="${base_param.ClientBackURL}" />
-    //       <input name="CustomField1" value="${base_param.CustomField1}" />
-    //       <input name="CheckMacValue" value="${generateCheckValue(base_param)}" />
-    //       <button type="submit">Submit</button>
-    //     </form>
-    //   `;
 
-    return form
+        return form
+
+    } catch (error) {
+        throw error
+    }
 }
 
 module.exports = {

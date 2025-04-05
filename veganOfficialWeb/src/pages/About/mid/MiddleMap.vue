@@ -121,8 +121,9 @@
 
                 <div class="imgWrapper">
                     <img v-for="(item, index) in list"
-                        :key="index" :src="item.imgUrl"
-                        alt="" v-show="index == currTab">
+                        :key="index"
+                        :src="assetsImg(item.imgUrl)" alt=""
+                        v-show="index == currTab">
 
                 </div>
             </div>
@@ -142,21 +143,25 @@ const list = ref([
         branch: '台北店',
         addr: '臺北市中正區黎明里北平西路3號',
         tel: '02-21234567',
-        imgUrl: '/imgs/about/midStore1.webp'
+        imgUrl: 'midStore1.webp',
     },
     {
         branch: '台中店',
         addr: '臺中市中區綠川里臺灣大道一段1號',
         tel: '04-31234567',
-        imgUrl: '/imgs/about/midStore2.webp'
+        imgUrl: 'midStore2.webp',
     },
     {
         branch: '高雄店',
         addr: '高雄市三民區港西里建國二路318號',
         tel: '07-8123456',
-        imgUrl: '/imgs/about/midStore3.webp'
+        imgUrl: 'midStore3.webp',
     },
 ])
+
+function assetsImg(source: string) {
+    return new URL(`/src/assets/img/about/${source}`, import.meta.url).href
+}
 
 // current tab
 const currTab = ref(0);
@@ -248,10 +253,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-* {
-    // outline: 1px solid black;
-}
-
 %pseudo_line {
     content: '';
     position: absolute;
@@ -359,7 +360,7 @@ onUnmounted(() => {
 
     animation: pseudo_bac0 2.5s forwards;
     background:
-        linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('/imgs/about/midStore1.webp') no-repeat top/cover;
+        linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('@assets/img/about/midStore1.webp') no-repeat top/cover;
 }
 
 .store2::after {
@@ -372,7 +373,7 @@ onUnmounted(() => {
     // height: 100%;
     animation: pseudo_bac1 2.5s forwards;
     background:
-        linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('/imgs/about/midStore2.webp') no-repeat top/cover;
+        linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('@assets/img/about/midStore2.webp') no-repeat top/cover;
 }
 
 .store3::after {
@@ -385,7 +386,7 @@ onUnmounted(() => {
     // height: 100%;
     animation: pseudo_bac2 2.5s forwards;
     background:
-        linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('/imgs/about/midStore3.webp') no-repeat top/cover;
+        linear-gradient(rgba(252, 250, 242, 0.75), #FCFAF2), url('@assets/img/about/midStore3.webp') no-repeat top/cover;
 }
 
 main {

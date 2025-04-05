@@ -1,47 +1,18 @@
 <template>
     <swiper-container :parallax="true" :loop="true"
         :slides-per-view="1"
-        :pagination="{ clickable: true }"
-        pagination-dynamic-bullets="true" :speed="1000"
-        :centeredSlides="true"
-        :injectStyles="'injectStyles'" class="mainBanner"
-        @swipertouchmove="swiperOndrag"
-        @swipertouchend="swiperEndDrag">
-        <swiper-slide v-for="(img, index) in imgs"
-            :key="index">
-            <div class="swiper-wrapper"
-                @click="titleOnclick(img.title)">
-                <div class="swiper-slide">
-                    <div class="title"
-                        data-swiper-parallax="-500">
-                        <h1>{{ img.title }}</h1>
-                        <p>{{ img.text }}</p>
-                    </div>
-                </div>
-                <div class="text" data-swiper-parallax="0">
-                    <!-- <a href="" @click.prevent> -->
-                    <img :src="`/imgs/MainBanner/${img.url}.jpg`"
-                        alt="">
-                    <!-- </a> -->
-                </div>
-            </div>
-        </swiper-slide>
-    </swiper-container>
-    <!-- <swiper-container :parallax="true" :loop="true"
-        :slides-per-view="1"
-        :pagination="{ clickable: true }"
-        pagination-dynamic-bullets="true" :speed="1000"
-        :centeredSlides="true" :autoplay="{
+        :pagination="{ clickable: true }" :autoplay="{
             delay: 7750,
             disableOnInteraction: false,
-        }" :injectStyles="'injectStyles'"
+            pauseOnMouseEnter: true
+        }" preventInteractionOnTransition="true"
+        pagination-dynamic-bullets="true" :speed="1000"
         class="mainBanner" @swipertouchmove="swiperOndrag"
         @swipertouchend="swiperEndDrag">
         <swiper-slide v-for="(img, index) in imgs"
             :key="index">
-            <div class="swiper-wrapper"
-                @click="titleOnclick(img.title)">
-                <div class="swiper-slide">
+            <div @click="titleOnclick(img.title)">
+                <div>
                     <div class="title"
                         data-swiper-parallax="-500">
                         <h1>{{ img.title }}</h1>
@@ -49,22 +20,22 @@
                     </div>
                 </div>
                 <div class="text" data-swiper-parallax="0">
-                    <a href="" @click.prevent>
-                        <img :src="`/imgs/MainBanner/${img.url}.jpg`"
-                            alt="">
-                    </a>
+                    <!-- <img :src="`/imgs/MainBanner/${img.url}.jpg`"
+                        alt=""> -->
+                    <img :src="genImgUrl(img.url)" alt="">
                 </div>
             </div>
         </swiper-slide>
-    </swiper-container> -->
+    </swiper-container>
 </template>
 <script lang="ts" setup>
 import { useToastStore } from '@/store/toastStore';
+import type { SwiperContainer } from 'swiper/element';
 import { onMounted, ref, useTemplateRef, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 
-const imgs = [
+const imgs = ref([
     {
         url: '1',
         title: '專屬分析',
@@ -90,16 +61,11 @@ const imgs = [
         title: '專屬APP',
         text: '下載我們的APP，一鍵下單更方便'
     },
-];
-// let injectStyles = [
-//     `
-//     :host{
-//         --swiper-pagination-bullet-width: 10px;
-//         --swiper-pagination-bullet-height: 10px;
-//         --swiper-pagination-color: #FCFAF2;    
-//     }
-//     `
-// ];
+])
+
+function genImgUrl(source: string) {
+    return new URL(`/src/assets/img/MainBanner/${source}.jpg`, import.meta.url).href
+}
 
 // store
 const toastStore = useToastStore();
@@ -145,19 +111,19 @@ function titleOnclick(target: string) {
         return
     }
     switch (target) {
-        case imgs[0].title:
+        case imgs.value[0].title:
             routeAnalyst()
             break;
-        case imgs[1].title:
+        case imgs.value[1].title:
             routeMenu()
             break;
-        case imgs[2].title:
+        case imgs.value[2].title:
             routeAbout()
             break;
-        case imgs[3].title:
+        case imgs.value[3].title:
             routeShare()
             break;
-        case imgs[4].title:
+        case imgs.value[4].title:
             routeApp()
             break;
         default:
@@ -232,6 +198,10 @@ onMounted(() => {
 }
 
 swiper-container {
+    swiper-slide {
+        overflow: hidden;
+    }
+
     &::part(bullet) {}
 
     &::part(bullet-active) {

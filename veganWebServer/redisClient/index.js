@@ -1,3 +1,5 @@
+// const session = require('express-session');
+// const RedisStore = require('connect-redis').default;
 const { createClient } = require('redis');
 
 const client = createClient({
@@ -14,13 +16,5 @@ client.on('connect', () => {
 client.on('error', (err) => {
     console.error('Redis Error:', err);
 });
-
-// (async () => {
-//     try {
-//         await client.connect();
-//     } catch (err) {
-//         console.error('Failed to connect to Redis:', err);
-//     }
-// })();
 
 module.exports = client;

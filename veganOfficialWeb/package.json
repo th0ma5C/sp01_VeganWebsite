@@ -1,6 +1,6 @@
 {
   "name": "veganofficialweb",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -61,6 +61,7 @@
     "typescript": "~5.3.0",
     "typescript-eslint": "^8.26.0",
     "vite": "^6.0.3",
+    "vite-plugin-imagemin": "^0.6.1",
     "vite-plugin-mock": "^3.0.1",
     "vite-plugin-svg-icons": "^2.0.1",
     "vitest": "^3.0.7",

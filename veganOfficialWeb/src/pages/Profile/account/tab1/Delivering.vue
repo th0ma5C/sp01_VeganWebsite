@@ -236,6 +236,12 @@
                             </ul>
 
                             <div class="total">
+                                <span>運費：</span>
+                                <span>
+                                    ${{
+                                        purchaseOrder.freightFee.toLocaleString()
+                                    }}
+                                </span>
                                 <span>折扣：</span>
                                 <span>
                                     ${{
@@ -248,14 +254,6 @@
                                         purchaseOrder.total.toLocaleString()
                                     }}
                                 </span>
-                                <!-- <div class="totalAmount">
-                                    <span>總額：</span>
-                                    <span>
-                                        ${{
-                                            purchaseOrder.total.toLocaleString()
-                                        }}
-                                    </span>
-                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -263,11 +261,18 @@
                     <div class="editBtn">
                         <button
                             v-for="(item, index) in statusBtnList"
-                            :key="index"
-                            @click="toggleDialogOpen(item, _id)">
+                            :key="index" @click="() => {
+                                toggleDialogOpen(item, _id);
+                                if (item == '付款') payForOrder(_id, shippingInfo.paymentType)
+                            }"
+                            v-show="item != '付款' || (item == '付款' && (shippingInfo.paymentType !== '貨到付款'))">
                             {{ item }}
+                            <Spinner v-show="false">
+                            </Spinner>
                         </button>
                     </div>
+                    <form v-html="ECform" class=" hidden"
+                        ref="ECformRef"></form>
                 </div>
             </li>
             <div class="spinnerContainer"
@@ -297,6 +302,8 @@ import gsap from 'gsap';
 import { Flip } from 'gsap/Flip';
 import Dialog from './dialog/Dialog.vue';
 import { useSSEStore } from '@/store/SSEStore';
+import { ECpayAPIconfig, fetchECorderForm, fetchLinePayUrl } from '@/api/checkout/checkout';
+import { useToastStore } from '@/store/toastStore';
 
 // pinia
 const userStore = useUserStore();
@@ -486,6 +493,74 @@ function toggleDialogOpen(btn: string, orderID: string) {
     if (btn !== '取消訂單') return
     orderOnCancelling.value = orderID;
     isCancelDialogOpen.value = !isCancelDialogOpen.value;
+}
+
+// 付款
+// 綠界
+const toastStore = useToastStore();
+const ECform = ref<null | string>(null);
+const ECformRef = useTemplateRef<HTMLFormElement[]>('ECformRef')
+
+async function fetchECForm(orderId: string) {
+    try {
+        const { state, form } = await fetchECorderForm(orderId);
+        console.log(form);
+        if (state == 'confirm') {
+            return ECform.value = form;
+        }
+        toastStore.addNotification('無法獲取訂單支付表單，請稍後再試。');
+        return null;
+    } catch (error) {
+        console.error('Error fetching EC order form:', error);
+        toastStore.addNotification('無法連接支付服務，請稍後再試。');
+        return null;
+    }
+}
+
+watchEffect(async () => {
+    try {
+        if (ECform.value && ECformRef.value && ECformRef.value[0]) {
+            await nextTick();
+            // const ecFormEl = ECformRef.value.querySelector('form');
+            // if (ecFormEl) ecFormEl.submit();
+            const { action, headers, method } = ECpayAPIconfig()
+            ECformRef.value[0].action = action;
+            ECformRef.value[0].method = method;
+            ECformRef.value[0].name = 'payment';
+            ECformRef.value[0].submit();
+        }
+    } catch (error) {
+        console.log(error);
+    }
+})
+
+// line pay
+async function openLinePayUrl(orderId: string) {
+    try {
+        const { state, url } = await fetchLinePayUrl(orderId);
+        if (state == 'confirm' && url) {
+            window.open(url, '_self')
+            return
+        }
+    } catch (error) {
+        console.error(openLinePayUrl.name, error)
+        throw error
+    }
+}
+
+async function payForOrder(orderId: string, paymentType: string) {
+    try {
+        if (paymentType == '匯款' || paymentType == '信用卡') {
+            return await fetchECForm(orderId);
+        }
+
+        if (paymentType == '電子支付') {
+            return await openLinePayUrl(orderId);
+        }
+
+    } catch (error) {
+
+    }
 }
 
 // 刷新訂單列表
@@ -836,7 +911,7 @@ h2 {
             line-height: 100%;
         }
 
-        span:nth-of-type(2) {
+        span:nth-of-type(4) {
             color: red;
         }
 
