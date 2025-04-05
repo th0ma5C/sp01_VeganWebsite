@@ -2,9 +2,7 @@
   TODO: 複製環境變數到生產環境，nginx放行綠界、google回調
   TODO: 手機初始化卡頓、hiring未正常運作
   TODO: 測試SSE
-  TODO: 改google oauth redirect url
   TODO: 綠界有超商地圖api
-  TODO: redis沒有刷新
 
     * line pay 無法跳轉，原因未知
     ❗❗❗ 訂單多項目時排版確認、多筆歷史訂單時排版確認
@@ -21,6 +19,8 @@
     ✔️ npm start不時會發生服務端無法響應資源(開機後第一次start)原因未知 => 環境變數未加載
     ✔️ 修改email驗證跳轉component server跳轉改前端站內跳轉
     ✔️ account 付款按紐
+    ✔️ redis沒有刷新
+    ✔️ 改google oauth redirect url
 ------------------------------------------------------------------------
 # DOING: 會員卡 臨時會員 結帳頁
 

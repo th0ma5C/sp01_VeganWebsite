@@ -878,7 +878,8 @@ function clearSelectedStore() {
 
 
 // 付款方式 input
-const paymentTypeList = ref(['匯款', '信用卡', '貨到付款', '電子支付']);
+const paymentTypeList = ref(['匯款', '信用卡', '貨到付款']);
+// const paymentTypeList = ref(['匯款', '信用卡', '貨到付款', '電子支付']);
 const selectedPayment = ref('匯款');
 
 function pickPaymentType(type: string) {

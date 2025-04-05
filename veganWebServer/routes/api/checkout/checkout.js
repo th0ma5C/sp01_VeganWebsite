@@ -186,7 +186,7 @@ router.post('/testLinePayUrl', async (req, res) => {
 
 function detectPlatform(req, res, next) {
     const userAgent = req.get('User-Agent') || '';
-    const reg = /iphone|ipad|ipod|android|mobile/i;
+    const reg = /Mobi|Android|iPhone|iPad|iPod|Mobile/i;
     const isMobile = reg.test(userAgent);
     req.isMobile = isMobile
     next()
