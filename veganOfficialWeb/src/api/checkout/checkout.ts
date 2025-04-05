@@ -1,15 +1,15 @@
 import request from '@/utils/request/requests';
 import type { AxiosError } from 'axios';
 
-interface EC_Form_response {
+interface ECFormResponse {
     state: string,
     form: string
 }
 
 // 綠界
-const fetchECorderForm = (params: string) => {
-    return request.post<any, EC_Form_response>('/checkout/ECorderForm', {
-        orderId: params
+const fetchECorderForm = (orderId: string) => {
+    return request.post<any, ECFormResponse>('/checkout/ECorderForm', {
+        orderId
     })
 }
 
