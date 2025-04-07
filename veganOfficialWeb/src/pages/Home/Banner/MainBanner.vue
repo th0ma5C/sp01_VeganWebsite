@@ -22,7 +22,8 @@
                 <div class="text" data-swiper-parallax="0">
                     <!-- <img :src="`/imgs/MainBanner/${img.url}.jpg`"
                         alt=""> -->
-                    <img :src="genImgUrl(img.url)" alt="">
+                    <img rel="preload"
+                        :src="genImgUrl(img.url)" alt="">
                 </div>
             </div>
         </swiper-slide>

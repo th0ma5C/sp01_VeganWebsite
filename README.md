@@ -15,7 +15,7 @@
 
 <details>
   <summary>首頁</summary>
-  <img src="./docs/images/home.png" alt="首頁截圖" width="100%"/>
+  <img src="./docs/images/home.gif" alt="首頁截圖" width="100%"/>
 </details>
 
 <details>

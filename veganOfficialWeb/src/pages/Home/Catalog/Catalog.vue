@@ -105,16 +105,16 @@
 
                             <template
                                 v-if="index == 0 || index == 1 || (index == 2 && QNR_isDone)">
-                                <div
-                                    :class="['prevBtn', `prevBtn${index}`]">
+                                <div :class="['prevBtn', `prevBtn${index}`]"
+                                    aria-label="prevBtn">
                                     <SvgIcon name="Previous"
                                         width="36px"
                                         height="36px"
                                         color="#0d731e">
                                     </SvgIcon>
                                 </div>
-                                <div
-                                    :class="['nextBtn', `nextBtn${index}`]">
+                                <div :class="['nextBtn', `nextBtn${index}`]"
+                                    aria-label="nextBtn">
                                     <SvgIcon name="Next"
                                         width="36px"
                                         height="36px"
