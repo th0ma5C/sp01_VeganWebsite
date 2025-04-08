@@ -227,7 +227,7 @@
         <main>
             <router-link :to="{ name: 'Home' }">
                 <SvgIcon name="Logo" height="65px"
-                    color="#00430b">
+                    width="100px" color="#00430b">
                 </SvgIcon>
             </router-link>
             <SvgIcon name="cancel" width="32px"
@@ -569,6 +569,8 @@ onBeforeUnmount(() => {
 
     a {
         display: block;
+        width: max-content;
+        margin-inline: auto;
     }
 
     .cancelIcon {

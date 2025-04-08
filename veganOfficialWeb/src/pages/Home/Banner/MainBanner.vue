@@ -22,7 +22,8 @@
                 <div class="text" data-swiper-parallax="0">
                     <!-- <img :src="`/imgs/MainBanner/${img.url}.jpg`"
                         alt=""> -->
-                    <img :src="genImgUrl(img.url)" alt="">
+                    <img rel="preload"
+                        :src="genImgUrl(img.url)" alt="">
                 </div>
             </div>
         </swiper-slide>
@@ -64,7 +65,7 @@ const imgs = ref([
 ])
 
 function genImgUrl(source: string) {
-    return new URL(`/src/assets/img/MainBanner/${source}.jpg`, import.meta.url).href
+    return new URL(`/src/assets/img/MainBanner/${source}.webp`, import.meta.url).href
 }
 
 // store

@@ -7,11 +7,15 @@ export const useSSEStore = defineStore("sse", () => {
     const paymentQueue = ref<Record<string, EventSource>>({});
     const orderQueueId = ref<null | string>();
 
-    const startPaymentQueue = (orderId: string) => {
+    const startPaymentQueue = (orderId: string, stage?: 'line') => {
         if (paymentQueue.value[orderId]) return;
-        orderQueueId.value = orderId;
-        paymentQueue.value[orderId] = new EventSource(`/api/checkout/paymentQueue/${orderId}`);
-
+        if (!stage) {
+            orderQueueId.value = orderId;
+            paymentQueue.value[orderId] = new EventSource(`/api/checkout/paymentQueue/${orderId}`);
+        } else {
+            orderQueueId.value = orderId;
+            paymentQueue.value[orderId] = new EventSource(`/api/LinePayStatus?orderId=${orderId}`);
+        }
     };
 
     const stopPaymentQueue = (orderId: string) => {

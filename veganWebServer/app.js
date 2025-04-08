@@ -24,6 +24,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+// 配置 CORS
+const allowedOrigins = (process.env.CORS_ORIGIN || '').split(',');
+const corsOptions = {
+  origin: allowedOrigins,
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // app.use(session({
 //   store: new RedisStore({ client: redisClient }),
@@ -43,7 +51,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 //   cookie: { secure: false }
 // }))
 
-
 app.use('/', indexRouter);
 app.use('/api', apiRouter);
 
@@ -62,13 +69,5 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
-// 配置 CORS，僅允許來自指定域名的請求
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN || '*',
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
 
 module.exports = app;

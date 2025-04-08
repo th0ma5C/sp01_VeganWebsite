@@ -601,10 +601,12 @@
         <form v-html="ECform" class=" hidden"
             ref="ECformRef"></form>
     </div>
+    <OnPayment v-if="userIsPaying || true"></OnPayment>
 </template>
 
 <script setup lang="ts">
 import CheckCartList from './CheckCartList/CheckCartList.vue';
+import OnPayment from './OnPayment/OnPayment.vue';
 import { useCartStore } from '@/store/cartStore';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect, nextTick, useTemplateRef, onBeforeMount, onBeforeUnmount } from 'vue';
@@ -1018,10 +1020,11 @@ async function createOrder(form: Record<string, any>) {
             // SSEStore.startPaymentQueue(orderId);
 
             if (form.paymentType == '匯款' || form.paymentType == '信用卡') {
-                return await fetchECForm(orderId);
+                await fetchECForm(orderId);
             }
 
             if (form.paymentType == '電子支付') {
+                userIsPaying.value = true;
                 return await openLinePayUrl(orderId);
             }
 
@@ -1106,11 +1109,13 @@ onBeforeRouteLeave(() => {
 })
 
 // line pay
+const userIsPaying = ref(false);
 async function openLinePayUrl(orderId: string) {
     try {
         const { state, url } = await fetchLinePayUrl(orderId);
         if (state == 'confirm' && url) {
-            window.open(url, '_self')
+            window.open(url, '_blank');
+            // window.open(url, '_self')
             return
         }
     } catch (error) {

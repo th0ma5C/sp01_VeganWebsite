@@ -1,15 +1,8 @@
 const crypto = require("crypto");
-const { TextEncoder } = require('util');
 const mongoose = require('mongoose');
 const User = require('@models/User');
 const Order = require('@models/OrderModel');
 
-// function signKey(clientKey, msg) {
-//     return crypto
-//         .createHmac("sha256", clientKey)
-//         .update(msg)
-//         .digest("base64");
-// }
 function signKey(clientKey, msg) {
     const encoder = new TextEncoder();
     return crypto
@@ -37,7 +30,6 @@ async function requestOnlineAPI({
     const nonce = crypto.randomUUID();
     const baseUrl = process.env.LINE_BASE_URL
     let signature = "";
-
     if (method === "GET") {
         signature = signKey(
             process.env.LINE_PAY_SECRETE,
@@ -124,6 +116,7 @@ function detectPlatform(userAgent = '') {
     return reg.test(userAgent)
 }
 
+// 付款 URL 
 async function fetchLinePayPaymentUrl({
     orderId,
     order
@@ -139,8 +132,9 @@ async function fetchLinePayPaymentUrl({
                 orderId,
                 packages,
                 redirectUrls: {
-                    confirmUrl: process.env.LINE_PAY_CONFIRM_URL,
-                    cancelUrl: process.env.LINE_PAY_CANCEL_URL,
+                    // confirmUrl: process.env.LINE_PAY_CONFIRM_URL,
+                    // cancelUrl: process.env.LINE_PAY_CANCEL_URL,
+                    confirmUrlType: "NONE",
                 },
             },
         });
@@ -167,6 +161,27 @@ async function fetchLinePayPaymentUrl({
 //     }
 // }
 
+// 查詢狀態
+async function fetchLinePayStatus(requestTransactionId) {
+    try {
+        if (!requestTransactionId) throw new Error("Transaction ID is required!");
+
+        let response = await requestOnlineAPI({
+            method: "GET",
+            apiPath: `/v3/payments/requests/${requestTransactionId}/check`,
+        });
+        return response.returnCode
+    } catch (error) {
+        console.log(error);
+    }
+}
+// 查詢響應
+// {
+//     "returnCode": "0000",
+//     "returnMessage": "success"
+// }
+
+// 付款授權
 async function fetchLinePayPaymentResult({
     transactionId,
     amount
@@ -204,6 +219,7 @@ async function fetchLinePayPaymentResult({
 //     }
 // }
 
+// 取消付款
 async function fetchLinePayRefound(transactionId) {
     try {
         let refundResponse = await requestOnlineAPI({
@@ -229,8 +245,11 @@ async function fetchLinePayRefound(transactionId) {
 // }
 
 
+
 module.exports = {
+    requestOnlineAPI,
     fetchLinePayPaymentUrl,
+    fetchLinePayStatus,
     fetchLinePayPaymentResult,
     fetchLinePayRefound
 }

@@ -7,7 +7,8 @@ const Order = require('@models/OrderModel');
 const { genECorderForm, generateCheckValue } = require('./ECorder/ECorder');
 const mongoose = require('mongoose');
 const isIpAllowed = require('@middlewares/ipChecker/ipChecker');
-const { fetchLinePayPaymentUrl, fetchLinePayPaymentResult, fetchLinePayRefound } = require('./LinePay')
+const { requestOnlineAPI, fetchLinePayPaymentUrl, fetchLinePayStatus,
+    fetchLinePayPaymentResult, fetchLinePayRefound } = require('./LinePay')
 const jwt = require('jsonwebtoken');
 
 
@@ -125,53 +126,107 @@ router.post('/ECpayResult', async (req, res) => {
 })
 // todo line pay api
 // line pay 付款 url
-router.post('/testLinePayUrl', async (req, res) => {
-    try {
-        const form = {
-            amount: 1059,
-            orderId: '6766bd3dacce3491347bdb42',
-            packages: [
-                {
-                    id: "1",
-                    amount: 1059,
-                    products: [
-                        {
-                            name: "日出庭園沙拉",
-                            quantity: 7,
-                            price: 149,
-                        },
-                        {
-                            name: "運費",
-                            quantity: 1,
-                            price: 120,
-                        },
-                        {
-                            name: "折扣",
-                            quantity: 1,
-                            price: -104,
-                        },
-                    ]
-                }
-            ]
-        }
+const crypto = require("crypto");
+router.get('/testLinePayUrl', async (req, res) => {
 
-        const Line_res = await fetchLinePayPaymentUrl({
-            orderId: '6766bd3dacce3491347bdb42',
-            packages: [
-                {
-                    id: "1",
-                    amount: 1059,
-                    products
-                }
-            ]
+    function signKey(clientKey, msg) {
+        const encoder = new TextEncoder();
+        return crypto
+            .createHmac("sha256", encoder.encode(clientKey))
+            .update(encoder.encode(msg))
+            .digest("base64");
+    }
+    function handleBigInteger(text) {
+        const largeNumberRegex = /:\s*(\d{16,})\b/g;
+        const processedText = text.replace(largeNumberRegex, ': "$1"');
+
+        const data = JSON.parse(processedText);
+
+        return data;
+    }
+
+    async function requestOnlineAPI({
+        method,
+        baseUrl = "https://sandbox-api-pay.line.me",
+        apiPath,
+        queryString = "",
+        data = null,
+        signal = null,
+    }) {
+        const nonce = crypto.randomUUID();
+        let signature = "";
+
+        // 根據不同方式(method)生成MAC
+        if (method === "GET") {
+            signature = signKey(
+                process.env.LINE_PAY_SECRETE,
+                process.env.LINE_PAY_SECRETE + apiPath + queryString + nonce
+            );
+        } else if (method === "POST") {
+            signature = signKey(
+                process.env.LINE_PAY_SECRETE,
+                process.env.LINE_PAY_SECRETE + apiPath + JSON.stringify(data) + nonce
+            );
+        }
+        const headers = {
+            "X-LINE-ChannelId": process.env.LINE_PAY_ID,
+            "X-LINE-Authorization": signature,
+            "X-LINE-Authorization-Nonce": nonce,
+        };
+
+        const response = await fetch(
+            `${baseUrl}${apiPath}${queryString !== "" ? "&" + queryString : ""}`,
+            {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json",
+                    ...headers,
+                },
+                body: data ? JSON.stringify(data) : null,
+                signal: signal,
+            }
+        );
+
+        const processedResponse = handleBigInteger(await response.text());
+
+        return processedResponse;
+    }
+    try {
+        let response = await requestOnlineAPI({
+            method: "POST",
+            apiPath: "/v3/payments/request",
+            data: {
+                amount: 100,
+                currency: "TWD",
+                orderId: "EXAMPLE_ORDER_20230422_1000001",
+                packages: [
+                    {
+                        id: "1",
+                        amount: 100,
+                        products: [
+                            {
+                                id: "PEN-B-001",
+                                name: "Pen Brown",
+                                imageUrl: "https://store.example.com/images/pen_brown.jpg",
+                                quantity: 2,
+                                price: 50,
+                            },
+                        ],
+                    },
+                ],
+                redirectUrls: {
+                    confirmUrlType: "NONE"
+                },
+            },
         });
-        if (Line_res.returnCode == '0000') {
-            res.status(200).json({
-                state: 'confirm',
-                url: Line_res.info.paymentUrl.web,
-                transactionId: Line_res.info.transactionId,
-                Line_res
-            })
+
+        if (response.returnCode == '0000') {
+            console.log(response.info.transactionId);
+            res.redirect(response.info.paymentUrl.web)
+            // res.status(200).json({
+            //     state: 'confirm',
+            //     response
+            // })
         } else {
             res.status(403).json({
                 state: 'denied',
@@ -181,6 +236,36 @@ router.post('/testLinePayUrl', async (req, res) => {
     } catch (error) {
         console.error('line pay Return Error:', error);
         res.status(500).send('Error');
+    }
+})
+router.get('/testGetLinePayStatus', async (req, res) => {
+    let intervalId = null;
+    const transactionId = req.query.transactionId
+
+    try {
+        let intervalId = setInterval(async () => {
+            res_code = await fetchLinePayStatus(transactionId);
+            switch (res_code) {
+                case "0000":
+                    console.log("In progress");
+                    break;
+                case "0110":
+                    console.log("Finished");
+                    clearInterval(intervalId);
+                    res.status(200).json({ msg: 'confirm' })
+                case "0121":
+                    console.log("Cancelled");
+                    clearInterval(intervalId);
+                    res.status(200).json({ msg: 'Cancelled' })
+                default:
+                    console.log("未知狀態碼", res_code);
+                    clearInterval(intervalId);
+                    res.status(200).json({ msg: 'error' })
+            }
+        }, 2000);
+    } catch (error) {
+        console.log('LinePayStatus', error);
+        clearInterval(intervalId);
     }
 })
 
@@ -233,6 +318,110 @@ router.post('/LinePayUrl', detectPlatform, async (req, res) => {
         res.status(500).send('Error');
     }
 })
+
+// get line pay status
+router.get('/LinePayStatus', async (req, res) => {
+    try {
+        const orderId = req.query.orderId;
+
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
+        res.flushHeaders();
+
+        const order = await Order.findById(orderId);
+        if (order && order.purchaseOrder.status === 'processed') {
+            const result = {
+                state: 'confirm',
+                message: 'payment completed'
+            }
+            res.write(`data: ${JSON.stringify(result)}\n\n`);
+            // res.write(`data: ${JSON.stringify({ status: 'paid' })}\n\n`);
+            res.end();
+            return;
+        }
+        const requestTransactionId = order.transactionId;
+        userConnections.set(orderId, res);
+
+        let intervalId = setInterval(async () => {
+            res_code = await fetchLinePayStatus(requestTransactionId);
+            switch (res_code) {
+                case "0000":
+                    console.log("In progress");
+                    break;
+                case "0110":
+                    console.log("Finished");
+                    clearInterval(intervalId);
+                    const result = await confirmLinePayPayment(orderId, requestTransactionId);
+                    if (result.success) {
+                        const responseData = {
+                            state: 'confirm',
+                            message: '付款成功'
+                        };
+                        res.write(`data: ${JSON.stringify(responseData)}\n\n`);
+                    } else {
+                        const responseData = {
+                            state: 'failed',
+                            message: result.message
+                        };
+                        res.write(`data: ${JSON.stringify(responseData)}\n\n`);
+                    }
+                    res.end();
+                case "0121":
+                    console.log("Cancelled");
+                    clearInterval(intervalId);
+                    res.write(`data: ${JSON.stringify({ state: 'cancelled', message: '取消付款' })}\n\n`);
+                    res.end();
+                default:
+                    console.log("未知狀態碼", res_code);
+                    clearInterval(intervalId);
+                    res.write(`data: ${JSON.stringify({ state: 'error', message: '未知錯誤，請聯繫客服' })}\n\n`);
+                    res.end();
+            }
+        }, 2000);
+
+        req.on("close", () => {
+            userConnections.delete(orderId);
+        });
+    } catch (error) {
+        console.log('LinePayStatus', error);
+        clearInterval(intervalId);
+        res.write(`data: ${JSON.stringify({ state: 'error', message: 'server error' })}\n\n`);
+        res.end();
+    }
+})
+
+async function confirmLinePayPayment(orderId, transactionId) {
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) throw new Error('Order not found');
+
+        const params = {
+            transactionId,
+            amount: order.purchaseOrder.total
+        }
+        const Line_res = await fetchLinePayPaymentResult(params);
+
+        if (Line_res.returnMessage == 'OK') {
+            order.purchaseOrder.status = 'processed';
+            order.updatedAt = new Date();
+            await order.save();
+            return { success: true };
+        } else {
+            console.warn('Line Pay 授權失敗:', Line_res.returnMessage, Line_res.returnCode);
+            const refundResponse = await fetchLinePayRefound(transactionId);
+            if (refundResponse.returnCode == "0000") {
+                return { success: false, message: Line_res.returnMessage };
+            } else {
+                console.error('Line Pay Refund Failed:', refundResponse.returnMessage, refundResponse.returnCode);
+                return { success: false, message: Line_res.returnMessage };
+            }
+        }
+    } catch (error) {
+        console.error('line pay Return Error:', error);
+        res.status(500).send('Error');
+    }
+}
 
 // user line pay 付款後授權
 const linePayIps = process.env.ALLOWED_LINE_PAY_DOMAINS ? process.env.ALLOWED_LINE_PAY_DOMAINS.split(',') : [];
