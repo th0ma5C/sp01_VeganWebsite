@@ -52,7 +52,7 @@ jobs:
           gcloud compute ssh ${{ secrets.VM_USER }}@${{ secrets.GCE_INSTANCE_NAME }} \
             --zone=${{ secrets.GCE_ZONE }} \
             --tunnel-through-iap \
-            --command "sudo rm -rf ~/tmp/uploads/dist && sudo mkdir -p ~/tmp/uploads/dist"
+            --command "sudo rm -rf ~/tmp/uploads/dist && mkdir -p ~/tmp/uploads/dist"
 
           gcloud compute scp --recurse veganOfficialWeb/dist/* ${{ secrets.VM_USER }}@${{ secrets.GCE_INSTANCE_NAME }}:~/tmp/uploads/dist \
               --zone=${{ secrets.GCE_ZONE }} \
