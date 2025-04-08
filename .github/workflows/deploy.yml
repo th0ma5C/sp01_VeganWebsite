@@ -87,7 +87,7 @@ jobs:
           step: start
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.sha }}
-          env: release
+          env: Deployed v${{ steps.get_version.outputs.version }}
           desc: Deploying version ${{ steps.get_version.outputs.version }}
 
       - name: Mark Deployment as successful
