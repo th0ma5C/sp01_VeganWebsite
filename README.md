@@ -7,7 +7,6 @@
 
 ## 網站 Demo
 
-<!-- [Relation-Ship](https://tmc4web.dev) -->
 [![Demo Site](https://img.shields.io/badge/DEMO-Click%20to%20Visit-%20?style=social)](https://tmc4web.dev)
 
 
@@ -20,12 +19,12 @@
 
 <details>
   <summary>付款</summary>
-  <img src="./docs/images/payment.png" alt="付款截圖" width="100%"/>
+  <img src="./docs/images/payment.gif" alt="付款截圖" width="100%"/>
 </details>
 
 <details>
   <summary>問卷</summary>
-  <img src="./docs/images/questionnaire.png" alt="問卷截圖" width="100%"/>
+  <img src="./docs/images/questionnaire.gif" alt="問卷截圖" width="100%"/>
 </details>
 
 ## 架構設計
@@ -44,11 +43,11 @@
 - [Vue Router](https://router.vuejs.org/) 路由系統
 
 ### 後端框架：
-- [Express](https://expressjs.com/) - API Server
+- [Express](https://expressjs.com/)
 
 ### 資料庫：
-- [MongoDB](https://www.mongodb.com/) - 資料庫
-- [Redis](https://redis.io/) - 資料庫快取
+- [MongoDB](https://www.mongodb.com/)
+- [Redis](https://redis.io/)
 
 ### 部署與 DevOps：
 - [Nginx](https://nginx.org/) - 反向代理
@@ -60,10 +59,14 @@
 
 ### UI 技術與互動
 - 主要使用 Scss 搭配 Tailwind CSS ，搭建網站樣式
-- RWD 響應式設計，兼容手機、平板與桌機
-- [Swiper.js](https://swiperjs.com/) 輪播與 [GSAP](https://gsap.com/) 動畫，提升使用者體驗
+- RWD 響應式設計，兼容桌機、平板與手機
+  <details>
+    <summary>樣板</summary>
+    <img src="./docs/images/rwd.png" alt="rwd樣板" width="100%"/>
+  </details>
+- [Swiper.js](https://swiperjs.com/) 輪播圖片與 [GSAP](https://gsap.com/) 轉場動畫，提升使用者體驗
 - 表單驗證使用 Vee-Validate + Yup 確保資料安全與正確性
-- 整合 [Fuse.js](https://fusejs.io/)，提供商品模糊搜尋
+- 使用 [Fuse.js](https://fusejs.io/) 模糊搜尋，提供商品搜尋功能
 
 ### 電商功能
 - 商品瀏覽與購買
@@ -99,6 +102,7 @@
 ### 效能優化
 - Redis 快取需高頻率存取之數據
 - 使用 vite-plugin-imagemin 壓縮靜態圖片資源
+- 使用 vite-plugin-compression 對資源進行 Gzip 壓縮
 
 ### 自動佈署
   - GitHub Actions 自動打包、部屬至 GCP Compute Engine

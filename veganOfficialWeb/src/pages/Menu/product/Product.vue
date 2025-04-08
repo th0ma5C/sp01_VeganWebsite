@@ -13,7 +13,7 @@
                         ref="mainImg" @load="mainImgLoaded"
                         :class="{ unLoaded: !showMainImg }"
                         :src="replaceImgFileName(productInfo) ?? ''"
-                        alt="大圖" key="img">
+                        alt="示意圖" key="img">
                     <div class="skeleton"
                         v-show="showSkeleton"
                         key="skeleton">
@@ -28,7 +28,7 @@
                         height="32px"></SvgIcon>
                     <img v-if="productInfo"
                         :src="replaceImgFileName(productInfo) ?? ''"
-                        alt="大圖">
+                        alt="放大示意圖">
                 </div>
             </transition>
 
@@ -1095,7 +1095,7 @@ onUnmounted(() => {
 }
 
 .popUpImg {
-    @include WnH(100%, 100vh);
+    @include WnH(100%, 100%);
     // @include absoluteCenterTLXY($top: 0px, $Y: 0);
     @include flex-center-center;
     cursor: zoom-out;
@@ -1108,7 +1108,7 @@ onUnmounted(() => {
 
     img {
         border-radius: 1rem;
-        // height: 100%;
+        max-height: 100%;
     }
 }
 

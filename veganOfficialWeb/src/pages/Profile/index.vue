@@ -51,7 +51,7 @@
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>{{ message
-                                        }}</span>
+                                    }}</span>
                                 </ErrorMessage>
                             </div>
 

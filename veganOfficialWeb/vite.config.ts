@@ -6,7 +6,8 @@ import { viteMockServe } from 'vite-plugin-mock'
 import path from 'path'
 import { execSync } from 'child_process'
 import pkg from './package.json'
-import viteImagemin from 'vite-plugin-imagemin'
+import viteImagemin from 'vite-plugin-imagemin';
+import viteCompression from 'vite-plugin-compression';
 
 /// <reference types="vitest/config" />
 
@@ -16,10 +17,6 @@ const commitHash = execSync('git rev-parse --short HEAD').toString().trim()
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const skipPaths = [
-    /\/SubBanner\//,
-    /\/bac_wood\.jpg$/
-  ]
 
   return {
     define: {
@@ -98,7 +95,7 @@ export default defineConfig(({ mode }) => {
           ],
         },
         webp: {
-          quality: 80,
+          quality: 75,
         },
         filter: (source: string) => {
           const normalized = source.replace(/\\/g, '/')
@@ -107,6 +104,12 @@ export default defineConfig(({ mode }) => {
 
           return /\.(jpe?g|png|gif|svg|webp)$/i.test(normalized) && !shouldSkip
         }
+      }),
+      viteCompression({
+        deleteOriginFile: false,
+        filter: (file) => {
+          return /\.(js|css|html|json)$/.test(file);
+        },
       }),
     ],
     resolve: {
@@ -118,7 +121,6 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
-      // open: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
       proxy: {
         '/api': {
           target: env.VITE_API_BASE_URL || 'https://tmc4web.dev',

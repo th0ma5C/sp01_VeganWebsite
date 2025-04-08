@@ -65,7 +65,7 @@ const imgs = ref([
 ])
 
 function genImgUrl(source: string) {
-    return new URL(`/src/assets/img/MainBanner/${source}.jpg`, import.meta.url).href
+    return new URL(`/src/assets/img/MainBanner/${source}.webp`, import.meta.url).href
 }
 
 // store
