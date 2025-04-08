@@ -63,7 +63,8 @@ jobs:
               cd ~/app/sp01_VeganWebsite/veganWebServer &&  
               git pull origin main &&        
               npm install &&
-              sudo rsync -a --delete ~/tmp/uploads/dist/ /var/www/html/dist/ &&
+              sudo rm -rf /var/www/html/dist/* &&
+              sudo cp -r ~/tmp/uploads/dist/* /var/www/html/dist/ &&
               pm2 restart all
               "
           echo "Deployment completed"
