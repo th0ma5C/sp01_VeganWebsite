@@ -49,6 +49,11 @@ jobs:
 
       - name: SCP Transfer vue File via IAP
         run: |
+          gcloud compute ssh ${{ secrets.VM_USER }}@${{ secrets.GCE_INSTANCE_NAME }} \
+            --zone=${{ secrets.GCE_ZONE }} \
+            --tunnel-through-iap \
+            --command "sudo rm -rf ~/tmp/uploads/dist && sudo mkdir -p ~/tmp/uploads/dist"
+
           gcloud compute scp --recurse veganOfficialWeb/dist/* ${{ secrets.VM_USER }}@${{ secrets.GCE_INSTANCE_NAME }}:~/tmp/uploads/dist \
               --zone=${{ secrets.GCE_ZONE }} \
               --tunnel-through-iap \
@@ -68,38 +73,3 @@ jobs:
               pm2 restart all
               "
           echo "Deployment completed"
-
-      - name: Install jq
-        if: success()
-        run: sudo apt-get install jq
-
-      - name: Get version from package.json
-        if: success()
-        id: get_version
-        run: |
-          VERSION=$(jq -r .version veganOfficialWeb/package.json)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-      
-      - name: Create GitHub Deployment
-        if: success()
-        uses: bobheadxi/deployments@v1
-        id: deployment
-        with:
-          step: start
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.sha }}
-          env: Deployed v${{ steps.get_version.outputs.version }}
-          desc: Deploying version ${{ steps.get_version.outputs.version }}
-
-      - name: Mark Deployment as successful
-        if: success()
-        uses: bobheadxi/deployments@v1
-        with:
-          step: finish
-          token: ${{ secrets.GITHUB_TOKEN }}
-          status: ${{ job.status }}
-          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
-          env: ${{ steps.deployment.outputs.env }}
-
-
-
