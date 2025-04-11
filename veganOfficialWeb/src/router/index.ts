@@ -14,6 +14,7 @@ import { useToastStore } from "@/store/toastStore";
 import { useLoaderStore } from "@/store/loader";
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
+import { useCartStore } from "@/store/cartStore";
 // import { useQuestionnaireStore } from "@/store/questionnaireStore";
 
 NProgress.configure({ showSpinner: false });
@@ -107,8 +108,38 @@ const routes = [
         }
     },
     {
-        path: '/Checkout',
+        path: '/checkout',
         component: Checkout,
+        children: [
+            {
+                path: '',
+                name: 'createOrder',
+                component: () => import('@/pages/Cart/CreateOrder/CreateOrder.vue'),
+                beforeEnter: (
+                    to: RouteLocationNormalized,
+                    from: RouteLocationNormalized
+                ) => {
+                    return true
+                },
+            },
+            {
+                name: 'orderProcessing',
+                path: 'orderProcessing',
+                component: () => import('@/pages/Cart/OrderProcessing/OrderProcessing.vue'),
+                beforeEnter: (
+                    to: RouteLocationNormalized,
+                    from: RouteLocationNormalized
+                ) => {
+                    // const userStore = useUserStore();
+                    // const toastStore = useToastStore();
+                    // if (userStore.isAuth) {
+                    //     toastStore.addNotification('請先登出')
+                    //     return '/profile/account'
+                    // }
+                    // return true
+                },
+            },
+        ]
     },
     {
         path: '/profile',

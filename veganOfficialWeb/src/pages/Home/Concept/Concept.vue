@@ -145,8 +145,7 @@ import { storeToRefs } from 'pinia';
 import { LoremIpsum, loremIpsum } from 'lorem-ipsum';
 import gsap from 'gsap';
 import { Flip } from 'gsap/Flip';
-import debounce from 'lodash/debounce';
-
+import { debounce } from 'lodash-es'
 //
 /**
  * //新聞資料建置、請求資料編寫、換頁邏輯

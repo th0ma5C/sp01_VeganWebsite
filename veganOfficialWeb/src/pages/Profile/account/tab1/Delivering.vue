@@ -64,7 +64,6 @@
                     </div>
 
                     <div class="progressBar orderBar">
-                        <!-- <div class="trail"></div> -->
                         <div class="milestone step0 filled"
                             :class="{
                                 cancelledFilled: purchaseOrder.status == 'cancelled'
@@ -575,22 +574,22 @@ async function refreshList() {
 
 // payment sse event
 const SSEStore = useSSEStore();
-function setPaymentNotify() {
-    SSEStore.paymentNotify(user.value.userID, refreshList)
-}
-function stopPaymentNotify() {
-    SSEStore.stopPaymentQueue(user.value.userID);
-}
+// function setPaymentNotify() {
+//     SSEStore.paymentNotify(user.value.userID, refreshList)
+// }
+// function stopPaymentNotify() {
+//     SSEStore.stopPaymentQueue(user.value.userID);
+// }
 
 onUpdated(() => {
 })
 
 onMounted(() => {
-    setPaymentNotify()
+    // setPaymentNotify()
 })
 
 onUnmounted(() => {
-    stopPaymentNotify()
+    // stopPaymentNotify()
 })
 
 </script>

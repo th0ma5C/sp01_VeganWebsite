@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { AxiosRequestConfig, AxiosResponse, AxiosAdapter } from 'axios';
-import NProgress from 'nprogress'
+import * as NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 
 
@@ -36,7 +36,8 @@ const customAdapter: AxiosAdapter = async (config: AxiosRequestConfig): Promise<
 
 const requests = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL + '/api',
-    adapter: customAdapter
+    adapter: customAdapter,
+    withCredentials: true
 });
 
 // 請求攔截器

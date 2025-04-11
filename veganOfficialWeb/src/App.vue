@@ -9,14 +9,17 @@
             <VeganHeader></VeganHeader>
         </header>
         <main>
-            <router-view
-                v-if="!$route.meta?.keepAlive"></router-view>
+            <router-view v-slot="{ Component }"
+                v-if="!$route.meta?.keepAlive">
+                <transition name="fade" mode="out-in">
+                    <component :is="Component" />
+                </transition>
+            </router-view>
 
-            <router-view v-slot="{ Component }">
+            <router-view v-slot="{ Component }" v-else>
                 <keep-alive :max="3">
                     <component
                         :key="$route.query.name || 'default'"
-                        v-if="$route.meta?.keepAlive"
                         :is="Component">
                     </component>
                 </keep-alive>
@@ -101,5 +104,20 @@ main {
 
 .app-enter-to {
     transform: scale(1);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity .3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+.fade-enter-to,
+.fade-leave-from {
+    opacity: 1;
 }
 </style>

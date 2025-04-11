@@ -2,7 +2,6 @@ import type { App } from 'vue'
 import SvgIcon from '@/components/global/SvgIcon/index.vue'
 import Spinner from './Spinner/index.vue'
 import { nanoid } from 'nanoid'
-import mitt from 'mitt'
 
 const globalComponents = { SvgIcon, Spinner };
 

@@ -134,9 +134,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
 import { positionStore } from '../store/usePagePosition'
-import debounce from 'lodash/debounce';
-
-
+import { debounce } from 'lodash-es'
 
 const list = ref([
     {

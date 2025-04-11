@@ -101,20 +101,6 @@
                                     </span>
                                 </ErrorMessage>
                             </label>
-
-
-                            <!-- <ErrorMessage as="div"
-                                class="errorMsg"
-                                name="joinPrivacyPolicy"
-                                v-slot="{ message }">
-                                <SvgIcon name="QNR_alert"
-                                    width="18" height="18"
-                                    color="#b3261e">
-                                </SvgIcon>
-                                <span>
-                                    {{ message }}
-                                </span>
-                            </ErrorMessage> -->
                         </div>
 
                     </fieldset>

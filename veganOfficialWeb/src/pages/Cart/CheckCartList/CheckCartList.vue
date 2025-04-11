@@ -583,6 +583,8 @@ onMounted(() => {
 
     h4 {
         font-size: 2rem;
+        font-size: 1.5rem;
+        font-size: clamp(1.5rem, 0.875rem + 3.125vw, 2rem);
         font-weight: 500;
         text-align: center;
     }

@@ -1,107 +1,46 @@
 <template>
-    <div ref="header" class="container"
-        :class="{ 'hideNav': hideNav }" :style="{
+    <transition mode="out-in">
+        <div ref="header" class="container" :class="{
+            hideNav
+        }" :style="{
             paddingRight: isCartCardOpen ? `${scrollbarWidth}px` : 0
-        }" v-if="!QNR_IsLoaded && !isCheckout">
-        <div class="burgerWrapper">
-            <label class="burger" for="burger" :class="{
-                foldBurgerBac: isBehind,
-                hideBurger: isSwitching
-            }" @click="burgerOnclick">
-                <input type="checkbox" id="burger"
-                    v-model="isBehind">
-                <span></span>
-                <span></span>
-                <span></span>
-            </label>
-        </div>
-
-        <div class="foldNavLink behind" :class="{
-            foldNav: !isBehind,
-            openNav: isBehind,
-            initAnimate: isInit
-        }">
-            <div class="mobileSearch" :class="{
-                searchShow: isSearchShow
-            }">
-                <transition name="search_transition">
-                    <a href="" class="icon"
-                        @click.prevent="clickNavIcon('Search')"
-                        v-show="!isSearchShow">
-                        <SvgIcon :name="'Search'"
-                            width="35px" height="35px"
-                            color="#FCFAF2">
-                        </SvgIcon>
-                    </a>
-                </transition>
-                <!-- <Search v-if="isSearchShow"
-                    :showSearch="isSearchShow"
-                    @close="clickNavIcon('Search')">
-                </Search> -->
-                <Search v-if="isSearchShow"
-                    v-model="isSearchShow">
-                </Search>
+        }" v-if="switchHeaderLayout">
+            <div class="burgerWrapper">
+                <label class="burger" for="burger" :class="{
+                    foldBurgerBac: isBehind,
+                    hideBurger: isSwitching
+                }" @click="burgerOnclick">
+                    <input type="checkbox" id="burger"
+                        v-model="isBehind">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </label>
             </div>
-            <ul class="">
-                <li v-for="{ title, url } in navLink"
-                    :key="title">
-                    <RouterLink :to="url" href="">
-                        <span>
-                            {{ title }}
-                        </span>
-                    </RouterLink>
-                </li>
-                <li class="mobileNavList"
-                    v-for="{ title, url } in navLink"
-                    :key="title" ref="combineListRef">
-                    <RouterLink :to="url" href="">
-                        <span>
-                            {{ title }}
-                        </span>
-                    </RouterLink>
-                </li>
 
-                <!-- <li class="mobileNavList"
-                    v-for="(item, index) in navLink"
-                    :key="index"> -->
-                <!-- <template v-if="index !== 1">
-                        <router-link :to="item.url ?? ''">
-                            <span>
-                                {{ item.title }}
-                            </span>
-                        </router-link>
-                    </template> -->
-
-                <!-- <template v-else>
-                        <span
-                            @click.prevent="clickNavIcon(item.title)">
-                            {{ item.title }}
-                        </span>
-                        <Search
-                            v-if="item.title == 'Search' && isSearchShow"
-                            :showSearch="isSearchShow"
-                            @close="clickNavIcon('Search')">
-                        </Search>
-                    </template> -->
-                <!-- </li> -->
-            </ul>
-        </div>
-
-        <div class="front" :class="{
-            foldNav: isBehind,
-            openNav: !isBehind,
-            initAnimate: isInit
-        }">
-            <router-link :to="{ name: 'Home' }"
-                class="logoRoute" :class="{
-                    hideLogo: isSearchShow
+            <div class="foldNavLink behind" :class="{
+                foldNav: !isBehind,
+                openNav: isBehind,
+                initAnimate: isInit
+            }">
+                <div class="mobileSearch" :class="{
+                    searchShow: isSearchShow
                 }">
-                <SvgIcon name="Logo" height="65px"
-                    color="#00430b">
-                </SvgIcon>
-            </router-link>
-            <div class="navIconWrapper">
-                <ul class="navLink" @click.stop>
+                    <transition name="search_transition">
+                        <a href="" class="icon"
+                            @click.prevent="clickNavIcon('Search')"
+                            v-show="!isSearchShow">
+                            <SvgIcon :name="'Search'"
+                                width="35px" height="35px"
+                                color="#FCFAF2">
+                            </SvgIcon>
+                        </a>
+                    </transition>
+                    <Search v-if="isSearchShow"
+                        v-model="isSearchShow">
+                    </Search>
+                </div>
+                <ul class="">
                     <li v-for="{ title, url } in navLink"
                         :key="title">
                         <RouterLink :to="url" href="">
@@ -110,66 +49,9 @@
                             </span>
                         </RouterLink>
                     </li>
-                </ul>
-                <ul class="navIcon" @click.stop>
-                    <li v-for="{ icon } in navIcon"
-                        :key="icon" ref="iconList" :class="{
-                            searchIcon: icon == 'Search'
-                        }">
-                        <template v-if="icon == 'Search'">
-                            <transition
-                                name="search_transition">
-                                <a href=""
-                                    @click.prevent="clickNavIcon(icon)"
-                                    v-show="!isSearchShow">
-                                    <SvgIcon :name="icon"
-                                        width="35px"
-                                        height="35px"
-                                        color="#00430b">
-                                    </SvgIcon>
-                                </a>
-                            </transition>
-                        </template>
-                        <template v-else>
-                            <transition>
-                                <a href=""
-                                    @click.prevent="clickNavIcon(icon)">
-                                    <SvgIcon :name="icon"
-                                        width="35px"
-                                        height="35px"
-                                        color="#00430b">
-                                    </SvgIcon>
-                                </a>
-                            </transition>
-                        </template>
-
-                        <CartCounter v-if="icon == 'Cart'"
-                            :size="{ width: 20, height: 20 }">
-                        </CartCounter>
-                        <Search
-                            v-if="icon == 'Search' && isSearchShow"
-                            v-model="isSearchShow">
-                        </Search>
-                        <!-- <Search
-                            v-if="icon == 'Search' && isSearchShow"
-                            :showSearch="isSearchShow"
-                            @close="clickNavIcon('Search')">
-                        </Search> -->
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <!-- <header class="header" ref="header">
-            <router-link :to="{ name: 'Home' }">
-                <SvgIcon name="Logo" height="65px"
-                    color="#00430b">
-                </SvgIcon>
-            </router-link>
-            <div @click.stop>
-                <ul class="navLink">
-                    <li v-for="{ title, url } in navLink "
-                        :key="title">
+                    <li class="mobileNavList"
+                        v-for="{ title, url } in navLink"
+                        :key="title" ref="combineListRef">
                         <RouterLink :to="url" href="">
                             <span>
                                 {{ title }}
@@ -177,70 +59,106 @@
                         </RouterLink>
                     </li>
                 </ul>
-                <ul class="navIcon">
-                    <li v-for="{ icon } in navIcon "
-                        :key="icon" ref="iconList" :class="{
-                            searchIcon: icon == 'Search'
-                        }">
-                        <template v-if="icon == 'Search'">
-                            <transition
-                                name="search_transition">
-                                <a href=""
-                                    @click.prevent="clickNavIcon(icon)"
-                                    v-show="!isSearchShow">
-                                    <SvgIcon :name="icon"
-                                        width="35px"
-                                        height="35px"
-                                        color="#00430b">
-                                    </SvgIcon>
-                                </a>
-                            </transition>
-                        </template>
-                        <template v-else>
-                            <transition>
-                                <a href=""
-                                    @click.prevent="clickNavIcon(icon)">
-                                    <SvgIcon :name="icon"
-                                        width="35px"
-                                        height="35px"
-                                        color="#00430b">
-                                    </SvgIcon>
-                                </a>
-                            </transition>
-                        </template>
-
-                        <CartCounter v-if="icon == 'Cart'"
-                            :size="{ width: 20, height: 20 }">
-                        </CartCounter>
-                        <Search
-                            v-if="icon == 'Search' && isSearchShow"
-                            :showSearch="isSearchShow"
-                            @close="clickNavIcon('Search')">
-                        </Search>
-                    </li>
-                </ul>
             </div>
-        </header> -->
 
-    <div class="QNR_header" v-else
-        :class="{ 'hideNav': hideNav }">
-        <main>
-            <router-link :to="{ name: 'Home' }">
-                <SvgIcon name="Logo" height="65px"
-                    width="100px" color="#00430b">
+            <div class="front" :class="{
+                foldNav: isBehind,
+                openNav: !isBehind,
+                initAnimate: isInit
+            }">
+                <router-link :to="{ name: 'Home' }"
+                    class="logoRoute" :class="{
+                        hideLogo: isSearchShow
+                    }">
+                    <SvgIcon name="Logo" height="65px"
+                        color="#00430b">
+                    </SvgIcon>
+                </router-link>
+                <div class="navIconWrapper">
+                    <ul class="navLink" @click.stop>
+                        <li v-for="{ title, url } in navLink"
+                            :key="title">
+                            <RouterLink :to="url" href="">
+                                <span>
+                                    {{ title }}
+                                </span>
+                            </RouterLink>
+                        </li>
+                    </ul>
+                    <ul class="navIcon" @click.stop>
+                        <li v-for="{ icon } in navIcon"
+                            :key="icon" ref="iconList"
+                            :class="{
+                                searchIcon: icon == 'Search'
+                            }">
+                            <template
+                                v-if="icon == 'Search'">
+                                <transition
+                                    name="search_transition">
+                                    <a href=""
+                                        @click.prevent="clickNavIcon(icon)"
+                                        v-show="!isSearchShow">
+                                        <SvgIcon
+                                            :name="icon"
+                                            width="35px"
+                                            height="35px"
+                                            color="#00430b">
+                                        </SvgIcon>
+                                    </a>
+                                </transition>
+                            </template>
+                            <template v-else>
+                                <transition>
+                                    <a href=""
+                                        @click.prevent="clickNavIcon(icon)">
+                                        <SvgIcon
+                                            :name="icon"
+                                            width="35px"
+                                            height="35px"
+                                            color="#00430b">
+                                        </SvgIcon>
+                                    </a>
+                                </transition>
+                            </template>
+
+                            <CartCounter
+                                v-if="icon == 'Cart'"
+                                :size="{ width: 20, height: 20 }">
+                            </CartCounter>
+                            <Search
+                                v-if="icon == 'Search' && isSearchShow"
+                                v-model="isSearchShow">
+                            </Search>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="QNR_header" v-else :class="{
+            hideNav,
+            QNR_header_enter: QNR_enter
+        }">
+            <main>
+                <router-link :to="{ name: 'Home' }">
+                    <SvgIcon name="Logo" height="65px"
+                        width="100px" color="#00430b">
+                    </SvgIcon>
+                </router-link>
+                <SvgIcon name="cancel" width="32px"
+                    class="cancelIcon" height="32px"
+                    @click="backHome">
                 </SvgIcon>
-            </router-link>
-            <SvgIcon name="cancel" width="32px"
-                class="cancelIcon" height="32px"
-                @click="prevPage">
-            </SvgIcon>
-        </main>
-    </div>
+            </main>
+        </div>
+    </transition>
+
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, nextTick, computed, watch, reactive, useTemplateRef, watchEffect } from 'vue';
-import throttle from 'lodash/throttle';
+import { throttle } from 'lodash-es';
 import { useRouter, useRoute } from 'vue-router';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
 import { storeToRefs } from 'pinia';
@@ -323,12 +241,25 @@ const throttledOnScroll = throttle(onScroll, 100);
 // QNR_store
 const { QNR_IsLoaded } = storeToRefs(useQuestionnaireStore());
 
-const Router = useRouter();
-const Route = useRoute()
+const router = useRouter();
+const route = useRoute();
 
-function prevPage() {
-    const steps = Route.matched.length;
-    Router.go(-steps)
+const QNR_enter = ref(false)
+emitter.on('QNR_enter', (e) => {
+    QNR_enter.value = e as boolean
+})
+const currRoute = computed(() => {
+    return route.path
+})
+
+const switchHeaderLayout = ref(true);
+const limitRoute = /\/questionnaire|\/checkout/
+watch(currRoute, (nVal) => {
+    switchHeaderLayout.value = !limitRoute.test(nVal);
+}, { immediate: true })
+
+function backHome() {
+    router.push('/')
 }
 
 // 購物車
@@ -344,7 +275,7 @@ function clickNavIcon(target: string) {
             toggleCartCardOpen()
             break;
         case 'Person':
-            Router.push('/profile/account')
+            router.push('/profile/account')
             break;
         default:
             isSearchShow.value = !isSearchShow.value
@@ -416,7 +347,6 @@ watchEffect(() => {
 })
 
 // router
-const router = useRouter();
 router.beforeEach(() => {
     if (isBehind.value) isBehind.value = false;
     return true
@@ -459,7 +389,7 @@ onBeforeUnmount(() => {
     width: 100%;
     height: 100px;
     position: fixed;
-    top: -0.1%;
+    top: 0%;
     transition: all 0.2s linear,
         padding-right 0s;
     z-index: 99;
@@ -557,7 +487,8 @@ onBeforeUnmount(() => {
 
 .QNR_header {
     @extend %container;
-    position: relative;
+    // position: relative;
+    display: none;
 
     main {
         width: 100%;
@@ -585,6 +516,10 @@ onBeforeUnmount(() => {
             opacity: 1;
         }
     }
+}
+
+.QNR_header_enter {
+    display: flex;
 }
 
 .searchIcon {
@@ -801,6 +736,20 @@ onBeforeUnmount(() => {
     display: none;
 }
 
+.v-enter-active,
+.v-leave-active {
+    transition: opacity .15s;
+}
+
+.v-enter-from,
+.v-leave-to {
+    opacity: 0;
+}
+
+.v-enter-to,
+.v-leave-from {
+    opacity: 1;
+}
 
 
 // RWD

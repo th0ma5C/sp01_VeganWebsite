@@ -155,7 +155,7 @@ import {
 import * as yup from 'yup';
 import { reqSubscribe } from '@/api/subscribe/subscribe';
 import { useRoute, useRouter } from 'vue-router';
-import debounce from 'lodash/debounce'
+import { debounce } from 'lodash-es'
 import { useToastStore } from '@/store/toastStore';
 import { positionStore } from '@/pages/About/store/usePagePosition';
 

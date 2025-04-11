@@ -11,11 +11,6 @@ const { requestOnlineAPI, fetchLinePayPaymentUrl, fetchLinePayStatus,
     fetchLinePayPaymentResult, fetchLinePayRefound } = require('./LinePay')
 const jwt = require('jsonwebtoken');
 
-
-
-const userConnections = new Map(); // 儲存用戶的 SSE 連線
-
-
 // 綠界付款表單
 router.post('/ECorderForm', async (req, res) => {
     try {
@@ -36,50 +31,97 @@ router.post('/ECorderForm', async (req, res) => {
     }
 })
 
-router.get("/paymentQueue/:orderId", async (req, res) => {
-    const orderId = req.params.orderId;
+// SSE
+const userConnections = new Map();
 
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-    res.flushHeaders();
+function registerSSE(orderId, res, req) {
+    if (userConnections.has(orderId)) {
+        const oldConn = userConnections.get(orderId);
+        oldConn.res.end();
+        clearTimeout(oldConn.timer);
+        userConnections.delete(orderId);
+    }
 
-    const order = await Order.findById(orderId);
-    if (order && order.purchaseOrder.status === 'processed') {
-        const result = {
-            state: 'confirm',
-            message: 'payment completed'
+    const timer = setTimeout(() => {
+        if (userConnections.has(orderId)) {
+            userConnections.get(orderId).res.end();
+            userConnections.delete(orderId);
         }
-        res.write(`data: ${JSON.stringify(result)}\n\n`);
-        // res.write(`data: ${JSON.stringify({ status: 'paid' })}\n\n`);
-        res.end();
+    }, 5 * 60 * 1000); // 5 min
+
+    userConnections.set(orderId, { res, timer });
+
+    req.on('close', () => {
+        clearTimeout(timer);
+        userConnections.delete(orderId);
+    });
+}
+
+function closeSSE(orderId, resPayload) {
+    const sseClient = userConnections.get(orderId);
+    if (!sseClient) {
+        console.warn(`[SSE] no connection found for ${orderId}`);
         return;
     }
 
-    userConnections.set(orderId, res);
-    req.on("close", () => {
-        userConnections.delete(orderId);
-    });
+    try {
+        sseClient.res.write(`data: ${JSON.stringify(resPayload)}\n\n`);
+        sseClient.res.end();
+    } catch (err) {
+        console.error(`[SSE] Error closing SSE for ${orderId}:`, err);
+    }
+
+    clearTimeout(sseClient.timer);
+    userConnections.delete(orderId);
+}
+
+
+router.get("/paymentQueue/:orderId", async (req, res) => {
+    const orderId = req.params.orderId;
+    try {
+        const order = await Order.findById(orderId);
+        if (order && order.purchaseOrder.status === 'processed') {
+            const result = {
+                state: 'confirm',
+                message: 'payment completed'
+            }
+            res.setHeader('Content-Type', 'text/event-stream')
+            res.write(`data: ${JSON.stringify(result)}\n\n`);
+            res.end();
+            return;
+        }
+
+        res.set({
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+        })
+        res.flushHeaders();
+
+        registerSSE(orderId, res, req)
+
+    } catch (error) {
+        console.log(error);
+    }
 });
 
-// router.post('/testEc', async (req, res) => {
-//     try {
-//         const userId = req.body.user;
-//         const userRes = userConnections.get(userId);
-//         if (userRes) {
-//             const result = {
-//                 state: 'confirm',
-//                 message: 'payment completed'
-//             }
-//             userRes.write(`data: ${JSON.stringify(result)}\n\n`);
-//         }
-//         res.status(200).end();
+router.post('/testEc', async (req, res) => {
+    try {
+        const orderId = req.body.orderId;
 
-//     } catch (error) {
-//         console.error('ECPay Return Error:', error);
-//         res.status(500).end();
-//     }
-// })
+        const resPayload = {
+            state: 'confirm',
+            message: 'payment completed'
+        }
+        closeSSE(orderId, resPayload)
+
+        res.send('1|OK');
+
+    } catch (error) {
+        console.error('ECPay Return Error:', error);
+        res.status(500).end();
+    }
+})
 
 // 綠界付款結果
 const ECdomains = process.env.ALLOWED_EC_DOMAINS ? process.env.ALLOWED_EC_DOMAINS.split(',') : [];
@@ -108,14 +150,11 @@ router.post('/ECpayResult', async (req, res) => {
             { new: true, runValidators: true }
         );
 
-        const orderInQueue = userConnections.get(data.CustomField1); //CustomField1 orderId
-        if (orderInQueue) {
-            const result = {
-                state: 'confirm',
-                message: 'payment completed'
-            }
-            orderInQueue.write(`data: ${JSON.stringify(result)}\n\n`);
+        const resPayload = {
+            state: 'confirm',
+            message: 'payment completed'
         }
+        closeSSE(data.CustomField1, resPayload)
 
         res.send('1|OK');
 
@@ -222,11 +261,11 @@ router.get('/testLinePayUrl', async (req, res) => {
 
         if (response.returnCode == '0000') {
             console.log(response.info.transactionId);
-            res.redirect(response.info.paymentUrl.web)
-            // res.status(200).json({
-            //     state: 'confirm',
-            //     response
-            // })
+            // res.redirect(response.info.paymentUrl.web)
+            res.status(200).json({
+                state: 'confirm',
+                response
+            })
         } else {
             res.status(403).json({
                 state: 'denied',
@@ -283,7 +322,6 @@ router.post('/LinePayUrl', detectPlatform, async (req, res) => {
 
     try {
         const order = await Order.findById(orderId);
-        // const { purchaseOrder } = await Order.findById(orderId);
         if (!order) {
             return res.status(404).json({
                 state: 'denied',
@@ -319,32 +357,21 @@ router.post('/LinePayUrl', detectPlatform, async (req, res) => {
     }
 })
 
-// get line pay status
-router.get('/LinePayStatus', async (req, res) => {
+// check line pay status
+router.post('/LinePayStatus', async (req, res) => {
+    const orderId = req.body.orderId;
+    const resPayload = {
+        state: null,
+        message: null
+    }
     try {
-        const orderId = req.query.orderId;
-
-        res.setHeader("Content-Type", "text/event-stream");
-        res.setHeader("Cache-Control", "no-cache");
-        res.setHeader("Connection", "keep-alive");
-        res.flushHeaders();
-
         const order = await Order.findById(orderId);
-        if (order && order.purchaseOrder.status === 'processed') {
-            const result = {
-                state: 'confirm',
-                message: 'payment completed'
-            }
-            res.write(`data: ${JSON.stringify(result)}\n\n`);
-            // res.write(`data: ${JSON.stringify({ status: 'paid' })}\n\n`);
-            res.end();
-            return;
-        }
+
         const requestTransactionId = order.transactionId;
-        userConnections.set(orderId, res);
 
         let intervalId = setInterval(async () => {
             res_code = await fetchLinePayStatus(requestTransactionId);
+
             switch (res_code) {
                 case "0000":
                     console.log("In progress");
@@ -354,40 +381,37 @@ router.get('/LinePayStatus', async (req, res) => {
                     clearInterval(intervalId);
                     const result = await confirmLinePayPayment(orderId, requestTransactionId);
                     if (result.success) {
-                        const responseData = {
-                            state: 'confirm',
-                            message: '付款成功'
-                        };
-                        res.write(`data: ${JSON.stringify(responseData)}\n\n`);
+                        resPayload.state = 'confirm';
+                        resPayload.message = '付款成功';
                     } else {
-                        const responseData = {
-                            state: 'failed',
-                            message: result.message
-                        };
-                        res.write(`data: ${JSON.stringify(responseData)}\n\n`);
+                        resPayload.state = 'failed';
+                        resPayload.message = result.message;
                     }
-                    res.end();
+                    closeSSE(orderId, resPayload);
+                    break;
                 case "0121":
                     console.log("Cancelled");
                     clearInterval(intervalId);
-                    res.write(`data: ${JSON.stringify({ state: 'cancelled', message: '取消付款' })}\n\n`);
-                    res.end();
+                    resPayload.state = 'cancelled';
+                    resPayload.message = '取消付款';
+                    closeSSE(orderId, resPayload);
+                    break;
                 default:
                     console.log("未知狀態碼", res_code);
                     clearInterval(intervalId);
-                    res.write(`data: ${JSON.stringify({ state: 'error', message: '未知錯誤，請聯繫客服' })}\n\n`);
-                    res.end();
+                    resPayload.state = 'error';
+                    resPayload.message = '未知錯誤，請聯繫客服';
+                    closeSSE(orderId, resPayload);
             }
+
         }, 2000);
 
-        req.on("close", () => {
-            userConnections.delete(orderId);
-        });
     } catch (error) {
         console.log('LinePayStatus', error);
         clearInterval(intervalId);
-        res.write(`data: ${JSON.stringify({ state: 'error', message: 'server error' })}\n\n`);
-        res.end();
+        resPayload.state = 'error'
+        resPayload.message = '未知錯誤，請聯繫客服'
+        closeSSE(orderId, resPayload)
     }
 })
 
@@ -419,7 +443,7 @@ async function confirmLinePayPayment(orderId, transactionId) {
         }
     } catch (error) {
         console.error('line pay Return Error:', error);
-        res.status(500).send('Error');
+        return { success: false, message: 'line pay confirm error' }
     }
 }
 

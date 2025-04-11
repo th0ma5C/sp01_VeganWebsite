@@ -1,5 +1,4 @@
 <template>
-    <!-- <div class="closeZone" @click="emitCloseSearch"></div> -->
     <div class="searchContainer" ref="searchContainer"
         @click.stop>
         <div class="searchBar">

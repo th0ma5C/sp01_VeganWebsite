@@ -41,7 +41,7 @@
                             <div class="details">
                                 <h3>{{ key }}</h3>
                                 <small>${{ item.price
-                                }}</small>
+                                    }}</small>
                             </div>
 
                             <div class="itemSubtotal">
@@ -132,7 +132,7 @@ import { gsap } from 'gsap/gsap-core';
 
 
 const cartStore = useCartStore();
-const { isCartCardOpen, cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
+const { isCheckingOut, isCartCardOpen, cartMap, cartCounter, cartTotalPrice } = storeToRefs(cartStore);
 const { toggleCartCardOpen, DELItemFromCart, initCart, toggleIsCheckout } = cartStore;
 
 const toastStore = useToastStore();
@@ -190,9 +190,10 @@ const discountClass = computed(() => {
 const router = useRouter();
 function goCheckoutPage() {
     if (!cartCounter.value || isAnimating.value) return
+    isCheckingOut.value = true
     closeDrawer()
     toggleIsCheckout()
-    router.push('/Checkout');
+    router.push('/checkout');
 }
 
 // user store
