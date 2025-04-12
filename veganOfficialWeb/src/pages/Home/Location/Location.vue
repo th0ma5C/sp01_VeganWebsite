@@ -94,7 +94,7 @@
 <script setup lang="ts">
 import { reactive, watch, onMounted, onUnmounted, nextTick, ref, computed, onUpdated, watchEffect, useTemplateRef } from 'vue';
 import type { Ref } from 'vue';
-import debounce from 'lodash/debounce';
+import { debounce } from 'lodash-es'
 import useListener from '@/hooks/useListener';
 import { useCursorFollow } from '@/hooks/useCursorFollow';
 import useArrowFly from '@/hooks/useArrowFly';

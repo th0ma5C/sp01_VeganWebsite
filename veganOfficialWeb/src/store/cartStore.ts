@@ -208,6 +208,7 @@ export const useCartStore = defineStore('cart', () => {
 
     // 結帳頁
     const isCheckout = ref(false);
+    const isCheckingOut = ref(false)
     function toggleIsCheckout() {
         isCheckout.value = !isCheckout.value
     }
@@ -380,6 +381,7 @@ export const useCartStore = defineStore('cart', () => {
         cartTotalPrice,
         headerCart,
         isCheckout,
+        isCheckingOut,
         freightFee,
         discountAmount,
         couponAmount,

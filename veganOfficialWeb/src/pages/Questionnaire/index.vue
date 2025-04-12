@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <transition name="loading">
+        <transition name="loading" @leave="onQNREnter">
             <div class="loading"
                 v-if="loadingPercent < 100">
                 <div class="iconMask"
@@ -209,6 +209,7 @@ import { useRouter } from 'vue-router';
 import type { Birth, Info, Form } from '@/store/type/QNR_type'
 import { useMenuStore } from '@/store/menuStore';
 import { useUserStore } from '@/store/userStore';
+import emitter from '@/utils/eventBus';
 
 
 // user store
@@ -518,6 +519,14 @@ const mockData = reactive({
 //     })
 // }
 
+// emit on enter
+function onQNREnter() {
+    emitter.emit('QNR_enter', true);
+}
+function onQNRLeave() {
+    emitter.emit('QNR_enter', false);
+}
+
 
 // 生命週期
 onMounted(() => {
@@ -530,6 +539,7 @@ onBeforeUnmount(() => {
 onUnmounted(() => {
     setQNRtoStorage();
     leaveQNR_page();
+    onQNRLeave();
 })
 </script>
 
@@ -548,7 +558,7 @@ onUnmounted(() => {
     min-width: 320px;
 
     &::before {
-        display: none;
+        // display: none;
     }
 }
 
@@ -590,7 +600,7 @@ onUnmounted(() => {
 
 .loading-enter-active,
 .loading-leave-active {
-    transition: opacity .5s .5s ease;
+    transition: opacity .5s .5s;
 }
 
 .loading-enter-from,

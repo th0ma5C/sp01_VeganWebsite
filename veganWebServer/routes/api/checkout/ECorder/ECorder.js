@@ -35,7 +35,7 @@ async function genTransactionId() {
     }
 }
 
-async function genUserToken(purchaseOrder) {
+async function genUserToken(purchaseOrder, shippingInfo) {
     try {
         const isGuest = !(mongoose.Types.ObjectId.isValid(purchaseOrder.userID));
         let user = null
@@ -91,13 +91,13 @@ function generateCheckValue(params) {
 
 async function genSubmitForm(order) {
     try {
-        const { _id, purchaseOrder, transactionId } = order;
+        const { _id, shippingInfo, purchaseOrder, transactionId } = order;
 
         const ItemName = purchaseOrder.orderList.map((item) => {
             return `${item.name},${item.amount}pcs`
         }).join("#");
 
-        const token = await genUserToken(purchaseOrder);
+        const token = await genUserToken(purchaseOrder, shippingInfo);
 
         const base_param = {
             MerchantID: process.env.MerchantID,
@@ -110,7 +110,7 @@ async function genSubmitForm(order) {
             ReturnURL: process.env.PaymentReturnURL,
             ChoosePayment: 'ALL',
             EncryptType: 1,
-            ClientBackURL: `${process.env.EC_ClientBackURL}?orderQueue=${_id}&token=${token}`,
+            ClientBackURL: `${process.env.EC_ClientBackURL}?orderId=${_id}&token=${token}`,
             CustomField1: _id,
         };
 

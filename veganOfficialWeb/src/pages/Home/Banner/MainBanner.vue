@@ -20,8 +20,6 @@
                     </div>
                 </div>
                 <div class="text" data-swiper-parallax="0">
-                    <!-- <img :src="`/imgs/MainBanner/${img.url}.jpg`"
-                        alt=""> -->
                     <img rel="preload"
                         :src="genImgUrl(img.url)" alt="">
                 </div>

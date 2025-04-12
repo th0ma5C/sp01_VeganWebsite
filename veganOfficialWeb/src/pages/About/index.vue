@@ -48,7 +48,8 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .aboutContainer {
-    margin-top: 100px;
+    @extend %headerPseudo;
+    // margin-top: 100px;
 
 }
 </style>

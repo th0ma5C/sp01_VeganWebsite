@@ -1,6 +1,6 @@
 import { ref, computed, inject, nextTick, onMounted, onUnmounted, onUpdated } from "vue";
 import type { ShallowRef } from 'vue';
-import throttle from 'lodash/throttle';
+import { throttle } from 'lodash-es';
 import useListener from './useListener';
 
 interface SwiperItem {

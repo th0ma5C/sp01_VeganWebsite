@@ -1,6 +1,7 @@
 import { createApp, provide } from "vue"
 import App from "@/App.vue"
 
+
 const app = createApp(App)
 // 路由
 import router from './router'
@@ -16,9 +17,7 @@ import plugins from "./components/global"
 // swiper依賴
 import { register } from "swiper/element/bundle"
 register()
-// mockServer依賴
-// import '@/mock/mockServer.js'
-// 
+
 app.use(pinia);
 app.use(router).use(plugins);
 

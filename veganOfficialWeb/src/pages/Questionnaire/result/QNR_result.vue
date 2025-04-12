@@ -50,50 +50,6 @@
                         </SvgIcon>
                     </transition>
                 </div>
-
-
-                <!-- <div class="content" ref="analyzeResult">
-                    <h2>營養建議</h2>
-                    <p>鷹村先生，根據您選擇的完全素食飲食習慣、清爽的口味偏好，以及Omega-3、抗氧化物、維生素的需求，我們為您提供以下建議：
-                    </p>
-                    <h2>營養分析</h2>
-                    <ul>
-                        <li><strong>Omega-3：</strong>由於完全素食者無法從魚類中攝取Omega-3，建議您多攝取亞麻籽、奇亞籽和南瓜籽這類植物來源的Omega-3脂肪酸，對心血管健康非常有益。
-                        </li>
-                        <li><strong>抗氧化物：</strong>抗氧化物可以幫助對抗自由基，減少身體氧化壓力。莓果類如藍莓、草莓以及深綠色蔬菜如菠菜，都是豐富的抗氧化物來源。
-                        </li>
-                        <li><strong>維生素：</strong>對於維生素，尤其是維生素C和維生素E，可多攝取富含這些維生素的食材如橙子、奇異果、酪梨等，來促進免疫力及皮膚健康。
-                        </li>
-                    </ul>
-                    <h2>食材推薦</h2>
-                    <ul>
-                        <li><strong>Omega-3
-                                來源：</strong>亞麻籽、奇亞籽、南瓜籽</li>
-                        <li><strong>抗氧化物來源：</strong>藍莓、草莓、菠菜
-                        </li>
-                        <li><strong>維生素來源：</strong>橙子、奇異果、酪梨
-                        </li>
-                    </ul>
-                    <h2>每日卡路里建議</h2>
-                    <p>根據您的每日卡路里需求（1800卡），建議選擇低卡且富含營養的食材，並適當控制油脂和糖分的攝取。多食用蔬果及全穀類食材，以達到均衡飲食的效果。
-                    </p>
-                </div>
-                <div class="svgWrapper">
-                    <transition name="copySvg"
-                        mode="out-in">
-                        <SvgIcon name="Copy" width="24px"
-                            height="24px" color="black"
-                            v-if="!isCopied" class="copySvg"
-                            @click="copyGPTResponse" key="0"
-                            title="複製">
-                        </SvgIcon>
-                        <SvgIcon name="Check" width="24px"
-                            height="24px" color="black"
-                            class="checkSvg"
-                            v-else-if="isCopied" key="1">
-                        </SvgIcon>
-                    </transition>
-                </div> -->
             </div>
 
             <div class="guideContent">
@@ -103,7 +59,6 @@
 
         <div class="recommendList" ref="recommendList">
             <div class="bestComb" ref="bestCombContainer">
-                <!-- <transition-group name="bestComb"> -->
                 <Product_template :item="saladRank[0]"
                     :cartEl="viewCart" key="0"
                     :flyToCartDisError="-100"
@@ -115,7 +70,6 @@
                     :flyToCartDisError="-100"
                     v-show="rankComplete">
                 </Product_template>
-                <!-- </transition-group> -->
             </div>
 
             <div class="divider">
@@ -124,20 +78,6 @@
                 </h2>
             </div>
 
-
-            <!-- <div class="otherRecommend"
-                ref="otherRecommend">
-                <Product_template
-                    v-for="(item, index) in saladRank"
-                    :key="index" :item="item"
-                    v-show="rankComplete && index != 0">
-                </Product_template>
-                <Product_template
-                    v-for="(item, index) in smoothiesRank"
-                    :key="index" :item="item"
-                    v-show="rankComplete && index != 0">
-                </Product_template>
-            </div> -->
             <div class="salad" ref="saladContainer" :style="{
                 opacity: showRecommendList ? '1' : '0'
             }">
@@ -193,14 +133,6 @@
                         </Product_template>
                     </swiper-slide>
                 </swiper-container>
-
-                <!-- <Product_template
-                    v-for="(item, index) in saladRank"
-                    :key="index" :item="item"
-                    :cartEl="viewCart"
-                    v-show="rankComplete && index != 0">
-                </Product_template> -->
-
             </div>
 
             <div class="smoothies mobileList"
@@ -232,56 +164,7 @@
                         </Product_template>
                     </swiper-slide>
                 </swiper-container>
-                <!-- <Product_template
-                    v-for="(item, index) in smoothiesRank"
-                    :key="index" :item="item"
-                    :cartEl="viewCart"
-                    v-show="rankComplete && index != 0">
-                </Product_template> -->
             </div>
-
-            <!-- <swiper-container class="foo" loop="true"
-                :breakpoints="{
-                    850: {
-                        slidesPerView: 1,
-                    },
-                    900: {
-                        slidesPerView: 2,
-                    },
-                    1300: {
-                        slidesPerView: 3,
-                    }
-                }">
-                <swiper-slide
-                    v-for="(item, index) in saladRank.slice(1)"
-                    :key="index"
-                    v-show="rankComplete && index != 0">
-                    <Product_template :item="item">
-                    </Product_template>
-                </swiper-slide>
-            </swiper-container>
-            <swiper-container class="foo" loop="true"
-                :breakpoints="{
-                    850: {
-                        slidesPerView: 1,
-                    },
-                    900: {
-                        slidesPerView: 2,
-                    },
-                    1300: {
-                        slidesPerView: 3,
-                    }
-                }">
-                <swiper-slide
-                    v-for="(item, index) in smoothiesRank"
-                    :key="index"
-                    v-show="rankComplete && index != 0">
-                    <Product_template :item="item">
-                    </Product_template>
-                </swiper-slide>
-            </swiper-container> -->
-
-
         </div>
 
         <div class="viewBtnWrapper" ref="viewCart"
@@ -323,7 +206,7 @@ import { useCartStore } from '@/store/cartStore';
 import CartCounter from '@/components/popover/cartCounter/CartCounter.vue';
 import { getGPTAnalyze } from '@/api/questionnaire';
 import emitter from '@/utils/eventBus';
-import debounce from 'lodash/debounce';
+import { debounce } from 'lodash-es'
 import { useUserStore } from '@/store/userStore';
 import type { GPT_RES } from '@/api/questionnaire/type';
 

@@ -216,6 +216,17 @@ export const useMenuStore = defineStore('menu', (() => {
         return analysisList.value
     }
 
+    // item img loaded map
+    const menuImeLoadedMap = ref(new Set());
+
+    function imgOnLoaded(itemName: string) {
+        menuImeLoadedMap.value.add(itemName)
+    }
+
+    function imgIsLoaded(itemName: string) {
+        return menuImeLoadedMap.value.has(itemName)
+    }
+
 
     return {
         fullMenu,
@@ -226,6 +237,7 @@ export const useMenuStore = defineStore('menu', (() => {
         ingredientsList,
         isLoaded,
         menuImgURLMap,
+        menuImeLoadedMap,
         fetchMenu,
         fetchHotList,
         fetchNewList,
@@ -234,6 +246,8 @@ export const useMenuStore = defineStore('menu', (() => {
         getSameStyleItem,
         getImgURLbyName,
         setAnalysisList,
-        getAnalysisList
+        getAnalysisList,
+        imgOnLoaded,
+        imgIsLoaded
     }
 }))

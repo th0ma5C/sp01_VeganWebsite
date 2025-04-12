@@ -229,6 +229,12 @@
                     v-show="filteredSalad.includes(item) && index < showMenuLimit && isLoaded"
                     ref="COMList">
                 </Product_template>
+                <transition name="skeleton ">
+                    <div class="skeleton componentSkeleton"
+                        v-if="!isLoaded">
+                        <div class="scanner"></div>
+                    </div>
+                </transition>
             </div>
             <div class="showFullMenuBtn" :class="{
                 onUnloaded: !isLoaded
@@ -469,7 +475,7 @@ import Breadcrumbs from '@/components/Breadcrumbs/Breadcrumbs.vue';
 import { useCartStore } from '@/store/cartStore';
 import emitter from '@/utils/eventBus';
 import FlyToCart from '@/hooks/useFlyToCart';
-import debounce from 'lodash/debounce';
+import { debounce } from 'lodash-es'
 import type { SwiperContainer } from 'swiper/element';
 import { LoremIpsum } from 'lorem-ipsum';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -2564,22 +2570,31 @@ $menuItemContainer_height: 405px;
     .scanner {
         pointer-events: none;
         position: absolute;
-        width: 100%;
-        height: 100%;
+        width: 200%;
+        height: 200%;
         left: 0;
         top: 0;
         background: linear-gradient(115deg, transparent 40%, #FCFAF2 50%, transparent 52%);
-        animation: loading 2.5s infinite linear;
+        animation: loading 5s infinite linear;
+    }
+}
+
+.componentSkeleton {
+    background-color: $btnBacColor_light;
+    opacity: .2;
+
+    .scanner {
+        // background-color: red;
     }
 }
 
 @keyframes loading {
     0% {
-        translate: -100% 0;
+        translate: -100% -50%;
     }
 
     100% {
-        translate: 110% 0;
+        translate: 110% -50%;
     }
 }
 

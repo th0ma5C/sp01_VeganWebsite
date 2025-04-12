@@ -1,5 +1,5 @@
 <template>
-    <div class="item" ref="productEl" v-if="item">
+    <div class="item" ref="productEl">
         <transition name="skeleton">
             <div class="skeleton" v-show="isImgLoading">
                 <div class="top"></div>
@@ -13,7 +13,8 @@
         <div :class="imgClass"
             @click="routerPush(item.name ?? '')">
             <img :src="item.fileName ?? ''" alt="商品"
-                ref="itemImg" @load="imgLoaded">
+                ref="itemImg" @load="imgLoaded"
+                @error="isImgLoading = true">
             <p>{{ item.price }}元</p>
             <div class="description">
                 <span>{{ item.description }}</span>
@@ -100,6 +101,10 @@ const cartStore = useCartStore();
 const { addItemToCart } = cartStore;
 const { headerCart } = storeToRefs(cartStore)
 
+// menu store
+const menuStore = useMenuStore();
+const { imgIsLoaded, imgOnLoaded } = menuStore;
+const { isLoaded } = storeToRefs(menuStore);
 
 //接收菜單數據 
 interface Props {
@@ -259,10 +264,24 @@ function emitEvent() {
 }
 
 // skeleton
-const isImgLoading = ref(true);
+const itemImg = useTemplateRef('itemImg');
+const isImgLoading = ref(false);
 function imgLoaded() {
-    isImgLoading.value = false
+    if (!item || !item.name) return
+    isImgLoading.value = false;
+    imgOnLoaded(item.name)
 }
+
+function checkImgIsLoaded() {
+    if (!item || !item.name) return
+    if (isLoaded.value) {
+        isImgLoading.value = !imgIsLoaded(item.name)
+    }
+}
+
+onMounted(() => {
+    checkImgIsLoaded()
+})
 
 </script>
 

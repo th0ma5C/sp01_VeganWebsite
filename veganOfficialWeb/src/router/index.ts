@@ -14,6 +14,7 @@ import { useToastStore } from "@/store/toastStore";
 import { useLoaderStore } from "@/store/loader";
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
+import { useCartStore } from "@/store/cartStore";
 // import { useQuestionnaireStore } from "@/store/questionnaireStore";
 
 NProgress.configure({ showSpinner: false });
@@ -107,8 +108,39 @@ const routes = [
         }
     },
     {
-        path: '/Checkout',
+        path: '/checkout',
         component: Checkout,
+        children: [
+            {
+                path: '',
+                name: 'createOrder',
+                component: () => import('@/pages/Cart/CreateOrder/CreateOrder.vue'),
+                beforeEnter: (
+                    to: RouteLocationNormalized,
+                    from: RouteLocationNormalized
+                ) => {
+                    const cartStore = useCartStore();
+                    if (!cartStore.cartCounter) return '/menu'
+                    return true
+                },
+            },
+            {
+                name: 'orderProcessing',
+                path: 'orderProcessing',
+                component: () => import('@/pages/Cart/OrderProcessing/OrderProcessing.vue'),
+                beforeEnter: (
+                    to: RouteLocationNormalized,
+                    from: RouteLocationNormalized
+                ) => {
+                    const orderId = to.query.orderId as string;
+                    const token = to.query.token as string;
+                    if (!orderId?.trim() || !token?.trim()) {
+                        return '/menu'
+                    }
+                    return true
+                },
+            },
+        ]
     },
     {
         path: '/profile',
@@ -265,11 +297,29 @@ const routes = [
             }
         ]
     },
-    { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/pages/404/404.vue'), }
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'NotFound',
+        component: () => import('@/pages/404/404.vue'),
+        beforeEnter: async (
+            to: RouteLocationNormalized,
+            from: RouteLocationNormalized
+        ) => {
+            const lowerCasePath = to.fullPath.toLowerCase()
+
+            if (to.fullPath !== lowerCasePath) {
+                return lowerCasePath
+            }
+
+            return true
+        },
+    }
 ]
 
 const router = createRouter({
     history: createWebHistory(),
+    strict: true,
+    sensitive: true,
     routes,
     scrollBehavior(to, from, savePosition) {
         if (to.query.scroll) {

@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { homeStore } from '../store/homeStore';
 
@@ -72,17 +72,19 @@ const hasEnter = computed(() => {
     return homeStore.hasEnter
 })
 function startImgScrollTrigger() {
+    // nextTick(() => {
     ScrollTrigger.create({
         trigger: containerRef.value,
         // pin: containerRef.value,
-        start: 'top-=50% center',
-        // end: 'top+=4',
+        start: 'top-=25% center',
+        // end: 'top center',
         onEnter: () => {
+            // ScrollTrigger.refresh()
             startImgGsap();
         },
-        // markers: true,
-        // once: true
+        // once: true,
     })
+    // })
 }
 
 // start img gsap

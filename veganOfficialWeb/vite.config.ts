@@ -2,12 +2,12 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
-import { viteMockServe } from 'vite-plugin-mock'
 import path from 'path'
 import { execSync } from 'child_process'
 import pkg from './package.json'
 import viteImagemin from 'vite-plugin-imagemin';
 import viteCompression from 'vite-plugin-compression';
+import { visualizer } from "rollup-plugin-visualizer";
 
 /// <reference types="vitest/config" />
 
@@ -31,6 +31,15 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules')) {
               return id.toString().split('node_modules/')[1].split('/')[0];
             }
+            if (id.includes('src/pages/Home')) {
+              if (id.includes('Marquee.vue')) return 'marquee'
+              if (id.includes('MainBanner.vue')) return 'main-banner'
+              if (id.includes('SubBanner.vue')) return 'sub-banner'
+              if (id.includes('Catalog.vue')) return 'catalog'
+              if (id.includes('Location.vue')) return 'location'
+              if (id.includes('Concept.vue')) return 'concept'
+              if (id.includes('Hiring.vue')) return 'hiring'
+            }
           }
         }
       },
@@ -49,10 +58,6 @@ export default defineConfig(({ mode }) => {
       createSvgIconsPlugin({
         iconDirs: [path.resolve(process.cwd(), 'src/assets/icons')],
         symbolId: 'icon-[dir]-[name]',
-      }),
-      viteMockServe({
-        mockPath: 'mock',
-        enable: true,
       }),
       viteImagemin({
         gifsicle: {
@@ -110,6 +115,11 @@ export default defineConfig(({ mode }) => {
         filter: (file) => {
           return /\.(js|css|html|json)$/.test(file);
         },
+      }),
+      visualizer({
+        filename: './stats.html',
+        gzipSize: true,
+        brotliSize: true
       }),
     ],
     resolve: {

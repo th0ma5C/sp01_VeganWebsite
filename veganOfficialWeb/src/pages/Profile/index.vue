@@ -302,10 +302,10 @@ interface RedirectResTokenDecoded {
     isGuest: boolean
 }
 const route = useRoute();
-const orderQueue = route.query.orderQueue as string;
-const SSEStore = useSSEStore();
-const { startPaymentQueue } = SSEStore;
-const { } = storeToRefs(SSEStore)
+// const orderQueue = route.query.orderQueue as string;
+// const SSEStore = useSSEStore();
+// const { startPaymentQueue } = SSEStore;
+// const { } = storeToRefs(SSEStore)
 
 async function handleEmailRedirect() {
     if (!route.query.token) return
@@ -316,9 +316,9 @@ async function handleEmailRedirect() {
         const JWT = route.query.token as string;
         const { token } = await reqRedirectLogin({ token: JWT });
         const decoded = jwtDecode<RedirectResTokenDecoded>(token!);
-        if (orderQueue) {
-            startPaymentQueue(orderQueue);
-        }
+        // if (orderQueue) {
+        //     startPaymentQueue(orderQueue);
+        // }
         await login(token, decoded.isGuest)
         await routerTo('/profile/account');
         addNotification(`${user.value.username}，歡迎！`)
