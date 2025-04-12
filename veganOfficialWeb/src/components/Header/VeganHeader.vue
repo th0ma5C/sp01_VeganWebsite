@@ -131,8 +131,6 @@
                             </Search>
                         </li>
                     </ul>
-                    <router-link
-                        to="/checkout/orderProcessing">test</router-link>
                 </div>
             </div>
         </div>
