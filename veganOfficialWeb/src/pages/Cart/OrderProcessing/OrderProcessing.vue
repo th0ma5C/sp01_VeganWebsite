@@ -1,8 +1,9 @@
 <template>
     <div class="payingContainer">
-        <Vue3Lottie :animationData="paymentJson"
-            :height="125" :width="125">
-        </Vue3Lottie>
+        <DotLottieVue :src="lottieFilePath"
+            style="height:  125px; width: 125px;" autoplay
+            loop>
+        </DotLottieVue>
         <p>
             付款中，請勿關閉頁面...
         </p>
@@ -11,16 +12,17 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, onUnmounted } from 'vue';
-import paymentJson from '@assets/lottie/payment.json'
 import { useRoute, useRouter } from 'vue-router';
 import { useSSEStore } from '@/store/SSEStore';
 import { storeToRefs } from 'pinia';
 import { useToastStore } from '@/store/toastStore';
 
-const Vue3Lottie = defineAsyncComponent(async () => {
-    const mod = await import('vue3-lottie')
-    return mod.Vue3Lottie
+const DotLottieVue = defineAsyncComponent(async () => {
+    const mod = await import('@lottiefiles/dotlottie-vue')
+    return mod.DotLottieVue
 })
+
+const lottieFilePath = new URL('/src/assets/lottie/payment.json', import.meta.url).href
 
 // router
 const router = useRouter();

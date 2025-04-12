@@ -119,6 +119,8 @@ const routes = [
                     to: RouteLocationNormalized,
                     from: RouteLocationNormalized
                 ) => {
+                    const cartStore = useCartStore();
+                    if (!cartStore.cartCounter) return '/menu'
                     return true
                 },
             },
@@ -130,13 +132,12 @@ const routes = [
                     to: RouteLocationNormalized,
                     from: RouteLocationNormalized
                 ) => {
-                    // const userStore = useUserStore();
-                    // const toastStore = useToastStore();
-                    // if (userStore.isAuth) {
-                    //     toastStore.addNotification('請先登出')
-                    //     return '/profile/account'
-                    // }
-                    // return true
+                    const orderId = to.query.orderId as string;
+                    const token = to.query.token as string;
+                    if (!orderId?.trim() || !token?.trim()) {
+                        return '/menu'
+                    }
+                    return true
                 },
             },
         ]
@@ -296,11 +297,29 @@ const routes = [
             }
         ]
     },
-    { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/pages/404/404.vue'), }
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'NotFound',
+        component: () => import('@/pages/404/404.vue'),
+        beforeEnter: async (
+            to: RouteLocationNormalized,
+            from: RouteLocationNormalized
+        ) => {
+            const lowerCasePath = to.fullPath.toLowerCase()
+
+            if (to.fullPath !== lowerCasePath) {
+                return lowerCasePath
+            }
+
+            return true
+        },
+    }
 ]
 
 const router = createRouter({
     history: createWebHistory(),
+    strict: true,
+    sensitive: true,
     routes,
     scrollBehavior(to, from, savePosition) {
         if (to.query.scroll) {
