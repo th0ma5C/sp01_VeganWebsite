@@ -7,6 +7,7 @@ import { execSync } from 'child_process'
 import pkg from './package.json'
 import viteImagemin from 'vite-plugin-imagemin';
 import viteCompression from 'vite-plugin-compression';
+import { visualizer } from "rollup-plugin-visualizer";
 
 /// <reference types="vitest/config" />
 
@@ -114,6 +115,11 @@ export default defineConfig(({ mode }) => {
         filter: (file) => {
           return /\.(js|css|html|json)$/.test(file);
         },
+      }),
+      visualizer({
+        filename: './stats.html',
+        gzipSize: true,
+        brotliSize: true
       }),
     ],
     resolve: {
