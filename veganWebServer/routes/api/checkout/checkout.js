@@ -10,6 +10,11 @@ const isIpAllowed = require('@middlewares/ipChecker/ipChecker');
 const { requestOnlineAPI, fetchLinePayPaymentUrl, fetchLinePayStatus,
     fetchLinePayPaymentResult, fetchLinePayRefound } = require('./LinePay')
 const jwt = require('jsonwebtoken');
+const redisClient = require('@root/redisClient');
+
+
+// user sse state
+const userConnections = new Map();
 
 // 綠界付款表單
 router.post('/ECorderForm', async (req, res) => {
@@ -32,7 +37,6 @@ router.post('/ECorderForm', async (req, res) => {
 })
 
 // SSE
-const userConnections = new Map();
 
 function registerSSE(orderId, res, req) {
     if (userConnections.has(orderId)) {
@@ -75,15 +79,28 @@ function closeSSE(orderId, resPayload) {
     userConnections.delete(orderId);
 }
 
+// get token get from redis
+
+async function getCachedJWT(orderId) {
+    try {
+        return await redisClient.get(`order_token:${orderId}`);
+    } catch (error) {
+        throw new Error(error)
+    }
+}
+
 
 router.get("/paymentQueue/:orderId", async (req, res) => {
     const orderId = req.params.orderId;
     try {
         const order = await Order.findById(orderId);
+        const token = await getCachedJWT(orderId);
+
         if (order && order.purchaseOrder.status === 'processed') {
             const result = {
                 state: 'confirm',
-                message: 'payment completed'
+                message: 'payment completed',
+                token
             }
             res.setHeader('Content-Type', 'text/event-stream')
             res.write(`data: ${JSON.stringify(result)}\n\n`);
@@ -105,23 +122,23 @@ router.get("/paymentQueue/:orderId", async (req, res) => {
     }
 });
 
-router.post('/testEc', async (req, res) => {
-    try {
-        const orderId = req.body.orderId;
+// router.post('/testEc', async (req, res) => {
+//     try {
+//         const orderId = req.body.orderId;
 
-        const resPayload = {
-            state: 'confirm',
-            message: 'payment completed'
-        }
-        closeSSE(orderId, resPayload)
+//         const resPayload = {
+//             state: 'confirm',
+//             message: 'payment completed'
+//         }
+//         closeSSE(orderId, resPayload)
 
-        res.send('1|OK');
+//         res.send('1|OK');
 
-    } catch (error) {
-        console.error('ECPay Return Error:', error);
-        res.status(500).end();
-    }
-})
+//     } catch (error) {
+//         console.error('ECPay Return Error:', error);
+//         res.status(500).end();
+//     }
+// })
 
 // 綠界付款結果
 const ECdomains = process.env.ALLOWED_EC_DOMAINS ? process.env.ALLOWED_EC_DOMAINS.split(',') : [];
@@ -141,20 +158,22 @@ router.post('/ECpayResult', async (req, res) => {
             console.error('CheckMacValue mismatch')
             return res.status(400).end();
         }
-
+        const orderId = data.CustomField1;
         const userOrder = await Order.findByIdAndUpdate(
-            mongoose.Types.ObjectId(data.CustomField1),
+            new mongoose.Types.ObjectId(String(orderId)),
             {
                 $set: { 'purchaseOrder.status': 'processed', updatedAt: new Date() }
             },
             { new: true, runValidators: true }
         );
+        const token = await getCachedJWT(orderId);
 
         const resPayload = {
             state: 'confirm',
-            message: 'payment completed'
+            message: 'payment completed',
+            token
         }
-        closeSSE(data.CustomField1, resPayload)
+        closeSSE(orderId, resPayload)
 
         res.send('1|OK');
 

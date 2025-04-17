@@ -2,6 +2,19 @@ const Stocks = require('@models/StockModel');
 const redisQueue = require('@root/queues/redisQueue');
 const redisClient = require('@root/redisClient');
 
+/**
+ * const lock = await redisClient.set('isCacheUpdating', 'true', {
+            NX: true,
+            EX: 300,
+          });
+          if (lock) {
+            redisQueue.add({}, {
+              removeOnComplete: true,
+              removeOnFail: true,
+            });
+          }
+          原子鎖
+ */
 
 async function checkStocks(list) {
     try {
@@ -14,7 +27,7 @@ async function checkStocks(list) {
                         throw new Error(`Product not found: ${item.name}`);
                     }
                     checkPrice = stock.price
-                    await redisClient.set(item.name, checkPrice), { EX: 93600 };
+                    await redisClient.set(item.name, checkPrice, { EX: 93600 });
 
                     const isUpdating = await redisClient.get('isCacheUpdating');
                     if (!isUpdating) {

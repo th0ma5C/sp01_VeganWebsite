@@ -818,7 +818,7 @@ function switchTab(tab: string) {
 // 宅配地址
 const addrInput = ref('');
 const updateAddrInput = (value: string) => {
-    if (value) addrInput.value = value.trim();
+    if (value || value === '') addrInput.value = value.trim();
 };
 
 const expressAddr = computed(() => {
@@ -852,7 +852,7 @@ const storeAddrList = ref([
     },
     {
         branch: '分店三',
-        addr: '桃園市中壢區中和路114號中平路8號1樓及101樓2樓'
+        addr: '桃園市中壢區中平路8號1樓及10號1樓2樓'
     },
 ])
 const openStoreAddrList = ref(false);
@@ -898,12 +898,11 @@ const postalCodeAddr = computed(() => {
 async function autoFillPostalCode() {
     postalSpinner.value = true;
     try {
-        const { zipcode6 } = await getPostalCode(postalCodeAddr.value);
-        postalCode.value = zipcode6 ?? ''
+        const { zipcode6, zipcode } = await getPostalCode(postalCodeAddr.value);
+        postalCode.value = zipcode6 || zipcode || '';
     } catch (error) {
-        console.log(autoFillPostalCode.name, error);
+        console.log('autoFillPostalCode', error);
     }
-
 }
 
 watch([() => selectedCity.city, selectedTown, addrInput], async (nVal) => {
@@ -924,51 +923,74 @@ const {
     getSavedShippingInfo,
     getUserOrderList,
     localSaveShipInfo,
-    localGetShipInfo } = userStore;
+    localGetShipInfo,
+    clearExpiredUserData } = userStore;
 const { isAuth, user, userSavedCheckoutForm, userToken, isUserHasSavedForm } = storeToRefs(userStore);
 
 const checkoutForm = useTemplateRef('checkoutForm');
 const isFormInit = ref(false);
-userStore.$subscribe(async (_, state) => {
-    if (!state.isAuth) {
-        try {
-            await nextTick()
-            if (!checkoutForm.value) return
-            const form = localGetShipInfo();
-            if (form) checkoutForm.value.setValues(form);
+// userStore.$subscribe(async (_, state) => {
+//     if (!state.isAuth) {
+//         try {
+//             await nextTick()
+//             if (!checkoutForm.value) return
+//             const form = localGetShipInfo();
+//             if (form) checkoutForm.value.setValues(form);
+//             const { state, token } = await reqGetUser();
+//             if (state && state == 'confirm' && token) {
+//                 userStore.login(token);
+//             }
+//         } catch (error) {
+//             userStore.isAuth = false;
+//         } finally {
+//             isFormInit.value = true
+//             return
+//         }
+//     } else if (state.isAuth && Object.keys(state.userSavedCheckoutForm).length != 0) {
+//         nextTick(() => {
+//             console.log(checkoutForm.value);
+//             if (!checkoutForm.value) return
+//             checkoutForm.value.setValues(state.userSavedCheckoutForm);
+//             updateAddrInput(state.userSavedCheckoutForm.address || '');
+//             setTimeout(() => {
+//                 isFormInit.value = true
+//             }, 1000)
+//         })
+//     } else if (state.isAuth && Object.keys(state.userSavedCheckoutForm).length == 0) {
+//         nextTick(() => {
+//             if (!checkoutForm.value) return
+//             checkoutForm.value.setValues({
+//                 email: user.value.email,
+//                 consigneeName: user.value.username
+//             })
+//             setTimeout(() => {
+//                 isFormInit.value = true
+//             }, 1000)
+//         })
+//     }
+// }, { immediate: true })
 
-            const { state, token } = await reqGetUser();
-            if (state && state == 'confirm' && token) {
-                userStore.login(token);
-            }
-        } catch (error) {
-            userStore.isAuth = false;
-        } finally {
-            isFormInit.value = true
-            return
-        }
-    } else if (state.isAuth && Object.keys(state.userSavedCheckoutForm).length != 0) {
-        nextTick(() => {
-            if (!checkoutForm.value) return
-            checkoutForm.value.setValues(state.userSavedCheckoutForm);
-            updateAddrInput(state.userSavedCheckoutForm.address || '');
-            setTimeout(() => {
-                isFormInit.value = true
-            }, 1000)
-        })
-    } else if (state.isAuth && Object.keys(state.userSavedCheckoutForm).length == 0) {
-        nextTick(() => {
-            if (!checkoutForm.value) return
-            checkoutForm.value.setValues({
-                email: user.value.email,
-                consigneeName: user.value.username
-            })
-            setTimeout(() => {
-                isFormInit.value = true
-            }, 1000)
-        })
+async function initShipInfo() {
+    try {
+        await nextTick()
+        if (!checkoutForm.value) return
+
+        let data = isAuth ?
+            { ...userSavedCheckoutForm.value } :
+            { ...localGetShipInfo() }
+
+        updateAddrInput(data.address || '');
+        checkoutForm.value.setValues(data);
     }
-}, { immediate: true })
+    catch (error) {
+        console.log(error);
+    } finally {
+        setTimeout(() => isFormInit.value = true, 1000)
+    }
+}
+
+function foo() {
+}
 
 
 const showEmail = computed(() => {
@@ -1018,6 +1040,7 @@ async function createOrder(form: Record<string, any>) {
             // SSEStore.startPaymentQueue(orderId);
 
             if (form.paymentType == '匯款' || form.paymentType == '信用卡') {
+                if (!isAuth.value) clearExpiredUserData()
                 return await fetchECForm(orderId);
             }
 
@@ -1126,6 +1149,7 @@ async function openLinePayUrl(orderId: string) {
 onMounted(async () => {
     if (!isCheckout.value) toggleIsCheckout();
     window.addEventListener('beforeunload', handleRefreshAlert);
+    initShipInfo()
 })
 
 onUnmounted(() => {

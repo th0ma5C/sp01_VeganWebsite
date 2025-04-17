@@ -4,6 +4,7 @@ const moment = require('moment');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const redisClient = require('@root/redisClient');
 
 async function genECorderForm(orderId) {
     try {
@@ -61,6 +62,18 @@ async function genUserToken(purchaseOrder, shippingInfo) {
     }
 }
 
+async function cacheJWT({ orderId, token } = {}) {
+    try {
+        if (!orderId || !token) throw new Error('miss orderId or token')
+
+        await redisClient.set(`order_token:${orderId}`, token, {
+            EX: 60 * 10, // 10 min
+        });
+    } catch (error) {
+        throw new Error(error)
+    }
+}
+
 function generateCheckValue(params) {
     const entries = Object.entries(params);
 
@@ -98,6 +111,10 @@ async function genSubmitForm(order) {
         }).join("#");
 
         const token = await genUserToken(purchaseOrder, shippingInfo);
+        await cacheJWT({
+            orderId: _id,
+            token
+        });
 
         const base_param = {
             MerchantID: process.env.MerchantID,
@@ -110,7 +127,7 @@ async function genSubmitForm(order) {
             ReturnURL: process.env.PaymentReturnURL,
             ChoosePayment: 'ALL',
             EncryptType: 1,
-            ClientBackURL: `${process.env.EC_ClientBackURL}?orderId=${_id}&token=${token}`,
+            ClientBackURL: `${process.env.EC_ClientBackURL}?orderId=${_id}`,
             CustomField1: _id,
         };
 

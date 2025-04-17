@@ -34,7 +34,7 @@ export const useSSEStore = defineStore("sse", () => {
 
     const paymentNotify = (
         orderId: string,
-        onSuccess: () => void | Promise<void>,
+        onSuccess: (params: string) => void | Promise<void>,
         onError: () => void
     ) => {
         const eventSource = paymentQueue.value[orderId]
@@ -44,16 +44,16 @@ export const useSSEStore = defineStore("sse", () => {
 
         eventSource.onmessage = async (event) => {
             try {
-                const { state, message } = JSON.parse(event.data);
+                const { state, message, token } = JSON.parse(event.data);
                 clearTimeout(timeoutId);
 
                 if (state === "confirm") {
-                    console.log("[SSE] 收到付款確認：", message);
+                    console.log("收到付款確認：", message);
                     retryCount = 0;
                     stopPaymentQueue(orderId);
 
                     try {
-                        await Promise.resolve(onSuccess());
+                        await Promise.resolve(onSuccess(token));
 
                     } catch (err) {
                         console.error("success callback failed:", err);

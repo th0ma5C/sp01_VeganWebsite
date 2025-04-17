@@ -820,7 +820,8 @@ h2 {
 
     .info {
         border-right: 1px solid gray;
-        margin-right: .5rem;
+        // margin-right: .25rem;
+        padding-right: .5rem;
         flex: 1;
 
         h4 {

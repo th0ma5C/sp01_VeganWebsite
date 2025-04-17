@@ -433,7 +433,7 @@
                 </Spinner>
             </main>
         </div>
-        <div class="emailVerify">
+        <div class="emailVerify" v-if="user.email">
             <h2>
                 個人檔案
             </h2>
@@ -685,10 +685,10 @@ const postalCodeAddr = computed(() => {
 async function autoFillPostalCode() {
     postalSpinner.value = true;
     try {
-        const { zipcode6 } = await getPostalCode(postalCodeAddr.value);
-        postalCode.value = zipcode6 ?? ''
+        const { zipcode6, zipcode } = await getPostalCode(postalCodeAddr.value);
+        postalCode.value = zipcode6 || zipcode || '';
     } catch (error) {
-        console.log(autoFillPostalCode.name, error);
+        console.log('autoFillPostalCode', error);
     }
 
 }

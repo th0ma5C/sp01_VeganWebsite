@@ -87,7 +87,12 @@
                             @blur="handleBlur(field.value, resetField, $event)"
                             @keydown.enter="handleEnter(field.value)">
                     </VField>
-                    <label for="discountCode">折扣碼</label>
+                    <label for="discountCode">
+                        折扣碼
+                        <i>
+                            測試用：vegan50、vegan100
+                        </i>
+                    </label>
 
                     <transition name="couponErrMsg">
                         <div class="errorMsg"
@@ -196,7 +201,7 @@
                                     class="correctionDigit"
                                     v-text="correctionDigit(couponAmount)"></span>
                                 <span>{{ couponAmount
-                                }}</span>
+                                    }}</span>
                             </span>
                         </transition-group>
                     </div>
@@ -239,7 +244,7 @@
                 <span>總計</span>
                 <span>${{
                     orderAmount.toLocaleString()
-                }}</span>
+                    }}</span>
             </div>
         </div>
 
