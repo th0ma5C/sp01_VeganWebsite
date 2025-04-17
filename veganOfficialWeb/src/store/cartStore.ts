@@ -202,7 +202,7 @@ export const useCartStore = defineStore('cart', () => {
     }, { deep: true })
 
     const headerCart = ref();
-    function getHeaderCart(target: HTMLElement) {
+    function setHeaderCartEl(target: HTMLElement) {
         headerCart.value = target
     }
 
@@ -393,7 +393,7 @@ export const useCartStore = defineStore('cart', () => {
         setCartToStorage,
         getCartFromStorage,
         initCart,
-        getHeaderCart,
+        setHeaderCartEl,
         toggleIsCheckout,
         getCartState,
         getFreightFee,

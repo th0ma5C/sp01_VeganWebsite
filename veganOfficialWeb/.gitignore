@@ -32,3 +32,5 @@ coverage
 .env*
 
 stats.html
+
+TODO.md

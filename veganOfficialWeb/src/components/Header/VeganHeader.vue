@@ -1,5 +1,6 @@
 <template>
-    <transition mode="out-in">
+    <transition mode="out-in"
+        @after-enter="handleHeaderRerender">
         <div ref="header" class="container" :class="{
             hideNav
         }" :style="{
@@ -156,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick, computed, watch, reactive, useTemplateRef, watchEffect } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick, computed, watch, reactive, useTemplateRef, watchEffect, onUpdated } from 'vue';
 import { throttle } from 'lodash-es';
 import { useRouter, useRoute } from 'vue-router';
 import { useQuestionnaireStore } from '@/store/questionnaireStore';
@@ -264,7 +265,7 @@ function backHome() {
 // 購物車
 const cartStore = useCartStore();
 const { isCheckout, isCartCardOpen, scrollbarWidth } = storeToRefs(cartStore);
-const { toggleCartCardOpen, getHeaderCart } = cartStore;
+const { toggleCartCardOpen, setHeaderCartEl } = cartStore;
 
 function clickNavIcon(target: string) {
     if (isSearchShow.value && target !== 'Search') clickNavIcon('Search');
@@ -287,11 +288,16 @@ const iconList = ref();
 watch([QNR_IsLoaded, isCheckout], (nVal) => {
     if (nVal.some(val => val == false)) {
         nextTick(() => {
-            getHeaderCart(iconList.value[1]);
+            setHeaderCartEl(iconList.value[1]);
         })
     }
 })
 
+function handleHeaderRerender() {
+    nextTick(() => {
+        setHeaderCartEl(iconList.value[1]);
+    })
+}
 
 // emit event
 emitter.on('sendIcon', () => {
@@ -360,7 +366,7 @@ let currWidth = 0;
 onMounted(() => {
     window.addEventListener('scroll', throttledOnScroll);
     // 暴露cart按鈕元素
-    getHeaderCart(iconList.value[1]);
+    setHeaderCartEl(iconList.value[1]);
     window.addEventListener('resize', () => {
         if (currWidth == window.innerWidth) return
         isInit.value = true;

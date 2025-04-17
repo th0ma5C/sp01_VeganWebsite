@@ -124,7 +124,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                    }}</span>
+                                                }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -296,7 +296,7 @@
                             <div class="description">
                                 <span>{{
                                     items.description
-                                    }}</span>
+                                }}</span>
                             </div>
                         </div>
                         <h3>{{ items.name }}</h3>

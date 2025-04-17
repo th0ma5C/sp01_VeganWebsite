@@ -16,6 +16,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useSSEStore } from '@/store/SSEStore';
 import { storeToRefs } from 'pinia';
 import { useToastStore } from '@/store/toastStore';
+import { useLoaderStore } from '@/store/loader';
 
 const DotLottieVue = defineAsyncComponent(async () => {
     const mod = await import('@lottiefiles/dotlottie-vue')
@@ -28,11 +29,19 @@ const lottieFilePath = new URL('/src/assets/lottie/payment.json', import.meta.ur
 const router = useRouter();
 const route = useRoute();
 const orderId = route.query.orderId as string;
-const token = route.query.token as string;
+// const token = route.query.token as string;
 
 // toast
 const toastStore = useToastStore();
 const { addNotification } = toastStore;
+
+// loader
+const loaderStore = useLoaderStore();
+loaderStore.$subscribe((_, state) => {
+    if (!state.loaderActivated) {
+        startSSEConnect();
+    }
+})
 
 // start SSE
 const SSEStore = useSSEStore();
@@ -44,9 +53,9 @@ function startSSEConnect() {
     paymentNotify(orderId, sseSuccess, sseError)
 }
 
-async function sseSuccess() {
+async function sseSuccess(token: string) {
     try {
-        addNotification('付款成功');
+        addNotification('付款成功，明細請至信箱確認');
         await router.push({
             path: '/profile',
             query: {
@@ -62,14 +71,14 @@ function sseError() {
     addNotification('付款失敗，請重試');
     router.push({
         path: '/profile',
-        query: {
-            token
-        }
+        // query: {
+        //     token
+        // }
     })
 }
 
 onMounted(() => {
-    startSSEConnect();
+    // startSSEConnect();
 })
 
 onUnmounted(() => {

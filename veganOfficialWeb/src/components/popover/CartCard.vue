@@ -13,11 +13,11 @@
                     </SvgIcon>
                 </div>
 
-                <div class="shipDiscount" :style="{
+                <!-- <div class="shipDiscount" :style="{
                     opacity: cartCounter ?? 0
                 }">
-                    再消費999免運
-                </div>
+                    再消費 $999 即可免運
+                </div> -->
 
                 <div class="itemWrapper">
                     <transition name="emptyList">
@@ -41,7 +41,7 @@
                             <div class="details">
                                 <h3>{{ key }}</h3>
                                 <small>${{ item.price
-                                    }}</small>
+                                }}</small>
                             </div>
 
                             <div class="itemSubtotal">
@@ -128,7 +128,6 @@ import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/userStore';
 import { useToastStore } from '@/store/toastStore';
 import { gsap } from 'gsap/gsap-core';
-
 
 
 const cartStore = useCartStore();
@@ -231,9 +230,16 @@ async function copyShareLink() {
     }
 }
 
+// 免運提示
+const freeFrightFeeLimit = 7;
+const freeFrightFeeGap = computed(() => {
+    const gap = ((cartCounter.value ?? 0) - freeFrightFeeLimit)
+    return gap
+})
 
 onMounted(() => {
     initCart();
+    console.log(cartCounter.value);
 })
 </script>
 

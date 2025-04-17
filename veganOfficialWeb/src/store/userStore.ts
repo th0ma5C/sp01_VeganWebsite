@@ -8,7 +8,6 @@ import type { UserOrder, ShippingInfo } from "@/api/order/type";
 import { useCartStore } from "./cartStore";
 import { useQuestionnaireStore } from "./questionnaireStore";
 import { useToastStore } from "./toastStore";
-import type { AxiosError } from "axios";
 
 interface LoginTokenPayload {
     username: string,
@@ -23,7 +22,7 @@ const ProfileStorage_KEY = 'profile';
 
 export const useUserStore = defineStore('user', () => {
     const nanoid = inject('nanoid') as (t: number) => string;
-    const toastStore = useToastStore();
+    const { addNotification } = useToastStore();
     const router = useRouter();
     const isAuth = ref(false);
     const isLoading = ref(false);
@@ -80,18 +79,6 @@ export const useUserStore = defineStore('user', () => {
             const cartStore = useCartStore();
             await cartStore.memberLoadCart();
             isAuth.value = true;
-            // isAuth.value = true;
-            // if (token && !isGuest) {
-            //     storeUserProfile(token)
-            //     loadUserProfile();
-            //     userToken.value = token;
-            // }
-            // const cartStore = useCartStore();
-            // if (isGuest && token) {
-            //     userToken.value = token
-            //     return
-            // }
-            // await cartStore.memberLoadCart();
         } catch (error) {
             console.log(error);
         }
@@ -99,7 +86,6 @@ export const useUserStore = defineStore('user', () => {
 
     async function logout() {
         const questionnaireStore = useQuestionnaireStore();
-        const toastStore = useToastStore();
         try {
             const result = await reqUserLogout();
             if (result.state == 'logout') {
@@ -217,10 +203,9 @@ export const useUserStore = defineStore('user', () => {
             const decoded = jwtDecode<LoginTokenPayload>(userToken.value);
             const currTime = Math.floor(Date.now() / 1000);
             if (decoded.exp < currTime) throw new Error('請重新登入');
-            const toastStore = useToastStore();
 
             const result = await reqCancelUserOrder(userToken.value, orderID);
-            toastStore.addNotification(`已取消訂單`);
+            addNotification(`已取消訂單`);
             return result
         } catch (error) {
             console.error('Error canceling order:', error);
@@ -292,7 +277,7 @@ export const useUserStore = defineStore('user', () => {
 
     function localGetShipInfo() {
         const raw = localStorage.getItem(ShipInfoStorageKey);
-        if (!raw) return
+        if (!raw) return {}
 
         const data = JSON.parse(raw);
         const { user: currUser, form } = data

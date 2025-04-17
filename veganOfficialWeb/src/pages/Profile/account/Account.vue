@@ -5,7 +5,7 @@
                 {{ showUsername }} {{ welcomeWords }}
             </h1>
 
-            <button v-show="showUsername !== ''"
+            <button v-show="showUsername !== '您好'"
                 @click="userLogout">登出</button>
         </div>
 
@@ -96,7 +96,7 @@ const { isAuth, user, userOrderList, userToken } = storeToRefs(userStore);
 
 const showUsername = computed(() => {
     if (user.value.username == 'anonymous') {
-        return ''
+        return '您好'
     }
     return user.value.username
 })

@@ -133,8 +133,8 @@ const routes = [
                     from: RouteLocationNormalized
                 ) => {
                     const orderId = to.query.orderId as string;
-                    const token = to.query.token as string;
-                    if (!orderId?.trim() || !token?.trim()) {
+                    // const token = to.query.token as string;
+                    if (!orderId?.trim()) {
                         return '/menu'
                     }
                     return true
@@ -146,21 +146,33 @@ const routes = [
         path: '/profile',
         name: 'Profile',
         component: () => import('@/pages/Profile/index.vue'),
-        // component: Profile,
         beforeEnter: (
             to: RouteLocationNormalized,
             from: RouteLocationNormalized
         ) => {
-            const userStore = useUserStore();
-            if (userStore.isAuth && to.path == '/profile') {
-                return '/profile/account'
-            }
-            return true
         },
         meta: {
             searchKeys: ['登入', 'login']
         },
         children: [
+            {
+                name: 'Login',
+                path: '',
+                component: () => import('@/pages/Profile/login/Login.vue'),
+                meta: {
+                    searchKeys: ['登入', 'login']
+                },
+                beforeEnter: (
+                    to: RouteLocationNormalized,
+                    from: RouteLocationNormalized
+                ) => {
+                    const userStore = useUserStore();
+                    if (userStore.isAuth && to.path == '/profile') {
+                        return '/profile/account'
+                    }
+                    return true
+                },
+            },
             {
                 name: 'ForgetPassword',
                 path: 'forgetPassword',
@@ -353,9 +365,10 @@ router.beforeEach(async (to, from) => {
 
     if (to.path == '/profile' && to.query.token) {
         try {
-            loaderStore.loaderActivated = true;
-            const JWT = to.query.token as string
+            // loaderStore.loaderActivated = true;
+            const JWT = to.query.token as string;
             const decoded = jwtDecode<RedirectResTokenDecoded>(JWT);
+            console.log(decoded);
             if (decoded.isGuest) {
                 if (decoded.userID !== userStore.user.userID) {
                     await userStore.logout();

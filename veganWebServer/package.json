@@ -6,9 +6,11 @@
     "start": "cross-env NODE_ENV=production node bin/www",
     "start:dev": "cross-env NODE_ENV=development nodemon bin/www",
     "mailer-script": "cross-env node scripts/OAuthGmail",
-    "mailer-script:dev": "cross-env NODE_ENV=development node scripts/OAuthGmail"
+    "mailer-script:dev": "cross-env NODE_ENV=development node scripts/OAuthGmail",
+    "ngrok-script": "cross-env NODE_ENV=development node scripts/ngrok"
   },
   "dependencies": {
+    "@ngrok/ngrok": "^1.5.0",
     "bcryptjs": "^2.4.3",
     "bull": "^4.16.5",
     "connect-redis": "^8.0.2",
