@@ -5,7 +5,7 @@
                 <swiper-container effect="fade" speed="700"
                     autoplay-delay="4000"
                     :fadeEffect="{ crossFade: true }"
-                    :allowTouchMove="false" class="test">
+                    :allowTouchMove="false">
                     <swiper-slide>
                         <img src="@assets/img/Menu/doc01.png"
                             alt="doctor A">
@@ -124,7 +124,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                }}</span>
+                                                    }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -296,7 +296,7 @@
                             <div class="description">
                                 <span>{{
                                     items.description
-                                }}</span>
+                                    }}</span>
                             </div>
                         </div>
                         <h3>{{ items.name }}</h3>

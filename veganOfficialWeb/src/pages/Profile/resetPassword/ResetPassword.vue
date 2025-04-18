@@ -21,7 +21,7 @@
                                 <input :id="input"
                                     :type="type == 'password' ?
                                         (showPassword ? 'text' : 'password') : type"
-                                    placeholder=""
+                                    required
                                     autocomplete="off"
                                     :="field" :class="{
                                         invalidInput: !meta.valid && submitCount > 0
@@ -153,7 +153,7 @@ interface RedirectResTokenDecoded {
     exp: number
 }
 const token = route.query.token as string;
-const JWTpayload = jwtDecode<RedirectResTokenDecoded>(token);
+// const JWTpayload = jwtDecode<RedirectResTokenDecoded>(token);
 
 // 顯示密碼紐
 const showPassword = ref(false);
@@ -195,13 +195,14 @@ interface ErrorResponse {
 const registerMsg = ref<string | null>(null);
 const formState = ref('processing')
 async function resetPasswordReq(form: Record<string, any>) {
-    const { password } = form as ReqForm;
-    const data = {
-        userID: JWTpayload.userID,
-        password,
-        token
-    }
     try {
+        const { password } = form as ReqForm;
+        const JWTpayload = jwtDecode<RedirectResTokenDecoded>(token);
+        const data = {
+            userID: JWTpayload.userID,
+            password,
+            token
+        }
         const res = await reqResetPassword(data);
         formState.value = 'finish';
         addNotification('密碼已重設');
@@ -303,8 +304,7 @@ $container_width: 300px;
             pointer-events: none;
         }
 
-        & div:has(input:focus)>label,
-        & div:has(input:not(:placeholder-shown))>label {
+        & div:has(input:focus, input:focus-within, input:valid)>label {
             transform: translateY(calc(-100% - 10px)) scale(0.8);
         }
 

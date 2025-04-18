@@ -188,7 +188,7 @@ const discountClass = computed(() => {
 // 路由
 const router = useRouter();
 function goCheckoutPage() {
-    if (!cartCounter.value || isAnimating.value) return
+    // if (!cartCounter.value || isAnimating.value) return
     isCheckingOut.value = true
     closeDrawer()
     toggleIsCheckout()
@@ -239,7 +239,6 @@ const freeFrightFeeGap = computed(() => {
 
 onMounted(() => {
     initCart();
-    console.log(cartCounter.value);
 })
 </script>
 

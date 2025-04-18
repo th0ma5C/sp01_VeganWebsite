@@ -120,7 +120,7 @@ const routes = [
                     from: RouteLocationNormalized
                 ) => {
                     const cartStore = useCartStore();
-                    if (!cartStore.cartCounter) return '/menu'
+                    // if (!cartStore.cartCounter) return '/menu'
                     return true
                 },
             },

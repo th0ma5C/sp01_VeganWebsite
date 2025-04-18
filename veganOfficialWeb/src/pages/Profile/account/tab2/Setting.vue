@@ -96,7 +96,7 @@
                                     <VField id="email"
                                         name="email"
                                         type="email"
-                                        placeholder=""
+                                        placeholder="信箱"
                                         autocomplete="off">
                                     </VField>
 
@@ -130,7 +130,7 @@
                                         id="consigneeName"
                                         name="consigneeName"
                                         type="text"
-                                        placeholder="">
+                                        placeholder="姓名">
                                     </VField>
 
                                     <label
@@ -163,7 +163,7 @@
                                         <input id="address"
                                             type="text"
                                             autocomplete="off"
-                                            placeholder=""
+                                            placeholder="地址"
                                             :="field"
                                             :class="{
                                                 invalidInput: !meta.valid && submitCount > 0
@@ -201,12 +201,11 @@
                                         <VField id="city"
                                             name="city"
                                             type="text"
-                                            placeholder=""
                                             v-model="inputCity"
                                             v-slot="{ field, meta }">
                                             <input id="city"
                                                 :="field"
-                                                placeholder=""
+                                                placeholder="縣市"
                                                 :class="{
                                                     invalidInput: !meta.valid && submitCount > 0
                                                 }">
@@ -326,7 +325,7 @@
                                                 type="text"
                                                 id="postal"
                                                 autocomplete="off"
-                                                placeholder=""
+                                                placeholder="郵遞區號"
                                                 :="field"
                                                 :class="{
                                                     invalidInput: !meta.valid && submitCount > 0
@@ -369,7 +368,7 @@
                                     <VField id="contactNo"
                                         name="contactNo"
                                         type="tel"
-                                        placeholder="">
+                                        placeholder="聯絡電話">
                                     </VField>
 
                                     <label
@@ -1034,6 +1033,10 @@ h2 {
         & div:has(input:not(:placeholder-shown))>label {
             transform: translateY(calc(-100% - 8px)) scale(0.9);
             background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
+        }
+
+        input::placeholder {
+            opacity: 0;
         }
     }
 }
