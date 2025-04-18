@@ -34,8 +34,10 @@ const customAdapter: AxiosAdapter = async (config: AxiosRequestConfig): Promise<
     return reqRetry();
 };
 
+const urlPrefix = import.meta.env.MODE === 'development' ? '' : import.meta.env.VITE_API_BASE_URL;
+
 const requests = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL + '/api',
+    baseURL: urlPrefix + '/api',
     adapter: customAdapter,
     withCredentials: true
 });

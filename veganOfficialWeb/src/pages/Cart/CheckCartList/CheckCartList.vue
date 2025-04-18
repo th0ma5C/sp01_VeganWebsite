@@ -82,8 +82,8 @@
                         v-slot="{ field, resetField }">
                         <input ref="inputRef"
                             id="discountCode" type=text
-                            autocomplete="off"
-                            placeholder="" :="field"
+                            autocomplete="off" required
+                            :="field"
                             @blur="handleBlur(field.value, resetField, $event)"
                             @keydown.enter="handleEnter(field.value)">
                     </VField>
@@ -201,7 +201,7 @@
                                     class="correctionDigit"
                                     v-text="correctionDigit(couponAmount)"></span>
                                 <span>{{ couponAmount
-                                    }}</span>
+                                }}</span>
                             </span>
                         </transition-group>
                     </div>
@@ -244,7 +244,7 @@
                 <span>總計</span>
                 <span>${{
                     orderAmount.toLocaleString()
-                    }}</span>
+                }}</span>
             </div>
         </div>
 
@@ -254,10 +254,7 @@
                 <Spinner></Spinner>
             </div>
         </transition>
-
     </div>
-
-
 </template>
 
 <script setup lang="ts">
@@ -746,7 +743,7 @@ onMounted(() => {
             font-size: .75rem;
         }
 
-        &:has(input:focus, input:not(:placeholder-shown))>label {
+        &:has(input:focus, input:focus-within, input:valid)>label {
             opacity: 0;
         }
 

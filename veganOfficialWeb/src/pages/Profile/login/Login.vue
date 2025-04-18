@@ -52,7 +52,7 @@
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>{{ message
-                                        }}</span>
+                                    }}</span>
                                 </ErrorMessage>
                             </div>
 
@@ -572,21 +572,6 @@ $container_width: 300px;
         & div:has(input:valid)>.placeholder {
             opacity: 0;
         }
-
-        // & div:has(input:focus)>label,
-        // & div:has(input:not(:placeholder-shown))>label {
-        //     transform: translateY(calc(-100% - 10px)) scale(0.8);
-        // }
-
-        // & div:has(input:focus)>.placeholder,
-        // & div:has(input:not(:placeholder-shown))>.placeholder {
-        //     opacity: .25;
-        // }
-
-        // & div:has(input:valid)>.placeholder,
-        // & div:has(input:not(:placeholder-shown))>.placeholder {
-        //     opacity: 0;
-        // }
 
         .passwordIcon {
             @include absoluteCenterTLXY($left: 100%, $X: -150%);

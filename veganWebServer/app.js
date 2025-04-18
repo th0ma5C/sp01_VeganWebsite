@@ -28,7 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 配置 CORS
 const allowedOrigins = (process.env.CORS_ORIGIN || '').split(',');
 const corsOptions = {
-  origin: allowedOrigins,
+  origin: process.env.NODE_ENV === 'development' ? true : allowedOrigins,
   credentials: true,
 };
 
