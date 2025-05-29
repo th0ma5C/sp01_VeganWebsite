@@ -213,7 +213,7 @@ import type { GPT_RES } from '@/api/questionnaire/type';
 // questionnaireStore
 const questionnaireStore = useQuestionnaireStore();
 const { QNR_result, QNR_isDone } = storeToRefs(questionnaireStore);
-const { memberSaveResult, memberGetResult, clearSurveyData } = questionnaireStore;
+const { memberSaveResult, memberGetResult, clearSurveyData, memberClearResult } = questionnaireStore;
 // const { info: { userName, gender, birth }, habit, flavor, ingredients, food, calories } = QNR_result.value;
 
 // menuStore
@@ -222,7 +222,7 @@ const { saladList, smoothieList, isLoaded } = storeToRefs(menuStore);
 
 // user store
 const userStore = useUserStore();
-const { user } = storeToRefs(userStore);
+const { user, isAuth } = storeToRefs(userStore);
 
 // 顯示推薦
 function filterByTag(
@@ -512,15 +512,11 @@ function createListScrollTrigger() {
     })
 }
 
-function scrollTriggerOnResize() {
-
-}
-
-
 // 重新測驗
 const Router = useRouter();
 async function retest() {
     try {
+        if (isAuth.value) await memberClearResult();
         await clearSurveyData();
         Router.back();
     } catch (error) {

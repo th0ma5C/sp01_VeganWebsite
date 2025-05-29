@@ -13,6 +13,7 @@ const oauth = require('./oauth/OAuth');
 const cart = require('./cart/cart.js');
 const order = require('./order');
 const emailSubscribe = require('./subscribe/subscribe.js');
+const service = require('./serviceChat/chat.js')
 
 // 使用路由模块
 router.use('/menu', menu);
@@ -52,5 +53,8 @@ router.use('/cart', cart);
 
 // 訂閱
 router.use('/subscribe', emailSubscribe);
+
+// service chat
+router.use('/service', service)
 
 module.exports = router;

@@ -1,7 +1,35 @@
 <template>
-    <h2>
-        訂單紀錄
-    </h2>
+    <div class="sectionTitle">
+        <h2>
+            訂單紀錄
+        </h2>
+
+        <div class="mobileFilter" @click.stop
+            @touchend.stop>
+            <div class="title" @click="toggleSort">
+                <span :class="{
+                    onSort: isSort
+                }">
+                    {{ selectBranch }}
+                </span>
+
+                <SvgIcon name="ListArrowDown" width="24px"
+                    height="24px" class="arrowIcon"
+                    :class="{ arrowOnSort: isSort }">
+                </SvgIcon>
+            </div>
+
+            <transition name="dropList">
+                <ul class="dropList" v-show="isSort">
+                    <li v-for="(branch, index) in sortOptions"
+                        :key="index"
+                        @click="dropListOnclick(branch)">
+                        {{ branch }}
+                    </li>
+                </ul>
+            </transition>
+        </div>
+    </div>
 
     <main>
         <ul class="orderContainer">
@@ -434,12 +462,12 @@ function GSAPsetList(state: Flip.FlipState) {
 
 // branch filter
 type Branch = '全部' | '待付款' | '已完成'
-const { selectBranch } = defineProps<{ selectBranch: Branch }>();
+const selectBranch = defineModel<Branch>();
 
 const filterWord = computed(() => {
     let word = null;
 
-    switch (selectBranch) {
+    switch (selectBranch.value) {
         case '已完成':
             word = ['completed', 'cancelled'];
             break
@@ -452,9 +480,31 @@ const filterWord = computed(() => {
     }
     return word
 })
+
+// mobile sort
+const isSort = ref(false);
+const sortOptions = ref(['全部', '待付款', '已完成'] as const)
+
+function toggleSort() {
+    isSort.value = !isSort.value
+}
+
+function dropListOnclick(select: Branch) {
+    selectBranch.value = select;
+    toggleSort();
+}
+const closeSort = () => {
+    if (isSort.value) toggleSort();
+}
+
+function setWindowToggleSort() {
+    window.addEventListener('click', closeSort);
+    window.addEventListener('touchend', closeSort);
+}
+
 // 切分頁GSAP轉場
 const orderListRefs = useTemplateRef('orderListRefs');
-watch(() => selectBranch, (nVal) => {
+watch(selectBranch, (nVal) => {
     let state = Flip.getState(orderListRefs.value);
     if (nVal) {
         nextTick(() => {
@@ -585,10 +635,15 @@ onUpdated(() => {
 })
 
 onMounted(() => {
+    nextTick(() => {
+        setWindowToggleSort()
+    })
     // setPaymentNotify()
 })
 
 onUnmounted(() => {
+    window.removeEventListener('click', closeSort);
+    window.removeEventListener('touchend', closeSort);
     // stopPaymentNotify()
 })
 
@@ -598,6 +653,8 @@ onUnmounted(() => {
 * {
     // outline: 1px solid black;
 }
+
+main {}
 
 h2 {
     font-size: 2rem;
@@ -612,10 +669,11 @@ h2 {
 .orderContainer {
     text-align: center;
     position: relative;
+    padding-inline: 1rem;
 
     &>li {
         border-radius: 1rem;
-        padding: 1.25rem 1rem;
+        padding: 1.25rem 0rem;
         margin-bottom: 1rem;
         box-shadow: 1px 1px 2px 2px rgba(0, 0, 0, 0.5);
 
@@ -967,7 +1025,96 @@ h2 {
     display: none;
 }
 
+.sectionTitle {
+    display: flex;
+    align-items: baseline;
+}
 
+.mobileFilter {
+    display: none;
+    position: relative;
+    outline: 1px solid black;
+    border-radius: .25rem;
+    margin-left: auto;
+    min-width: 100px;
+    user-select: none;
+    cursor: pointer;
+
+    .title {
+        display: flex;
+        justify-content: space-between;
+        gap: .5rem;
+        width: 100%;
+
+        span {
+            padding-inline: .5rem;
+            font-size: 18px;
+        }
+    }
+}
+
+.onSort {
+    color: transparent;
+}
+
+.dropList {
+    border-radius: .25rem;
+    width: 100%;
+    position: absolute;
+    top: 120%;
+    font-size: 18px;
+    outline: 1px solid black;
+    padding-inline: .5rem;
+    padding-block: .25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    background-color: $primaryBacColor;
+    z-index: 10;
+
+    li {
+        position: relative;
+
+        &::after {
+            @include WnH(100%, 1px);
+            background-color: gray;
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -4px;
+        }
+
+        &:last-of-type::after {
+            display: none;
+        }
+    }
+}
+
+.arrowIcon {
+    rotate: -90deg;
+    transition: rotate .15s;
+}
+
+.arrowOnSort {
+    rotate: 0deg;
+}
+
+.dropList-enter-active,
+.dropList-leave-active {
+    transition: opacity .15s, translate .15s;
+}
+
+.dropList-enter-from,
+.dropList-leave-to {
+    translate: 0 -5%;
+    opacity: 0;
+}
+
+.dropList-enter-to,
+.dropList-leave-from {
+    translate: 0 0;
+    opacity: 1;
+}
 
 @include XLarge {}
 
@@ -1050,7 +1197,15 @@ h2 {
     }
 }
 
-@include medium {}
+@include medium {
+    main {
+        margin-inline: unset;
+    }
+
+    .mobileFilter {
+        display: block;
+    }
+}
 
 @include small {
     .orderContainer {
@@ -1097,6 +1252,18 @@ h2 {
                 @include WnH(70px, 30px);
             }
         }
+    }
+
+    .mobileFilter {
+        min-width: 95px;
+
+        .title span {
+            font-size: 1rem;
+        }
+    }
+
+    .dropList {
+        font-size: 1rem;
     }
 }
 
@@ -1195,6 +1362,18 @@ h2 {
             }
         }
 
+    }
+
+    .mobileFilter {
+        min-width: 90px;
+
+        .title span {
+            font-size: 14px;
+        }
+    }
+
+    .dropList {
+        font-size: 14px;
     }
 }
 

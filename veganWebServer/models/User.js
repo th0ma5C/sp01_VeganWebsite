@@ -23,6 +23,7 @@ const userSchema = new Schema({
     joinPrivacyPolicy: { type: Boolean, required: true },
     verified: { type: Boolean, required: true },
     shippingInfo: { type: ShippingInfoSchema },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
     cart: [
         {
             item: { type: Schema.Types.ObjectId, ref: 'menu.items', required: true },

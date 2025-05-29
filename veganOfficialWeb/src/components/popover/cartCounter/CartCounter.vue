@@ -1,7 +1,7 @@
 <template>
     <div class="counter" :style="iconStyle">
         <span
-            v-if="amount || (cartCounter && cartCounter < 99)">
+            v-if="amount || (cartCounter && cartCounter <= 99)">
             {{ showNum }}
         </span>
         <span v-else-if="cartCounter && cartCounter > 99">

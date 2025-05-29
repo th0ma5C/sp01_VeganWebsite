@@ -12,7 +12,7 @@
                             width="36" height="36"
                             color="#00430b">
                         </SvgIcon>
-                        <transition tag="div" name="title">
+                        <transition name="title">
                             <span v-show="show == index">{{
                                 item.title }}</span>
                         </transition>
@@ -483,7 +483,7 @@ onMounted(() => {
 
                 .title-enter-active,
                 .title-leave-active {
-                    transition: width 0.5s ease-out;
+                    transition: width 0.3s ease-out;
                 }
 
                 .title-enter-from,
@@ -495,8 +495,6 @@ onMounted(() => {
                 .title-leave-from {
                     width: 64px;
                 }
-
-
             }
         }
 

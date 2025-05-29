@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { AxiosResponse } from 'axios';
 
 const request = axios.create({
-    baseURL: 'http://zip5.5432.tw',
+    baseURL: 'https://zip5.5432.tw',
 });
 
 request.interceptors.response.use((res) => {

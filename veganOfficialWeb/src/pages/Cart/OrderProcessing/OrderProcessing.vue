@@ -17,6 +17,7 @@ import { useSSEStore } from '@/store/SSEStore';
 import { storeToRefs } from 'pinia';
 import { useToastStore } from '@/store/toastStore';
 import { useLoaderStore } from '@/store/loader';
+import { fetchLinePayResult } from '@/api/checkout/checkout';
 
 const DotLottieVue = defineAsyncComponent(async () => {
     const mod = await import('@lottiefiles/dotlottie-vue')
@@ -29,6 +30,8 @@ const lottieFilePath = new URL('/src/assets/lottie/payment.json', import.meta.ur
 const router = useRouter();
 const route = useRoute();
 const orderId = route.query.orderId as string;
+const paymentType = route.query.paymentType as 'ec' | 'linePay';
+const transactionId = route.query.paymentType as string | undefined;
 // const token = route.query.token as string;
 
 // toast
@@ -37,9 +40,14 @@ const { addNotification } = toastStore;
 
 // loader
 const loaderStore = useLoaderStore();
-loaderStore.$subscribe((_, state) => {
-    if (!state.loaderActivated) {
-        startSSEConnect();
+loaderStore.$subscribe(async (_, state) => {
+    try {
+        if (!state.loaderActivated) {
+            startSSEConnect();
+            await getLinePayResult()
+        }
+    } catch (error) {
+        console.log(error);
     }
 })
 
@@ -49,6 +57,7 @@ const { startPaymentQueue, paymentNotify, stopPaymentQueue } = SSEStore;
 const { paymentQueue } = storeToRefs(SSEStore)
 
 function startSSEConnect() {
+    if (paymentType == 'linePay') return
     startPaymentQueue(orderId);
     paymentNotify(orderId, sseSuccess, sseError)
 }
@@ -75,6 +84,26 @@ function sseError() {
         //     token
         // }
     })
+}
+
+// line pay result
+const getLinePayResult = async () => {
+    if (paymentType !== 'linePay') return
+    if (!transactionId) throw new Error('missing transactionId')
+    try {
+        const params = {
+            transactionId,
+            orderId
+        }
+        const res = await fetchLinePayResult(params);
+        if (res.state == 'confirm' && res.token) {
+            await sseSuccess(res.token)
+        } else {
+            sseError()
+        }
+    } catch (error) {
+        console.log('get line pay result error');
+    }
 }
 
 onMounted(() => {

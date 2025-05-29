@@ -8,7 +8,9 @@ const { genECorderForm, generateCheckValue } = require('./ECorder/ECorder');
 const mongoose = require('mongoose');
 const isIpAllowed = require('@middlewares/ipChecker/ipChecker');
 const { requestOnlineAPI, fetchLinePayPaymentUrl, fetchLinePayStatus,
-    fetchLinePayPaymentResult, fetchLinePayRefound } = require('./LinePay')
+    fetchLinePayPaymentResult, fetchLinePayRefound,
+    confirmPaymentWithRetry
+} = require('./LinePay')
 const jwt = require('jsonwebtoken');
 const redisClient = require('@root/redisClient');
 
@@ -469,17 +471,17 @@ async function confirmLinePayPayment(orderId, transactionId) {
 // user line pay 付款後授權
 const linePayIps = process.env.ALLOWED_LINE_PAY_DOMAINS ? process.env.ALLOWED_LINE_PAY_DOMAINS.split(',') : [];
 
-router.get('/LinePayPaymentResult', async (req, res) => {
-    if (process.env.NODE_ENV === 'production') {
-        const accessible = await isIpAllowed({
-            clientIp: req.ip,
-            ips: linePayIps
-        });
+router.post('/LinePayPaymentResult', async (req, res) => {
+    // if (process.env.NODE_ENV === 'production') {
+    //     const accessible = await isIpAllowed({
+    //         clientIp: req.ip,
+    //         ips: linePayIps
+    //     });
 
-        if (!accessible) return res.status(403).end();
-    }
+    //     if (!accessible) return res.status(403).end();
+    // }
 
-    const { orderId, transactionId } = req.query
+    const { orderId, transactionId } = req.body
     try {
         const order = await Order.findById(orderId);
         if (!order) {
@@ -492,49 +494,41 @@ router.get('/LinePayPaymentResult', async (req, res) => {
             transactionId,
             amount: order.purchaseOrder.total
         }
-        const Line_res = await fetchLinePayPaymentResult(params);
 
-        if (Line_res.returnMessage == 'OK') {
-            order.purchaseOrder.status = 'processed';
-            order.updatedAt = new Date();
-            await order.save();
+        await confirmPaymentWithRetry(params);
 
-            const isGuest = !(mongoose.Types.ObjectId.isValid(order.purchaseOrder.userID));
-            let user = null
-            if (isGuest) {
-                user = {
-                    userID: order.purchaseOrder.userID,
-                    email: order.shippingInfo.email,
-                    isGuest
-                }
-            } else {
-                const member = await User.findById(order.purchaseOrder.userID);
-                user = {
-                    userID: member._id,
-                    email: member.email,
-                    isGuest
-                }
+        order.purchaseOrder.status = 'processed';
+        order.updatedAt = new Date();
+        await order.save();
+
+        const isGuest = !(mongoose.Types.ObjectId.isValid(order.purchaseOrder.userID));
+        let user = null
+        if (isGuest) {
+            user = {
+                userID: order.purchaseOrder.userID,
+                email: order.shippingInfo.email,
+                isGuest
             }
-            const token = jwt.sign({ ...user }, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-
-            res.redirect(`${process.env.FE_BASE_URL}/profile?token=${token}`)
         } else {
-            const refundResponse = await fetchLinePayRefound(transactionId);
-            console.warn('Line Pay 授權失敗:', Line_res.returnMessage, Line_res.returnCode);
-
-            if (refundResponse.returnCode == "0000") {
-                res.redirect(`
-                    ${process.env.FE_BASE_URL}/profile?LinePayFailedMsg=${encodeURIComponent(Line_res.returnMessage)}&refunded=true
-                    `)
-            } else {
-                console.error('Line Pay Refund Failed:', refundResponse.returnMessage, refundResponse.returnCode);
-                res.redirect(`${process.env.FE_BASE_URL}/profile?refunded=false&code=${refundResponse.returnCode}&msg=${encodeURIComponent(refundResponse.returnMessage)}`);
+            const member = await User.findById(order.purchaseOrder.userID);
+            user = {
+                userID: member._id,
+                email: member.email,
+                isGuest
             }
         }
+        const token = jwt.sign({ ...user }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        res.status(200).json({
+            state: 'confirm',
+            token
+        })
     } catch (error) {
         console.error('line pay Return Error:', error);
-        res.status(500).send('Error');
+        res.status(500).json({
+            state: 'denied',
+            message: '授權驗證失敗，請聯絡客服'
+        })
     }
 })
 

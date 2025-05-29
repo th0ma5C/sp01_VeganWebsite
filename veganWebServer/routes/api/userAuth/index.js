@@ -44,7 +44,7 @@ router.post('/login', validateLogin, async (req, res) => {
             return res.status(422).json({ message: '信箱或密碼錯誤' });
         }
         const token = jwt.sign(
-            { username: user.username, email: user.email, userID: user._id },
+            { username: user.username, email: user.email, userID: user._id, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );
@@ -68,7 +68,7 @@ router.post('/tokenLogin', authJWT, async (req, res) => {
     const user = req.user
     try {
         const token = jwt.sign(
-            { username: user.username, email: user.email, userID: user._id },
+            { username: user.username, email: user.email, userID: user._id, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );
@@ -95,7 +95,7 @@ router.get('/profile', authUser, async (req, res) => {
         const { userID } = req.user;
         const user = await User.findById(userID);
         const token = jwt.sign(
-            { username: user.username, email: user.email, userID: user._id, verified: user.verified },
+            { username: user.username, email: user.email, userID: user._id, verified: user.verified, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );

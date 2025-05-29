@@ -1,6 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
 import { onMounted, reactive, ref, watch, computed, toRaw } from "vue";
-import { reqGetQuestionnaire, reqGetSavedResult, reqSaveSurveyResult } from "@/api/questionnaire"
+import { reqGetQuestionnaire, reqGetSavedResult, reqSaveSurveyResult, resetSurveyResult } from "@/api/questionnaire"
 import type { GPT_RES, Questionnaire } from '@/api/questionnaire/type'
 import type { Birth, Info, Form } from '@/store/type/QNR_type'
 import { useUserStore } from "./userStore";
@@ -232,8 +232,17 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         }
     }
 
+    async function memberClearResult() {
+        try {
+            const userId = user.value.userID;
+            return await resetSurveyResult(userId);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     // clear data when logout
-    function clearSurveyData() {
+    async function clearSurveyData() {
         try {
             // await setQNR_result()
             resetQNR_result();
@@ -368,6 +377,7 @@ export const useQuestionnaireStore = defineStore('questionnaire', () => {
         getStorageGptData,
         memberGetGPTResult,
         loadGPTStorage,
-        checkResultIsExpired
+        checkResultIsExpired,
+        memberClearResult
     }
 })

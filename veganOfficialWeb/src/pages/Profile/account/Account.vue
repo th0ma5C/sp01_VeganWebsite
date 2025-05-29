@@ -17,11 +17,16 @@
                             orderList: index == 0
                         }">
                         <h2 @click="switchTab(tabName)"
-                            :class="{ unselected: tabName !== currTab }">
+                            :class="{
+                                unselected: tabName !== currTab,
+                            }">
                             <SvgIcon
-                                :name="index == 0 ? 'OrderList' : 'Setting'"
+                                :name="index == 0 ?
+                                    'OrderList' :
+                                    (index == 1 ? 'Setting' : 'Service')"
                                 width="27" height="27"
-                                color=black class="tabIcon">
+                                color='black'
+                                class="tabIcon">
                             </SvgIcon>
                             <span>
                                 {{ tabName }}
@@ -61,21 +66,28 @@
             </nav>
 
             <div class="tabContainer">
-                <transition-group name="switchTab">
-                    <section v-show="currTab == '購買清單'"
-                        key="購買清單">
-                        <Delivering
-                            :selectBranch="currBranch">
+                <transition name="switchTab" mode="out-in">
+                    <section v-if="currTab == '購買清單'"
+                        key="購買清單" class="scrollSection">
+                        <Delivering v-model="currBranch">
                         </Delivering>
                     </section>
 
-                    <section v-show="currTab == '用戶設定'"
-                        key="用戶設定">
+                    <section v-else-if="currTab == '用戶設定'"
+                        key="用戶設定" class="scrollSection">
                         <Setting></Setting>
                     </section>
-                </transition-group>
+
+                    <section v-else-if="currTab == '連絡客服'"
+                        key="連絡客服">
+                        <Service
+                            :role="user.role ?? 'user'">
+                        </Service>
+                    </section>
+                </transition>
             </div>
         </div>
+
     </div>
 </template>
 
@@ -86,6 +98,8 @@ import { computed, onMounted, watch, ref, type Ref, shallowRef } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import Delivering from './tab1/Delivering.vue';
 import Setting from './tab2/Setting.vue';
+import Service from './CS/Service.vue';
+import Admin from './admin/Admin.vue';
 import { jwtDecode } from 'jwt-decode';
 import { useToastStore } from '@/store/toastStore';
 
@@ -133,7 +147,8 @@ const isOrderLoaded = computed(() => showOrderList.value?.length !== 0)
 // tabs
 const tabs = {
     '購買清單': ['全部', '待付款', '已完成'],
-    '用戶設定': []
+    '用戶設定': [],
+    '連絡客服': []
 } as const;
 
 // 切換tab
@@ -250,10 +265,11 @@ onMounted(async () => {
     @apply flex-col;
     @apply justify-normal;
     @apply min-h-[87vh];
+    // position: relative;
 
     padding-top: 2rem;
 
-    &>div {
+    &>div:not(.chatBox) {
         width: 100%;
         max-width: 1440px;
         // padding: 0 6rem;
@@ -308,7 +324,8 @@ onMounted(async () => {
         overflow: hidden;
         position: relative;
         user-select: none;
-
+        border: 1px solid transparent;
+        border-radius: .25rem;
 
         h2 {
             font-size: 1.25rem;
@@ -330,19 +347,32 @@ onMounted(async () => {
 
             transition: opacity .15s;
 
+            padding-inline: .25rem;
+
             .tabIcon {
                 transform: translateY(-1px);
+                // background-color: $primaryBacColor;
             }
 
             &:hover {
                 opacity: 1;
             }
+
+            span {
+                max-width: 80px;
+                transition: max-width .3s, opacity .3s;
+                opacity: 1;
+                // background-color: $primaryBacColor;
+            }
         }
     }
 
-    & li:has(.selectedTab) .collapseWrapper {
-        grid-template-rows: 1fr 1fr 1fr;
-        opacity: 1;
+    & li:has(.selectedTab) {
+
+        .collapseWrapper {
+            grid-template-rows: 1fr 1fr 1fr;
+            opacity: 1;
+        }
     }
 }
 
@@ -411,12 +441,39 @@ onMounted(async () => {
     // border: 1px solid black;
     padding-left: 2rem;
     border-radius: 0 1rem 1rem 1rem;
-    position: relative;
+    // position: relative;
+    max-height: 540px;
+    max-width: calc(100% - 125px);
 
     section {
         height: 100%;
-        // position: relative;
+        position: relative;
+
     }
+}
+
+.scrollSection {
+    overflow-y: scroll;
+    padding-inline: .25rem;
+
+    &::-webkit-scrollbar {
+        translate: 0 1rem;
+        width: 0.25rem;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+}
+
+.listContainer nav li h2 {
+    // background-color: transparent;
 }
 
 .unselected {
@@ -436,10 +493,12 @@ onMounted(async () => {
 
 .switchTab-enter-active,
 .switchTab-leave-active {
-    position: absolute;
-    width: calc(100% - 2rem);
+    // position: absolute;
+    // width: calc(100% - 2rem);
     transition: opacity .15s;
 }
+
+.switchTab-leave-active {}
 
 .switchTab-enter-from,
 .switchTab-leave-to {
@@ -463,6 +522,8 @@ onMounted(async () => {
     transition: left .3s;
 }
 
+
+
 @include XLarge {}
 
 @include large {}
@@ -472,11 +533,22 @@ onMounted(async () => {
 @include medium {
     .tabContainer {
         padding-left: 0;
+        display: flex;
+        flex-direction: column;
+        max-width: 100%;
+
+        section {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+        }
+
+
     }
 
     .listContainer {
         flex-direction: column;
-        gap: 1.5rem;
+        gap: .75rem;
 
         nav {
             width: 100%;
@@ -488,7 +560,31 @@ onMounted(async () => {
             }
 
             li {
-                display: flex;
+                // display: flex;
+                transition: background-color .3s;
+
+                &:active {
+                    scale: .98;
+                    // background-color: rgba(128, 128, 128, 0.1);
+                    // border-color: $btnBacColor;
+                }
+
+                &:not(:has(h2:is(.unselected))) {
+                    border-color: $btnBacColor;
+                }
+
+                h2 {
+                    display: flex;
+                    flex-direction: column;
+                    font-size: 1.25rem;
+                    gap: 0;
+                    // justify-items: center;
+                    // grid-template-columns: 1fr;
+                    // grid-template-rows: auto 1fr;
+                    line-height: normal;
+                    height: auto;
+                    padding-top: .25rem;
+                }
             }
         }
 
@@ -497,29 +593,30 @@ onMounted(async () => {
         }
 
         .collapseWrapper {
-            grid-template-columns: 0fr 0fr 0fr;
-            // grid-template-columns: 1fr 1fr 1fr;
-            grid-template-rows: 1fr;
-            opacity: 1;
-            gap: 1rem;
-            margin-inline: 1rem;
-            justify-items: center;
-            position: relative;
-            text-align: center;
-            transition: grid-template-columns .3s, margin-inline .3s;
+            display: none;
+            // grid-template-columns: 0fr 0fr 0fr;
+            // // grid-template-columns: 1fr 1fr 1fr;
+            // grid-template-rows: 1fr;
+            // opacity: 1;
+            // gap: 1rem;
+            // margin-inline: 1rem;
+            // justify-items: center;
+            // position: relative;
+            // text-align: center;
+            // transition: grid-template-columns .3s, margin-inline .3s;
 
-            &>div {
-                width: 100%;
-            }
+            // &>div {
+            //     width: 100%;
+            // }
 
-            &:not(:has(.selectedTab)) {
-                margin-inline: 0rem;
-                gap: 0;
+            // &:not(:has(.selectedTab)) {
+            //     margin-inline: 0rem;
+            //     gap: 0;
 
-                .mobilePseudoTrack {
-                    opacity: 0;
-                }
-            }
+            //     .mobilePseudoTrack {
+            //         opacity: 0;
+            //     }
+            // }
         }
 
         .branch h3 {
@@ -565,25 +662,33 @@ onMounted(async () => {
         nav {
 
             ul {
-                gap: 0rem;
+                gap: .5rem;
             }
 
             li {
-                flex: 1;
+                // flex: 1;
                 position: relative;
-                overflow: inherit;
+                overflow: visible;
                 min-height: 40px;
                 transition: min-height .3s .15s;
 
-                &:has(.collapseWrapper>div:is(.selectedTab)) {
-                    min-height: 90px;
-                }
+                // &:has(.collapseWrapper>div:is(.selectedTab)) {
+                //     min-height: 90px;
+                // }
 
-                .unselected {}
+                // h2:is(.unselected)>span {
+                //     display: inline-block;
+                //     max-width: 0;
+                //     overflow: hidden;
+                //     opacity: 0;
+                // }
+                h2 {
+                    font-size: 1rem;
+                }
             }
 
             .orderList {
-                flex: 1;
+                // flex: 1;
             }
         }
 

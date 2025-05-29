@@ -132,9 +132,9 @@ async function fetchLinePayPaymentUrl({
                 orderId,
                 packages,
                 redirectUrls: {
-                    // confirmUrl: process.env.LINE_PAY_CONFIRM_URL,
-                    // cancelUrl: process.env.LINE_PAY_CANCEL_URL,
-                    confirmUrlType: "NONE",
+                    confirmUrl: `${process.env.LINE_PAY_CONFIRM_URL}?paymentType=linePay`,
+                    cancelUrl: process.env.LINE_PAY_CANCEL_URL,
+                    // confirmUrlType: "NONE",
                 },
             },
         });
@@ -157,7 +157,7 @@ async function fetchLinePayPaymentUrl({
 //                 "app": "line://pay/payment/REpEWEttQ0F2RmFnaFFzVndIdjl6Z0lqbGpPemZjOHpNWTFZTmdibUlRNlEzOG50N2VSRmdGU2IxcnVjMHZ1NQ"
 //         },
 //         "transactionId": 2023042201206549310,
-//             "paymentAccessToken": "056579816895"
+//         "paymentAccessToken": "056579816895"
 //     }
 // }
 
@@ -200,6 +200,26 @@ async function fetchLinePayPaymentResult({
     } catch (error) {
         console.error('Line Pay Auth Payment Error:', error);
         throw error;
+    }
+}
+
+// 錯誤重試
+const MAX_RETRIES = 3;
+async function confirmPaymentWithRetry({
+    transactionId,
+    amount
+}) {
+    for (let i = 0; i < MAX_RETRIES; i++) {
+        try {
+            const result = await fetchLinePayPaymentResult({
+                transactionId,
+                amount
+            })
+            if (result.returnMessage == 'OK') return result
+        } catch (error) {
+            if (i === MAX_RETRIES - 1) throw error;
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+        }
     }
 }
 
@@ -251,5 +271,6 @@ module.exports = {
     fetchLinePayPaymentUrl,
     fetchLinePayStatus,
     fetchLinePayPaymentResult,
-    fetchLinePayRefound
+    fetchLinePayRefound,
+    confirmPaymentWithRetry
 }

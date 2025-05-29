@@ -8,7 +8,7 @@
         }" preventInteractionOnTransition="true"
         pagination-dynamic-bullets="true" :speed="1000"
         class="mainBanner" @swipertouchmove="swiperOndrag"
-        @swipertouchend="swiperEndDrag">
+        @swipertouchend="swiperEndDrag" ref="swiperRef">
         <swiper-slide v-for="(img, index) in imgs"
             :key="index">
             <div @click="titleOnclick(img.title)">
@@ -29,8 +29,9 @@
 </template>
 <script lang="ts" setup>
 import { useToastStore } from '@/store/toastStore';
+import { debounce } from 'lodash-es';
 import type { SwiperContainer } from 'swiper/element';
-import { onMounted, ref, useTemplateRef, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 
@@ -130,21 +131,21 @@ function titleOnclick(target: string) {
     }
 }
 
-const slideRef = useTemplateRef<HTMLElement[]>('slideRef');
-watch(() => slideRef.value, (nVal) => {
-    //     if (nVal && slideRef.value) {
-    //         slideRef.value.forEach((item) => {
-    //             item.addEventListener('mouseup', (e) => {
-    //                 const { textContent } = e.target as HTMLElement;
-    //                 if (textContent) {
-    //                     titleOnclick(textContent);
-    //                 }
-    //             })
-    //         })
-    //     }
-})
+const swiperRef = useTemplateRef<SwiperContainer>('swiperRef');
+const swiperOnresize = debounce(() => {
+    if (swiperRef.value) {
+        nextTick(() => {
+            swiperRef.value?.swiper.update();
+        })
+    }
+}, 500)
 
 onMounted(() => {
+    window.addEventListener('resize', swiperOnresize)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', swiperOnresize)
 })
 
 </script>
