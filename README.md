@@ -29,7 +29,7 @@
 
 ## 架構設計
 
-本專案採用前後端分離架構，透過 Nginx 做為反向代理伺服器，處理前端靜態資源與後端 API 請求，並部署於 GCP Compute Engine，搭配 Cloudflare 提供 DNS 與 CDN 服務，強化效能與安全性。資料層使用 MongoDB 儲存，並以 Redis 快取常用資料。此外，整合多項第三方 API（如金流、登入、地區查詢、ChatGPT 等）提供完整電商功能體驗。
+本專案採用前後端分離架構，透過 Nginx 做為反向代理伺服器，處理前端靜態資源與後端 API 請求，並部署於 GCP Compute Engine，搭配 Cloudflare 提供 DNS 與 CDN 服務，強化效能與安全性。資料層使用 MongoDB 儲存，並以 Redis 快取常用資料。此外，整合多項第三方 API（如金流、即時客服、登入、地區查詢、ChatGPT 等）提供完整電商功能體驗。
 
 ## 技術棧
 
@@ -83,7 +83,7 @@
 - 使用 Nodemailer 搭配 Google OAuth 自動寄送系統信件
 
 ### 即時客服系統
-- 使用 Socket.IO 實作使用者與課服之間的即時對話功能
+- 使用 Socket.IO 實作即時線上客服聊天室
 - 前端可即時送出與接收訊息，支援聊天室通知與訊息時間戳
 
 ### 地區與地址
@@ -98,6 +98,7 @@
 - 部分 API 使用 GraphQL 提供另類資料查詢方式
 - 使用 Mongoose 操作 MongoDB，作為主要資料儲存
 - 使用 node-cron 排程腳本自動執行背景任務
+- Socket.IO 服務端處理即時訊息傳遞與房間管理
 
 ### 使用者驗證與安全性
 - 本地帳號密碼驗證（bcrypt 加密處理）
