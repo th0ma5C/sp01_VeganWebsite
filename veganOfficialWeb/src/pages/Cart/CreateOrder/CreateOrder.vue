@@ -1134,8 +1134,6 @@ onBeforeRouteLeave(() => {
 })
 
 // line pay
-// todo add line pay logo
-// todo add line pay and socket description in markdown
 const userIsPaying = ref(false);
 async function openLinePayUrl(orderId: string) {
     try {
