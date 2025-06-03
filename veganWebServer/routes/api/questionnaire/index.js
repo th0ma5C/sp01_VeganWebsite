@@ -120,6 +120,45 @@ router.get('/result/:target', authUser, async (req, res) => {
     }
 })
 
+// member delete survey
+router.delete('/result/:userId', async (req, res) => {
+    const { userId } = req.params;
+    if (!userId) {
+        return res.status(400).json({
+            msg: 'bad request',
+            state: 'denied'
+        })
+    }
+
+    try {
+        const GPTResult = await GptResultModel.findOneAndDelete({ gpt_user: userId });
+        const SurveyResult = await SurveyResultModel.findOneAndDelete({ userId });
+
+        if (!GPTResult && !SurveyResult) {
+            return res.status(404).json({
+                msg: 'No records found to delete',
+                state: 'none'
+            });
+        }
+
+        res.status(200).json({
+            msg: 'reset survey result',
+            state: 'confirm',
+            deleted: {
+                GPTResult: !!GPTResult,
+                SurveyResult: !!SurveyResult
+            }
+        })
+
+    } catch (error) {
+        console.error('DELETE /result error:', error);
+        res.status(500).json({
+            msg: 'Internal server error',
+            error: error.message
+        });
+    }
+})
+
 // gpt response
 
 const openai = new OpenAI({

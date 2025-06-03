@@ -527,6 +527,9 @@
                                                     {{ type
                                                     }}
                                                 </h3>
+                                                <img src="@assets/img/Checkout/LINE-Pay-Logo.png"
+                                                    alt="LINE-Pay-Logo"
+                                                    v-if="index == 3">
                                             </li>
                                         </ul>
                                     </div>
@@ -878,8 +881,8 @@ function clearSelectedStore() {
 
 
 // 付款方式 input
-const paymentTypeList = ref(['匯款', '信用卡', '貨到付款']);
-// const paymentTypeList = ref(['匯款', '信用卡', '貨到付款', '電子支付']);
+// const paymentTypeList = ref(['匯款', '信用卡', '貨到付款']);
+const paymentTypeList = ref(['匯款', '信用卡', '貨到付款', '電子支付']);
 const selectedPayment = ref('匯款');
 
 function pickPaymentType(type: string) {
@@ -1136,8 +1139,7 @@ async function openLinePayUrl(orderId: string) {
     try {
         const { state, url } = await fetchLinePayUrl(orderId);
         if (state == 'confirm' && url) {
-            window.open(url, '_blank');
-            // window.open(url, '_self')
+            window.open(url, '_self')
             return
         }
     } catch (error) {
@@ -1566,6 +1568,10 @@ onUnmounted(() => {
 
         h3 {
             font-size: 18px;
+        }
+
+        img {
+            margin-left: 1rem
         }
 
         .radioBtn {

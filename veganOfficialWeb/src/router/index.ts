@@ -12,7 +12,7 @@ import { reqGetUser, reqRedirectLogin } from "@/api/userAuth";
 import { jwtDecode } from "jwt-decode";
 import { useToastStore } from "@/store/toastStore";
 import { useLoaderStore } from "@/store/loader";
-import NProgress from 'nprogress'
+import * as NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { useCartStore } from "@/store/cartStore";
 // import { useQuestionnaireStore } from "@/store/questionnaireStore";
@@ -368,7 +368,6 @@ router.beforeEach(async (to, from) => {
             // loaderStore.loaderActivated = true;
             const JWT = to.query.token as string;
             const decoded = jwtDecode<RedirectResTokenDecoded>(JWT);
-            console.log(decoded);
             if (decoded.isGuest) {
                 if (decoded.userID !== userStore.user.userID) {
                     await userStore.logout();

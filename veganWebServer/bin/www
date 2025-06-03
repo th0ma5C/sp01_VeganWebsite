@@ -20,7 +20,9 @@ if (fs.existsSync(envFile)) {
 const cron = require('node-cron');
 const db = require('../db/db');
 
-
+// import socket.io
+const { Server } = require('socket.io');
+const socketHandler = require('@root/socket');
 
 db(() => {
   /**
@@ -43,6 +45,16 @@ db(() => {
    */
 
   var server = http.createServer(app);
+
+  // socket
+  const allowedOrigins = (process.env.CORS_ORIGIN || '').split(',');
+  const io = new Server(server, {
+    cors: {
+      origin: process.env.NODE_ENV === 'development' ? true : allowedOrigins,
+      credentials: true,
+    }
+  });
+  socketHandler(io);
 
   /**
    * Listen on provided port, on all network interfaces.

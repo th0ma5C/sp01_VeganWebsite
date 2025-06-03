@@ -52,7 +52,7 @@
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>{{ message
-                                    }}</span>
+                                        }}</span>
                                 </ErrorMessage>
                             </div>
 
@@ -175,24 +175,6 @@
                 </VForm>
             </div>
         </div>
-
-        <!-- <div class="divider">
-            <span>
-                快速登入
-            </span>
-        </div>
-
-        <div class="outerAccount">
-            <div v-for="(url, index) in showIconImgList"
-                :key="index" @click="googleLoginRedirect"
-                :class="{
-                    onLogin: googleAuth.isLoading
-                }">
-                <img :src="url" alt="">
-                <Spinner v-show="googleAuth.isLoading">
-                </Spinner>
-            </div>
-        </div> -->
     </div>
 </template>
 
@@ -412,7 +394,7 @@ watchEffect(async () => {
         }
         await login(token);
         await routerTo('/profile/account');
-        addNotification(`${user.value.username}，歡迎！`);
+        // addNotification(`${user.value.username}，歡迎！`);
         googleAuth.data.code = null
         googleAuth.data.state = null
         return

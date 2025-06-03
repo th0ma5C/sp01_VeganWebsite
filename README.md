@@ -29,7 +29,7 @@
 
 ## 架構設計
 
-本專案採用前後端分離架構，透過 Nginx 做為反向代理伺服器，處理前端靜態資源與後端 API 請求，並部署於 GCP Compute Engine，搭配 Cloudflare 提供 DNS 與 CDN 服務，強化效能與安全性。資料層使用 MongoDB 儲存，並以 Redis 快取常用資料。此外，整合多項第三方 API（如金流、登入、地區查詢、ChatGPT 等）提供完整電商功能體驗。
+本專案採用前後端分離架構，透過 Nginx 做為反向代理伺服器，處理前端靜態資源與後端 API 請求，並部署於 GCP Compute Engine，搭配 Cloudflare 提供 DNS 與 CDN 服務，強化效能與安全性。資料層使用 MongoDB 儲存，並以 Redis 快取常用資料。此外，整合多項第三方 API（如金流、即時客服、登入、地區查詢、ChatGPT 等）提供完整電商功能體驗。
 
 ## 技術棧
 
@@ -78,9 +78,13 @@
 - 註冊 / 登入 / 登出
 - Google 第三方登入（OAuth 2.0）
 
-### 金流與信件
-- 串接綠界金流（ECPay）
+### 金流與電子郵件
+- 串接綠界（ECPay）與 Line Pay 金流 API
 - 使用 Nodemailer 搭配 Google OAuth 自動寄送系統信件
+
+### 即時客服系統
+- 使用 Socket.IO 實作即時線上客服聊天室，支援使用者與後台客服雙向即時對話
+- 前端可即時送出與接收訊息，支援聊天室通知與訊息時間戳
 
 ### 地區與地址
 - 訂單地址郵遞區號自動補全 [台灣 3+2 / 3+3郵遞區號 查詢](https://zip5.5432.tw/zip5api.html)
@@ -113,7 +117,8 @@
 | 功能 | 使用技術 / API |
 |------|----------------|
 | 第三方登入 | Google OAuth 2.0 |
-| 金流串接 | 綠界金流 |
+| 金流串接 | 綠界金流、Line Pay API |
+| 即時客服 | Socket.IO |
 | 郵遞區號自動填寫 | [台灣 3+2 / 3+3郵遞區號 查詢](https://zip5.5432.tw/zip5api.html) |
 | 行政區域查詢 | [全國土地基本資料庫代碼資料服務](https://cop.land.moi.gov.tw/ServiceList/ServiceData?id=A5CCC85A-EEF3-4659-8829-DA21CD0DCC95) |
 | 系統信寄送 | Nodemailer + Gmail OAuth |
@@ -123,7 +128,7 @@
 
 ##  開發心得
 
-此專案從前端設計、API 開發、資料庫架構到部署流程，並整合多項外部 API，讓我收穫大量前、後端的相關知識。開發過程中深入理解了 SPA 架構、OAuth 流程、金流串接與佈署上線等完整網站製作流程。
+此專案從前端設計、API 開發、資料庫架構到部署流程，並整合多項外部 API，讓我收穫大量前、後端的相關知識。開發過程中深入理解了 SPA 架構、OAuth 流程、金流串接、WebSocket 實時通訊與佈署上線等完整網站製作流程。
 
 ## License
 

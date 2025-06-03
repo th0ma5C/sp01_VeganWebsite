@@ -181,7 +181,7 @@ export const useCartStore = defineStore('cart', () => {
         }
     }
     let saveCartTimer: ReturnType<typeof setTimeout> | null = null;
-    const DEBOUNCE_DELAY = 3000;
+    const DEBOUNCE_DELAY = 1000;
     watch([cartMap, isAuth], async (nVal, oVal) => {
         try {
             if (nVal) {

@@ -6,6 +6,11 @@ interface ECFormResponse {
     form: string
 }
 
+interface LinePayParams {
+    orderId: string;
+    transactionId: string;
+}
+
 // 綠界
 const fetchECorderForm = (orderId: string) => {
     return request.post<any, ECFormResponse>('/checkout/ECorderForm', {
@@ -30,14 +35,27 @@ interface LinePayUrlRes {
     message?: string
 }
 
+interface LinePayResultRes {
+    state: 'confirm' | 'denied';
+    token?: string;
+    message?: string
+}
+
 const fetchLinePayUrl = (orderId: string) => {
     return request.post<any, LinePayUrlRes>('/checkout/LinePayUrl', {
         orderId
     })
 }
 
+const fetchLinePayResult = (params: LinePayParams) => {
+    return request.post<any, LinePayResultRes>('/checkout/LinePayPaymentResult', {
+        ...params
+    })
+}
+
 export {
     fetchECorderForm,
     ECpayAPIconfig,
-    fetchLinePayUrl
+    fetchLinePayUrl,
+    fetchLinePayResult
 }

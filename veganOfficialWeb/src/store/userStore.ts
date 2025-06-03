@@ -31,7 +31,8 @@ export const useUserStore = defineStore('user', () => {
         username: 'anonymous' as 'anonymous' | string,
         email: null as null | string,
         userID: nanoid(6) as | string,
-        verified: false
+        verified: false,
+        role: null as null | 'user' | 'admin'
     })
     const userSavedCheckoutForm = reactive<Partial<ShippingInfo>>({});
     const isUserHasSavedForm = ref<null | boolean>(null);
@@ -53,16 +54,22 @@ export const useUserStore = defineStore('user', () => {
         user.verified = verified
     }
 
+    function setUserRole(role: 'user' | 'admin') {
+        user.role = role
+    }
+
     function setUserState({
         username = 'anonymous',
         email = null as null | string,
         userID = nanoid(6),
-        verified = false
+        verified = false,
+        role = 'user' as 'user' | 'admin'
     }) {
         setUsername(username);
         setEmail(email);
         setUserID(userID);
         setUserVerified(verified);
+        setUserRole(role)
     }
 
     async function login(token?: string, isGuest?: boolean) {
@@ -70,7 +77,6 @@ export const useUserStore = defineStore('user', () => {
             if (!token) throw new Error("無權限，請重試");
 
             userToken.value = token;
-
             if (isGuest) return isAuth.value = true;
 
             storeUserProfile(token);

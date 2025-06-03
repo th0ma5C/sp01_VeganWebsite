@@ -9,13 +9,14 @@
     "server-start": "npm run start:dev --prefix veganWebServer",
     "client-dev": "npm run dev --prefix veganOfficialWeb",
     "client-dev:host": "npm run dev:host --prefix veganOfficialWeb",
-    "mongo": "start powershell -NoExit -Command mongod",
+    "mongo": "start powershell -NoExit -Command mongod --replSet re0",
+    "mongo-single": "start powershell -NoExit -Command mongod",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "concurrently": "^8.2.2",
+    "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "wait-on": "^8.0.1"
   },

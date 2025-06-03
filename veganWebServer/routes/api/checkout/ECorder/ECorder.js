@@ -127,7 +127,7 @@ async function genSubmitForm(order) {
             ReturnURL: process.env.PaymentReturnURL,
             ChoosePayment: 'ALL',
             EncryptType: 1,
-            ClientBackURL: `${process.env.EC_ClientBackURL}?orderId=${_id}`,
+            ClientBackURL: `${process.env.EC_ClientBackURL}?orderId=${_id}&paymentType=ec`,
             CustomField1: _id,
         };
 

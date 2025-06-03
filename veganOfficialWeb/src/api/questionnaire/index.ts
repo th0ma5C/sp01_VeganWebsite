@@ -57,9 +57,15 @@ const getGPTAnalyze = (params: any) => {
     })
 }
 
+// member reset survey result
+const resetSurveyResult = (userId: string) => {
+    return request.delete(`/questionnaire/result/${userId}`)
+}
+
 export {
     reqGetQuestionnaire,
     reqSaveSurveyResult,
     reqGetSavedResult,
-    getGPTAnalyze
+    getGPTAnalyze,
+    resetSurveyResult
 }
