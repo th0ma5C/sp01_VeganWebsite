@@ -21,6 +21,7 @@ export const socketEvents = reactive<{
 export default (token?: string) => {
     if (!socket) {
         socket = io(import.meta.env.VITE_API_BASE_URL, {
+            transports: ['websocket'],
             autoConnect: false,
             auth: {
                 userToken: token
