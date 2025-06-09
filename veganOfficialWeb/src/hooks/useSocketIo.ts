@@ -173,7 +173,6 @@ export const useChat = () => {
         try {
             if (!userToken.value) throw new Error('unauthorized user')
             const res = await reqReadMessage({ token: userToken.value, msgIdList })
-            console.log(res);
             if (res.state == 'confirm' && currConversationId.value) {
                 const state = msgState.value.get(currConversationId.value) || [];
                 state.forEach((msg) => {

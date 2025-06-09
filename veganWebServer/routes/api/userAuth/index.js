@@ -281,4 +281,29 @@ router.get('/checkUserVerified', authUser, async (req, res) => {
     }
 })
 
+router.post('/testAccLogin', async (req, res) => {
+    try {
+        const { accType } = req.body
+        const userId = accType === 'test01' ?
+            process.env.TEST01_MONGO_ID :
+            process.env.ADMIN_MONGO_ID
+
+        const user = await User.findById(userId);
+
+        const token = jwt.sign(
+            { username: user.username, email: user.email, userID: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1d' }
+        );
+
+        res
+            .status(200)
+            .json({ state: 'confirm', JWT: token });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: '伺服器錯誤，請重試' });
+    }
+})
+
 module.exports = router;

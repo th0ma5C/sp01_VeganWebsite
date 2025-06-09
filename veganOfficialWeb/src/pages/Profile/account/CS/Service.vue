@@ -496,7 +496,6 @@ const showConversationList = computed(() => {
         .sort((a, b) =>
             new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
         )
-    console.log('show conversation', list);
     return list
 })
 
@@ -568,7 +567,6 @@ const showMsgList = computed(() => {
         : [];
 
     list.sort((a, b) => String(a.updatedAt).localeCompare(String(b.updatedAt)))
-    console.log('@@@showMsgList', list);
     return list
 })
 
@@ -585,7 +583,6 @@ async function selectConversation(conversationId: string) {
             if (msg.sender !== role) acc.push(msg._id);
             return acc
         }, [] as string[]);
-        console.log(msgIdList);
         if (msgIdList.length) await readMsg(msgIdList);
 
         if (selectedConversation.value) {
