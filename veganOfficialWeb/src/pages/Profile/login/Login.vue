@@ -25,15 +25,7 @@
                                         autocomplete="username"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
-                                        }"
-                                        @keydown.tab="handleTab">
-                                    <i class="placeholder"
-                                        v-show="!userAgentIsMobile">
-                                        <span>
-                                            TAB
-                                        </span>
-                                        測試者快速登入
-                                    </i>
+                                        }">
                                 </VField>
                                 <label
                                     for="loginEmail">電子信箱</label>
@@ -67,17 +59,16 @@
                                         placeholder=""
                                         autocomplete="current-password"
                                         @input="validate"
-                                        @keydown.tab="handleTab"
                                         :="field" :class="{
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
-                                    <i class="placeholder"
+                                    <!-- <i class="placeholder"
                                         v-show="!userAgentIsMobile">
                                         <span>
                                             TAB
                                         </span>
                                         測試者快速登入
-                                    </i>
+                                    </i> -->
                                 </VField>
                                 <label
                                     for="password">密碼</label>
@@ -147,19 +138,19 @@
                                     v-show="isSubmitting">
                                 </Spinner>
                             </button>
-                            <button class="testLogin"
-                                v-if="userAgentIsMobile"
-                                :disabled="isSubmitting"
-                                @click="MobTestLogin">
-                                <span :style="{
-                                    opacity: isSubmitting ? .5 : 1
-                                }">
+                            <select name="AccOptions" id=""
+                                class="accOptions"
+                                v-model="testAcc">
+                                <option value="">
                                     使用測試帳號
-                                </span>
-                                <Spinner
-                                    v-show="isSubmitting">
-                                </Spinner>
-                            </button>
+                                </option>
+                                <option value="test01">
+                                    使用者_test01
+                                </option>
+                                <option value="admin">
+                                    管理員_admin
+                                </option>
+                            </select>
 
                             <div class="signup">
                                 <span>
@@ -185,7 +176,7 @@ import {
     Field as VField, Form as VForm, ErrorMessage, defineRule, configure,
 } from 'vee-validate';
 import * as yup from 'yup';
-import { reqRedirectLogin, reqUserLogin } from '@/api/userAuth';
+import { reqRedirectLogin, reqTestLogin, reqUserLogin } from '@/api/userAuth';
 import type { AxiosError } from 'axios';
 import { useUserStore } from '@/store/userStore';
 import { storeToRefs } from 'pinia';
@@ -407,27 +398,33 @@ watchEffect(async () => {
 })
 
 // 測試帳號快速登入
-const testEmail = import.meta.env.VITE_ADMIN_ACCOUNT;
-const testPwd = import.meta.env.VITE_ADMIN_PASSWORD;
 const inputEmail = ref('');
 const inputPassword = ref('');
 
-function handleTab(e: KeyboardEvent) {
-    const tabTarget = e.target as HTMLInputElement;
-    if (tabTarget.value || userAgentIsMobile.value) return
-    e.preventDefault();
-    tabTarget.id == 'loginEmail' ?
-        inputEmail.value = testEmail :
-        inputPassword.value = testPwd
-}
-
 // mobile 快速登入
+const testAcc = ref<'' | 'test01' | 'admin'>('');
 const userAgent = ref(navigator.userAgent);
 const userAgentIsMobile = computed(() => /Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(userAgent.value))
 function MobTestLogin() {
-    inputEmail.value = testEmail;
-    inputPassword.value = testPwd
 }
+
+watch(testAcc, async (nVal) => {
+    try {
+        if (nVal === '') return
+
+        const params = {
+            accType: nVal
+        }
+        const { JWT } = await reqTestLogin(params);
+        const { token } = await reqRedirectLogin({ token: JWT });
+        const decoded = jwtDecode<RedirectResTokenDecoded>(token!);
+        await login(token, decoded.isGuest)
+        await routerTo('/profile/account');
+        addNotification(`${user.value.username}，歡迎！`);
+    } catch (error) {
+        console.log(error);
+    }
+})
 
 onBeforeMount(async () => {
     await handleEmailRedirect();
@@ -459,7 +456,7 @@ $container_width: 300px;
 
     // padding-top: 3rem;
     // gap: 2rem;
-    overflow: hidden;
+    // overflow: hidden;
     // width: max-content;
     margin-inline: auto;
     padding-inline: 1.5rem;
@@ -606,7 +603,7 @@ $container_width: 300px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: .75rem;
+    gap: 1rem;
     position: relative;
 
     button {
@@ -635,10 +632,11 @@ $container_width: 300px;
 
     .testLogin {
         font-size: 1rem;
-        opacity: .5;
+        // opacity: .5;
+        position: relative;
 
         &:active {
-            opacity: 1;
+            // opacity: 1;
         }
     }
 
@@ -672,6 +670,14 @@ $container_width: 300px;
             color: $error_color;
         }
     }
+}
+
+.accOptions {
+    opacity: .75;
+    cursor: pointer;
+    background-color: $primaryBacColor;
+    border: 1px solid black;
+    border-radius: .5rem
 }
 
 %divider_line {

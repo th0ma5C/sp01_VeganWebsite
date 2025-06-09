@@ -23,6 +23,14 @@ interface LoginForm {
     password: string,
 }
 
+interface TestLoginParams {
+    accType: 'test01' | 'admin'
+}
+
+interface TestLoginRes {
+    JWT: string
+}
+
 
 const reqUserRegister = (params: RegisterForm) => {
     return request.post('/auth/register', {
@@ -41,7 +49,7 @@ const reqGetUser = () => request.get<any, AuthResData>('/auth/profile');
 const reqCheckUserVerified = () => request.get<any, AuthResData>('/auth/checkUserVerified');
 
 const reqSendVerifyEmail = (params?: any) => {
-    return request.post<any, AuthResData>('/auth//send-verifyEmail', {
+    return request.post<any, AuthResData>('/auth/send-verifyEmail', {
         ...params
     })
 }
@@ -76,6 +84,12 @@ const reqVerifyAccount = (params: Record<'token', string>) => {
     })
 }
 
+const reqTestLogin = (params: TestLoginParams) => {
+    return request.post<any, TestLoginRes>('/auth/testAccLogin', {
+        ...params
+    })
+}
+
 
 export {
     reqUserRegister,
@@ -87,5 +101,6 @@ export {
     reqForgetPasswordEmail,
     reqResetPassword,
     reqCheckUserVerified,
-    reqVerifyAccount
+    reqVerifyAccount,
+    reqTestLogin
 }
