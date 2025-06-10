@@ -43,11 +43,13 @@ export const useCartStore = defineStore('cart', () => {
     watch(isCartCardOpen, (nVal) => {
         scrollbarWidth.value = window.innerWidth - document.documentElement.clientWidth
         if (nVal) {
+            document.documentElement.style.scrollbarGutter = 'stable';
             document.body.style.overflow = 'hidden';
-            document.body.style.paddingRight = `${scrollbarWidth.value}px`
+            // document.body.style.marginRight = `${scrollbarWidth.value}px`
         } else {
+            document.documentElement.style.scrollbarGutter = 'auto';
             document.body.style.overflow = 'auto';
-            document.body.style.paddingRight = ''
+            document.body.style.marginRight = ''
         }
     })
 

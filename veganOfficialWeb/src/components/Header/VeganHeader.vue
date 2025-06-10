@@ -4,7 +4,7 @@
         <div ref="header" class="container" :class="{
             hideNav
         }" :style="{
-            paddingRight: isCartCardOpen ? `${scrollbarWidth}px` : 0
+            // paddingRight: isCartCardOpen ? `${scrollbarWidth}px` : 0
         }" v-if="switchHeaderLayout">
             <div class="burgerWrapper">
                 <label class="burger" for="burger" :class="{
@@ -139,6 +139,8 @@
         <div class="QNR_header" v-else :class="{
             hideNav,
             QNR_header_enter: QNR_enter
+        }" :style="{
+            // paddingRight: isCartCardOpen ? `${scrollbarWidth}px` : 0
         }">
             <main>
                 <router-link :to="{ name: 'Home' }">

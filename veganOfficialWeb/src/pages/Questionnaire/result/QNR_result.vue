@@ -168,7 +168,9 @@
         </div>
 
         <div class="viewBtnWrapper" ref="viewCart"
-            @click="toggleCartCardOpen">
+            @click="toggleCartCardOpen" :style="{
+                // translate: isCartCardOpen ? `-${scrollbarWidth}px` : 0
+            }">
             <button class="cartBtn">
                 <transition-group name="cartBtn">
                     <span class="main" key="0"
@@ -529,7 +531,9 @@ const viewCart = ref<HTMLElement>();
 const showMainCart = ref(true);
 const resultContainer = ref<HTMLElement>();
 gsap.registerPlugin(ScrollTrigger);
-
+/**
+ * todo 在html使用overflow-y scroll; body使用position fixed
+ */
 function setViewCartSize() {
     const vw = window.innerWidth;
     let { width, height, right } = vw <= 768 ?
@@ -745,8 +749,24 @@ async function copyGPTResponse() {
 }
 // 購物車state
 const cartStore = useCartStore();
-const { cartCounter } = storeToRefs(cartStore);
+const { cartCounter, isCartCardOpen, scrollbarWidth } = storeToRefs(cartStore);
 const { toggleCartCardOpen } = cartStore;
+
+watch(isCartCardOpen, (nVal) => {
+    // if (nVal && viewCart.value) {
+    //     const VW = window.innerWidth
+    //     const rect = viewCart.value.getBoundingClientRect();
+    //     const coord = VW - rect.right;
+    //     console.log(scrollbarWidth.value + coord);
+
+    //     nextTick(() => {
+    //         gsap.set(viewCart.value, {
+    //             right: `${scrollbarWidth.value + coord}px`
+    //         });
+    //     })
+
+    // }
+})
 
 
 // 檢查result state
@@ -1240,6 +1260,7 @@ onUnmounted(() => {
         top: 50%;
         transform: translate(-50%, -50%);
     }
+
 }
 
 .cartBtn-enter-active,
