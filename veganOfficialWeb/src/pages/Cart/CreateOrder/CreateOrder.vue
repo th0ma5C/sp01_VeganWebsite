@@ -58,8 +58,8 @@
                                     }">
                                     <SvgIcon
                                         name="QNR_alert"
-                                        width="18"
-                                        height="18"
+                                        width="18px"
+                                        height="18px"
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>
@@ -97,8 +97,8 @@
                                     }">
                                     <SvgIcon
                                         name="QNR_alert"
-                                        width="18"
-                                        height="18"
+                                        width="18px"
+                                        height="18px"
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>
@@ -133,8 +133,8 @@
                                     }">
                                     <SvgIcon
                                         name="QNR_alert"
-                                        width="18"
-                                        height="18"
+                                        width="18px"
+                                        height="18px"
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>
@@ -170,8 +170,8 @@
                                         }">
                                         <SvgIcon
                                             name="QNR_alert"
-                                            width="18"
-                                            height="18"
+                                            width="18px"
+                                            height="18px"
                                             color="#b3261e">
                                         </SvgIcon>
                                         <span>
@@ -201,8 +201,8 @@
                                             @click="toggleOpenOptions"
                                             class="switchIcon"
                                             name="ListArrowDown"
-                                            width="22"
-                                            height="22"
+                                            width="22px"
+                                            height="22px"
                                             color="black"
                                             :class="{
                                                 optionOpen: isOptionsOpen
@@ -288,8 +288,8 @@
                                         }">
                                         <SvgIcon
                                             name="QNR_alert"
-                                            width="18"
-                                            height="18"
+                                            width="18px"
+                                            height="18px"
                                             color="#b3261e">
                                         </SvgIcon>
                                         <span>
@@ -325,8 +325,8 @@
                                     }">
                                     <SvgIcon
                                         name="QNR_alert"
-                                        width="18"
-                                        height="18"
+                                        width="18px"
+                                        height="18px"
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>
@@ -478,8 +478,8 @@
                                                 }">
                                                 <SvgIcon
                                                     name="QNR_alert"
-                                                    width="18"
-                                                    height="18"
+                                                    width="18px"
+                                                    height="18px"
                                                     color="#b3261e">
                                                 </SvgIcon>
                                                 <span>
@@ -542,8 +542,8 @@
                                     class="errorMsg">
                                     <SvgIcon
                                         name="QNR_alert"
-                                        width="18"
-                                        height="18"
+                                        width="18px"
+                                        height="18px"
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>

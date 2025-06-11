@@ -72,15 +72,15 @@
                                 查看地圖
                             </a>
                             <SvgIcon name="LocationArrow"
-                                width="24" height="24"
+                                width="24px" height="24px"
                                 :class="iconClass">
                             </SvgIcon>
                         </div>
                         <div class="position" v-show="true"
                             data-swiper-parallax="-1000">
                             <SvgIcon name="Location"
-                                color="white" width="24"
-                                height="24">
+                                color="white" width="24px"
+                                height="24px">
                             </SvgIcon>
                             <p>{{ item.addr }}</p>
                         </div>

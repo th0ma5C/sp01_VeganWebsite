@@ -1,6 +1,6 @@
 <template>
     <div class="chatBox">
-        <aside>
+        <!-- <aside>
             <div class="title">
                 <h2>
                     客服中心
@@ -32,22 +32,21 @@
                         </small>
                     </h3>
                 </template>
-                <template v-else>
+<template v-else>
                     <span>
                         沒有新訊息
                     </span>
                 </template>
-            </div>
+</div>
 
-        </aside>
+</aside>
 
-        <main :class="{
+<main :class="{
             chatting: isChatting
         }">
-            <div class="msgWrapper">
-                <template
-                    v-for="(msg, index) in showMsgList"
-                    :key="index">
+    <div class="msgWrapper">
+        <template v-for="(msg, index) in showMsgList"
+            :key="index">
                     <div v-if="msg.sender == 'user'"
                         class="otherMsg">
                         <SvgIcon name="Person"
@@ -79,51 +78,21 @@
                         </div>
                     </div>
                 </template>
-                <button>
-                    結束此次服務
-                </button>
-                <!-- <div class="otherMsg">
-                    <SvgIcon name="Person" color="#00430b"
-                        height="28px" width="28px"
-                        class="avatarIcon">
-                    </SvgIcon>
+        <button>
+            結束此次服務
+        </button>
+    </div>
 
-                    <div class="content">
-                        Lorem ipsum dolor, sit amet
-                        consectetur adipisicing elit.
-                        eveniet eius quasi veniam
-                        voluptatibus earum odit
-                        accusantium
-                        soluta quisquam vel.
-                    </div>
+    <div class="inputWrapper">
+        <textarea name="userMsg" id="userMsg"
+            v-model="inputMsg" type="text"
+            placeholder="輸入訊息..."></textarea>
+        <label for="userMsg">
 
-                    <div class="timeStamp">
-                        時間戳
-                    </div>
-                </div>
-
-                <div class="userMsg">
-                    <div class="timeStamp">
-                        時間戳
-                    </div>
-                    <div class="content">
-                        Lorem ipsum dolor, sit amet
-                        consectetur adipisicing elit.
-                        Cumque
-                    </div>
-                </div> -->
-            </div>
-
-            <div class="inputWrapper">
-                <textarea name="userMsg" id="userMsg"
-                    v-model="inputMsg" type="text"
-                    placeholder="輸入訊息..."></textarea>
-                <label for="userMsg">
-
-                </label>
-                <button>送出</button>
-            </div>
-        </main>
+        </label>
+        <button>送出</button>
+    </div>
+</main> -->
     </div>
 </template>
 
@@ -159,7 +128,7 @@ const isOnDuty = computed(() => {
 
 // chat
 const {
-    conversationStateList,
+    conversationState,
     msgState,
     initConversationList,
     userCreateConversation,
@@ -169,7 +138,7 @@ const {
 const isChatting = ref(false);
 
 const showConversationList = computed(() => {
-    return [...conversationStateList.value]
+    return [...conversationState.value]
 })
 
 async function sendMsg() {

@@ -4,7 +4,7 @@
             :class="{ unclickable: limitAlert && amountModel <= min }"
             @click="counter('-')">
             <SvgIcon name="productMinus" class="countIcon"
-                width="24" height="24">
+                width="24px" height="24px">
             </SvgIcon>
         </button>
         <input autocomplete="off" type="text"
@@ -15,7 +15,7 @@
             :class="{ unclickable: limitAlert && amountModel >= max }"
             @click="counter('+')">
             <SvgIcon name="productPlus" class="countIcon"
-                width="24" height="24">
+                width="24px" height="24px">
             </SvgIcon>
         </button>
     </div>

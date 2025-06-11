@@ -39,8 +39,8 @@
                                     }">
                                     <SvgIcon
                                         name="QNR_alert"
-                                        width="18"
-                                        height="18"
+                                        width="18px"
+                                        height="18px"
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>
@@ -92,8 +92,8 @@
                                     v-slot="{ message }">
                                     <SvgIcon
                                         name="QNR_alert"
-                                        width="18"
-                                        height="18"
+                                        width="18px"
+                                        height="18px"
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>
@@ -109,7 +109,7 @@
                         <div class="ResErrMsg"
                             v-show="registerMsg">
                             <SvgIcon name="QNR_alert"
-                                width="18" height="18"
+                                width="18px" height="18px"
                                 color="#b3261e">
                             </SvgIcon>
                             <span>

@@ -57,8 +57,8 @@
                                     v-show="setAlertClass(QNR_result.info.userName)">
                                     <SvgIcon
                                         name="QNR_alert"
-                                        width="18"
-                                        height="18"
+                                        width="18px"
+                                        height="18px"
                                         color="#b3261e">
                                     </SvgIcon>
                                     請輸入名稱
@@ -86,8 +86,8 @@
                                     v-show="setAlertClass(QNR_result.info.gender)">
                                     <SvgIcon
                                         name="QNR_alert"
-                                        width="18"
-                                        height="18"
+                                        width="18px"
+                                        height="18px"
                                         color="#b3261e">
                                     </SvgIcon>
                                     請選擇性別
@@ -149,8 +149,8 @@
                                     v-show="setAlertClass(verifyBirth(QNR_result.info.birth))">
                                     <SvgIcon
                                         name="QNR_alert"
-                                        width="18"
-                                        height="18"
+                                        width="18px"
+                                        height="18px"
                                         color="#b3261e">
                                     </SvgIcon>
                                     請輸入正確生日

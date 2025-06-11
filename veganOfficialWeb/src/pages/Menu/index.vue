@@ -64,8 +64,8 @@
                                     <div class="listHeader">
                                         <SvgIcon
                                             name="cancel"
-                                            width="20"
-                                            height="20"
+                                            width="20px"
+                                            height="20px"
                                             class="exit"
                                             @click="closePop">
                                         </SvgIcon>
@@ -124,7 +124,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                    }}</span>
+                                                }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -168,7 +168,8 @@
                                 @click="handleShowList('sort')">
                                 <span>{{ sorting }}</span>
                                 <SvgIcon name="sortDown"
-                                    width='16' height="16"
+                                    width='16px'
+                                    height="16px"
                                     :color="sorting == '精選' ? '#FCFAF2' : '#0d731e'"
                                     :style="sortDirIcon">
                                 </SvgIcon>
@@ -204,8 +205,8 @@
                         :key="index"
                         @click="handleFilterSelect(item)">
                         <span>{{ item }}</span>
-                        <SvgIcon name="cancel" width="16"
-                            height="16" color="black">
+                        <SvgIcon name="cancel" width="16px"
+                            height="16px" color="black">
                         </SvgIcon>
                     </div>
                     <div class="cancelSelect"
@@ -296,7 +297,7 @@
                             <div class="description">
                                 <span>{{
                                     items.description
-                                    }}</span>
+                                }}</span>
                             </div>
                         </div>
                         <h3>{{ items.name }}</h3>

@@ -11,24 +11,28 @@
                     :validation-schema="Schema">
                     <form action="" class="submitForm"
                         @submit="handleSubmit($event, fetchSubscribe)">
-                        <VField id="subEmail" name="email"
-                            type="email"
-                            placeholder="E-mail"
-                            autocomplete="on">
+                        <VField name="email"
+                            v-slot="{ field, meta }">
+                            <input id="subEmail"
+                                type="email"
+                                placeholder="E-mail"
+                                autocomplete="on" :="field">
+                            <ErrorMessage as="div"
+                                class="errorMsg"
+                                name="email"
+                                v-slot="{ message }" :style="{
+                                    opacity: submitCount > 0 ? 1 : 0
+                                }">
+                                <SvgIcon name="QNR_alert"
+                                    width="18px"
+                                    height="18px"
+                                    color="#b3261e">
+                                </SvgIcon>
+                                <span>
+                                    {{ message }}
+                                </span>
+                            </ErrorMessage>
                         </VField>
-                        <ErrorMessage as="div"
-                            class="errorMsg" name="email"
-                            v-slot="{ message }" :style="{
-                                opacity: submitCount > 0 ? 1 : 0
-                            }">
-                            <SvgIcon name="QNR_alert"
-                                width="18" height="18"
-                                color="#b3261e">
-                            </SvgIcon>
-                            <span>
-                                {{ message }}
-                            </span>
-                        </ErrorMessage>
                         <button
                             :disabled="isSubmitting || isReqConfirm">
                             <transition name="rightArrow">
@@ -456,8 +460,9 @@ onUnmounted(() => {
         text-wrap: nowrap;
         position: absolute;
         bottom: -85%;
-        left: 50%;
-        transform: translate(-35%, -50%);
+        // left: 50%;
+        right: calc(clamp(200px, 50%, 250px) - 6rem);
+        transform: translate(0%, -50%);
     }
 }
 
