@@ -750,29 +750,14 @@ swiper-slide:is(.swiper-slide-active) {
         right: 55vw;
     }
 
-    .branchName {
-        // top: calc(37% + 225px + 1.5rem);
-        // top: calc(4rem + 450px);
-    }
-
     .nextBranch {
         left: 55vw;
     }
 }
 
-// @include small($width: 432px) {
-
-//     .container .TW,
-//     .container .mapWrapper {
-//         left: 50%;
-//         translate: -50% 0;
-//     }
-// }
-
 @include small($width: 430px) {
 
-    .container .TW,
-    .container .mapWrapper {
+    .container .TW {
         left: 50%;
         translate: -50% 0;
     }
