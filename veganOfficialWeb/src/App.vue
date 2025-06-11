@@ -45,10 +45,13 @@ import { useLoaderStore } from '@/store/loader';
 import preloadImgList from './utils/preloadImgList';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
+import { useCartStore } from './store/cartStore';
 
-let { loaderActivated } = storeToRefs(useLoaderStore());
+const { loaderActivated } = storeToRefs(useLoaderStore());
 
 const route = useRoute();
+
+const { isCartCardOpen } = storeToRefs(useCartStore());
 
 onMounted(() => {
     watch(loaderActivated, (newValue) => {
@@ -58,6 +61,11 @@ onMounted(() => {
             // }, 0)
         }
     });
+
+    watch(isCartCardOpen, (nVal) => {
+        if (nVal) {
+        }
+    })
 
     // preloadImgList.forEach(el => {
     //     const img = new Image();
@@ -73,6 +81,10 @@ onUnmounted(() => {
 <style lang="scss">
 @use "./style/index.scss" as *;
 @use './style/fonts.scss' as *;
+
+html {
+    // scrollbar-gutter: stable;
+}
 
 body {
     overflow: hidden;

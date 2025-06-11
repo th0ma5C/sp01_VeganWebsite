@@ -207,30 +207,13 @@ function createScrollTrigger() {
                 once: true
             },
             onComplete: () => {
-                // ScrollTrigger.refresh()
                 isScrollerFinish.value = true;
-                // const scaler = ScrollTrigger.getById('scaler');
-                // if (scaler && scaler.progress) {
-                //     scaler.disable(false);
-                // } else if (scaler) {
-                //     scaler.enable();
-                // }
                 nextTick(() => {
                     getRatio();
                 })
             },
         }
     )
-    // ScrollTrigger.create({
-    //     id: 'pin',
-    //     trigger: locationRef.value,
-    //     // pin: locationRef.value,
-    //     start: 'top top',
-    //     end: '+=100',
-    //     onLeave: () => {
-    //         // ScrollTrigger.getById('pin')?.disable(false);
-    //     },
-    // })
 }
 
 // refactor with swiper js
@@ -351,7 +334,7 @@ onUnmounted(() => {
     transition: width 0.2s ease, height 0.2s ease;
     margin-inline: auto;
     padding-block: 10cqh;
-    height: 100vh;
+    // height: 100vh;
     // min-height: 100vh;
 
     .mapWrapper {
@@ -761,6 +744,8 @@ swiper-slide:is(.swiper-slide-active) {
 
 @include small {
 
+
+
     .prevBranch {
         right: 55vw;
     }
@@ -775,7 +760,29 @@ swiper-slide:is(.swiper-slide-active) {
     }
 }
 
-@include small($width: 430px) {}
+// @include small($width: 432px) {
+
+//     .container .TW,
+//     .container .mapWrapper {
+//         left: 50%;
+//         translate: -50% 0;
+//     }
+// }
+
+@include small($width: 430px) {
+
+    .container .TW,
+    .container .mapWrapper {
+        left: 50%;
+        translate: -50% 0;
+    }
+
+    .position {
+        // position: absolute;
+        left: -50vw;
+        translate: 50% 0;
+    }
+}
 
 @include small($width: 320px) {
     .prevBranch {
