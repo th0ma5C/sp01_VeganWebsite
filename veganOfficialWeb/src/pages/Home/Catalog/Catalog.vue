@@ -9,7 +9,7 @@
                     <div class="clickZone"
                         :class="getTabClass(index)">
                         <SvgIcon :name="item.icon"
-                            width="36" height="36"
+                            width="36px" height="36px"
                             color="#00430b">
                         </SvgIcon>
                         <transition name="title">
@@ -18,7 +18,7 @@
                         </transition>
                     </div>
                     <SvgIcon :name="'CatalogSlash'"
-                        width="36" height="36"
+                        width="36px" height="36px"
                         color="#00430b"
                         v-if="index == 0 || index == 1"
                         style="cursor: default;">

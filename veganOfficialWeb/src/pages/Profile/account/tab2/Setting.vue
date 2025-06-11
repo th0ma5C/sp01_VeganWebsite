@@ -112,8 +112,8 @@
                                         }">
                                         <SvgIcon
                                             name="QNR_alert"
-                                            width="18"
-                                            height="18"
+                                            width="18px"
+                                            height="18px"
                                             color="#b3261e">
                                         </SvgIcon>
                                         <span>
@@ -144,8 +144,8 @@
                                         }">
                                         <SvgIcon
                                             name="QNR_alert"
-                                            width="18"
-                                            height="18"
+                                            width="18px"
+                                            height="18px"
                                             color="#b3261e">
                                         </SvgIcon>
                                         <span>
@@ -182,8 +182,8 @@
                                         }">
                                         <SvgIcon
                                             name="QNR_alert"
-                                            width="18"
-                                            height="18"
+                                            width="18px"
+                                            height="18px"
                                             color="#b3261e">
                                         </SvgIcon>
                                         <span>
@@ -221,8 +221,8 @@
                                             }">
                                             <SvgIcon
                                                 name="QNR_alert"
-                                                width="18"
-                                                height="18"
+                                                width="18px"
+                                                height="18px"
                                                 color="#b3261e">
                                             </SvgIcon>
                                             <span>
@@ -258,8 +258,8 @@
                                             <SvgIcon
                                                 class="switchIcon"
                                                 name="ListArrowDown"
-                                                width="24"
-                                                height="24"
+                                                width="24px"
+                                                height="24px"
                                                 color="black">
                                             </SvgIcon>
                                         </div>
@@ -349,8 +349,8 @@
                                             }">
                                             <SvgIcon
                                                 name="QNR_alert"
-                                                width="18"
-                                                height="18"
+                                                width="18px"
+                                                height="18px"
                                                 color="#b3261e">
                                             </SvgIcon>
                                             <span>
@@ -382,8 +382,8 @@
                                         }">
                                         <SvgIcon
                                             name="QNR_alert"
-                                            width="18"
-                                            height="18"
+                                            width="18px"
+                                            height="18px"
                                             color="#b3261e">
                                         </SvgIcon>
                                         <span>

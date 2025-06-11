@@ -3,14 +3,14 @@
         <div class="marquee">
             <button class="btn-prev"
                 @click="throttleChangeSwiper(0)">
-                <SvgIcon name="ButtonLeft" height="24"
-                    width="24" color="#036313">
+                <SvgIcon name="ButtonLeft" height="24px"
+                    width="24px" color="#036313">
                 </SvgIcon>
             </button>
             <button class="btn-next"
                 @click="throttleChangeSwiper(1)">
-                <SvgIcon name="ButtonRight" height="24"
-                    width="24" color="#036313">
+                <SvgIcon name="ButtonRight" height="24px"
+                    width="24px" color="#036313">
                 </SvgIcon>
             </button>
             <div ref="divRef" class="carousel"

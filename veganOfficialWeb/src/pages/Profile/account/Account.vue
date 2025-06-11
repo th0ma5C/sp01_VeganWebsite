@@ -24,7 +24,7 @@
                                 :name="index == 0 ?
                                     'OrderList' :
                                     (index == 1 ? 'Setting' : 'Service')"
-                                width="27" height="27"
+                                width="27px" height="27px"
                                 color='black'
                                 class="tabIcon">
                             </SvgIcon>
@@ -99,7 +99,7 @@ import { onBeforeRouteLeave } from 'vue-router';
 import Delivering from './tab1/Delivering.vue';
 import Setting from './tab2/Setting.vue';
 import Service from './CS/Service.vue';
-import Admin from './admin/Admin.vue';
+// import Admin from './admin/Admin.vue';
 import { jwtDecode } from 'jwt-decode';
 import { useToastStore } from '@/store/toastStore';
 

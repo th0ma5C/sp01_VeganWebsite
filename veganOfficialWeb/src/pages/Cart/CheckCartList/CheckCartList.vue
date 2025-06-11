@@ -98,7 +98,7 @@
                         <div class="errorMsg"
                             v-show="(isCouponPassed == false) && (coupon.code) && submitCount != 0">
                             <SvgIcon name="QNR_alert"
-                                width="18" height="18"
+                                width="18px" height="18px"
                                 color="#b3261e">
                             </SvgIcon>
                             <span>
@@ -201,7 +201,7 @@
                                     class="correctionDigit"
                                     v-text="correctionDigit(couponAmount)"></span>
                                 <span>{{ couponAmount
-                                }}</span>
+                                    }}</span>
                             </span>
                         </transition-group>
                     </div>
@@ -244,7 +244,7 @@
                 <span>總計</span>
                 <span>${{
                     orderAmount.toLocaleString()
-                }}</span>
+                    }}</span>
             </div>
         </div>
 
