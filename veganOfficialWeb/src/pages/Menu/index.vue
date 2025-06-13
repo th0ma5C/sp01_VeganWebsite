@@ -124,7 +124,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                }}</span>
+                                                    }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -297,7 +297,7 @@
                             <div class="description">
                                 <span>{{
                                     items.description
-                                }}</span>
+                                    }}</span>
                             </div>
                         </div>
                         <h3>{{ items.name }}</h3>
@@ -1536,7 +1536,11 @@ $menuItemContainer_height: 405px;
         background: #a8a8a8;
     }
 
-    scrollbar-width: thin;
+    @supports (-moz-appearance: none) {
+        scrollbar-width: thin;
+    }
+
+    // scrollbar-width: thin;
 
     // &::-webkit-scrollbar-track {
     //     background: #e6e6e6;

@@ -312,6 +312,9 @@ onMounted(() => {
     padding-right: .5rem;
     position: relative;
 
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+    overflow-x: hidden;
 
     .emptyList {
         font-size: .75rem;
