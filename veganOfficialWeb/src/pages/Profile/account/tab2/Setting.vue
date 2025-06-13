@@ -93,11 +93,23 @@
                             </div>
                             <fieldset>
                                 <div>
-                                    <VField id="email"
+                                    <!-- <VField id="email"
                                         name="email"
                                         type="email"
                                         placeholder="信箱"
                                         autocomplete="off">
+                                    </VField> -->
+                                    <VField name="email"
+                                        v-slot="{ field, meta, value }">
+                                        <input id="email"
+                                            type="email"
+                                            autocomplete="off"
+                                            placeholder="信箱"
+                                            :="field"
+                                            :class="{
+                                                floatLabel: value && value.length > 0,
+                                                invalidInput: !meta.valid && submitCount > 0
+                                            }">
                                     </VField>
 
                                     <label
@@ -126,13 +138,26 @@
 
                             <fieldset>
                                 <div>
-                                    <VField
+                                    <!-- <VField
                                         id="consigneeName"
                                         name="consigneeName"
                                         type="text"
                                         placeholder="姓名">
+                                    </VField> -->
+                                    <VField
+                                        name="consigneeName"
+                                        v-slot="{ field, meta, value }">
+                                        <input
+                                            id="consigneeName"
+                                            autocomplete="off"
+                                            type="text"
+                                            placeholder="姓名"
+                                            :="field"
+                                            :class="{
+                                                floatLabel: value && value.length > 0,
+                                                invalidInput: !meta.valid && submitCount > 0
+                                            }">
                                     </VField>
-
                                     <label
                                         for="consigneeName">姓名</label>
 
@@ -159,13 +184,14 @@
                             <fieldset>
                                 <div>
                                     <VField name="address"
-                                        v-slot="{ field, meta, handleBlur }">
+                                        v-slot="{ field, meta, value }">
                                         <input id="address"
                                             type="text"
                                             autocomplete="off"
                                             placeholder="地址"
                                             :="field"
                                             :class="{
+                                                floatLabel: value && value.length > 0,
                                                 invalidInput: !meta.valid && submitCount > 0
                                             }"
                                             @blur="updateAddrInput(field.value)">
@@ -320,7 +346,7 @@
                                         <VField
                                             v-model="postalCode"
                                             name="postal"
-                                            v-slot="{ field, meta }">
+                                            v-slot="{ field, meta, value }">
                                             <input
                                                 type="text"
                                                 id="postal"
@@ -328,6 +354,7 @@
                                                 placeholder="郵遞區號"
                                                 :="field"
                                                 :class="{
+                                                    floatLabel: value && value.length > 0,
                                                     invalidInput: !meta.valid && submitCount > 0
                                                 }">
                                         </VField>
@@ -365,12 +392,22 @@
 
                             <fieldset>
                                 <div>
-                                    <VField id="contactNo"
+                                    <!-- <VField id="contactNo"
                                         name="contactNo"
                                         type="tel"
                                         placeholder="聯絡電話">
+                                    </VField> -->
+                                    <VField name="contactNo"
+                                        v-slot="{ field, meta, value }">
+                                        <input type="tel"
+                                            id="contactNo"
+                                            placeholder="連絡電話"
+                                            :="field"
+                                            :class="{
+                                                floatLabel: value && value.length > 0,
+                                                invalidInput: !meta.valid && submitCount > 0
+                                            }">
                                     </VField>
-
                                     <label
                                         for="contactNo">聯絡電話</label>
 
@@ -1029,11 +1066,21 @@ h2 {
             }
         }
 
-        & div:has(input:focus)>label,
-        & div:has(input:not(:placeholder-shown))>label {
-            transform: translateY(calc(-100% - 8px)) scale(0.9);
+        & div:has(input:focus)>label {
+            transform: translateY(calc(-100% - 6px)) scale(0.9);
             background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
         }
+
+        & div:has(.floatLabel)>label {
+            transform: translateY(calc(-100% - 6px)) scale(0.9);
+            background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
+        }
+
+        // & div:has(input:focus)>label,
+        // & div:has(input:not(:placeholder-shown))>label {
+        //     transform: translateY(calc(-100% - 6px)) scale(0.9);
+        //     background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
+        // }
 
         input::placeholder {
             opacity: 0;
@@ -1045,7 +1092,7 @@ h2 {
     width: 100%;
 
     .selectingOptions {
-        transform: translateY(calc(-100% - 8px)) scale(0.9);
+        transform: translateY(calc(-100% - 6px)) scale(0.9);
         background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
     }
 }
@@ -1138,6 +1185,8 @@ h2 {
 
 .tabs {
     overflow-y: scroll;
+    overflow-y: auto;
+    scrollbar-width: thin;
     height: 100%;
 
     &::-webkit-scrollbar {

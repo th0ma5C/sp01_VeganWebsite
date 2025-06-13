@@ -105,7 +105,9 @@
                             </div>
                         </template>
                     </div>
+
                 </template>
+
                 <template
                     v-else-if="isAdmin && !showConversationList.length">
                     <span>
@@ -559,10 +561,14 @@ aside {
     background-color: $primaryBacColor;
     padding: .5rem .25rem .5rem 1rem;
     overflow-y: scroll;
+    overflow-y: auto;
     position: relative;
     z-index: 2;
     // max-width: 30%;
-    max-width: min(280px, 40%);
+    max-width: min(300px, 40%);
+
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
 
     &::-webkit-scrollbar {
         translate: 0 1rem;
@@ -573,7 +579,6 @@ aside {
         // background: transparent;
         background: #c1c1c1;
         border-radius: 10px !important;
-
     }
 
     &::-webkit-scrollbar-thumb:hover {
@@ -959,6 +964,7 @@ main {
     flex: 8;
     max-height: 80%;
     overflow-y: scroll;
+    overflow-y: auto;
     overflow-x: hidden;
     display: flex;
     gap: 1rem;

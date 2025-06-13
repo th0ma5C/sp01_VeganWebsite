@@ -1522,6 +1522,7 @@ $menuItemContainer_height: 405px;
     position: absolute;
     top: 150%;
     overflow-y: scroll;
+    overflow-y: auto;
     z-index: 3;
     transition: transform 0.3s ease;
 
@@ -1534,6 +1535,8 @@ $menuItemContainer_height: 405px;
     &::-webkit-scrollbar-thumb:hover {
         background: #a8a8a8;
     }
+
+    scrollbar-width: thin;
 
     // &::-webkit-scrollbar-track {
     //     background: #e6e6e6;

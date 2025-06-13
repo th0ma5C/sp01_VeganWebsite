@@ -454,6 +454,7 @@ onMounted(async () => {
 
 .scrollSection {
     overflow-y: scroll;
+    overflow-y: auto;
     padding-inline: .25rem;
 
     &::-webkit-scrollbar {
