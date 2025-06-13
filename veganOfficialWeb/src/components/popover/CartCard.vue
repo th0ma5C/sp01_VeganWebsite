@@ -41,7 +41,7 @@
                             <div class="details">
                                 <h3>{{ key }}</h3>
                                 <small>${{ item.price
-                                }}</small>
+                                    }}</small>
                             </div>
 
                             <div class="itemSubtotal">
@@ -308,6 +308,7 @@ onMounted(() => {
     // border: 1px solid black;
     flex: 1;
     overflow-y: scroll;
+    overflow-y: auto;
     padding-right: .5rem;
     position: relative;
 

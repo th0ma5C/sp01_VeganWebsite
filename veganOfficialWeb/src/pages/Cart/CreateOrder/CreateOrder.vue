@@ -36,14 +36,16 @@
                                 </router-link>
                             </div>
 
+
                             <div class="formWrapper">
                                 <VField name="email"
-                                    v-slot="{ field, meta }">
+                                    v-slot="{ field, meta, value }">
                                     <input id="email"
                                         type="email"
                                         autocomplete="email"
                                         placeholder="信箱"
                                         :="field" :class="{
+                                            floatLabel: value && value.length > 0,
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
                                 </VField>
@@ -75,13 +77,14 @@
                             <h2>收件人資訊</h2>
                             <div class="formWrapper">
                                 <VField name="consigneeName"
-                                    v-slot="{ field, meta }">
+                                    v-slot="{ field, meta, value }">
                                     <input
                                         id="consigneeName"
                                         autocomplete="off"
                                         type="text"
                                         placeholder="姓名"
                                         :="field" :class="{
+                                            floatLabel: value && value.length > 0,
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
                                 </VField>
@@ -112,12 +115,13 @@
                             <div
                                 class="formWrapper addressWrapper">
                                 <VField name="address"
-                                    v-slot="{ field, meta }">
+                                    v-slot="{ field, meta, value }">
                                     <input id="address"
                                         type="text"
                                         autocomplete="off"
                                         placeholder="地址"
                                         :="field" :class="{
+                                            floatLabel: value && value.length > 0,
                                             invalidInput: !meta.valid && submitCount > 0
                                         }"
                                         @blur="updateAddrInput(field.value)">
@@ -262,13 +266,14 @@
                                     <VField
                                         v-model="postalCode"
                                         name="postal"
-                                        v-slot="{ field, meta }">
+                                        v-slot="{ field, meta, value }">
                                         <input type="text"
                                             id="postal"
                                             autocomplete="off"
                                             placeholder="郵遞區號"
                                             :="field"
                                             :class="{
+                                                floatLabel: value && value.length > 0,
                                                 invalidInput: !meta.valid && submitCount > 0
                                             }">
                                     </VField>
@@ -305,11 +310,12 @@
                             <div
                                 class="formWrapper contactNoWrapper">
                                 <VField name="contactNo"
-                                    v-slot="{ field, meta }">
+                                    v-slot="{ field, meta, value }">
                                     <input type="tel"
                                         id="contactNo"
                                         placeholder="連絡電話"
                                         :="field" :class="{
+                                            floatLabel: value && value.length > 0,
                                             invalidInput: !meta.valid && submitCount > 0
                                         }">
                                 </VField>
@@ -1240,12 +1246,34 @@ onUnmounted(() => {
             position: relative;
         }
 
-        & div:has(input:focus)>label:not(.staticLabel),
-        & div:has(input:not(:placeholder-shown))>label:not(.staticLabel) {
+        & div:has(input:focus)>label:not(.staticLabel) {
             transform: translateY(calc(-100% - 10px)) scale(0.8);
             background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
-            // background-color: $primaryBacColor;
         }
+
+        & div:has(.floatLabel)>label:not(.staticLabel) {
+            transform: translateY(calc(-100% - 10px)) scale(0.8);
+            background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
+        }
+
+        // & div:has(input:not(:placeholder-shown))>label:not(.staticLabel) {
+        //     transform: translateY(calc(-100% - 10px)) scale(0.8);
+        //     background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
+        //     // background-color: $primaryBacColor;
+        // }
+
+        // & div:has(input:valid)>label:not(.staticLabel) {
+        //     transform: translateY(calc(-100% - 10px)) scale(0.8);
+        //     background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
+        //     // background-color: $primaryBacColor;
+        // }
+
+        // & div:has(input:focus)>label:not(.staticLabel),
+        // & div:has(input:not(:placeholder-shown))>label:not(.staticLabel) {
+        //     transform: translateY(calc(-100% - 10px)) scale(0.8);
+        //     background: linear-gradient(to bottom, $primaryBacColor 49%, white 50%);
+        //     // background-color: $primaryBacColor;
+        // }
 
         input::placeholder {
             opacity: 0;
@@ -1415,6 +1443,7 @@ onUnmounted(() => {
 
     .tabs {
         overflow-y: scroll;
+        scrollbar-width: thin;
         height: 100%;
 
         &::-webkit-scrollbar {

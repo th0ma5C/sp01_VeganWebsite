@@ -44,7 +44,7 @@
                                         color="#b3261e">
                                     </SvgIcon>
                                     <span>{{ message
-                                    }}</span>
+                                        }}</span>
                                 </ErrorMessage>
                             </div>
 
@@ -674,11 +674,14 @@ $container_width: 300px;
 }
 
 .accOptions {
+    // appearance: none;
+    padding: 1px 2px;
     opacity: .75;
     cursor: pointer;
     background-color: $primaryBacColor;
     border: 1px solid black;
-    border-radius: .5rem
+    border-radius: .5rem;
+    text-align: center;
 }
 
 %divider_line {
