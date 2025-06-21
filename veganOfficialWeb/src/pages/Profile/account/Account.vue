@@ -69,7 +69,8 @@
                 <transition name="switchTab" mode="out-in">
                     <section v-if="currTab == '購買清單'"
                         key="購買清單" class="scrollSection">
-                        <Delivering v-model="currBranch">
+                        <Delivering v-model="currBranch"
+                            @switch-to-service="switchTab('聯絡客服')">
                         </Delivering>
                     </section>
 
@@ -78,8 +79,8 @@
                         <Setting></Setting>
                     </section>
 
-                    <section v-else-if="currTab == '連絡客服'"
-                        key="連絡客服">
+                    <section v-else-if="currTab == '聯絡客服'"
+                        key="聯絡客服">
                         <Service
                             :role="user.role ?? 'user'">
                         </Service>
@@ -148,7 +149,7 @@ const isOrderLoaded = computed(() => showOrderList.value?.length !== 0)
 const tabs = {
     '購買清單': ['全部', '待付款', '已完成'],
     '用戶設定': [],
-    '連絡客服': []
+    '聯絡客服': []
 } as const;
 
 // 切換tab
