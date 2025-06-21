@@ -288,6 +288,15 @@
                     <div class="editBtn">
                         <button
                             v-for="(item, index) in statusBtnList"
+                            :key="index"
+                            @click="editBtn(item, _id, shippingInfo.paymentType)"
+                            v-show="item != '付款' || (item == '付款' && (shippingInfo.paymentType !== '貨到付款'))">
+                            {{ item }}
+                            <Spinner v-show="false">
+                            </Spinner>
+                        </button>
+                        <!-- <button
+                            v-for="(item, index) in statusBtnList"
                             :key="index" @click="() => {
                                 toggleDialogOpen(item, _id);
                                 if (item == '付款') payForOrder(_id, shippingInfo.paymentType)
@@ -296,7 +305,7 @@
                             {{ item }}
                             <Spinner v-show="false">
                             </Spinner>
-                        </button>
+                        </button> -->
                     </div>
                     <form v-html="ECform" class=" hidden"
                         ref="ECformRef"></form>
@@ -542,6 +551,14 @@ function toggleDialogOpen(btn: string, orderID: string) {
     if (btn !== '取消訂單') return
     orderOnCancelling.value = orderID;
     isCancelDialogOpen.value = !isCancelDialogOpen.value;
+}
+
+// 編輯按鈕
+const emit = defineEmits(['switchToService'])
+function editBtn(item: string, _id: string, paymentType: string) {
+    toggleDialogOpen(item, _id);
+    if (item == '付款') payForOrder(_id, paymentType)
+    if (item == '聯絡客服') emit('switchToService');
 }
 
 // 付款

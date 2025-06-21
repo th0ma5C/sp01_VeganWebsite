@@ -124,7 +124,7 @@
                                                 @click="selectAll">
                                                 <span>{{
                                                     selectAllText
-                                                    }}</span>
+                                                }}</span>
                                             </li>
                                             <li v-for="(item, index) in showIngredientList"
                                                 :key="index"
@@ -297,7 +297,7 @@
                             <div class="description">
                                 <span>{{
                                     items.description
-                                    }}</span>
+                                }}</span>
                             </div>
                         </div>
                         <h3>{{ items.name }}</h3>
@@ -3025,6 +3025,10 @@ $menuItemContainer_height: 405px;
 
     .docList .content p {
         text-align: left;
+    }
+
+    .analystBot>div {
+        padding-inline: 0;
     }
 }
 </style>
